@@ -17,10 +17,10 @@ class Project(BaseModelImpl):
 
 class ProjectRole(BaseModelTrackImpl):
     ROLE_CHOICES = [
-        ('admin', 'Admin'),
-        ('editor', 'Editor'),
-        ('viewer', 'Viewer'),
-        ('no_view', 'No View'),
+        ('Admin', 'Admin'),
+        ('Editor', 'Editor'),
+        ('Viewer', 'Viewer'),
+        ('NoView', 'No View'),
         # Add more roles as needed
     ]
     role_type = models.CharField(max_length=255, choices=ROLE_CHOICES, default='no_view')

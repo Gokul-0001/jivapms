@@ -280,8 +280,9 @@ def create_project(request, member, org_membership, org_id):
             
             # Check if the member has 'Project Admin' role in the organization
             if org_membership.role.name == 'Project Admin':
-                # Create or get the 'Admin' role for the project
-                admin_role, created = ProjectRole.objects.get_or_create(role_type=PROJECT_ADMIN_ROLE_STR)
+                logger.debug(f">>> === {PROJECT_ADMIN_ROLE_STR}:CHECK === <<<")
+                admin_role = ProjectRole.objects.get(role_type=PROJECT_ADMIN_ROLE_STR)
+                
 
                 # Assign the member as 'Admin' in the ProjectMembership
                 ProjectMembership.objects.create(
