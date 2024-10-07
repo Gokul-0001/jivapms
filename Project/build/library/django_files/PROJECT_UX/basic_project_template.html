@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Project</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        /* Indentation for tasks */
+        .indent-level-1 {
+            padding-left: 20px;
+        }
+
+        .indent-level-2 {
+            padding-left: 40px;
+        }
+
+        .indent-level-3 {
+            padding-left: 60px;
+        }
+
+        /* Buttons for adding tasks */
+        .task-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .task-controls button {
+            margin-left: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .task-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Form button styles */
+        .form-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .form-actions button:hover {
+            background-color: #218838;
+        }
+
+        .input-checkbox {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Project</h1>
+    
+    <form method="POST" id="projectForm">
+        <!-- Replace this with Django CSRF token if using Django -->
+        <!-- {% csrf_token %} -->
+
+        <fieldset>
+            <legend>Project Details</legend>
+            <label for="title">Project Title:</label>
+            <input type="text" id="title" name="title" value="Sample Project Title">
+            <br><br>
+
+            <label for="vision">Vision:</label><br>
+            <textarea id="vision" name="vision" rows="2" cols="80">Sample Project Vision</textarea>
+            <br><br>
+
+            <label for="mission">Mission:</label><br>
+            <textarea id="mission" name="mission" rows="2" cols="80">Sample Project Mission</textarea>
+            <br><br>
+
+            <label for="value_statements">Value Statements:</label><br>
+            <textarea id="value_statements" name="value_statements" rows="2" cols="80">Sample Project Value Statements</textarea>
+        </fieldset>
+
+        <h2>Project Tasks</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Progress (%)</th>
+                    <th>Done</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <!-- Sample tasks -->
+                <tr class="indent-level-0">
+                    <td><input type="text" name="task_description_1" value="Task 1"></td>
+                    <td><input type="date" name="task_start_1"></td>
+                    <td><input type="date" name="task_end_1"></td>
+                    <td><input type="number" name="task_progress_1" value="50"></td>
+                    <td class="input-checkbox"><input type="checkbox" name="task_done_1"></td>
+                    <td><input type="text" name="task_comments_1"></td>
+                </tr>
+                <tr class="indent-level-1">
+                    <td><input type="text" name="task_description_2" value="Subtask 1.1"></td>
+                    <td><input type="date" name="task_start_2"></td>
+                    <td><input type="date" name="task_end_2"></td>
+                    <td><input type="number" name="task_progress_2" value="30"></td>
+                    <td class="input-checkbox"><input type="checkbox" name="task_done_2"></td>
+                    <td><input type="text" name="task_comments_2"></td>
+                </tr>
+                <tr class="indent-level-2">
+                    <td><input type="text" name="task_description_3" value="Subtask 1.1.1"></td>
+                    <td><input type="date" name="task_start_3"></td>
+                    <td><input type="date" name="task_end_3"></td>
+                    <td><input type="number" name="task_progress_3" value="70"></td>
+                    <td class="input-checkbox"><input type="checkbox" name="task_done_3"></td>
+                    <td><input type="text" name="task_comments_3"></td>
+                </tr>
+                <!-- New tasks will go here -->
+            </tbody>
+        </table>
+
+        <div class="task-controls">
+            <button type="button" onclick="addTaskRow()">Add Task</button>
+            <button type="button" onclick="addSubTaskRow()">Add Subtask</button>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Save Project</button>
+        </div>
+    </form>
+
+    <script>
+        let taskCounter = 4;
+
+        // Function to add a new task row
+        function addTaskRow() {
+            const taskTableBody = document.getElementById('taskTableBody');
+
+            const newRow = document.createElement('tr');
+            newRow.classList.add('indent-level-0');
+
+            newRow.innerHTML = `
+                <td><input type="text" name="task_description_${taskCounter}" placeholder="New Task"></td>
+                <td><input type="date" name="task_start_${taskCounter}"></td>
+                <td><input type="date" name="task_end_${taskCounter}"></td>
+                <td><input type="number" name="task_progress_${taskCounter}" value="0"></td>
+                <td class="input-checkbox"><input type="checkbox" name="task_done_${taskCounter}"></td>
+                <td><input type="text" name="task_comments_${taskCounter}" placeholder="Comments"></td>
+            `;
+            taskTableBody.appendChild(newRow);
+            taskCounter++;
+        }
+
+        // Function to add a new subtask row (with indentation)
+        function addSubTaskRow() {
+            const taskTableBody = document.getElementById('taskTableBody');
+
+            const newRow = document.createElement('tr');
+            newRow.classList.add('indent-level-1');
+
+            newRow.innerHTML = `
+                <td><input type="text" name="task_description_${taskCounter}" placeholder="New Subtask"></td>
+                <td><input type="date" name="task_start_${taskCounter}"></td>
+                <td><input type="date" name="task_end_${taskCounter}"></td>
+                <td><input type="number" name="task_progress_${taskCounter}" value="0"></td>
+                <td class="input-checkbox"><input type="checkbox" name="task_done_${taskCounter}"></td>
+                <td><input type="text" name="task_comments_${taskCounter}" placeholder="Comments"></td>
+            `;
+            taskTableBody.appendChild(newRow);
+            taskCounter++;
+        }
+    </script>
+</body>
+</html>

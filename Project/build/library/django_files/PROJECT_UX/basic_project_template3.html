@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Task Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        /* Excel-like table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th:first-child, td:first-child {
+            width: 40px;
+            text-align: center;
+        }
+
+        td input, td textarea {
+            width: 100%;
+            border: none;
+            font-size: 12px;
+        }
+
+        .task-controls {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .task-controls button {
+            padding: 10px 15px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .task-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Indentation styles */
+        .indent-level-0 { padding-left: 0px; }
+        .indent-level-1 { padding-left: 20px; }
+        .indent-level-2 { padding-left: 40px; }
+        .indent-level-3 { padding-left: 60px; }
+
+        /* Highlight selected row */
+        .selected-row {
+            background-color: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Task Management</h1>
+    
+    <form method="POST" id="projectForm">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Progress (%)</th>
+                    <th>Done</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <!-- Sample tasks -->
+                <tr class="indent-level-0" data-indent="0">
+                    <td>1</td>
+                    <td><input type="text" name="task_description_1" value="Task 1"></td>
+                    <td><input type="date" name="task_start_1"></td>
+                    <td><input type="date" name="task_end_1"></td>
+                    <td><input type="number" name="task_progress_1" value="50"></td>
+                    <td><input type="checkbox" name="task_done_1"></td>
+                    <td><input type="text" name="task_comments_1"></td>
+                </tr>
+                <tr class="indent-level-1" data-indent="1">
+                    <td>2</td>
+                    <td><input type="text" name="task_description_2" value="Subtask 1.1"></td>
+                    <td><input type="date" name="task_start_2"></td>
+                    <td><input type="date" name="task_end_2"></td>
+                    <td><input type="number" name="task_progress_2" value="30"></td>
+                    <td><input type="checkbox" name="task_done_2"></td>
+                    <td><input type="text" name="task_comments_2"></td>
+                </tr>
+                <tr class="indent-level-2" data-indent="2">
+                    <td>3</td>
+                    <td><input type="text" name="task_description_3" value="Subtask 1.1.1"></td>
+                    <td><input type="date" name="task_start_3"></td>
+                    <td><input type="date" name="task_end_3"></td>
+                    <td><input type="number" name="task_progress_3" value="70"></td>
+                    <td><input type="checkbox" name="task_done_3"></td>
+                    <td><input type="text" name="task_comments_3"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="task-controls">
+            <button type="button" onclick="indentSelected()">Indent</button>
+            <button type="button" onclick="outdentSelected()">Outdent</button>
+        </div>
+    </form>
+
+    <script>
+        let selectedRow = null;
+
+        // Highlight the selected row when clicked
+        document.getElementById('taskTableBody').addEventListener('click', function(event) {
+            const targetRow = event.target.closest('tr');
+            if (!targetRow) return;
+
+            // Remove selection from the previously selected row
+            if (selectedRow) {
+                selectedRow.classList.remove('selected-row');
+            }
+
+            // Mark the clicked row as selected
+            selectedRow = targetRow;
+            selectedRow.classList.add('selected-row');
+        });
+
+        // Function to indent the selected task
+        function indentSelected() {
+            if (!selectedRow) {
+                alert('Please select a task to indent.');
+                return;
+            }
+
+            let indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+            if (indentLevel < 3) {  // Max indent level
+                indentLevel++;
+                selectedRow.setAttribute('data-indent', indentLevel);
+                selectedRow.className = 'indent-level-' + indentLevel;
+            }
+        }
+
+        // Function to outdent the selected task
+        function outdentSelected() {
+            if (!selectedRow) {
+                alert('Please select a task to outdent.');
+                return;
+            }
+
+            let indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+            if (indentLevel > 0) {  // Min indent level
+                indentLevel--;
+                selectedRow.setAttribute('data-indent', indentLevel);
+                selectedRow.className = 'indent-level-' + indentLevel;
+            }
+        }
+    </script>
+</body>
+</html>
