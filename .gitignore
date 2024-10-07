@@ -2,13 +2,16 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+dev_env/
 # C extensions
 *.so
-
+projects/
+staging/work_area/
+tmp/work_area/
+work_area/
 # Distribution / packaging
 .Python
-build/
+
 develop-eggs/
 dist/
 downloads/
