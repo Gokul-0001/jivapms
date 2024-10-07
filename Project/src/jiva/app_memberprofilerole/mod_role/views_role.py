@@ -391,6 +391,7 @@ def view_my_role(request):
                 'org_id': role.org.id if role.org else None,
                 'role_id': role.role.id if role.role else None,
                 'role_name': role.role.name if role.role else 'No Role',
+                'org_name': role.org.name if role.org else 'No Organization',
             }
             user_data['roles'].append(role_data)
 
