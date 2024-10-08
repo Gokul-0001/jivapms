@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Task Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Crisp and compact table styling like MS Project/Excel */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 4px;
+            text-align: left;
+            height: 25px;  /* Reduced cell height */
+        }
+
+        th:first-child, td:first-child {
+            width: 30px;  /* Slim serial number column */
+            text-align: center;
+        }
+
+        /* Progress slider styling */
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            margin: 0;
+        }
+
+        /* Compact checkbox and select dropdown */
+        input[type="checkbox"] {
+            transform: scale(0.8);
+        }
+
+        select {
+            width: 100%;
+            height: 100%;
+            border: none;
+            font-size: 12px;
+            background: transparent;
+        }
+
+        /* Editable td cells */
+        td[contenteditable="true"] {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 4px;
+            white-space: nowrap;
+        }
+
+        .task-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .task-controls button {
+            padding: 8px 12px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .task-controls button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Task Management</h1>
+
+    <!-- Controls for add task at the top right -->
+    <div class="task-controls">
+        <button type="button" onclick="addTaskRow()">Add Task</button>
+    </div>
+
+    <form method="POST" id="projectForm">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Duration (1Q, 1m, 1d, 1h)</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Progress (%)</th>
+                    <th>Done</th>
+                    <th>Team/Members</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <!-- Example task rows -->
+                <tr>
+                    <td>1</td>
+                    <td contenteditable="true">Task 1</td>
+                    <td contenteditable="true">2Q 1m</td>
+                    <td contenteditable="true">2024-10-01</td>
+                    <td contenteditable="true">2024-12-31</td>
+                    <td><input type="range" min="0" max="100" value="50"></td>
+                    <td><input type="checkbox"></td>
+                    <td contenteditable="true">Team A</td>
+                    <td contenteditable="true">Initial setup</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td contenteditable="true">Task 2</td>
+                    <td contenteditable="true">1m 10d</td>
+                    <td contenteditable="true">2024-11-01</td>
+                    <td contenteditable="true">2024-12-01</td>
+                    <td><input type="range" min="0" max="100" value="30"></td>
+                    <td><input type="checkbox"></td>
+                    <td contenteditable="true">Team B</td>
+                    <td contenteditable="true">Development phase</td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <script>
+        let taskCounter = 3;  // Incremental task counter
+
+        // Function to add a new task row
+        function addTaskRow() {
+            const taskTableBody = document.getElementById('taskTableBody');
+            const newRow = document.createElement('tr');
+
+            newRow.innerHTML = `
+                <td>${taskCounter}</td>
+                <td contenteditable="true">New Task</td>
+                <td contenteditable="true">1m</td>
+                <td contenteditable="true">2024-01-01</td>
+                <td contenteditable="true">2024-01-31</td>
+                <td><input type="range" min="0" max="100" value="0"></td>
+                <td><input type="checkbox"></td>
+                <td contenteditable="true">Team C</td>
+                <td contenteditable="true">Notes</td>
+            `;
+
+            taskTableBody.appendChild(newRow);
+            taskCounter++;
+        }
+    </script>
+</body>
+</html>

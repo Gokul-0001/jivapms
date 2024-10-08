@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Task Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Crisp and compact table styling like MS Project/Excel */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 2px; /* Reduced padding for crisp rows */
+            text-align: left;
+            height: 22px;  /* Further reduced cell height */
+        }
+
+        th:first-child, td:first-child {
+            width: 30px;  /* Slim serial number column */
+            text-align: center;
+        }
+
+        /* Progress slider styling */
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            margin: 0;
+        }
+
+        /* Compact checkbox */
+        input[type="checkbox"] {
+            transform: scale(0.8);
+        }
+
+        /* Editable td cells */
+        td[contenteditable="true"] {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 4px;
+            white-space: nowrap;
+        }
+
+        .selected-row {
+            background-color: #e6f7ff;
+        }
+
+        .task-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .task-controls button {
+            padding: 8px 12px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .task-controls button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Task Management</h1>
+
+    <!-- Controls for add task, indent and outdent -->
+    <div class="task-controls">
+        <button type="button" onclick="indentSelected()">Indent</button>
+        <button type="button" onclick="outdentSelected()">Outdent</button>
+        <button type="button" onclick="addTaskRow()">Add Task</button>
+    </div>
+
+    <form method="POST" id="projectForm">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Duration</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Progress (%)</th>
+                    <th>Done</th>
+                    <th>Team/Members</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <!-- Example task rows -->
+                <tr data-indent="0" onclick="selectRow(this)">
+                    <td>1</td>
+                    <td contenteditable="true">Task 1</td>
+                    <td contenteditable="true">2Q 1m</td>
+                    <td contenteditable="true">2024-10-01</td>
+                    <td contenteditable="true">2024-12-31</td>
+                    <td><input type="range" min="0" max="100" value="50"></td>
+                    <td><input type="checkbox"></td>
+                    <td contenteditable="true">Team A</td>
+                    <td contenteditable="true">Initial setup</td>
+                </tr>
+                <tr data-indent="0" onclick="selectRow(this)">
+                    <td>2</td>
+                    <td contenteditable="true">Task 2</td>
+                    <td contenteditable="true">1m 10d</td>
+                    <td contenteditable="true">2024-11-01</td>
+                    <td contenteditable="true">2024-12-01</td>
+                    <td><input type="range" min="0" max="100" value="30"></td>
+                    <td><input type="checkbox"></td>
+                    <td contenteditable="true">Team B</td>
+                    <td contenteditable="true">Development phase</td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <script>
+        let selectedRow = null;
+        let taskCounter = 3;  // Incremental task counter
+        const indentSpaces = 4;  // Number of spaces to add for indentation
+
+        // Function to select a row when clicked
+        function selectRow(row) {
+            if (selectedRow) {
+                selectedRow.classList.remove('selected-row');
+            }
+
+            selectedRow = row;
+            selectedRow.classList.add('selected-row');
+        }
+
+        // Function to indent the selected task
+        function indentSelected() {
+            if (!selectedRow) {
+                alert('Please select a task to indent.');
+                return;
+            }
+
+            let indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+            const inputField = selectedRow.querySelector('td[contenteditable="true"]');
+            const currentDescription = inputField.innerText;
+
+            if (indentLevel < 10) {  // Limit to max indent level
+                indentLevel++;
+                selectedRow.setAttribute('data-indent', indentLevel);
+                inputField.innerText = ' '.repeat(indentLevel * indentSpaces) + currentDescription.trim();
+            }
+        }
+
+        // Function to outdent the selected task
+        function outdentSelected() {
+            if (!selectedRow) {
+                alert('Please select a task to outdent.');
+                return;
+            }
+
+            let indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+            const inputField = selectedRow.querySelector('td[contenteditable="true"]');
+            const currentDescription = inputField.innerText;
+
+            if (indentLevel > 0) {  // Limit to min indent level
+                indentLevel--;
+                selectedRow.setAttribute('data-indent', indentLevel);
+                inputField.innerText = ' '.repeat(indentLevel * indentSpaces) + currentDescription.trim();
+            }
+        }
+
+        // Function to add a new task row
+        function addTaskRow() {
+            const taskTableBody = document.getElementById('taskTableBody');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-indent', 0);
+            newRow.setAttribute('onclick', 'selectRow(this)');  // Attach row selection event
+
+            newRow.innerHTML = `
+                <td>${taskCounter}</td>
+                <td contenteditable="true">New Task</td>
+                <td contenteditable="true">1m</td>
+                <td contenteditable="true">2024-01-01</td>
+                <td contenteditable="true">2024-01-31</td>
+                <td><input type="range" min="0" max="100" value="0"></td>
+                <td><input type="checkbox"></td>
+                <td contenteditable="true">Team C</td>
+                <td contenteditable="true">Notes</td>
+            `;
+
+            taskTableBody.appendChild(newRow);
+            taskCounter++;
+        }
+    </script>
+</body>
+</html>

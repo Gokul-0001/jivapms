@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editable Table</title>
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  input[type="text"], input[type="date"], input[type="number"] {
+    border: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .button-container {
+    text-align: right;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="button-container">
+  <button onclick="indent()">Indent</button>
+  <button onclick="outdent()">Outdent</button>
+  <button onclick="addTask()">Add Task</button>
+</div>
+
+<table id="taskTable">
+  <tr>
+    <th>#</th>
+    <th>Description</th>
+    <th>Release</th>
+    <th>Duration</th>
+    <th>Start Date</th>
+    <th>End Date</th>
+    <th>Progress</th>
+    <th>Done</th>
+    <th>Comments</th>
+  </tr>
+</table>
+
+<script>
+function addTask() {
+  const table = document.getElementById("taskTable");
+  const row = table.insertRow(-1);
+  const cellCount = table.rows[0].cells.length;
+
+  for (let i = 0; i < cellCount; i++) {
+    const cell = row.insertCell(i);
+    if (i === 0) {
+      cell.textContent = table.rows.length - 1;
+    } else if (i === 6) { // Progress
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = 0;
+      input.max = 100;
+      input.value = 0;
+      cell.appendChild(input);
+    } else if (i === 7) { // Done
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      cell.appendChild(checkbox);
+    } else {
+      const input = document.createElement('input');
+      input.type = 'text';
+      cell.appendChild(input);
+    }
+  }
+}
+
+function indent() {
+  const table = document.getElementById("taskTable");
+  for (let i = 1; i < table.rows.length; i++) {
+    for (let j = 1; j < table.rows[i].cells.length; j++) {
+      if (table.rows[i].cells[j].children[0]) {
+        table.rows[i].cells[j].children[0].value = "    " + table.rows[i].cells[j].children[0].value;
+      }
+    }
+  }
+}
+
+function outdent() {
+  const table = document.getElementById("taskTable");
+  for (let i = 1; i < table.rows.length; i++) {
+    for (let j = 1; j < table.rows[i].cells.length; j++) {
+      if (table.rows[i].cells[j].children[0] && table.rows[i].cells[j].children[0].value.startsWith("    ")) {
+        table.rows[i].cells[j].children[0].value = table.rows[i].cells[j].children[0].value.substring(4);
+      }
+    }
+  }
+}
+</script>
+</body>
+</html>

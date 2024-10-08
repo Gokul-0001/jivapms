@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Excel-like table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 6px;
+            text-align: left;
+            height: 25px;
+        }
+
+        th:first-child, td:first-child {
+            width: 30px;  /* Slimmer serial number column */
+            text-align: center;
+        }
+
+        /* Editable td cells */
+        td[contenteditable="true"] {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 4px;
+            white-space: nowrap;
+            min-width: 100px;
+        }
+
+        /* Progress sliding bar */
+        input[type="range"] {
+            width: 100%;
+        }
+
+        /* Highlight selected row */
+        .selected-row {
+            background-color: #f0f8ff;
+        }
+
+        /* Top-right controls */
+        .task-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin: 20px 0;
+        }
+
+        .task-controls button {
+            padding: 8px 10px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .task-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Project Task Management</h1>
+
+    <!-- Controls for indent/outdent/add task at the top right -->
+    <div class="task-controls">
+        <button type="button" onclick="indentSelected()">Indent</button>
+        <button type="button" onclick="outdentSelected()">Outdent</button>
+        <button type="button" onclick="addTaskRow()">Add Task</button>
+    </div>
+
+    <!-- Table with tasks and sub-tasks -->
+    <form method="POST" id="projectForm">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Add</th>
+                    <th>Duration</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Progress</th>
+                    <th>Done</th>
+                    
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <!-- Example task with sub-tasks -->
+                <tr data-indent="0">
+                    <td>1</td>
+                    <td contenteditable="true">Task 1</td>
+                    <td><button type="button" onclick="openModal(1)">+</button></td>
+                    <td contenteditable="true">3d</td>
+                    <td contenteditable="true">2024-10-01</td>
+                    <td contenteditable="true">2024-10-04</td>
+                    <td><input type="range" min="0" max="100" value="50"></td>
+                    <td><input type="checkbox"></td>
+                </tr>                
+            </tbody>
+        </table>
+    </form>
+
+    <!-- Modal for Adding Sub-task -->
+    <div id="subTaskModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add Sub-task</h2>
+            <form id="subTaskForm">
+                <label for="subTaskDesc">Sub-task Description:</label>
+                <input type="text" id="subTaskDesc" name="subTaskDesc">
+                <br>
+                <label for="subTaskDuration">Duration:</label>
+                <input type="text" id="subTaskDuration" name="subTaskDuration" placeholder="e.g., 3d">
+                <br>
+                <label for="subTaskStart">Start Date:</label>
+                <input type="date" id="subTaskStart" name="subTaskStart">
+                <br>
+                <label for="subTaskEnd">End Date:</label>
+                <input type="date" id="subTaskEnd" name="subTaskEnd">
+                <br>
+                <button type="button" onclick="addSubTask()">Add Sub-task</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let selectedRow = null;
+        let taskCounter = 3;  // Incremental task counter for new tasks
+        let serialCounter = 3;  // Incremental serial number
+        const indentSpaces = 4;  // Number of spaces to add/remove per indent
+        let parentTaskId = null; // The ID of the parent task for adding sub-tasks
+
+        // Modal functionality
+        function openModal(taskId) {
+            parentTaskId = taskId;
+            document.getElementById("subTaskModal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("subTaskModal").style.display = "none";
+        }
+
+        // Function to add a sub-task
+        function addSubTask() {
+            const subTaskDesc = document.getElementById('subTaskDesc').value;
+            const subTaskDuration = document.getElementById('subTaskDuration').value;
+            const subTaskStart = document.getElementById('subTaskStart').value;
+            const subTaskEnd = document.getElementById('subTaskEnd').value;
+
+            const taskTableBody = document.getElementById('taskTableBody');
+            const parentRow = taskTableBody.querySelector(`tr:nth-child(${parentTaskId})`);
+
+            const newRow = document.createElement('tr');
+            let indentLevel = parseInt(parentRow.getAttribute('data-indent')) + 1;
+            newRow.setAttribute('data-indent', indentLevel);
+
+            newRow.innerHTML = `
+                <td>${serialCounter}</td>
+                <td contenteditable="true">${' '.repeat(indentLevel * indentSpaces)}${subTaskDesc}</td>
+                <td><button type="button" onclick="openModal(${serialCounter})">+</button></td>
+                <td contenteditable="true">${subTaskDuration}</td>
+                <td contenteditable="true">${subTaskStart}</td>
+                <td contenteditable="true">${subTaskEnd}</td>
+                <td><input type="range" min="0" max="100" value="0"></td>
+                <td><input type="checkbox"></td>
+                
+            `;
+
+            taskTableBody.insertBefore(newRow, parentRow.nextSibling);
+            serialCounter++;
+
+            closeModal();  // Close the modal after adding the sub-task
+        }
+
+        // Highlight the selected row when clicked
+        document.getElementById('taskTableBody').addEventListener('click', function(event) {
+            const targetRow = event.target.closest('tr');
+            if (!targetRow) return;
+
+            // Remove selection from the previously selected row
+            if (selectedRow) {
+                selectedRow.classList.remove('selected-row');
+            }
+
+            // Mark the clicked row as selected
+            selectedRow = targetRow;
+            selectedRow.classList.add('selected-row');
+        });
+
+        // Function to indent the selected task
+        function indentSelected() {
+            if (!selectedRow) {
+                alert('Please select a task to indent.');
+                return;
+            }
+
+            let indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+            const inputField = selectedRow.querySelector('td:nth-child(2)'); // The Description column
+            const currentDescription = inputField.innerText;
+
+            if (indentLevel < 10) {  // Limit to max indent level
+                indentLevel++;
+                selectedRow.setAttribute('data-indent', indentLevel);
+                inputField.innerText = ' '.repeat(indentLevel * indentSpaces) + currentDescription.trim();
+            }
+        }
+
+        // Function to outdent the selected task
+        function outdentSelected() {
+            if (!selectedRow) {
+                alert('Please select a task to outdent.');
+                return;
+            }
+
+            let indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+            const inputField = selectedRow.querySelector('td:nth-child(2)'); // The Description column
+            const currentDescription = inputField.innerText;
+
+            if (indentLevel > 0) {  // Limit to min indent level
+                indentLevel--;
+                selectedRow.setAttribute('data-indent', indentLevel);
+                inputField.innerText = ' '.repeat(indentLevel * indentSpaces) + currentDescription.trim();
+            }
+        }
+    </script>
+</body>
+</html>
