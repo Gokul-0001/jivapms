@@ -10,10 +10,7 @@ from app_jivapms.mod_app.all_view_imports import *
 org_admin_str = COMMON_ROLE_CONFIG['ORG_ADMIN']['name']
 project_admin_str = COMMON_ROLE_CONFIG['PROJECT_ADMIN']['name']
 
-# # First, fetch the Role objects for 'Project Admin' and 'Org Admin'
-# project_admin_role = Role.objects.get(name=project_admin_str)  # 'Project Admin'
-# org_admin_role = Role.objects.get(name=org_admin_str)  # 'Org Admin'
-
+# ORGANIZATION ACCESS 
 def org_access_required(allowed_roles=None):
     if allowed_roles is None:
         allowed_roles = ['Org Admin', 'Project Admin']  # Default roles for access

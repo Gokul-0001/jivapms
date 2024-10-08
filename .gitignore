@@ -9,6 +9,7 @@ projects/
 staging/work_area/
 tmp/work_area/
 work_area/
+outcome/
 # Distribution / packaging
 .Python
 
