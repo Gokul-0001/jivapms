@@ -24,7 +24,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_project/breadcrumb_projects.html' %}
+            {% include 'app_organization/mod_projectmembership/breadcrumb_projectmemberships.html' %}
         </div>
     </div>
 </div>
@@ -38,9 +38,9 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">Project</b>
+                                <b class="h5">Project: {{project}} Membership</b>
                                 &nbsp;&nbsp;
-                                Project List
+                                
                                
                             </div>
                             <div class="col col-md-4">
@@ -53,11 +53,11 @@
                                 </form>
                             </div>
                             <div class="col col-md-3 text-end">
-                                <span class="display_count">{{objects_count}} project(s)</span>
+                                <span class="display_count">{{objects_count}} project membership(s)</span>
                                 &nbsp;&nbsp;
                                 {% if relevant_admin %}
-                                <a href="{% url 'create_project' org_id  %}" 
-                                class="btn btn-sm btn-success"><b>+ Create Project</b></a>
+                                <a href="{% url 'create_projectmembership' pro_id  %}" 
+                                class="btn btn-sm btn-success"><b>+ Membership</b></a>
                                 {% endif %}
                             </div>
                         </div>
@@ -70,9 +70,9 @@
                                     <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                 </th>                                
                                 <th width="2%">#</th>
-                                <th>Project</th>
-                                <th width="20%">Description</th>
-                                <th width="10%">Configure</th>
+                                <th>Member</th>
+                                <th width="20%">Project Role</th>
+                                <th width="10%">Team</th>
                                 <th width="50%">                                    
                                     Actions
                                     &nbsp;&nbsp;
@@ -110,39 +110,22 @@
                                 </td>
                                 <td>{{forloop.counter}}</td>
                                 <td width="20%" ondblclick="makeEditable(this)"
-                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Project', 'name')"
-                                ><strong>{{tobject.name}}</strong></td>
+                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Projectmembership', 'member')"
+                                ><strong>{{tobject.member}}</strong></td>
                                 <td width="" ondblclick="makeEditable(this)"
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Project', 'description')"
-                                >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                <td width="20%">
-                                    <!-- ADMINISTRATIVE ACCESS -->
-                                    {% if relevant_admin or is_project_admin %}
-                                    <a href="{% url 'list_teams' org_id %}">Teams</a>
-                                    &nbsp;&nbsp;
-                                    <a href="{% url 'list_memberroles' org_id %}">Member Role</a>
-                                    &nbsp;&nbsp;
-                                    <a href="{% url 'list_projectmemberships' tobject.id %}">Project Membership</a>
-                                    &nbsp;&nbsp;                                    
-                                    <a id="Backlog_super_type" href="{% url 'list_backlog_super_types' tobject.id %}">
-                                        Backlog Super Type
-                                    </a>
-                                    &nbsp;&nbsp;
-                                    <a id="Backlog" href="{% url 'list_backlogs' tobject.id 0 %}">
-                                        Backlog
-                                    </a>
-                                    {% include './connected_projects.html' %}
-                                    {% endif %}
-                                    <!-- ADMINISTRATIVE ACCESS -->
-                                </td>
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Projectmembership', 'project_role')"
+                                >{% if tobject.project_role != None %}{{tobject.project_role}}{% endif %}</td>
+                                <td ondblclick="makeEditable(this)"
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Projectmembership', 'team')"
+                                >{% if tobject.team != None %}{{tobject.team}}{% endif %}</td>
                                 <td width="50%">
-                                    <a href="{% url 'view_project' org_id  tobject.id  %}"
+                                    <a href="{% url 'view_projectmembership' pro_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'edit_project' org_id  tobject.id %}"
+                                    <a href="{% url 'edit_projectmembership' pro_id  tobject.id %}"
                                     class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'delete_project' org_id  tobject.id %}"
+                                    <a href="{% url 'delete_projectmembership' pro_id  tobject.id %}"
                                     class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
                                 </td>
                             </tr>
@@ -161,7 +144,7 @@
 </div>
  <div class="trash-icon">
     {% if deleted_count > 0 %}
-    <a href="{% url 'list_deleted_projects' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+    <a href="{% url 'list_deleted_projectmemberships' pro_id %}"><i class="bi bi-trash-fill"></i></a>    
     {% endif %}
 </div>
 </form>
@@ -184,19 +167,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_projects' org_id %}?page=1&all=5";
+      window.location.href = "{% url 'list_projectmemberships' pro_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_projects' org_id %}?page=1&all=10";
+      window.location.href = "{% url 'list_projectmemberships' pro_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_projects' org_id %}?page=1&all=15";
+      window.location.href = "{% url 'list_projectmemberships' pro_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_projects' org_id  %}?page=1&all=25";
+      window.location.href = "{% url 'list_projectmemberships' pro_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_projects' org_id %}?page=1&all=50";
+      window.location.href = "{% url 'list_projectmemberships' pro_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_projects' org_id %}?page=1&all=100";
+      window.location.href = "{% url 'list_projectmemberships' pro_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_projects' org_id %}?page=1&all=all";
+      window.location.href = "{% url 'list_projectmemberships' pro_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });
@@ -218,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 type: 'POST',
                 data : {
                   'csrfmiddlewaretoken': "{{ csrf_token }}",
-                  'model_name': 'Project',
+                  'model_name': 'Projectmembership',
                   'app_name': 'app_organization',
                   'sorted_list_data': JSON.stringify(arrayOrder),
                   

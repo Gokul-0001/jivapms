@@ -36,14 +36,6 @@ class ProjectRole(BaseModelTrackImpl):
         return self.get_role_type_display()
 
 
-class ProjectMembership(BaseModelTrackImpl):
-    member = models.ForeignKey('app_memberprofilerole.Member', on_delete=models.CASCADE, related_name='project_memberships', null=True, blank=True)
-    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='project_members', null=True, blank=True)
-    project_role = models.ForeignKey('ProjectRole', on_delete=models.CASCADE, null=True, blank=True)  # Role in the project (e.g., 'Project Admin', 'Viewer')
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
-    
-    def __str__(self):
-        return f"{self.member.user.username} in {self.project.name} "
 
 
 """
