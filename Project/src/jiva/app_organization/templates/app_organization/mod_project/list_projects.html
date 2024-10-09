@@ -117,6 +117,8 @@
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%">
                                     <a href="{% url 'list_teams' org_id %}">Teams</a>
+                                    &nbsp;&nbsp;
+                                    <a href="{% url 'list_memberroles' org_id %}">Member Role</a>
                                 </td>
                                 <td width="50%">
                                     <a href="{% url 'view_project' org_id  tobject.id  %}"

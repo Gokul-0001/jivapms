@@ -17,4 +17,5 @@ urlpatterns = [
     path('ajax_get_roles_for_organization/', views_member.ajax_get_roles_for_organization, name='ajax_get_roles_for_organization'),
     
     path('member_admin/<int:org_id>/', views_member.member_admin, name='member_admin'),
+    
 ]

@@ -3,6 +3,8 @@ from app_organization.mod_app.all_model_imports import *
 from app_organization.mod_organization.models_organization import *
 from app_common.mod_common.models_common import *
 
+from app_organization.mod_team.models_team import *
+
 class Project(BaseModelImpl):
     org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="org_projects", null=True, blank=True)
@@ -23,9 +25,9 @@ class ProjectRole(BaseModelTrackImpl):
         ('NoView', 'No View'),
         # Add more roles as needed
     ]
-    role_type = models.CharField(max_length=255, choices=ROLE_CHOICES, default='no_view')
+    role_type = models.CharField(max_length=255, choices=ROLE_CHOICES, default='NoView')
     description = models.TextField(null=True, blank=True)
-    test_field = models.CharField(max_length=255, null=True, blank=True)
+    
    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_project_roles")
@@ -38,7 +40,8 @@ class ProjectMembership(BaseModelTrackImpl):
     member = models.ForeignKey('app_memberprofilerole.Member', on_delete=models.CASCADE, related_name='project_memberships', null=True, blank=True)
     project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='project_members', null=True, blank=True)
     project_role = models.ForeignKey('ProjectRole', on_delete=models.CASCADE, null=True, blank=True)  # Role in the project (e.g., 'Project Admin', 'Viewer')
-
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    
     def __str__(self):
         return f"{self.member.user.username} in {self.project.name} "
 

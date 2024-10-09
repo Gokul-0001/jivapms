@@ -19,12 +19,11 @@
   }
 </style>
 <!-- Begin: Content -->
-<form action="" method="POST">
-{% csrf_token %}
+
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_team/breadcrumb_teams.html' %}
+            {% include 'app_organization/mod_teammember/breadcrumb_teammembers.html' %}
         </div>
     </div>
 </div>
@@ -38,9 +37,9 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">Team</b>
+                                <b class="h4">Team: {{team}}</b>  Member(s)
                                 &nbsp;&nbsp;
-                                Team List
+                                
                                
                             </div>
                             <div class="col col-md-4">
@@ -53,15 +52,15 @@
                                 </form>
                             </div>
                             <div class="col col-md-3 text-end">
-                                <span class="display_count">{{objects_count}} team(s)</span>
+                                <span class="display_count">{{objects_count}} teammember(s)</span>
                                 &nbsp;&nbsp;
-                                {% if relevant_admin %}
-                                <a href="{% url 'create_team' org_id  %}" 
-                                class="btn btn-sm btn-success"><b>+ Create Team</b></a>
-                                {% endif %}
+                                <a href="{% url 'create_teammember' tea_id  %}" 
+                                class="btn btn-sm btn-success"><b>+ Add Team Member</b></a>
                             </div>
                         </div>
                     </div>
+                    <form action="" method="POST">
+                        {% csrf_token %}
                     <table class="table table-bordered sortable_table">
                         <thead>
                             <tr>
@@ -70,8 +69,8 @@
                                     <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                 </th>                                
                                 <th width="2%">#</th>
-                                <th>Team</th>
-                                <th width="20%">Description</th>
+                                <th>Member</th>
+                                <th width="20%">Member Role</th>
                                 <th width="10%">Configure</th>
                                 <th width="50%">                                    
                                     Actions
@@ -110,22 +109,22 @@
                                 </td>
                                 <td>{{forloop.counter}}</td>
                                 <td width="20%" ondblclick="makeEditable(this)"
-                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Team', 'name')"
-                                ><strong>{{tobject.name}}</strong></td>
+                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Teammember', 'member')"
+                                ><strong>{{tobject.member}}</strong></td>
                                 <td width="" ondblclick="makeEditable(this)"
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Team', 'description')"
-                                >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Teammember', 'member_role')"
+                                >{% if tobject.member_role != None %}{{tobject.member_role}}{% endif %}</td>
                                 <td width="20%">
-                                    <a href="{% url 'list_teammembers' tobject.id %}">Members</a>
+                                
                                 </td>
                                 <td width="50%">
-                                    <a href="{% url 'view_team' org_id  tobject.id  %}"
+                                    <a href="{% url 'view_teammember' tea_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'edit_team' org_id  tobject.id %}"
+                                    <a href="{% url 'edit_teammember' tea_id  tobject.id %}"
                                     class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'delete_team' org_id  tobject.id %}"
+                                    <a href="{% url 'delete_teammember' tea_id  tobject.id %}"
                                     class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
                                 </td>
                             </tr>
@@ -144,7 +143,7 @@
 </div>
  <div class="trash-icon">
     {% if deleted_count > 0 %}
-    <a href="{% url 'list_deleted_teams' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+    <a href="{% url 'list_deleted_teammembers' tea_id %}"><i class="bi bi-trash-fill"></i></a>    
     {% endif %}
 </div>
 </form>
@@ -167,19 +166,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_teams' org_id %}?page=1&all=5";
+      window.location.href = "{% url 'list_teammembers' tea_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_teams' org_id %}?page=1&all=10";
+      window.location.href = "{% url 'list_teammembers' tea_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_teams' org_id %}?page=1&all=15";
+      window.location.href = "{% url 'list_teammembers' tea_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_teams' org_id  %}?page=1&all=25";
+      window.location.href = "{% url 'list_teammembers' tea_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_teams' org_id %}?page=1&all=50";
+      window.location.href = "{% url 'list_teammembers' tea_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_teams' org_id %}?page=1&all=100";
+      window.location.href = "{% url 'list_teammembers' tea_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_teams' org_id %}?page=1&all=all";
+      window.location.href = "{% url 'list_teammembers' tea_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });
@@ -201,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 type: 'POST',
                 data : {
                   'csrfmiddlewaretoken': "{{ csrf_token }}",
-                  'model_name': 'Team',
+                  'model_name': 'Teammember',
                   'app_name': 'app_organization',
                   'sorted_list_data': JSON.stringify(arrayOrder),
                   
