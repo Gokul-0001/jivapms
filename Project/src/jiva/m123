@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# M123: python manage.py makemigrations, migrate, runserver
+python manage.py makemigrations
+
+python manage.py migrate
+
+python manage.py runserver

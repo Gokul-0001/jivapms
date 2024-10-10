@@ -9,6 +9,7 @@ from app_common.mod_common.models_common import *
 from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
 
+from app_organization.org_decorators import *
 
 app_name = 'app_organization'
 app_version = 'v1'
@@ -28,6 +29,7 @@ def get_viewable_dicts(user, viewable_flag, first_viewable_flag):
     return viewable_dict, first_viewable_dict
 # ============================================================= #
 @login_required
+@project_related_access_check()
 def list_projectmemberships(request, pro_id):
     # take inputs
     # process inputs
@@ -39,17 +41,16 @@ def list_projectmemberships(request, pro_id):
     selected_bulk_operations = None
     deleted_count = 0
     member = Member.objects.get(user=user, active=True)
-    user_roles = MemberOrganizationRole.objects.filter(member=member)    
+    user_roles = MemberOrganizationRole.objects.filter(member_id=member.id)    
     relevant_admin = user_roles.filter(role__name__in=[org_admin_str, project_admin_str]).exists()
     logger.debug(f">>> === RELEVANT ADMIN: {relevant_admin} === <<<")    
     is_org_admin = user_roles.filter(role__name__in=[org_admin_str]).exists()
     user_memberships = Projectmembership.objects.filter(member=member, active=True)
     is_project_admin = user_memberships.filter(project_role__role_type=PROJECT_ADMIN_ROLE_STR).exists()
-    logger.debug(f">>> === User memberships queryset: {user_memberships.values()} === <<<")
+    
     logger.debug(f">>> === CHECKING1: {user.username} ==> User roles: {user_roles}, Memberships: {user_memberships}, Org Admin: {is_org_admin}, Project Admin: {is_project_admin} === <<<")
  
-    project = Project.objects.get(id=pro_id, active=True, 
-                                                **first_viewable_dict)
+    project = Project.objects.get(id=pro_id, active=True)
     
     search_query = request.GET.get('search', '')
     if search_query:
@@ -142,6 +143,7 @@ def list_projectmemberships(request, pro_id):
 
 # ============================================================= #
 @login_required
+
 def list_deleted_projectmemberships(request, pro_id):
     # take inputs
     # process inputs
@@ -221,6 +223,7 @@ def list_deleted_projectmemberships(request, pro_id):
 
 # Create View
 @login_required
+
 def create_projectmembership(request, pro_id):
     user = request.user
     project = Project.objects.get(id=pro_id, active=True, 
@@ -256,6 +259,7 @@ def create_projectmembership(request, pro_id):
 
 # Edit
 @login_required
+
 def edit_projectmembership(request, pro_id, projectmembership_id):
     user = request.user
     project = Project.objects.get(id=pro_id, active=True, 
@@ -291,6 +295,7 @@ def edit_projectmembership(request, pro_id, projectmembership_id):
 
 
 @login_required
+
 def delete_projectmembership(request, pro_id, projectmembership_id):
     user = request.user
     project = Project.objects.get(id=pro_id, active=True, 
@@ -317,6 +322,7 @@ def delete_projectmembership(request, pro_id, projectmembership_id):
 
 
 @login_required
+
 def permanent_deletion_projectmembership(request, pro_id, projectmembership_id):
     user = request.user
     project = Project.objects.get(id=pro_id, active=True, 
@@ -344,6 +350,7 @@ def permanent_deletion_projectmembership(request, pro_id, projectmembership_id):
 
 
 @login_required
+
 def restore_projectmembership(request,  pro_id, projectmembership_id):
     user = request.user
     object = get_object_or_404(Projectmembership, pk=projectmembership_id, active=False,**viewable_dict)
@@ -354,6 +361,7 @@ def restore_projectmembership(request,  pro_id, projectmembership_id):
 
 
 @login_required
+
 def view_projectmembership(request, pro_id, projectmembership_id):
     user = request.user
     project = Project.objects.get(id=pro_id, active=True, 

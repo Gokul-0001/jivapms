@@ -27,6 +27,7 @@ def get_viewable_dicts(user, viewable_flag, first_viewable_flag):
     return viewable_dict, first_viewable_dict
 # ============================================================= #
 @login_required
+@org_and_pa_only()
 def list_teams(request, org_id):
     # take inputs
     # process inputs
@@ -40,7 +41,7 @@ def list_teams(request, org_id):
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    member = Member.objects.get(user=user, org=organization, active=True)
+    member = Member.objects.get(user=user, active=True)
     user_roles = MemberOrganizationRole.objects.filter(member=member)    
     relevant_admin = user_roles.filter(role__name__in=[org_admin_str, project_admin_str]).exists()
     logger.debug(f">>> === RELEVANT ADMIN: {relevant_admin} === <<<")    
@@ -141,6 +142,7 @@ def list_teams(request, org_id):
 
 # ============================================================= #
 @login_required
+@org_and_pa_only()
 def list_deleted_teams(request, org_id):
     # take inputs
     # process inputs
@@ -220,6 +222,7 @@ def list_deleted_teams(request, org_id):
 
 # Create View
 @login_required
+@org_and_pa_only()
 def create_team(request, org_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -255,6 +258,7 @@ def create_team(request, org_id):
 
 # Edit
 @login_required
+@org_and_pa_only()
 def edit_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -290,6 +294,7 @@ def edit_team(request, org_id, team_id):
 
 
 @login_required
+@org_and_pa_only()
 def delete_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -316,6 +321,7 @@ def delete_team(request, org_id, team_id):
 
 
 @login_required
+@org_and_pa_only()
 def permanent_deletion_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -343,6 +349,7 @@ def permanent_deletion_team(request, org_id, team_id):
 
 
 @login_required
+@org_and_pa_only()
 def restore_team(request,  org_id, team_id):
     user = request.user
     object = get_object_or_404(Team, pk=team_id, active=False,**viewable_dict)
@@ -353,6 +360,7 @@ def restore_team(request,  org_id, team_id):
 
 
 @login_required
+@org_and_pa_only()
 def view_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
