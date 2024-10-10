@@ -1,0 +1,53 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Home Page for {{user.username}}</h1>
+            <p>
+                Access to JivaPMS Platform.
+            </p>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col" style="width: 30%;">Org Name</th>
+                            <th scope="col" style="width: 30%;">Project Name</th>
+                            <th scope="col" style="width: 20%;">Role</th>
+                            <th scope="col" style="width: 30%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in project_details %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>  <!-- Display serial number -->
+                            <td>{{ project.org.name }}</td>
+                            <td>{{ project.project_name }}</td>
+                            <td>{{ project.role }} </td>
+                            <td>
+                                <!-- Example link for viewing the project -->
+                                <!-- Ensure to use Django URL template tag for real URLs -->
+                                <a href="{% url 'view_project' project.org.id project.project_id %}" class="btn btn-primary btn-sm">View</a>
+                                <!-- Add more action buttons as needed -->
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No projects found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% include 'app_jivapms/mod_web/common_files/script.html' %}   
+<!-- End: Content -->
+{% endblock content %}

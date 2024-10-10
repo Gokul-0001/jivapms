@@ -2,7 +2,8 @@
 
 # setup the dev env from prod
 SRC_DIR=../../src
+RUN_DIR=../../run
 DEV_ENV_DIR=../dev_env
 PROJECT_NAME=jiva
 mkdir -p "$DEV_ENV_DIR"/project_area/env_"$PROJECT_NAME"
-cp -rpf "$SRC_DIR"/"$PROJECT_NAME" "$DEV_ENV_DIR"/project_area/env_"$PROJECT_NAME"/"$PROJECT_NAME"
+cp -rpf "$RUN_DIR"/"$PROJECT_NAME" "$DEV_ENV_DIR"/project_area/env_"$PROJECT_NAME"/"$PROJECT_NAME"
