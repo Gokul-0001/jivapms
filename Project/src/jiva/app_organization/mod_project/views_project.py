@@ -353,7 +353,7 @@ def edit_project(request, org_id, project_id):
 
 
 @login_required
-@org_access_required()
+@org_or_project_access_required(project_allowed_roles=[PROJECT_ADMIN_ROLE_STR])
 def delete_project(request, org_id, project_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -381,7 +381,7 @@ def delete_project(request, org_id, project_id):
 
 @login_required
 @org_access_required()
-def permanent_deletion_project(request, org_id, project_id):
+def permanent_deletion_project(request, member, org_membership,  org_id, project_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
@@ -408,7 +408,7 @@ def permanent_deletion_project(request, org_id, project_id):
 
 
 @login_required
-@org_access_required()
+@org_or_project_access_required(project_allowed_roles=[PROJECT_ADMIN_ROLE_STR])
 def restore_project(request,  org_id, project_id):
     user = request.user
     object = get_object_or_404(Project, pk=project_id, active=False,**viewable_dict)
