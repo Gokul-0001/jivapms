@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Home Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #34495e;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f6f9;
+        }
+        td {
+            cursor: pointer;
+        }
+        td[contenteditable="true"] {
+            background-color: #fdfdfd;
+        }
+        .selected-row {
+            background-color: #f0f8ff;
+        }
+        .indent {
+            margin-left: 20px;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.5);
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f2f2f2;
+        }
+        .progress-bar-inner {
+            height: 20px;
+            background-color: #3498db;
+            width: 0;
+        }
+        .roadmap {
+            list-style-type: none;
+            padding: 0;
+        }
+        .roadmap li {
+            margin: 5px 0;
+        }
+        /* Buttons */
+        .button-container {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .btn {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Vision, Mission, Values, Purpose, Strategy, Roadmap sections -->
+    <div class="section">
+        <h1>Project Home</h1>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Vision</h2>
+        <p>To become the global leader in innovative project management solutions.</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Mission</h2>
+        <p>Empowering teams to efficiently plan, execute, and deliver projects on time through collaborative tools.</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Values</h2>
+        <ul>
+            <li>Integrity</li>
+            <li>Transparency</li>
+            <li>Collaboration</li>
+            <li>Excellence</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Purpose</h2>
+        <p>To provide organizations with the tools needed to successfully deliver complex projects with agility and efficiency.</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Strategy</h2>
+        <p>Focus on agile methodologies, real-time collaboration, and scalability for all sizes of organizations.</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Roadmap</h2>
+        <ul class="roadmap">
+            <li>Q1 2024: Launch initial project management tool.</li>
+            <li>Q2 2024: Introduce advanced reporting features.</li>
+            <li>Q3 2024: Expand to include integration with third-party platforms.</li>
+            <li>Q4 2024: Implement AI-driven project recommendations.</li>
+        </ul>
+    </div>
+
+    <!-- Buttons for Indent/Outdent/Add Task -->
+    <div class="button-container">
+        <button class="btn" id="add-task-btn">Add Task</button>
+        <button class="btn" id="indent-task-btn">Indent</button>
+        <button class="btn" id="outdent-task-btn">Outdent</button>
+    </div>
+
+    <!-- Project Tasks Editable Table -->
+    <div class="section">
+        <h2 class="section-title">Project Tasks</h2>
+        <table id="project-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>#</th>
+                    <th>Task</th>
+                    <th>Duration</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Progress</th>
+                    <th>Done</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-indent="0">
+                    <td>1</td>
+                    <td>1</td>
+                    <td contenteditable="true">Project Initialization</td>
+                    <td contenteditable="true">5 days</td>
+                    <td><input type="date"></td>
+                    <td><input type="date"></td>
+                    <td><div class="progress-bar"><div class="progress-bar-inner"></div></div></td>
+                    <td><input type="checkbox" class="done-checkbox"></td>
+                    <td contenteditable="true"></td>
+                </tr>
+                <tr data-indent="0">
+                    <td>2</td>
+                    <td>2</td>
+                    <td contenteditable="true">Requirement Gathering</td>
+                    <td contenteditable="true">10 days</td>
+                    <td><input type="date"></td>
+                    <td><input type="date"></td>
+                    <td><div class="progress-bar"><div class="progress-bar-inner"></div></div></td>
+                    <td><input type="checkbox" class="done-checkbox"></td>
+                    <td contenteditable="true"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- JavaScript for dynamic indent/outdent, add task, row selection, and progress calculation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const table = document.getElementById('project-table');
+            const doneCheckboxes = document.querySelectorAll('.done-checkbox');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const indentTaskBtn = document.getElementById('indent-task-btn');
+            const outdentTaskBtn = document.getElementById('outdent-task-btn');
+            let selectedRow = null;
+
+            doneCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', handleProgressUpdate);
+            });
+
+            // Row selection and highlight
+            table.addEventListener('click', function(e) {
+                const tr = e.target.closest('tr');
+                if (tr) {
+                    selectRow(tr);
+                }
+            });
+
+            function selectRow(row) {
+                if (selectedRow) {
+                    selectedRow.classList.remove('selected-row');
+                }
+                selectedRow = row;
+                selectedRow.classList.add('selected-row');
+            }
+
+            function handleProgressUpdate() {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const checkbox = row.querySelector('.done-checkbox');
+                    const progressBarInner = row.querySelector('.progress-bar-inner');
+                    if (checkbox.checked) {
+                        progressBarInner.style.width = '100%';
+                    } else {
+                        progressBarInner.style.width = '0';
+                    }
+                });
+                calculateParentProgress();
+            }
+
+            function calculateParentProgress() {
+                // Logic for calculating parent progress based on child task completion
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const indentLevel = parseInt(row.getAttribute('data-indent'));
+                    const nextRow = row.nextElementSibling;
+                    if (nextRow && parseInt(nextRow.getAttribute('data-indent')) > indentLevel) {
+                        // This is a parent row, calculate child progress
+                        let childTasks = 0;
+                        let completedTasks = 0;
+
+                        let nextIndentLevel = indentLevel + 1;
+                        let currentRow = nextRow;
+
+                        while (currentRow && parseInt(currentRow.getAttribute('data-indent')) === nextIndentLevel) {
+                            childTasks++;
+                            if (currentRow.querySelector('.done-checkbox').checked) {
+                                completedTasks++;
+                            }
+                            currentRow = currentRow.nextElementSibling;
+                        }
+
+                        const parentProgress = (completedTasks / childTasks) * 100;
+                        row.querySelector('.progress-bar-inner').style.width = `${parentProgress}%`;
+                    }
+                });
+            }
+
+            // Add Task
+            addTaskBtn.addEventListener('click', function () {
+                const newRow = table.insertRow();
+                const lastId = table.querySelectorAll('tbody tr').length;
+                newRow.innerHTML = `
+                    <td>${lastId}</td>
+                    <td>${lastId}</td>
+                    <td contenteditable="true">New Task</td>
+                    <td contenteditable="true">5 days</td>
+                    <td><input type="date"></td>
+                    <td><input type="date"></td>
+                    <td><div class="progress-bar"><div class="progress-bar-inner"></div></div></td>
+                    <td><input type="checkbox" class="done-checkbox"></td>
+                    <td contenteditable="true"></td>
+                `;
+                newRow.setAttribute('data-indent', '0');
+                newRow.querySelector('.done-checkbox').addEventListener('change', handleProgressUpdate);
+            });
+
+            // Indent Task
+            indentTaskBtn.addEventListener('click', function () {
+                if (selectedRow) {
+                    const indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+                    selectedRow.setAttribute('data-indent', indentLevel + 1);
+                    updateIndentDisplay(selectedRow);
+                }
+            });
+
+            // Outdent Task
+            outdentTaskBtn.addEventListener('click', function () {
+                if (selectedRow) {
+                    const indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+                    if (indentLevel > 0) {
+                        selectedRow.setAttribute('data-indent', indentLevel - 1);
+                        updateIndentDisplay(selectedRow);
+                    }
+                }
+            });
+
+            function updateIndentDisplay(row) {
+                const indentLevel = parseInt(row.getAttribute('data-indent'));
+                const taskCell = row.cells[2];
+                taskCell.style.paddingLeft = (indentLevel * 20) + 'px';
+            }
+        });
+    </script>
+
+</body>
+</html>

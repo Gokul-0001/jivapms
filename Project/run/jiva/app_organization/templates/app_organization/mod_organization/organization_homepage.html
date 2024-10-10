@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ organization.name }} - Organization Home</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script type="module">
+            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+        <style>
+            [contenteditable="true"]:hover {
+                border: 1px dashed #ccc;
+                background-color: #f9f9f9;
+            }
+        </style>
+    </head>
+    
+<body>
+<div class="container mt-5">
+    <h1 class="text-center">Organization: {{ organization.name }}</h1>
+    <div class="container-fluid-width">
+        <div class="col-md-4">
+            <a href="{% url 'list_organizations' %}">Organizations</a>
+        </div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4"></div>
+    </div>
+    <table class="table table-bordered mt-4">
+        <!-- <thead class="thead-dark">
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        </thead> -->
+        <tbody>
+        <tr>
+            <td><b>Name</b></td>
+            <td  id="org-name"
+            ondblclick="makeEditable(this)"
+            onblur="save_element_text(this,  'app_organization', 'Organization', '{{ organization.id }}', 'org', 'Organizationdetail', 'name')"
+            >{{ organization.name }}</td>
+        </tr>
+        <tr>
+            <td><b>Vision</b></td>
+            <td contenteditable="true" id="org-vision"
+            ondblclick="makeEditable(this)"
+            onblur="save_element_text(this, 'app_organization', 'Organization', '{{ organization.id }}','org', 'Organizationdetail',  'vision')"
+            >{{ org_detail.vision }}</td>
+        </tr>
+        <tr>
+            <td><b>Mission</b></td>
+            <td contenteditable="true" id="org-mission"
+            ondblclick="makeEditable(this)"
+            onblur="save_element_text(this, 'app_organization', 'Organization', '{{ organization.id }}','org', 'Organizationdetail',  'mission')"
+            >{{ org_detail.mission }}</td>
+        </tr>
+        <tr>
+            <td><b>Values</b></td>
+            <td contenteditable="true" id="org-values"
+            ondblclick="makeEditable(this)"
+            onblur="save_element_text(this, 'app_organization', 'Organization', '{{ organization.id }}','org', 'Organizationdetail',  'values')"
+            >{{ org_detail.values }}</td>
+        </tr>
+        <tr>
+            <td><b>Strategy</b></td>
+            <td contenteditable="true" id="org-strategy"
+            ondblclick="makeEditable(this)"
+            onblur="save_element_text(this, 'app_organization', 'Organization', '{{ organization.id }}','org', 'Organizationdetail',  'strategy')"
+            >{{ org_detail.strategy }}</td>
+        </tr>
+        <tr>
+            <td><b>Roadmap</b></td>
+            <td contenteditable="true" id="org-roadmap"
+            ondblclick="makeEditable(this)"
+            onblur="save_element_text(this, 'app_organization', 'Organization', '{{ organization.id }}','org', 'Organizationdetail',  'roadmap_description')"
+            >{{ org_detail.roadmap_description }}</td>
+        </tr>
+        <tr>
+            <td><b>Visual Roadmap</b>
+            <br>
+            <a href="{% url 'list_roadmapitems' organization.id %}">Update</a>
+            </td>
+            <td id="visual_roadmap">
+                <h3 class="mt-5">Roadmap (1-3 Years)</h3>
+                <div class="mermaid">
+                    {{ roadmap|safe }}
+                </div>
+
+                <hr>
+
+
+                <div class="mermaid">
+                    gantt
+                        title Organizational Roadmap
+                        dateFormat  YYYY-MM-DD
+                        section Year 1 - Foundations
+                        Define strategy       :done, 2024-01-01, 2024-04-01
+                        UX/UI revamp          :active, 2024-03-01, 2024-06-01
+                        Product MVP launch    :crit, 2024-06-01, 2024-09-01
+                        section Year 2 - Expansion
+                        Increase team size    :2024-10-01, 2025-01-01
+                        Expand features       :2025-01-01, 2025-04-01
+                        Customer acquisition  :2025-04-01, 2025-07-01
+                        section Year 3 - Maturity
+                        Scaling operations    :2025-08-01, 2026-01-01
+                        Global expansion      :2026-01-01, 2026-04-01
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3 class="mt-5">Projects</h3>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th width="2%">#</th>
+            <th>Project Name</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for project in projects %}
+        <tr>
+            <td width="2%">{{forloop.counter}}</td>
+            <td>{{ project.name }}</td>
+            <td>{{ project.description }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2" class="text-center">No projects available.</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary" onclick="saveChanges()">Save Changes</button>
+</div>
+
+<script>
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
+    }
+
+
+    function save_element_text(element, appName, parentModelName, parentId, parentModelKey, childModelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_related_model/',
+            type: 'POST',
+            data : {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'app_name': appName,
+            'parent_model': parentModelName,
+            'parent_id': parentId,
+            'parent_model_key': parentModelKey,
+            'child_model': childModelName,
+            'field_name': fieldName,
+            'text': element.textContent, 
+
+            },
+            dataType: 'json',
+            success: function(data) {
+            console.log(data);
+            }
+        })
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</body>
+</html>

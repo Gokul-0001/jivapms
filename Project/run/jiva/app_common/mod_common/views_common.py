@@ -66,6 +66,67 @@ def ajax_save_element_text(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 @login_required
+def ajax_save_related_model(request):
+    if request.method == 'POST':
+        text_data = request.POST.get('text')  # New text data to be saved
+        parent_object_id = request.POST.get('parent_id')  # ID of the parent object (e.g., Organization)
+        parent_model_name = request.POST.get('parent_model')  # Model name of the parent object (e.g., Organization)
+        parent_model_key = request.POST.get('parent_model_key')  # Field name to link the parent object (e.g., 'organization')
+        child_model_name = request.POST.get('child_model')  # Model name of the child object (e.g., OrganizationDetail)
+        field_name = request.POST.get('field_name')  # Field name to update
+        app_name = request.POST.get('app_name')  # App name
+
+        try:
+            # Step 1: Get the parent model class dynamically
+            parent_model_class = apps.get_model(app_name, parent_model_name)
+            print(f"Parent model class found: {parent_model_class}")
+
+            # Step 2: Fetch the parent object (e.g., Organization)
+            parent_obj = parent_model_class.objects.get(id=parent_object_id)
+            print(f"Parent object found: {parent_obj}")
+
+            # Step 3: Get the child model class dynamically
+            child_model_class = apps.get_model(app_name, child_model_name)
+            print(f"Child model class found: {child_model_class}")
+
+            # Step 4: Check if the child object exists for the given parent
+            # Assuming there is a ForeignKey or OneToOneField from OrganizationDetail to Organization
+            kwargs = {parent_model_key: parent_obj}
+            child_obj, created = child_model_class.objects.get_or_create(**kwargs)  # Assuming 'organization' is the ForeignKey
+
+            if created:
+                print(f"New {child_model_name} object created for Parent ID {parent_object_id}")
+            else:
+                print(f"{child_model_name} object exists for Parent ID {parent_object_id}")
+
+            # Step 5: Update the specific field in the child object
+            if hasattr(child_obj, field_name):
+                setattr(child_obj, field_name, text_data)
+                child_obj.save()
+                print(f"{field_name} updated for {child_model_name} object.")
+                return JsonResponse({'status': 'success', 'created': created, 'updated_records': 1})
+            else:
+                return JsonResponse({'status': 'error', 'message': f"Field '{field_name}' not found in model '{child_model_name}'."})
+
+        except parent_model_class.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': f'{parent_model_name} not found.'})
+        except child_model_class.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': f'{child_model_name} not found.'})
+        except LookupError:
+            return JsonResponse({'status': 'error', 'message': 'Model not found.'})
+        except IntegrityError as e:
+            print(f"IntegrityError: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': str(e)})
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+
+
+@login_required
 def ajax_update_task_done_state(request):
     if request.method == 'POST':
         user = request.user

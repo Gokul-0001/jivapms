@@ -9,4 +9,5 @@ urlpatterns = [
     path('ajax_update_model_list_sorted/', views_common.ajax_update_model_list_sorted, name='ajax_update_model_list_sorted'),
     path('ajax_save_element_text/', views_common.ajax_save_element_text, name='ajax_save_element_text'),
     path('ajax_update_task_done_state/', views_common.ajax_update_task_done_state, name='ajax_update_task_done_state'),
+    path('ajax_save_related_model/', views_common.ajax_save_related_model, name='ajax_save_related_model'),
 ]

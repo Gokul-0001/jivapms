@@ -5,6 +5,8 @@ from app_organization.mod_organization import views_organization
 
 urlpatterns = [
     # app_organization/organizations: DB/Model: Organization
+    path('ajax_update_org_details/<int:org_id>/', views_organization.ajax_update_org_details, name='ajax_update_org_details'),
+    path('org_homepage/<int:org_id>/', views_organization.org_homepage, name='org_homepage'),
     path('list_organizations/', views_organization.list_organizations, name='list_organizations'),
     path('list_deleted_organizations/', views_organization.list_deleted_organizations, name='list_deleted_organizations'),
     path('create_organization/', views_organization.create_organization, name='create_organization'),

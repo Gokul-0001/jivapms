@@ -8,21 +8,13 @@
 {% block content %}
 
 {% include 'app_common/common_files/navbar.html' %}
-<style>
-  .trash-icon {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    font-size: 24px;  /* Size of the icon */
-    cursor: pointer;
-    color: #707070;  /* Color of the icon */
-  }
-</style>
+<form action="" method="POST">
+{% csrf_token %}
 <!-- Begin: Content -->
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_organization/breadcrumb_organizations.html' %}
+            {% include 'app_organization/mod_roadmapitem/breadcrumb_roadmapitems.html' %}
         </div>
     </div>
 </div>
@@ -35,45 +27,31 @@
                 <div class="col col-md-12">
                     <div class="container-fluid-width">
                         <div class="row pb-2">
-                            <div class="col col-md-5">
-                                <b class="h2">Organization</b>
+                            <div class="col col-md-8">
+                                <b class="h2">Roadmapitem</b>
                                 &nbsp;&nbsp;
-                                Organization List
-                               
+                                {{org}}/Roadmapitem Deleted List
                             </div>
-                            <div class="col col-md-4">
-                                <form method="get">
-                                    <input type="text" name="search" placeholder="Search" value="{{ search }}">
-                                    &nbsp;&nbsp;  
-                                    <button type="submit" class="btn btn-sm btn-primary">Search</button> 
-                                    &nbsp;&nbsp;  
-                                    <button type="submit" class="btn btn-sm btn-info">Clear</button>   
-                                </form>
-                            </div>
-                            <div class="col col-md-3 text-end">
-                                <span class="display_count">{{objects_count}} organization(s)</span>
+                            <div class="col col-md-4 text-end">
+                                <span class="display_count">{{objects_count}} roadmapitem(s)</span>
                                 &nbsp;&nbsp;
-                                {% if relevant_admin %} 
-                                <a href="{% url 'create_organization'   %}" 
-                                class="btn btn-sm btn-success"><b>+ Create Organization</b></a>
-                                {% endif %}
+                                <a href="{% url 'create_roadmapitem' org_id  %}" 
+                                class="btn btn-sm btn-success"><b>+ Create Roadmapitem</b></a>
                             </div>
                         </div>
                     </div>
-                    <form method="post">
-                    {% csrf_token %}
                     <table class="table table-bordered sortable_table">
                         <thead>
                             <tr>
                                 <th width="2%"><i class="bi bi-grip-vertical"></i></th>
                                 <th width="2%">
                                     <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
-                                </th>  
+                                </th>
                                 <th width="2%">#</th>
-                                <th>Organization</th>
+                                <th>Roadmapitem</th>
                                 <th width="20%">Description</th>
                                 <th width="10%">Configure</th>
-                                <th width="50%">                                    
+                                 <th width="50%">                                    
                                     Actions
                                     &nbsp;&nbsp;
                                     <select name="pagination" id="paginationselect">
@@ -84,15 +62,14 @@
                                             </option>
                                         {% endfor %}
                                     </select>
+                                    
                                     &nbsp;&nbsp;
                                     <b>Bulk:</b>&nbsp;&nbsp; 
                                     <select name="bulk_operations" id="bulk_operations"  onchange="this.form.submit()">
                                         <option value="none" {% if 'none' in selected_bulk_operations %}selected{% endif %}>-- Ops --</option>
-                                        <option value="bulk_done" {% if 'bulk_done' in selected_bulk_operations %}selected{% endif %}>Done</option>
-                                        <option value="bulk_not_done" {% if 'bulk_not_done' in selected_bulk_operations %}selected{% endif %}>Not Done</option>
-                                        <option value="bulk_blocked" {% if 'bulk_blocked' in selected_bulk_operations %}selected{% endif %}>Blocked</option>
-                                        <option value="bulk_delete" {% if 'bulk_delete' in selected_bulk_operations %}selected{% endif %}>Delete</option>
-                                    </select>                  
+                                        <option value="bulk_restore" {% if 'bulk_restore' in selected_bulk_operations %}selected{% endif %}>Restore</option>
+                                        <option value="bulk_erase" {% if 'bulk_erase' in selected_bulk_operations %}selected{% endif %}>Erase</option>
+                                    </select>                                                         
                                 </th>
                             </tr>
                         </thead>
@@ -107,26 +84,23 @@
                                     <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                 </td>
                                 <td>{{forloop.counter}}</td>
-                                <td width="20%" ondblclick="makeEditable(this)"
-                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Organization', 'name')"
-                                ><strong>{{tobject.name}}</strong></td>
-                                <td width="" ondblclick="makeEditable(this)"
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Organization', 'description')"
-                                >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
+                                <td width="20%"><strong>{{tobject.name}}</strong></td>
+                                <td width="">{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%">
-                                    {% include './connected_organizations.html' %}
+                                
                                 </td>
                                 <td width="50%">
-                                    <a href="{% url 'org_homepage'   tobject.id  %}"
-                                    class="btn btn-sm btn-primary"><i class="bi bi-bank"></i></a>
-                                    <a href="{% url 'view_organization'   tobject.id  %}"
+                                    <a href="{% url 'view_roadmapitem' org_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'edit_organization'   tobject.id %}"
+                                    <a href="{% url 'edit_roadmapitem' org_id  tobject.id %}"
                                     class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'delete_organization'   tobject.id %}"
+                                    <a href="{% url 'permanent_deletion_roadmapitem' org_id  tobject.id %}"
                                     class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
+                                     &nbsp;&nbsp;
+                                    <a href="{% url 'restore_roadmapitem' org_id  tobject.id %}"
+                                    class="btn btn-sm btn-success"><i class="bi bi-x-square"></i></a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -141,11 +115,6 @@
         </div>
     </div>
   
-</div>
-<div class="trash-icon">
-    {% if deleted_count > 0 %}
-    <a href="{% url 'list_deleted_organizations' %}"><i class="bi bi-trash-fill"></i></a>    
-    {% endif %}
 </div>
 </form>
 <script>
@@ -167,19 +136,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_organizations'  %}?page=1&all=5";
+      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_organizations'  %}?page=1&all=10";
+      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_organizations'  %}?page=1&all=15";
+      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_organizations'   %}?page=1&all=25";
+      window.location.href = "{% url 'list_roadmapitems' org_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_organizations'  %}?page=1&all=50";
+      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_organizations'  %}?page=1&all=100";
+      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_organizations'  %}?page=1&all=all";
+      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });
@@ -201,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 type: 'POST',
                 data : {
                   'csrfmiddlewaretoken': "{{ csrf_token }}",
-                  'model_name': 'Organization',
+                  'model_name': 'Roadmapitem',
                   'app_name': 'app_organization',
                   'sorted_list_data': JSON.stringify(arrayOrder),
                   
@@ -213,34 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
               })
             }
     });
-</script>
+    </script>
 
-<script>
-    function makeEditable(element) {
-        element.contentEditable = true;
-        element.focus();
-    }
-
-
-    function save_element_text(element, id,  appName, modelName, fieldName) {
-        element.contentEditable = false;
-        $.ajax({
-            url: '/common/common_ajax/ajax_save_element_text/',
-            type: 'POST',
-            data : {
-            'csrfmiddlewaretoken': "{{ csrf_token }}",
-            'model_name': modelName,
-            'app_name': appName,
-            'field_name': fieldName,
-            'text': element.textContent, 
-            'id': id,
-            },
-            dataType: 'json',
-            success: function(data) {
-            console.log(data);
-            }
-        })
-    }
-</script>
 <!-- End: Content -->
 {% endblock content %}
