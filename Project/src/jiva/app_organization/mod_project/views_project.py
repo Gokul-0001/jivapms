@@ -2,16 +2,12 @@
 from app_organization.mod_app.all_view_imports import *
 from app_organization.mod_project.models_project import *
 from app_organization.mod_project.forms_project import *
-
+from app_common.mod_app.all_view_imports import *
 from app_organization.mod_organization.models_organization import *
-
 from app_common.mod_common.models_common import *
-
 from app_memberprofilerole.mod_role.models_role import *
 from app_jivapms.mod_app.all_view_imports import *
-
 from app_organization.org_decorators import *
-
 from app_organization.mod_projectmembership.models_projectmembership import *
 
 app_name = 'app_organization'
@@ -44,35 +40,52 @@ def list_projects(request, org_id):
 
     # Fetch the organization
     organization = get_object_or_404(Organization, id=org_id, active=True)
-    member = Member.objects.get(user=user, org=organization, active=True)
-    user_roles = MemberOrganizationRole.objects.filter(member=member)    
-    relevant_admin = user_roles.filter(role__name__in=[org_admin_str, project_admin_str]).exists()
-    logger.debug(f">>> === RELEVANT ADMIN: {relevant_admin} === <<<")    
-    is_org_admin = user_roles.filter(role__name__in=[org_admin_str]).exists()
-    user_memberships = Projectmembership.objects.filter(project__org=organization, member=member, active=True)
-    is_project_admin = user_memberships.filter(project_role__role_type=PROJECT_ADMIN_ROLE_STR).exists()
-    logger.debug(f">>> === User memberships queryset: {user_memberships.values()} === <<<")
-    logger.debug(f">>> === CHECKING1: {user.username} ==> User roles: {user_roles}, Memberships: {user_memberships}, Org Admin: {is_org_admin}, Project Admin: {is_project_admin} === <<<")
- 
+    memberships = Member.objects.filter(user=user, active=True)
+    logger.debug(f">>> === PROJECT ENTRY LIST PROJECTS: {user.username} ==> User roles: {organization} === <<<")
+    org_admin_roles = MemberOrganizationRole.objects.filter(
+        member__in=memberships,
+        role__name=org_admin_str
+    )
+    logger.debug(f">>> === OrgAdmin: org_admin_roles:{org_admin_roles} === <<<")
+    is_org_admin = org_admin_roles.exists()
+    is_project_admin = False
+    user_memberships = None
+    relevant_admin = False
     # Filter projects based on user access
     if is_org_admin:
-        # Org admins can see all active projects in the organization
-        tobjects = Project.objects.filter(active=True, org_id=org_id)
-        logger.debug(f">>> === Projects:{tobjects} === <<<")
-    else:
-        # Filter projects where the user has specific project membership (Viewer, Editor, Admin)
+        # Org admins can see all active projects in the organizations they manage
+        org_ids = org_admin_roles.values_list('org_id', flat=True).distinct()
+        # Query to fetch all active projects in these organizations
         tobjects = Project.objects.filter(
-            id__in=user_memberships.values_list('project_id', flat=True),
-            active=True,
-            org_id=org_id
-        )
-    logger.debug(f">>> === Projects:{tobjects} === <<<")
+            org_id=org_id,
+            active=True
+        ).order_by('position')
+        
+    else:
+        role_ids = ProjectRole.objects.filter(active=True).values_list('id', flat=True)
+        # Filter projects based on specific project memberships (Admin, Viewer, Editor)
+        # Adjusted query to use the correct related_name 'project_members'
+        tobjects = Project.objects.filter(
+            project_members__member__in=memberships,
+            project_members__project_role_id__in=role_ids,
+            project_members__active=True,
+            org_id=org_id,
+            active=True
+        ).distinct().order_by('position')
+        if tobjects.exists():
+            is_project_admin = True
+
+    logger.debug(f">>> === limited not OA Projects:{tobjects} === <<<")
+    
+    # Relevant admin
+    relevant_admin = is_org_admin or is_project_admin
+    
     # Process search query
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = tobjects.filter(name__icontains=search_query).order_by('position')
     else:
-        tobjects = tobjects.order_by('position')
+        #tobjects = tobjects.order_by('position')
         deleted = Project.objects.filter(active=False, org_id=org_id)
         deleted_count = deleted.count()
 
@@ -134,7 +147,6 @@ def list_projects(request, org_id):
         'is_org_admin': is_org_admin,
         'is_project_admin': is_project_admin,
         'relevant_admin': relevant_admin,
-        'user_roles': user_roles,
         'user_memberships': user_memberships,
     }
 
@@ -155,6 +167,29 @@ def list_deleted_projects(request, org_id):
     selected_bulk_operations = None
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
+    # Fetch the organization
+    member = Member.objects.get(user=user, org=organization, active=True)
+    user_roles = MemberOrganizationRole.objects.filter(member=member)    
+    relevant_admin = user_roles.filter(role__name__in=[org_admin_str, project_admin_str]).exists()
+    logger.debug(f">>> === RELEVANT ADMIN: {relevant_admin} === <<<")    
+    is_org_admin = user_roles.filter(role__name__in=[org_admin_str]).exists()
+    user_memberships = Projectmembership.objects.filter(project__org=organization, member=member, active=True)
+    is_project_admin = user_memberships.filter(project_role__role_type=PROJECT_ADMIN_ROLE_STR).exists()
+    logger.debug(f">>> === User memberships queryset: {user_memberships.values()} === <<<")
+    logger.debug(f">>> === CHECKING1: {user.username} ==> User roles: {user_roles}, Memberships: {user_memberships}, Org Admin: {is_org_admin}, Project Admin: {is_project_admin} === <<<")
+    # Filter projects based on user access
+    if is_org_admin:
+        # Org admins can see all active projects in the organization
+        tobjects = Project.objects.filter(active=True, org_id=org_id)
+        logger.debug(f">>> === Projects:{tobjects} === <<<")
+    else:
+        # Filter projects where the user has specific project membership (Viewer, Editor, Admin)
+        tobjects = Project.objects.filter(
+            id__in=user_memberships.values_list('project_id', flat=True),
+            active=True,
+            org_id=org_id
+        )
+    logger.debug(f">>> === Projects:{tobjects} === <<<")
     
     search_query = request.GET.get('search', '')
     if search_query:
@@ -215,6 +250,11 @@ def list_deleted_projects(request, org_id):
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Project List',
+        'is_org_admin': is_org_admin,
+        'is_project_admin': is_project_admin,
+        'relevant_admin': relevant_admin,
+        'user_roles': user_roles,
+        'user_memberships': user_memberships,
     }       
     template_file = f"{app_name}/{module_path}/list_deleted_projects.html"
     return render(request, template_file, context)

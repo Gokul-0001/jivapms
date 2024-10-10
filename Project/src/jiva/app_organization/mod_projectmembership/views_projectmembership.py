@@ -6,7 +6,7 @@ from app_memberprofilerole.mod_member.models_member import *
 from app_organization.mod_project.models_project import *
 
 from app_common.mod_common.models_common import *
-
+from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
 
 

@@ -1,8 +1,12 @@
 
 from app_organization.mod_app.all_view_imports import *
-from app_organization.mod_organization.models_organization import *
 from app_organization.mod_organization.forms_organization import *
-
+from app_organization.mod_organization.models_organization import *
+from app_common.mod_common.models_common import *
+from app_memberprofilerole.mod_role.models_role import *
+from app_jivapms.mod_app.all_view_imports import *
+from app_organization.org_decorators import *
+from app_organization.mod_projectmembership.models_projectmembership import *
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -32,6 +36,56 @@ def list_organizations(request):
     selected_bulk_operations = None
     search_query = request.GET.get('search', '')
     deleted_count = 0
+    relevant_admin = False
+    is_org_admin = False
+    # Fetch all active memberships for the user across any organization
+    memberships = Member.objects.filter(user=user, active=True)
+    is_site_admin = MemberOrganizationRole.objects.filter(member__in=memberships, role__name=site_admin_str).exists()
+    # Filter organizations based on user access
+    if is_site_admin:
+        # Org admins can see all active organizations in the site
+        tobjects = Organization.objects.filter(active=True)        
+        logger.debug(f">>> === SiteAdmin: all: Organizations:{tobjects} === <<<")
+    else:
+        # Fetch all orgs where user is an org admin through any of their memberships
+        logger.debug(f">>> === OrgAdmin: memberships:{memberships} === <<<")
+        org_admin_roles = MemberOrganizationRole.objects.filter(
+            member__in=memberships,
+            role__name=org_admin_str
+        )
+        logger.debug(f">>> === OrgAdmin: org_admin_roles:{org_admin_roles} === <<<")
+        is_org_admin = org_admin_roles.exists()
+        
+        
+        # Check for project admin privileges if not an org admin
+        if is_org_admin:
+            # Extract organization IDs where user is an org admin
+            org_ids = org_admin_roles.values_list('org_id', flat=True).distinct()
+            logger.debug(f">>> === OrgAdmin: is_org_admin: {is_org_admin}, org_ids:{org_ids} === <<<")
+            logger.debug(f">>> ===  org_ids:{org_ids} === <<<")
+            # Filter  organizations where the user has specific site membership (Viewer, Editor, Admin)
+            # Fetch organizations based on the org admin role
+            tobjects = Organization.objects.filter(id__in=org_ids, active=True).order_by('position')
+            logger.debug(f">>> === OrgAdmin Limited Access: Organizations:{tobjects} === <<<")
+        else:            
+            project_admin_roles = MemberOrganizationRole.objects.filter(
+                member__in=memberships,
+                role__name=project_admin_str
+            )
+            is_project_admin = project_admin_roles.exists()
+            project_org_ids = project_admin_roles.values_list('org_id', flat=True).distinct()
+            
+            if is_project_admin:
+                # Fetch organizations based on the project admin role
+                tobjects = Organization.objects.filter(id__in=project_org_ids, active=True)
+                logger.debug(f">>> === ProjectAdmin Limited Access: Organizations:{project_org_ids} === <<<")
+            else:
+                # If the user is neither an org admin nor a project admin
+                tobjects = []
+                logger.debug(">>> === User has no admin privileges in any organization === <<<")
+    
+    
+    relevant_admin = is_site_admin or is_org_admin
     
     if search_query:
         tobjects = Organization.objects.filter(name__icontains=search_query, 
@@ -39,7 +93,7 @@ def list_organizations(request):
         deleted = Organization.objects.filter(active=False, deleted=False,**viewable_dict).order_by('position')
         deleted_count = deleted.count()
     else:
-        tobjects = Organization.objects.filter(active=True).order_by('position')
+        #tobjects = Organization.objects.filter(active=True).order_by('position')
         deleted = Organization.objects.filter(active=False, deleted=False,**viewable_dict).order_by('position')
         deleted_count = deleted.count()
     
@@ -107,6 +161,9 @@ def list_organizations(request):
         'selected_bulk_operations': selected_bulk_operations,
 
         'page_title': f'Organization List',
+        'relevant_admin': relevant_admin,
+        'is_org_admin': is_org_admin,
+        'is_site_admin': is_site_admin,
     }       
     template_file = f"{app_name}/{module_path}/list_organizations.html"
     return render(request, template_file, context)
@@ -205,6 +262,11 @@ def create_organization(request):
         if form.is_valid():
             form.instance.author = user
             form.save()
+            member = Member.objects.filter(user=user, active=True).first()
+            member_create, created = MemberOrganizationRole.objects.get_or_create(member=member, 
+                                                                                  org=form.instance, 
+                                                                                  role=Role.objects.get(name=org_admin_str))
+            logger.debug(f">>> === member_create: {member_create} === <<<")
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('list_organizations')

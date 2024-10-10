@@ -2,6 +2,7 @@ from app_web.mod_app.all_view_imports import *
 from app_memberprofilerole.mod_app.all_model_imports import *
 from app_memberprofilerole.mod_member.models_member import *
 
+from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
 
 app_name = "app_jivapms"
@@ -11,6 +12,77 @@ module_dirname = "mod_web"
 from app_jivapms.mod_web.helper_web import *
 from app_jivapms.mod_web.views_ajax_web import *
 # Create your views here.
+# def index(request):
+#     user = request.user
+#     context = {
+#         'parent_page': 'home',
+#         'page': 'index',
+#         'page_title': 'Home Page',
+#         'user': user,
+#         'roles': [],
+#         'member': None,
+#         'super_user': False,
+#         'multiple_roles': False,
+#         'no_of_roles': 0,
+#         'user_roles_data': [],
+#         'anonymous': False,
+#     }
+
+#     if user.is_authenticated:
+#         logger.debug(f"User authenticated: {user.id}")
+#         if user.is_superuser:
+#             context['super_user'] = True
+#             context['role'] = COMMON_ROLE_CONFIG["SUPER_USER"]["name"]
+#         else:
+#             try:
+#                 member = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').get(user=user)
+#                 roles = member.member_roles.filter(active=True)
+
+#                 # Prepare user role data
+#                 user_data = {
+#                     'member_id': member.id,
+#                     'username': member.user.username if member.user else 'Unknown User',
+#                     'roles': []
+#                 }
+
+#                 for role in roles:
+#                     role_data = {
+#                         'org_id': role.org.id if role.org else None,
+#                         'role_id': role.role.id if role.role else None,
+#                         'role_name': role.role.name if role.role else 'No Role',
+#                         'org_name': role.org.name if role.org else 'No Org',
+#                         'lc_role_name': role.role.name.lower().replace(' ', '_') if role.role else 'no page',
+#                     }
+#                     # Append the role data to user_data['roles']
+#                     user_data['roles'].append(role_data)
+
+#                 # Add user_data to the context
+#                 context['user_roles_data'].append(user_data)
+#                 context['roles'] = roles
+#                 context['member'] = member
+#                 context['no_of_roles'] = roles.count()
+#                 context['multiple_roles'] = roles.count() > 1
+#                 context['role'] = roles.first().role.name if roles.exists() else COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
+
+#             except Member.DoesNotExist:
+#                 logger.error(f"Member not found for user: {user.id}")
+#                 context['role'] = COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
+#     else:
+#         logger.debug(f"Anonymous user")
+#         context['role'] = COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
+#         context['anonymous'] = True
+
+#     # Assign template based on role
+#     template_url = get_template_for_role(context)
+
+#     try:
+#         get_template(template_url)
+#         return render(request, template_url, context)
+#     except TemplateDoesNotExist:
+#         logger.error(f"Template not found: {template_url}")
+#         template_url = f"{app_name}/{module_dirname}/general_homepage/general_homepage.html"
+#         return render(request, template_url, context)
+
 def index(request):
     user = request.user
     context = {
@@ -19,57 +91,52 @@ def index(request):
         'page_title': 'Home Page',
         'user': user,
         'roles': [],
-        'member': None,
-        'super_user': False,
+        'members': [],
+        'super_user': user.is_superuser,
         'multiple_roles': False,
         'no_of_roles': 0,
         'user_roles_data': [],
-        'anonymous': False,
+        'anonymous': not user.is_authenticated,
+        'role': COMMON_ROLE_CONFIG["NO_ROLE"]["name"],  # Default role
     }
 
     if user.is_authenticated:
         logger.debug(f"User authenticated: {user.id}")
         if user.is_superuser:
-            context['super_user'] = True
             context['role'] = COMMON_ROLE_CONFIG["SUPER_USER"]["name"]
         else:
-            try:
-                member = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').get(user=user)
-                roles = member.member_roles.filter(active=True)
-
-                # Prepare user role data
-                user_data = {
-                    'member_id': member.id,
-                    'username': member.user.username if member.user else 'Unknown User',
-                    'roles': []
-                }
-
-                for role in roles:
-                    role_data = {
-                        'org_id': role.org.id if role.org else None,
-                        'role_id': role.role.id if role.role else None,
-                        'role_name': role.role.name if role.role else 'No Role',
-                        'org_name': role.org.name if role.org else 'No Org',
-                        'lc_role_name': role.role.name.lower().replace(' ', '_') if role.role else 'no page',
+            # Fetch all active member instances for this user
+            members = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').filter(user=user)
+            if members.exists():
+                for member in members:
+                    roles = member.member_roles.filter(active=True)
+                    user_data = {
+                        'member_id': member.id,
+                        'username': user.username,
+                        'roles': []
                     }
-                    # Append the role data to user_data['roles']
-                    user_data['roles'].append(role_data)
 
-                # Add user_data to the context
-                context['user_roles_data'].append(user_data)
-                context['roles'] = roles
-                context['member'] = member
-                context['no_of_roles'] = roles.count()
-                context['multiple_roles'] = roles.count() > 1
-                context['role'] = roles.first().role.name if roles.exists() else COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
+                    for role in roles:
+                        role_data = {
+                            'org_id': role.org.id if role.org else None,
+                            'role_id': role.role.id if role.role else None,
+                            'role_name': role.role.name if role.role else 'No Role',
+                            'org_name': role.org.name if role.org else 'No Org',
+                            'lc_role_name': role.role.name.lower().replace(' ', '_') if role.role else 'no_page',
+                        }
+                        user_data['roles'].append(role_data)
+                        context['roles'].append(role)  # Aggregate all roles
 
-            except Member.DoesNotExist:
-                logger.error(f"Member not found for user: {user.id}")
-                context['role'] = COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
+                    context['user_roles_data'].append(user_data)
+                    context['members'].append(member)
+
+                context['multiple_roles'] = len(context['roles']) > 1
+                context['no_of_roles'] = len(context['roles'])
+                context['role'] = context['roles'][0].role.name if context['roles'] else COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
+            else:
+                logger.error(f"Active member not found for user: {user.id}")
     else:
-        logger.debug(f"Anonymous user")
-        context['role'] = COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
-        context['anonymous'] = True
+        logger.debug("Anonymous user access")
 
     # Assign template based on role
     template_url = get_template_for_role(context)

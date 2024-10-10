@@ -48,3 +48,63 @@ import json
 import random
 
 SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
+
+##################################  CONSTANTS ##################################
+
+
+COMMON_ROLE_CONFIG = {
+    "SCRUM_MASTER": {"name": "Scrum Master", "count": 2},
+    "PRODUCT_OWNER": {"name": "Product Owner", "count": 2},
+    "TEAM_MEMBER": {"name": "TeamMember", "count": 20},
+    "ADMIN": {"name": "Admin", "count": 1},
+    "EDITOR": {"name": "Editor", "count": 1},
+    "VIEWER": {"name": "Viewer", "count": 2},
+    "MANAGER": {"name": "Manager", "count": 2},
+    "CONTRIBUTOR": {"name": "Contributor", "count": 2},
+    "DEVELOPER": {"name": "Developer", "count": 2},
+    "DESIGNER": {"name": "Designer", "count": 2},
+    "UI_UX": {"name": "UI/UX", "count": 5},
+    "SYSTEM_ARCHITECT": {"name": "System Architect", "count": 5},
+    "ENTERPRISE_ARCHITECT": {"name": "Enterprise Architect", "count": 5},
+    "BUSINESS_OWNER": {"name": "Business Owner", "count": 5},
+    "PROGRAM_MANAGER": {"name": "Program Manager", "count": 5},
+    "PROJECT_MANAGER": {"name": "Project Manager", "count": 5},
+    "PORTFOLIO_MANAGER": {"name": "Portfolio Manager", "count": 5},
+    "BLOG_ADMIN": {"name": "Blog Admin", "count": 5},
+    "BLOG_WRITER": {"name": "Blog Writer", "count": 5},
+    "BLOG_EDITOR": {"name": "Blog Editor", "count": 5},
+    "BLOG_VIEWER": {"name": "Blog Viewer", "count": 5},
+    "SITE_ADMIN": {"name": "Site Admin", "count": 1},
+    "ORG_ADMIN": {"name": "Org Admin", "count": 1},
+    "PROJECT_ADMIN": {"name": "Project Admin", "count": 1},
+    "QA": {"name": "QA", "count": 2},
+    "ARCHITECT": {"name": "Architect", "count": 2},
+    "DEVOPS": {"name": "DevOps", "count": 2},
+    "SECURITY": {"name": "Security", "count": 2},
+    "BUSINESS_ANALYST": {"name": "Business Analyst", "count": 2},
+    "IT_ENGINEER": {"name": "IT Engineer", "count": 2},
+    "NETWORK_ENGINEER": {"name": "Network Engineer", "count": 2},
+    "TECH_LEAD": {"name": "Tech Lead", "count": 2},
+    "PROJECT_LEAD": {"name": "Project Lead", "count": 2},
+    "SUPER_USER": {"name": "Super User", "count": 0},
+    "NO_ROLE": {"name": "No Role", "count": 0},
+}
+
+
+COMMON_PROJECT_ROLE_CONFIG = {
+    "PROJECT_ADMIN": "Admin",
+    "PROJECT_EDITOR": "Editor",
+    "PROJECT_VIEWER": "Viewer",
+    "PROJECT_NOROLE": "No Role",   
+}
+
+
+site_admin_str = COMMON_ROLE_CONFIG['SITE_ADMIN']['name']
+org_admin_str = COMMON_ROLE_CONFIG['ORG_ADMIN']['name']
+project_admin_str = COMMON_ROLE_CONFIG['PROJECT_ADMIN']['name']
+
+PROJECT_ADMIN_ROLE_STR = COMMON_PROJECT_ROLE_CONFIG['PROJECT_ADMIN']
+PROJECT_EDITOR_ROLE_STR = COMMON_PROJECT_ROLE_CONFIG['PROJECT_EDITOR']
+PROJECT_VIEWER_ROLE_STR = COMMON_PROJECT_ROLE_CONFIG['PROJECT_VIEWER']
+PROJECT_NOROLE_ROLE_STR = COMMON_PROJECT_ROLE_CONFIG['PROJECT_NOROLE']
+################################################################################

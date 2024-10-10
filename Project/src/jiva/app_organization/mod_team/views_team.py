@@ -4,11 +4,9 @@ from app_organization.mod_team.models_team import *
 from app_organization.mod_team.forms_team import *
 
 from app_organization.mod_organization.models_organization import *
-
+from app_organization.mod_projectmembership.models_projectmembership import *
 from app_common.mod_common.models_common import *
-
 from app_jivapms.mod_app.all_view_imports import *
-
 from app_organization.org_decorators import *
 
 app_name = 'app_organization'
@@ -47,7 +45,7 @@ def list_teams(request, org_id):
     relevant_admin = user_roles.filter(role__name__in=[org_admin_str, project_admin_str]).exists()
     logger.debug(f">>> === RELEVANT ADMIN: {relevant_admin} === <<<")    
     is_org_admin = user_roles.filter(role__name__in=[org_admin_str]).exists()
-    user_memberships = ProjectMembership.objects.filter(project__org=organization, member=member, active=True)
+    user_memberships = Projectmembership.objects.filter(project__org=organization, member=member, active=True)
     is_project_admin = user_memberships.filter(project_role__role_type=PROJECT_ADMIN_ROLE_STR).exists()
     logger.debug(f">>> === User memberships queryset: {user_memberships.values()} === <<<")
     logger.debug(f">>> === CHECKING1: {user.username} ==> User roles: {user_roles}, Memberships: {user_memberships}, Org Admin: {is_org_admin}, Project Admin: {is_project_admin} === <<<")

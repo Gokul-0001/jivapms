@@ -38,9 +38,9 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">Project</b>
+                                <b class="h5">{{organization}}</b>
                                 &nbsp;&nbsp;
-                                Project List
+                                 Project(s) List
                                
                             </div>
                             <div class="col col-md-4">
@@ -115,8 +115,9 @@
                                 <td width="" ondblclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Project', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                <td width="20%">
+                                <td width="20%"> 
                                     <!-- ADMINISTRATIVE ACCESS -->
+          
                                     {% if relevant_admin or is_project_admin %}
                                     <a href="{% url 'list_teams' org_id %}">Teams</a>
                                     &nbsp;&nbsp;

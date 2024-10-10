@@ -32,7 +32,7 @@
                         </div>
                     </div>
                 </div>
-                <ul>
+                <!-- <ul>
                     {% for user in user_roles_data %}
                         <li>
                             <strong>{{ user.username }} (Member ID: {{ user.member_id }})</strong>
@@ -49,7 +49,28 @@
                     {% empty %}
                         <li>No Role/Membership Found</li>
                     {% endfor %}
+                </ul> -->
+
+                <ul>
+                    {% for member_info in user_roles_data %}
+                    <li>
+                        <strong>{{ member_info.username }} (Member ID: {{ member_info.member_id }})</strong>
+                        <ul>
+                            {% for role in member_info.roles %}
+                            <li>
+                                Organization ID: {{ role.org_id }}, OrgName: {{ role.org_name }},
+                                Role ID: {{ role.role_id }} (Role Name: {{ role.role_name }})
+                            </li>
+                            {% empty %}
+                            <li>No Roles Assigned</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% empty %}
+                    <li>No Role/Membership Found</li>
+                    {% endfor %}
                 </ul>
+
             </div>
         </div>
     </div>

@@ -359,69 +359,114 @@ def view_role(request, org_id, role_id):
 
 
 
+# @login_required
+# def view_my_role(request):
+#     user = request.user
+#     super_user = False
+#     no_of_roles = 0
+#     multiple_roles = False
+#     organization = None
+#     user_roles_data = []
+#     members = []
+    
+#     try:
+#         # Fetch the member and their roles in a single query
+#         members = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').filter(user=user)
+#     except Member.DoesNotExist:
+#         # Handle the case where a Member does not exist for the user
+#         print(f"No Member entry found for user: {user.id}")
+    
+#     # Populate roles data if the member exists
+#     for member in members:
+#         user_data = {
+#             'member_id': member.id,
+#             'username': member.user.username if member.user else 'Unknown User',
+#             'roles': []
+#         }
+
+#         # Get active roles
+#         active_roles = member.member_roles.filter(active=True, member=member)
+#         for role in active_roles:
+#             role_data = {
+#                 'org_id': role.org.id if role.org else None,
+#                 'role_id': role.role.id if role.role else None,
+#                 'role_name': role.role.name if role.role else 'No Role',
+#                 'org_name': role.org.name if role.org else 'No Organization',
+#             }
+#             user_data['roles'].append(role_data)
+
+#         # Append the user's roles data
+#         user_roles_data.append(user_data)
+
+#     if user.is_authenticated:
+#         if user.is_superuser:
+#             super_user = True
+#         elif members:
+#             member = members.first()
+#             roles = member.member_roles.filter(active=True)
+#             no_of_roles = roles.count()
+#             multiple_roles = no_of_roles > 1
+#         else:
+#             # Handle case where no roles are found for the user
+#             print(f"No roles found for user: {user.id}")
+    
+#     # Context for rendering the page
+#     context = {
+#         'parent_page': '___PARENTPAGE___',
+#         'page': 'view_my_role',
+#         'user': user,
+#         'super_user': super_user,
+#         'no_of_roles': no_of_roles,
+#         'multiple_roles': multiple_roles,
+#         'user_roles_data': user_roles_data,
+#         'page_title': 'View Role',
+#     }
+
+    # # Render the appropriate template
+    # template_file = f"{app_name}/{module_path}/view_my_role.html"
+    # return render(request, template_file, context)
+
+
 @login_required
 def view_my_role(request):
     user = request.user
-    super_user = False
-    no_of_roles = 0
-    multiple_roles = False
-    organization = None
-    user_roles_data = []
-    members = []
-    
-    try:
-        # Fetch the member and their roles in a single query
-        members = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').filter(user=user)
-    except Member.DoesNotExist:
-        # Handle the case where a Member does not exist for the user
-        print(f"No Member entry found for user: {user.id}")
-    
-    # Populate roles data if the member exists
-    for member in members:
-        user_data = {
-            'member_id': member.id,
-            'username': member.user.username if member.user else 'Unknown User',
-            'roles': []
-        }
-
-        # Get active roles
-        active_roles = member.member_roles.filter(active=True, member=member)
-        for role in active_roles:
-            role_data = {
-                'org_id': role.org.id if role.org else None,
-                'role_id': role.role.id if role.role else None,
-                'role_name': role.role.name if role.role else 'No Role',
-                'org_name': role.org.name if role.org else 'No Organization',
-            }
-            user_data['roles'].append(role_data)
-
-        # Append the user's roles data
-        user_roles_data.append(user_data)
-
-    if user.is_authenticated:
-        if user.is_superuser:
-            super_user = True
-        elif members:
-            member = members.first()
-            roles = member.member_roles.filter(active=True)
-            no_of_roles = roles.count()
-            multiple_roles = no_of_roles > 1
-        else:
-            # Handle case where no roles are found for the user
-            print(f"No roles found for user: {user.id}")
-    
-    # Context for rendering the page
     context = {
-        'parent_page': '___PARENTPAGE___',
-        'page': 'view_my_role',
-        'user': user,
-        'super_user': super_user,
-        'no_of_roles': no_of_roles,
-        'multiple_roles': multiple_roles,
-        'user_roles_data': user_roles_data,
-        'page_title': 'View Role',
+        'super_user': user.is_superuser,
+        'user_roles_data': [],
+        'multiple_roles': False,
+        'no_of_roles': 0,
     }
+
+    if user.is_superuser:
+        context.update({
+            'page_title': 'Super User - Access to All',
+        })
+    else:
+        members = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').filter(user=user)
+        if members.exists():
+            for member in members:
+                roles = member.member_roles.filter(active=True)
+                user_data = {
+                    'member_id': member.id,
+                    'username': user.username,  # No need to check if user exists on member, it's guaranteed by the relationship
+                    'roles': [{
+                        'org_id': role.org.id if role.org else None,
+                        'role_id': role.role.id if role.role else None,
+                        'role_name': role.role.name if role.role else 'No Role',
+                        'org_name': role.org.name if role.org else 'No Organization',
+                    } for role in roles]
+                }
+                context['user_roles_data'].append(user_data)
+
+            context.update({
+                'no_of_roles': sum(len(member['roles']) for member in context['user_roles_data']),
+                'multiple_roles': context['no_of_roles'] > 1,
+                'page_title': 'View My Roles',
+            })
+        else:
+            context['page_title'] = 'No Roles Assigned'
 
     # Render the appropriate template
     template_file = f"{app_name}/{module_path}/view_my_role.html"
     return render(request, template_file, context)
+
