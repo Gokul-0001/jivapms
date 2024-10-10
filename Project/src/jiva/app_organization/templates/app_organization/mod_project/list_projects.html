@@ -117,8 +117,7 @@
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%"> 
                                     <!-- ADMINISTRATIVE ACCESS -->
-          
-                                    {% if relevant_admin or is_project_admin %}
+                                    {% if relevant_admin  %}
                                     <a href="{% url 'list_teams' org_id %}">Teams</a>
                                     &nbsp;&nbsp;
                                     <a href="{% url 'list_memberroles' org_id %}">Member Role</a>

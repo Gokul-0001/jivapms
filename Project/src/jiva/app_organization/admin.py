@@ -4,7 +4,7 @@ from app_organization.mod_projectmembership.models_projectmembership import *
 from app_organization.mod_organization.models_organization import *
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'created_at', 'updated_at')
+    list_display = ('id', 'name', 'description', 'created_at', 'updated_at')
 admin.site.register(Project, ProjectAdmin)
 
 class ProjectMembershipAdmin(admin.ModelAdmin):

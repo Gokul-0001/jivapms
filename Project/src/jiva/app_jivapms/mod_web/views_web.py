@@ -4,6 +4,7 @@ from app_memberprofilerole.mod_member.models_member import *
 
 from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
+from app_organization.mod_projectmembership.models_projectmembership import *
 
 app_name = "app_jivapms"
 version = "v1"
@@ -98,6 +99,7 @@ def index(request):
         'user_roles_data': [],
         'anonymous': not user.is_authenticated,
         'role': COMMON_ROLE_CONFIG["NO_ROLE"]["name"],  # Default role
+        'project_details': [],
     }
 
     if user.is_authenticated:
@@ -126,10 +128,13 @@ def index(request):
                         }
                         user_data['roles'].append(role_data)
                         context['roles'].append(role)  # Aggregate all roles
-
+                    # Fetch project memberships
+                    project_memberships = Projectmembership.objects.filter(member=member)
+                    project_info = [{'org': pm.project.org, 'project_id': pm.project.id ,'project_name': pm.project.name, 'role': pm.project_role.role_type} for pm in project_memberships]
+                    user_data['projects'] = project_info
+                    context['project_details'].extend(project_info)
                     context['user_roles_data'].append(user_data)
                     context['members'].append(member)
-
                 context['multiple_roles'] = len(context['roles']) > 1
                 context['no_of_roles'] = len(context['roles'])
                 context['role'] = context['roles'][0].role.name if context['roles'] else COMMON_ROLE_CONFIG["NO_ROLE"]["name"]

@@ -11,46 +11,6 @@ from app_jivapms.mod_app.all_view_imports import *
 org_admin_str = COMMON_ROLE_CONFIG['ORG_ADMIN']['name']
 project_admin_str = COMMON_ROLE_CONFIG['PROJECT_ADMIN']['name']
 
-# ORGANIZATION ACCESS 
-def org_access_required(allowed_roles=None):
-    if allowed_roles is None:
-        allowed_roles = ['Org Admin', 'Project Admin']  # Default roles for access
-
-    def decorator(view_func):
-        @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
-            org_id = kwargs.get('org_id')  # Extract org_id from kwargs
-            organization = get_object_or_404(Organization, id=org_id)
-
-            # Check if the user is a member of the organization
-            user = request.user
-            try:
-                logger.debug(f">>> === org_access_required {user}:{organization} === <<<")
-                member = Member.objects.get(user=request.user, org=organization)
-            except Exception as e:
-                return HttpResponseForbidden(f"You are not a member of this organization. {str(e)}")
-
-            # Fetch the roles based on allowed_roles
-            allowed_roles_objs = Role.objects.filter(name__in=allowed_roles)
-            
-            logger.debug(f">>> === allowed_roles_objs {allowed_roles_objs} === <<<")
-            # Check if the member has one of the allowed roles in this organization
-            try:
-                org_membership = MemberOrganizationRole.objects.get(member=member, org=organization, role__in=allowed_roles_objs)
-            except Exception as e:
-                return HttpResponseForbidden(f"You don't have the necessary privileges in this organization. {str(e)}")
-
-            # Proceed with the view and pass member and org_membership along with kwargs
-            return view_func(request, member=member, org_membership=org_membership, *args, **kwargs)
-
-        return _wrapped_view
-    return decorator
-
-
-
-# Configuration for role names
-org_admin_str = COMMON_ROLE_CONFIG['ORG_ADMIN']['name']
-project_admin_str = COMMON_ROLE_CONFIG['PROJECT_ADMIN']['name']
 def org_access_required(allowed_roles=None):
     if allowed_roles is None:
         allowed_roles = [org_admin_str, project_admin_str]  # Use dynamic role names from configuration
@@ -74,8 +34,65 @@ def org_access_required(allowed_roles=None):
 
         return _wrapped_view
     return decorator
+############################################################################################################
+
+def org_or_project_access_required(org_allowed_roles=None, project_allowed_roles=None):
+    if org_allowed_roles is None:
+        org_allowed_roles = [org_admin_str, project_admin_str]
+    if project_allowed_roles is None:
+        project_allowed_roles = [PROJECT_ADMIN_ROLE_STR, PROJECT_EDITOR_ROLE_STR, PROJECT_VIEWER_ROLE_STR]
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            org_id = kwargs.get('org_id')
+            project_id = kwargs.get('project_id', None)  # Project ID might not be present
+            user = request.user
+            organization = get_object_or_404(Organization, id=org_id)
+            project = None
+            
+            # Attempt to fetch the project if a project ID is provided
+            if project_id:
+                project = get_object_or_404(Project, pk=project_id, org_id=org_id)
+
+            # Check organization-level access using MemberOrganizationRole
+            if org_allowed_roles and has_org_role(user, organization, org_allowed_roles):
+                logger.debug(f">>> === ORG_LEVEL_ALLOWED_ACCESS === <<<")
+                return view_func(request, *args, **kwargs)
+
+            # Check project-level access using Projectmembership if the project exists
+            if project and project_allowed_roles and has_project_role(user, project, project_allowed_roles):
+                logger.debug(f">>> === PROJECT_LEVEL_ALLOWED_ACCESS === <<<")
+                return view_func(request, *args, **kwargs)
+
+            # If neither check passes, deny access
+            return HttpResponseForbidden("Access denied: You do not have the required permissions.")
+
+        return _wrapped_view
+    return decorator
+
+def has_org_role(user, organization, roles):
+    member = Member.objects.filter(user=user).first()
+    return MemberOrganizationRole.objects.filter(
+        member_id=member.id,
+        org=organization,
+        role__name__in=roles,
+        active=True
+    ).exists()
+
+def has_project_role(user, project, roles):
+    return Projectmembership.objects.filter(
+        member__user=user,
+        project=project,
+        project_role__role_type__in=roles,
+        active=True
+    ).exists()
 
 
+
+
+
+
+############################################################################################################
 def project_access_required(allowed_roles=None):
     if allowed_roles is None:
         allowed_roles = ['Viewer', 'Editor', 'Admin']  # Default roles for access

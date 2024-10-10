@@ -72,10 +72,17 @@ def list_projects(request, org_id):
             org_id=org_id,
             active=True
         ).distinct().order_by('position')
-        if tobjects.exists():
-            is_project_admin = True
+        
+        admin_role_id = ProjectRole.objects.get(role_type=PROJECT_ADMIN_ROLE_STR, active=True).id
+        is_project_admin = Projectmembership.objects.filter(
+                        member__in=memberships,
+                        project_role_id=admin_role_id,
+                        project__org_id=org_id,
+                        active=True
+                    ).exists()
+        
 
-    logger.debug(f">>> === limited not OA Projects:{tobjects} === <<<")
+    logger.debug(f">>> === LIMITED PROJECTS FOR NON-OA:{tobjects} === <<<")
     
     # Relevant admin
     relevant_admin = is_org_admin or is_project_admin
@@ -310,6 +317,7 @@ def create_project(request, member, org_membership, org_id):
 
 # Edit
 @login_required
+@org_or_project_access_required(project_allowed_roles=[PROJECT_ADMIN_ROLE_STR, PROJECT_EDITOR_ROLE_STR])
 def edit_project(request, org_id, project_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -345,6 +353,7 @@ def edit_project(request, org_id, project_id):
 
 
 @login_required
+@org_access_required()
 def delete_project(request, org_id, project_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -371,6 +380,7 @@ def delete_project(request, org_id, project_id):
 
 
 @login_required
+@org_access_required()
 def permanent_deletion_project(request, org_id, project_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -398,6 +408,7 @@ def permanent_deletion_project(request, org_id, project_id):
 
 
 @login_required
+@org_access_required()
 def restore_project(request,  org_id, project_id):
     user = request.user
     object = get_object_or_404(Project, pk=project_id, active=False,**viewable_dict)
@@ -408,6 +419,7 @@ def restore_project(request,  org_id, project_id):
 
 
 @login_required
+@org_or_project_access_required()
 def view_project(request, org_id, project_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
