@@ -60,18 +60,42 @@
                     <tbody>
                         <tr>
                             <td width="15%">
-                                <strong>Roadmapitem</strong>
+                                <strong>Section</strong>
                             </td>
                             <td>
-                                {{form.name|as_crispy_field}}
+                                {{form.section|as_crispy_field}}
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <strong>Description</strong>
+                            <td width="15%">
+                                <strong>Task Name</strong>
                             </td>
                             <td>
-                                {{form.description|as_crispy_field}}
+                                {{form.task_name|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="15%">
+                                <strong>Status</strong>
+                            </td>
+                            <td>
+                                {{form.status|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="15%">
+                                <strong>Start Date</strong>
+                            </td>
+                            <td>
+                                {{form.start_date|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="15%">
+                                <strong>End Date</strong>
+                            </td>
+                            <td>
+                                {{form.end_date|as_crispy_field}}
                             </td>
                         </tr>
                        <tr>
