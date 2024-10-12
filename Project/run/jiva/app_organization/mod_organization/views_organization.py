@@ -113,7 +113,8 @@ def list_organizations(request):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
     
-    objects_count = tobjects.count()
+    if tobjects:
+        objects_count = tobjects.count()
     
     ## processing the POST
     if request.method == 'POST':
@@ -403,7 +404,8 @@ def org_homepage(request,  org_id):
     
     organization = get_object_or_404(Organization, pk=org_id, 
                                active=True, **viewable_dict)    
-    org_detail = organization.org_details.first()
+    org_detail = organization.org_details.filter(active=True).first()
+    logger.debug(f">>> === org_detail: {organization.org_details} === <<<")
     
     projects = organization.org_projects.filter(active=True)
     roadmap_items = organization.roadmap_items.order_by('start_date').filter(active=True)
@@ -445,7 +447,17 @@ def viewer_org_homepage(request,  org_id):
                                active=True, **viewable_dict)    
     org_detail = organization.org_details.first()
     
-    projects = organization.org_projects.filter(active=True)
+    #projects = organization.org_projects.filter(active=True)
+    memberships = Member.objects.filter(user=user, active=True)
+    role_ids = ProjectRole.objects.filter(active=True).values_list('id', flat=True)
+    projects = Project.objects.filter(
+                project_members__member__in=memberships,
+                project_members__project_role_id__in=role_ids,
+                project_members__active=True,
+                org_id=org_id,
+                active=True
+            ).distinct().order_by('position')
+    logger.debug(f">>> === projects: {projects} === <<<")
     roadmap_items = organization.roadmap_items.order_by('start_date').filter(active=True)
 
     # Create a dynamic Gantt chart string for Mermaid.js

@@ -456,8 +456,23 @@ def project_homepage(request, org_id, project_id):
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    object = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)    
+    project = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)   
+    project_detail = project.project_details.first() 
+    roadmap_items = project.project_roadmap_items.order_by('start_date').filter(active=True)
+    # Create a dynamic Gantt chart string for Mermaid.js
+    roadmap_str = "gantt\n    title Project Roadmap\n    dateFormat  YYYY-MM-DD\n"
+    
+    current_section = ""
+    
+    for item in roadmap_items:
+        if item.section != current_section:
+            roadmap_str += f"    section {item.section}\n"
+            current_section = item.section
+        
+        roadmap_str += f"    {item.task_name} :{item.status}, {item.start_date}, {item.end_date}\n"
 
+    object = project
+    logger.debug(f">>> === PROJECT HOMEPAGE: roadmap {roadmap_str} === <<<")
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'project_homepage',
@@ -466,7 +481,11 @@ def project_homepage(request, org_id, project_id):
         
         'module_path': module_path,
         'object': object,
+        'project': object,
+        'project_detail': project_detail,
+        'roadmap': roadmap_str,
         'page_title': f'Project Homepage',
     }
     template_file = f"{app_name}/{module_path}/project_homepage.html"
     return render(request, template_file, context)
+
