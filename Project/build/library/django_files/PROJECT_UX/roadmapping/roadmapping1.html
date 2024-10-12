@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roadmap Task Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin-right: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 5px;
+      font-size: 12px;
+      text-align: left;
+    }
+    th:nth-child(1), td:nth-child(1) { /* ID column */
+      width: 5%;
+      text-align: right;
+    }
+    th:nth-child(2), td:nth-child(2) { /* Numbering column */
+      width: 5%;
+      text-align: center;
+    }
+    th:nth-child(3), td:nth-child(3) { /* Roadmap column */
+      width: 60%;
+      text-align: left;
+    }
+    th:nth-child(4), td:nth-child(4) { /* Status column */
+      width: 15%;
+      text-align: center;
+    }
+    th:nth-child(5), td:nth-child(5) { /* Start Date */
+      width: 10%;
+      text-align: center;
+    }
+    th:nth-child(6), td:nth-child(6) { /* End Date */
+      width: 10%;
+      text-align: center;
+    }
+    .button-container {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    .button-container button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      font-size: 12px;
+      margin: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .mermaid-container {
+      width: 45%;
+    }
+    .table-container {
+      width: 50%;
+      float: left;
+    }
+    .mermaid-container {
+      width: 45%;
+      float: left;
+      padding-left: 10px;
+    }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+
+    // Function to dynamically update the Mermaid chart
+    function updateMermaidChart() {
+      let tasks = document.querySelectorAll('#taskTableBody tr');
+      let ganttString = 'gantt\n    title Organizational Roadmap\n    dateFormat  YYYY-MM-DD\n';
+      let currentSection = '';
+
+      tasks.forEach(task => {
+        let indentLevel = task.getAttribute('data-indent');
+        let description = task.querySelector('input[name^="task_description"]').value.trim();
+        let status = task.querySelector('select[name^="task_status"]').value;
+        let startDate = task.querySelector('input[name^="task_start"]').value;
+        let endDate = task.querySelector('input[name^="task_end"]').value;
+
+        // If it's a section (no indentation), create a new section
+        if (indentLevel == 0 && description) {
+          currentSection = description;
+          ganttString += `    section ${currentSection}\n`;
+        }
+
+        // Add tasks only if indented (indentLevel > 0)
+        if (description && startDate && endDate && indentLevel > 0) {
+          ganttString += `    ${description} :${status}, ${startDate}, ${endDate}\n`;
+        }
+      });
+
+      // Display Gantt chart string and render Mermaid
+      document.getElementById('gantt-text').textContent = ganttString;
+      document.querySelector('.mermaid').innerHTML = ganttString;
+      mermaid.contentLoaded();  // Reload Mermaid chart
+    }
+  </script>
+</head>
+<body>
+  <h1>Roadmap Task Management</h1>
+
+  <!-- Task controls -->
+  <div class="button-container">
+    <button onclick="indent()"><i class="fas fa-indent"></i> Indent</button>
+    <button onclick="outdent()"><i class="fas fa-outdent"></i> Outdent</button>
+    <button onclick="addTask()"><i class="fas fa-plus"></i> Add Task</button>
+    <button onclick="deleteTask()"><i class="fas fa-trash"></i> Delete Task</button>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="table-container">
+          <table id="taskTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>#</th>
+                <th>Roadmap</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody">
+              <tr data-indent="0">
+                <td>1</td>
+                <td>1</td>
+                <td><input type="text" name="task_description_1" value="Year 1 - Foundations"></td>
+                <td><select name="task_status_1"><option value=""> </option></select></td>
+                <td><input type="date" name="task_start_1"></td>
+                <td><input type="date" name="task_end_1"></td>
+              </tr>
+              <tr data-indent="1">
+                <td>2</td>
+                <td>1.1</td>
+                <td><input type="text" name="task_description_2" value="Define strategy"></td>
+                <td><select name="task_status_2"><option value="done">Done</option><option value="active">Active</option><option value="crit">Critical</option></select></td>
+                <td><input type="date" name="task_start_2" value="2024-01-01"></td>
+                <td><input type="date" name="task_end_2" value="2024-04-01"></td>
+              </tr>
+              <tr data-indent="1">
+                <td>3</td>
+                <td>1.2</td>
+                <td><input type="text" name="task_description_3" value="UX/UI revamp"></td>
+                <td><select name="task_status_3"><option value="done">Done</option><option value="active">Active</option><option value="crit">Critical</option></select></td>
+                <td><input type="date" name="task_start_3" value="2024-03-01"></td>
+                <td><input type="date" name="task_end_3" value="2024-06-01"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mermaid Chart for the Visual Roadmap -->
+        <div class="mermaid-container">
+          <div class="mermaid"></div>
+          <hr>
+          <h4>Generated Gantt Chart Code:</h4>
+          <pre id="gantt-text"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedRow = null;
+    let taskCounter = 4;  // Incremental task counter for new tasks
+
+    // Highlight selected row
+    document.getElementById('taskTable').onclick = function (event) {
+      if (selectedRow) {
+        selectedRow.style.background = '';
+      }
+      selectedRow = event.target.parentNode;
+      selectedRow.style.background = '#f0f0f0'; // Highlight the selected row
+    };
+
+    // Add new task
+    function addTask() {
+      const table = document.getElementById("taskTableBody");
+      const row = table.insertRow(-1);
+      const cellCount = 6;
+
+      row.setAttribute('data-indent', 0); // Default to no indent
+
+      for (let i = 0; i < cellCount; i++) {
+        const cell = row.insertCell(i);
+        if (i === 0) { // ID column
+          cell.textContent = taskCounter++;
+        } else if (i === 1) { // Numbering column
+          cell.textContent = ""; // This will be updated by updateNumbering()
+        } else if (i === 3) { // Status column
+          const select = document.createElement('select');
+          select.innerHTML = '<option value=""></option><option value="done">Done</option><option value="active">Active</option><option value="crit">Critical</option>';
+          cell.appendChild(select);
+        } else if (i === 4 || i === 5) { // Start and End Date
+          const input = document.createElement('input');
+          input.type = 'date';
+          cell.appendChild(input);
+        } else { // Description column
+          const input = document.createElement('input');
+          input.type = 'text';
+          cell.appendChild(input);
+        }
+      }
+      updateNumbering();
+      updateMermaidChart();
+    }
+
+    // Indent the selected task
+    function indent() {
+      if (selectedRow && selectedRow.rowIndex > 0) {
+        const indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+        selectedRow.setAttribute('data-indent', indentLevel + 1);
+        updateNumbering();
+        updateMermaidChart();
+      }
+    }
+
+    // Outdent the selected task
+    function outdent() {
+      if (selectedRow && selectedRow.rowIndex > 0) {
+        const indentLevel = parseInt(selectedRow.getAttribute('data-indent'));
+        if (indentLevel > 0) {
+          selectedRow.setAttribute('data-indent', indentLevel - 1);
+          updateNumbering();
+          updateMermaidChart();
+        }
+      }
+    }
+
+    // Delete the selected task
+    function deleteTask() {
+      if (selectedRow && selectedRow.rowIndex > 0) {
+        selectedRow.remove();
+        updateNumbering();
+        updateMermaidChart();
+      }
+    }
+
+    // Update task numbering based on indentation level
+    function updateNumbering() {
+      const rows = document.getElementById('taskTableBody').rows;
+      const levelCount = {};
+
+      for (let i = 0; i < rows.length; i++) {
+        const indentLevel = rows[i].getAttribute('data-indent');
+        if (!levelCount[indentLevel]) {
+          levelCount[indentLevel] = 0;
+        }
+        levelCount[indentLevel]++;
+        let numbering = "";
+        for (let level = 0; level <= indentLevel; level++) {
+          numbering += (levelCount[level] || 0) + ".";
+        }
+        rows[i].cells[1].textContent = numbering.slice(0, -1);
+      }
+    }
+
+    // Update the Gantt chart when the page loads
+    document.addEventListener('DOMContentLoaded', updateMermaidChart);
+  </script>
+</body>
+</html>

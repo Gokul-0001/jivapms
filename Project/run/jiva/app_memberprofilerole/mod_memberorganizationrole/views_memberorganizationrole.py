@@ -1,21 +1,17 @@
 
-from app_organization.mod_app.all_view_imports import *
-from app_organization.mod_projectmembership.models_projectmembership import *
-from app_organization.mod_projectmembership.forms_projectmembership import *
-from app_memberprofilerole.mod_member.models_member import *
-from app_organization.mod_project.models_project import *
+from app_memberprofilerole.mod_app.all_view_imports import *
+from app_memberprofilerole.mod_memberorganizationrole.models_memberorganizationrole import *
+from app_memberprofilerole.mod_memberorganizationrole.forms_memberorganizationrole import *
+
+from app_organization.mod_organization.models_organization import *
 
 from app_common.mod_common.models_common import *
-from app_common.mod_app.all_view_imports import *
-from app_jivapms.mod_app.all_view_imports import *
 
-from app_organization.org_decorators import *
-
-app_name = 'app_organization'
+app_name = 'app_memberprofilerole'
 app_version = 'v1'
 
-module_name = 'projectmemberships'
-module_path = f'mod_projectmembership'
+module_name = 'memberorganizationroles'
+module_path = f'mod_memberorganizationrole'
 
 # viewable flag
 first_viewable_flag = '__ALL__'  # 'all' or '__OWN__'
@@ -29,8 +25,7 @@ def get_viewable_dicts(user, viewable_flag, first_viewable_flag):
     return viewable_dict, first_viewable_dict
 # ============================================================= #
 @login_required
-@project_related_access_check()
-def list_projectmemberships(request, pro_id):
+def list_memberorganizationroles(request, org_id):
     # take inputs
     # process inputs
     user = request.user       
@@ -40,26 +35,17 @@ def list_projectmemberships(request, pro_id):
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
     deleted_count = 0
-    member = Member.objects.get(user=user, active=True)
-    user_roles = MemberOrganizationRole.objects.filter(member_id=member.id)    
-    relevant_admin = user_roles.filter(role__name__in=[org_admin_str, project_admin_str]).exists()
-    logger.debug(f">>> === RELEVANT ADMIN: {relevant_admin} === <<<")    
-    is_org_admin = user_roles.filter(role__name__in=[org_admin_str]).exists()
-    user_memberships = Projectmembership.objects.filter(member=member, active=True)
-    is_project_admin = user_memberships.filter(project_role__role_type=PROJECT_ADMIN_ROLE_STR).exists()
-    
-    logger.debug(f">>> === CHECKING1: {user.username} ==> User roles: {user_roles}, Memberships: {user_memberships}, Org Admin: {is_org_admin}, Project Admin: {is_project_admin} === <<<")
- 
-    project = Project.objects.get(id=pro_id, active=True)
+    organization = Organization.objects.get(id=org_id, active=True, 
+                                                **first_viewable_dict)
     
     search_query = request.GET.get('search', '')
     if search_query:
-        tobjects = Projectmembership.objects.filter(name__icontains=search_query, 
-                                            project_id=pro_id, **viewable_dict).order_by('position')
+        tobjects = MemberOrganizationRole.objects.filter(name__icontains=search_query, 
+                                             **viewable_dict).order_by('position')
     else:
-        tobjects = Projectmembership.objects.filter(active=True, project_id=pro_id).order_by('position')
-        deleted = Projectmembership.objects.filter(active=False, deleted=False,
-                                project_id=pro_id,
+        tobjects = MemberOrganizationRole.objects.filter(active=True, org_id=org_id).order_by('position')
+        deleted = MemberOrganizationRole.objects.filter(active=False, deleted=False,
+                                org_id=org_id,
                                **viewable_dict).order_by('position')
         deleted_count = deleted.count()
     
@@ -86,35 +72,35 @@ def list_projectmemberships(request, pro_id):
             for item_id in selected_items:
                 item = int(item_id)  # Ensure item_id is converted to int if necessary
                 if bulk_operation == 'bulk_delete':
-                    object = get_object_or_404(Projectmembership, pk=item, active=True, **viewable_dict)
+                    object = get_object_or_404(MemberOrganizationRole, pk=item, active=True, **viewable_dict)
                     object.active = False
                     object.save()
                     
                 elif bulk_operation == 'bulk_done':
-                    object = get_object_or_404(Projectmembership, pk=item, active=True, **viewable_dict)
+                    object = get_object_or_404(MemberOrganizationRole, pk=item, active=True, **viewable_dict)
                     object.done = True
                     object.save()
                     
                 elif bulk_operation == 'bulk_not_done':
-                    object = get_object_or_404(Projectmembership, pk=item, active=True, **viewable_dict)
+                    object = get_object_or_404(MemberOrganizationRole, pk=item, active=True, **viewable_dict)
                     object.done = False
                     object.save()
                     
                 elif bulk_operation == 'bulk_blocked':  # Correct the operation check here
-                    object = get_object_or_404(Projectmembership, pk=item, active=True, **viewable_dict)
+                    object = get_object_or_404(MemberOrganizationRole, pk=item, active=True, **viewable_dict)
                     object.blocked = True
                     object.save()
                     
                 else:
-                    redirect('list_projectmemberships', pro_id=pro_id)
-            return redirect('list_projectmemberships', pro_id=pro_id)
+                    redirect('list_memberorganizationroles', org_id=org_id)
+            return redirect('list_memberorganizationroles', org_id=org_id)
     
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'list_projectmemberships',
-        'project': project,
-        'pro_id': pro_id,
+        'page': 'list_memberorganizationroles',
+        'organization': organization,
+        'org_id': org_id,
         
         'module_path': module_path,
         'user': user,
@@ -127,14 +113,9 @@ def list_projectmemberships(request, pro_id):
         
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
-        'page_title': f'Project Membership List',
-        'is_org_admin': is_org_admin,
-        'is_project_admin': is_project_admin,
-        'relevant_admin': relevant_admin,
-        'user_roles': user_roles,
-        'user_memberships': user_memberships,
+        'page_title': f'Memberorganizationrole List',
     }       
-    template_file = f"{app_name}/{module_path}/list_projectmemberships.html"
+    template_file = f"{app_name}/{module_path}/list_memberorganizationroles.html"
     return render(request, template_file, context)
 
 
@@ -143,8 +124,7 @@ def list_projectmemberships(request, pro_id):
 
 # ============================================================= #
 @login_required
-
-def list_deleted_projectmemberships(request, pro_id):
+def list_deleted_memberorganizationroles(request, org_id):
     # take inputs
     # process inputs
     user = request.user       
@@ -153,16 +133,16 @@ def list_deleted_projectmemberships(request, pro_id):
     objects_per_page = int(show_all) if show_all != 'all' else 25
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
-    project = Project.objects.get(id=pro_id, active=True, 
+    organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
     search_query = request.GET.get('search', '')
     if search_query:
-        tobjects = Projectmembership.objects.filter(name__icontains=search_query, 
+        tobjects = MemberOrganizationRole.objects.filter(name__icontains=search_query, 
                                             active=False,
-                                            project_id=pro_id, **viewable_dict).order_by('position')
+                                            org_id=org_id, **viewable_dict).order_by('position')
     else:
-        tobjects = Projectmembership.objects.filter(active=False, pro_id=pro_id,
+        tobjects = MemberOrganizationRole.objects.filter(active=False, org_id=org_id,
                                             **viewable_dict).order_by('position')        
     
     if show_all == 'all':
@@ -186,24 +166,24 @@ def list_deleted_projectmemberships(request, pro_id):
                 for item_id in selected_items:
                     item = int(item_id)  # Ensure item_id is converted to int if necessary
                     if bulk_operation == 'bulk_restore':
-                        object = get_object_or_404(Projectmembership, pk=item, active=False, **viewable_dict)
+                        object = get_object_or_404(MemberOrganizationRole, pk=item, active=False, **viewable_dict)
                         object.active = True
                         object.save()         
                     elif bulk_operation == 'bulk_erase':
-                        object = get_object_or_404(Projectmembership, pk=item, active=False, **viewable_dict)
+                        object = get_object_or_404(MemberOrganizationRole, pk=item, active=False, **viewable_dict)
                         object.active = False  
                         object.deleted = True             
                         object.save()    
                     else:
-                        redirect('list_projectmemberships', pro_id=pro_id)
-                redirect('list_projectmemberships', pro_id=pro_id)
+                        redirect('list_memberorganizationroles', org_id=org_id)
+                redirect('list_memberorganizationroles', org_id=org_id)
     
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'list_deleted_projectmemberships',
-        'project': project,
-        'pro_id': pro_id,
+        'page': 'list_deleted_memberorganizationroles',
+        'organization': organization,
+        'org_id': org_id,
         
         'module_path': module_path,
         'user': user,
@@ -214,44 +194,43 @@ def list_deleted_projectmemberships(request, pro_id):
         'show_all': show_all,
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
-        'page_title': f'Projectmembership List',
+        'page_title': f'Memberorganizationrole List',
     }       
-    template_file = f"{app_name}/{module_path}/list_deleted_projectmemberships.html"
+    template_file = f"{app_name}/{module_path}/list_deleted_memberorganizationroles.html"
     return render(request, template_file, context)
 
 
 
 # Create View
 @login_required
-
-def create_projectmembership(request, pro_id):
+def create_memberorganizationrole(request, org_id):
     user = request.user
-    project = Project.objects.get(id=pro_id, active=True, 
+    organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
     if request.method == 'POST':
-        form = ProjectmembershipForm(request.POST)
+        form = MemberorganizationroleForm(request.POST)
         if form.is_valid():
             form.instance.author = user
-            form.instance.project_id = pro_id
+            form.instance.org_id = org_id
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
-        return redirect('list_projectmemberships', pro_id=pro_id)
+        return redirect('list_memberorganizationroles', org_id=org_id)
     else:
-        form = ProjectmembershipForm()
+        form = MemberorganizationroleForm()
 
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'create_projectmembership',
-        'project': project,
-        'pro_id': pro_id,
+        'page': 'create_memberorganizationrole',
+        'organization': organization,
+        'org_id': org_id,
         
         'module_path': module_path,
         'form': form,
-        'page_title': f'Create Projectmembership',
+        'page_title': f'Create Memberorganizationrole',
     }
-    template_file = f"{app_name}/{module_path}/create_projectmembership.html"
+    template_file = f"{app_name}/{module_path}/create_memberorganizationrole.html"
     return render(request, template_file, context)
 
 
@@ -259,127 +238,122 @@ def create_projectmembership(request, pro_id):
 
 # Edit
 @login_required
-
-def edit_projectmembership(request, pro_id, projectmembership_id):
+def edit_memberorganizationrole(request, org_id, memberorganizationrole_id):
     user = request.user
-    project = Project.objects.get(id=pro_id, active=True, 
+    organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    object = get_object_or_404(Projectmembership, pk=projectmembership_id, active=True,**viewable_dict)
+    object = get_object_or_404(Memberorganizationrole, pk=memberorganizationrole_id, active=True,**viewable_dict)
     if request.method == 'POST':
-        form = ProjectmembershipForm(request.POST, instance=object)
+        form = MemberorganizationroleForm(request.POST, instance=object)
         if form.is_valid():
             form.instance.author = user
-            form.instance.project_id = pro_id
+            form.instance.org_id = org_id
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
-        return redirect('list_projectmemberships', pro_id=pro_id)
+        return redirect('list_memberorganizationroles', org_id=org_id)
     else:
-        form = ProjectmembershipForm(instance=object)
+        form = MemberorganizationroleForm(instance=object)
 
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'edit_projectmembership',
-        'project': project,
-        'pro_id': pro_id,
+        'page': 'edit_memberorganizationrole',
+        'organization': organization,
+        'org_id': org_id,
         
         'module_path': module_path,
         'form': form,
         'object': object,
-        'page_title': f'Edit Projectmembership',
+        'page_title': f'Edit Memberorganizationrole',
     }
-    template_file = f"{app_name}/{module_path}/edit_projectmembership.html"
+    template_file = f"{app_name}/{module_path}/edit_memberorganizationrole.html"
     return render(request, template_file, context)
 
 
 
 @login_required
-
-def delete_projectmembership(request, pro_id, projectmembership_id):
+def delete_memberorganizationrole(request, org_id, memberorganizationrole_id):
     user = request.user
-    project = Project.objects.get(id=pro_id, active=True, 
+    organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    object = get_object_or_404(Projectmembership, pk=projectmembership_id, active=True,**viewable_dict)
+    object = get_object_or_404(MemberOrganizationRole, pk=memberorganizationrole_id, active=True,**viewable_dict)
     if request.method == 'POST':
         object.active = False
         object.save()
-        return redirect('list_projectmemberships', pro_id=pro_id)
+        return redirect('list_memberorganizationroles', org_id=org_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'delete_projectmembership',
-        'project': project,
-        'pro_id': pro_id,
+        'page': 'delete_memberorganizationrole',
+        'organization': organization,
+        'org_id': org_id,
         
         'module_path': module_path,        
         'object': object,
-        'page_title': f'Delete Projectmembership',
+        'page_title': f'Delete Memberorganizationrole',
     }
-    template_file = f"{app_name}/{module_path}/delete_projectmembership.html"
+    template_file = f"{app_name}/{module_path}/delete_memberorganizationrole.html"
     return render(request, template_file, context)
 
 
 @login_required
-
-def permanent_deletion_projectmembership(request, pro_id, projectmembership_id):
+def permanent_deletion_memberorganizationrole(request, org_id, memberorganizationrole_id):
     user = request.user
-    project = Project.objects.get(id=pro_id, active=True, 
+    organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    object = get_object_or_404(Projectmembership, pk=projectmembership_id, active=False, deleted=False, **viewable_dict)
+    object = get_object_or_404(MemberOrganizationRole, pk=memberorganizationrole_id, active=False, deleted=False, **viewable_dict)
     if request.method == 'POST':
         object.active = False
         object.deleted = True
         object.save()
-        return redirect('list_projectmemberships', pro_id=pro_id)
+        return redirect('list_memberorganizationroles', org_id=org_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'permanent_deletion_projectmembership',
-        'project': project,
-        'pro_id': pro_id,
+        'page': 'permanent_deletion_memberorganizationrole',
+        'organization': organization,
+        'org_id': org_id,
         
         'module_path': module_path,        
         'object': object,
-        'page_title': f'Permanent Deletion Projectmembership',
+        'page_title': f'Permanent Deletion MemberOrganizationRole',
     }
-    template_file = f"{app_name}/{module_path}/permanent_deletion_projectmembership.html"
+    template_file = f"{app_name}/{module_path}/permanent_deletion_memberorganizationrole.html"
     return render(request, template_file, context)
 
 
 @login_required
-
-def restore_projectmembership(request,  pro_id, projectmembership_id):
+def restore_memberorganizationrole(request,  org_id, memberorganizationrole_id):
     user = request.user
-    object = get_object_or_404(Projectmembership, pk=projectmembership_id, active=False,**viewable_dict)
+    object = get_object_or_404(MemberOrganizationRole, pk=memberorganizationrole_id, active=False,**viewable_dict)
     object.active = True
     object.save()
-    return redirect('list_projectmemberships', pro_id=pro_id)
+    return redirect('list_memberorganizationroles', org_id=org_id)
    
 
 
 @login_required
-
-def view_projectmembership(request, pro_id, projectmembership_id):
+def view_memberorganizationrole(request, org_id, memberorganizationrole_id):
     user = request.user
-    project = Project.objects.get(id=pro_id, active=True, 
+    organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    object = get_object_or_404(Projectmembership, pk=projectmembership_id, active=True,**viewable_dict)    
+    object = get_object_or_404(MemberOrganizationRole, pk=memberorganizationrole_id, active=True,**viewable_dict)    
 
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'view_projectmembership',
-        'project': project,
-        'pro_id': pro_id,
+        'page': 'view_memberorganizationrole',
+        'organization': organization,
+        'org_id': org_id,
         
         'module_path': module_path,
         'object': object,
-        'page_title': f'View Projectmembership',
+        'page_title': f'View Memberorganizationrole',
     }
-    template_file = f"{app_name}/{module_path}/view_projectmembership.html"
+    template_file = f"{app_name}/{module_path}/view_memberorganizationrole.html"
     return render(request, template_file, context)
 
 

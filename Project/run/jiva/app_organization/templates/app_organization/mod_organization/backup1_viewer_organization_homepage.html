@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ organization.name }} - Organization Home</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css" rel="stylesheet">
+        <script type="module">
+            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+        
+    </head>
+    <style>
+         /* Sidebar */
+         .sidebar {
+            width: 60px;
+            background-color: darkblue;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            padding-top: 20px;
+            transition: width 0.3s;
+            overflow: hidden;
+            position: fixed;
+            top: 20px; /* Under the navbar */
+            bottom: 20px; /* Above the footer */
+            z-index: 1000;
+        }
+
+        .sidebar:hover {
+            width: 250px;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            font-size: 1.2em;
+            text-align: left;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+
+        .sidebar .nav-link span {
+            white-space: nowrap;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar:hover .nav-link span {
+            opacity: 1;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #495057;
+            border-radius: 5px;
+        }
+
+        .sidebar .settings {
+            margin-top: auto;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .settings .nav-link {
+            color: white;
+            font-size: 1.2em;
+        }
+
+        /* Content area with scrolling */
+        .contentbar {
+            margin-left: 60px;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto; /* Enable scrolling only for the contentbar */
+            position: relative;
+            top: 20px; /* Below navbar */
+            bottom: 20px; /* Above footer */
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        /* Navbar and Footer */
+        .navbar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: darkblue;
+            color: white;
+            z-index: 2; /* Above sidebar */
+            font-size: 14px; /* Font size for navbar */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .footer-fixed {
+            position: fixed;
+            bottom: 0;
+            left: 60px; /* Align footer below the sidebar */
+            width: calc(100% - 60px); /* Footer takes up remaining width */
+            height: 20px;
+            background-color: white;
+            color: black;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 0;
+        }
+
+        /* Project homepage container */
+        .project-homepage {
+            font-size: 14px;
+        }
+
+        /* Responsive layout for Left, Middle, Right */
+        .row > .col-md-4 {
+            display: flex;
+            justify-content: start; /* Align left */
+            padding: 10px;
+        }
+
+        /* Stack Left, Middle, Right vertically and left-aligned on smaller screens */
+        @media (max-width: 768px) {
+            .row > .col-md-4 {
+                flex-basis: 100%; /* Stack vertically */
+                text-align: left; /* Keep text aligned to the left */
+            }
+        }
+
+    </style>
+<body>
+ <!-- Fixed Navbar -->
+ <div class="navbar-fixed">
+    Navbar Content (14px font size)
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <a href="#" class="nav-link active" data-url="content/home.html">
+        <i class="bi bi-house-fill"></i>
+        <span>Home</span>
+    </a>
+    <a href="#" class="nav-link" data-url="content/vision-mission.html">
+        <i class="bi bi-eye-fill"></i>
+        <span>Vision & Mission</span>
+    </a>
+    <a href="#" class="nav-link" data-url="content/values.html">
+        <i class="bi bi-heart-fill"></i>
+        <span>Values</span>
+    </a>
+    <a href="#" class="nav-link" data-url="content/strategy.html">
+        <i class="bi bi-lightbulb-fill"></i>
+        <span>Strategy</span>
+    </a>
+    <a href="#" class="nav-link" data-url="content/initiatives.html">
+        <i class="bi bi-gear-fill"></i>
+        <span>Initiatives</span>
+    </a>
+    <a href="#" class="nav-link" data-url="content/roadmap.html">
+        <i class="bi bi-map-fill"></i>
+        <span>Roadmap</span>
+    </a>
+    <a href="/" class="nav-link" data-url="content/back.html">
+        <i class="bi bi-arrow-left-circle-fill"></i>
+        <span>Back</span>
+    </a>
+    <div class="settings">
+        <a href="#" class="nav-link" data-url="content/settings.html">
+            <i class="bi bi-gear-wide-connected"></i>
+            <span>Settings</span>
+        </a>
+    </div>
+</div>
+
+
+
+<div class="contentbar">
+
+
+<div class="container mt-1">
+    <h1 class="text-center">Organization: {{ organization.name }}</h1>
+    <div class="container-fluid-width">
+        <div class="col-md-4">
+            <a href="{% url 'list_organizations' %}">Organizations</a>
+        </div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4"></div>
+    </div>
+    <table class="table table-bordered">
+        <!-- <thead class="thead-dark">
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        </thead> -->
+        <tbody>
+        <tr>
+            <td><b>Name</b></td>
+            <td  id="org-name"
+           
+            >{{ organization.name }}</td>
+        </tr>
+        <tr>
+            <td><b>Vision</b></td>
+            <td  id="org-vision"
+           
+            >{{ org_detail.vision }}</td>
+        </tr>
+        <tr>
+            <td><b>Mission</b></td>
+            <td  id="org-mission"
+            
+            >{{ org_detail.mission }}</td>
+        </tr>
+        <tr>
+            <td><b>Values</b></td>
+            <td  id="org-values"
+            
+            >{{ org_detail.values }}</td>
+        </tr>
+        <tr>
+            <td><b>Strategy</b></td>
+            <td  id="org-strategy"
+            
+            >{{ org_detail.strategy }}</td>
+        </tr>
+        <tr>
+            <td><b>Roadmap</b></td>
+            <td  id="org-roadmap"
+           
+            >{{ org_detail.roadmap_description }}</td>
+        </tr>
+        <tr>
+            <td><b>Visual Roadmap</b>
+           
+            </td>
+            <td id="visual_roadmap">
+                <h3 class="mt-5">Roadmap (1-3 Years)</h3>
+                <div class="mermaid">
+                    {{ roadmap|safe }}
+                </div>
+
+                <hr>
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <b class="h5">{{organization}}</b> Project(s)
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th width="2%">#</th>
+            <th>Project Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for project in projects %}
+        <tr>
+            <td width="2%">{{forloop.counter}}</td>
+            <td>{{ project.name }}</td>
+            <td>{{ project.description }}</td>
+            <td>
+                <a href="{% url 'project_homepage' organization.id project.id %}">View</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2" class="text-center">No projects available.</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- <button class="btn btn-primary" onclick="saveChanges()">Save Changes</button> -->
+</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</body>
+</html>

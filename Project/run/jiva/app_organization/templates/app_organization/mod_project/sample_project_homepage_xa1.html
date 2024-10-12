@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Home Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        /* Basic Reset */
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            height: 100vh;
+            font-size: 11px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 60px;
+            background-color: darkblue;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            padding-top: 20px;
+            transition: width 0.3s;
+            overflow: hidden;
+            position: fixed;
+            top: 20px; /* Under the navbar */
+            bottom: 20px; /* Above the footer */
+            z-index: 1;
+        }
+
+        .sidebar:hover {
+            width: 250px;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            font-size: 1.2em;
+            text-align: left;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+
+        .sidebar .nav-link span {
+            white-space: nowrap;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar:hover .nav-link span {
+            opacity: 1;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #495057;
+            border-radius: 5px;
+        }
+
+        .sidebar .settings {
+            margin-top: auto;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .settings .nav-link {
+            color: white;
+            font-size: 1.2em;
+        }
+
+        /* Content area with scrolling */
+        .contentbar {
+            margin-left: 60px;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            top: 20px; /* Below navbar */
+            bottom: 20px; /* Above footer */
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        /* Navbar and Footer */
+        .navbar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #343a40;
+            color: white;
+            z-index: 2; /* Above sidebar */
+            font-size: 11px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .footer-fixed {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #343a40;
+            color: white;
+            z-index: 0; /* Below sidebar */
+            font-size: 11px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Project homepage container */
+        .project-homepage {
+            font-size: 12px;
+        }
+
+        /* Set the project homepage to take up the rest of the space */
+        .project-homepage {
+            width: calc(100vw - 60px); /* Full width minus the sidebar */
+            height: calc(100vh - 40px); /* Full height minus navbar and footer */
+            overflow-x: auto; /* Horizontal scroll */
+            overflow-y: auto; /* Vertical scroll */
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Fixed Navbar -->
+    <div class="navbar-fixed">
+        Navbar Content (11px font size)
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="#" class="nav-link active" data-url="content/home.html">
+            <i class="bi bi-house-fill"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-link" data-url="content/vision-mission.html">
+            <i class="bi bi-eye-fill"></i>
+            <span>Vision & Mission</span>
+        </a>
+        <a href="#" class="nav-link" data-url="content/values.html">
+            <i class="bi bi-heart-fill"></i>
+            <span>Values</span>
+        </a>
+        <a href="#" class="nav-link" data-url="content/strategy.html">
+            <i class="bi bi-lightbulb-fill"></i>
+            <span>Strategy</span>
+        </a>
+        <a href="#" class="nav-link" data-url="content/initiatives.html">
+            <i class="bi bi-gear-fill"></i>
+            <span>Initiatives</span>
+        </a>
+        <a href="#" class="nav-link" data-url="content/roadmap.html">
+            <i class="bi bi-map-fill"></i>
+            <span>Roadmap</span>
+        </a>
+        <a href="{% url 'viewer_org_homepage' org_id %}" class="nav-link" data-url="content/back.html">
+            <i class="bi bi-arrow-left-circle-fill"></i>
+            <span>Back</span>
+        </a>
+        <div class="settings">
+            <a href="#" class="nav-link" data-url="content/settings.html">
+                <i class="bi bi-gear-wide-connected"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Content area -->
+    <div class="contentbar" id="contentbar">
+        <div id="content">
+            <div class="project-homepage container-fluid-width">
+                <div class="row">
+                    <div class="col-md-4 justify-content-start">LEFT</div>
+                    <div class="col-md-4 justify-content">MIDDLE</div>
+                    <div class="col-md-4 text-end bg-primary">RIGHT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer-fixed">
+        Footer Content (11px font size)
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script>
+        // Example of handling sidebar navigation link clicks
+        document.querySelector('.nav-link.active').click();
+    </script>
+</body>
+</html>

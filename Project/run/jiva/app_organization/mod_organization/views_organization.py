@@ -40,7 +40,9 @@ def list_organizations(request):
     search_query = request.GET.get('search', '')
     deleted_count = 0
     relevant_admin = False
+    is_site_admin = False
     is_org_admin = False
+    is_project_admin = False
     # Fetch all active memberships for the user across any organization
     memberships = Member.objects.filter(user=user, active=True)
     is_site_admin = MemberOrganizationRole.objects.filter(member__in=memberships, role__name=site_admin_str).exists()
@@ -165,6 +167,7 @@ def list_organizations(request):
 
         'page_title': f'Organization List',
         'relevant_admin': relevant_admin,
+        'is_project_admin': is_project_admin,
         'is_org_admin': is_org_admin,
         'is_site_admin': is_site_admin,
     }       
@@ -432,19 +435,42 @@ def org_homepage(request,  org_id):
     template_file = f"{app_name}/{module_path}/organization_homepage.html"
     return render(request, template_file, context)
 
-@login_required
-def ajax_update_org_details(request, org_id):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        organization = Organizationdetail.objects.get(id=org_id)
-        organization.name = data['name']
-        organization.vision = data['vision']
-        organization.mission = data['mission']
-        organization.values = data['values']
-        organization.strategy = data['strategy']
-        organization.roadmap = data['roadmap']
-        organization.save()
-        logger.debug(f">>> === organization: {organization} === <<<")
-        return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'}, status=400)
 
+
+@login_required
+def viewer_org_homepage(request,  org_id):
+    user = request.user
+    
+    organization = get_object_or_404(Organization, pk=org_id, 
+                               active=True, **viewable_dict)    
+    org_detail = organization.org_details.first()
+    
+    projects = organization.org_projects.filter(active=True)
+    roadmap_items = organization.roadmap_items.order_by('start_date').filter(active=True)
+
+    # Create a dynamic Gantt chart string for Mermaid.js
+    roadmap_str = "gantt\n    title Organizational Roadmap\n    dateFormat  YYYY-MM-DD\n"
+    
+    current_section = ""
+    
+    for item in roadmap_items:
+        if item.section != current_section:
+            roadmap_str += f"    section {item.section}\n"
+            current_section = item.section
+        
+        roadmap_str += f"    {item.task_name} :{item.status}, {item.start_date}, {item.end_date}\n"
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_organization',
+        
+        'module_path': module_path,
+        'user': user,
+        'organization': organization,
+        'org_detail': org_detail,
+        'projects': projects,
+        'roadmap': roadmap_str,
+        'page_title': f'Organization Homepage',
+    }
+    template_file = f"{app_name}/{module_path}/viewer_organization_homepage.html"
+    return render(request, template_file, context)

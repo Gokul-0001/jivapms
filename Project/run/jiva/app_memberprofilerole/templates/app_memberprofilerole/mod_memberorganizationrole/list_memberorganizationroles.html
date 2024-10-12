@@ -19,11 +19,10 @@
   }
 </style>
 <!-- Begin: Content -->
-
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_roadmapitem/breadcrumb_roadmapitems.html' %}
+            {% include 'app_memberprofilerole/mod_memberorganizationrole/breadcrumb_memberorganizationroles.html' %}
         </div>
     </div>
 </div>
@@ -37,9 +36,9 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">Roadmapitem</b>
+                                <b class="h2">Member organization role</b>
                                 &nbsp;&nbsp;
-                                Roadmapitem List
+                                List
                                
                             </div>
                             <div class="col col-md-4">
@@ -52,22 +51,30 @@
                                 </form>
                             </div>
                             <div class="col col-md-3 text-end">
-                                <span class="display_count">{{objects_count}} roadmapitem(s)</span>
+                                <span class="display_count">{{objects_count}} role(s)</span>
                                 &nbsp;&nbsp;
-                                <a href="{% url 'create_roadmapitem' org_id  %}" 
-                                class="btn btn-sm btn-success"><b>+ Create Roadmap item</b></a>
+                                <a href="{% url 'create_memberorganizationrole' org_id  %}" 
+                                class="btn btn-sm btn-success"><b>+ Add Org Membership </b></a>
                             </div>
                         </div>
                     </div>
                     <form action="" method="POST">
-                        {% csrf_token %}
+                    {% csrf_token %}                    
                     <table class="table table-bordered sortable_table">
                         <thead>
                             <tr>
-                                <td colspan="5"></td>
-                                <td colspan="4" class="justify-content">
+                                <th width="2%"><i class="bi bi-grip-vertical"></i></th>
+                                <th width="2%">
+                                    <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
+                                </th>                                
+                                <th width="2%">#</th>
+                                <th>Member</th>
+                                <th width="10%">Organizaiton</th>
+                                <th width="10%">Role</th>
+                                <th width="10%">Configure</th>
+                                <th width="10%">                                    
+                                    Actions
                                     &nbsp;&nbsp;
-                                    <b>Page:</b>&nbsp;&nbsp;
                                     <select name="pagination" id="paginationselect">
                                         <option value="none" {% if selected_pagination == 'none' %}selected{% endif %}>-Page-</option>
                                         {% for option in pagination_options %}
@@ -87,22 +94,6 @@
                                         <option value="bulk_delete" {% if 'bulk_delete' in selected_bulk_operations %}selected{% endif %}>Delete</option>
                                     </select>
                                                          
-                                </td>
-                            </tr>
-                            <tr>
-                                <th width="2%"><i class="bi bi-grip-vertical"></i></th>
-                                <th width="2%">
-                                    <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
-                                </th>                                
-                                <th width="2%">#</th>
-                                <th>Roadmapitem</th>
-                                <th width="20%">Description</th>
-                                <th width="4%">Status</th>
-                                <th width="10%">Start Date</th>
-                                <th width="10%">End Date</th>
-                                <th width="10%">                                    
-                                    Actions
-                                   
                                 </th>
                             </tr>
                         </thead>
@@ -118,28 +109,25 @@
                                 </td>
                                 <td>{{forloop.counter}}</td>
                                 <td width="20%" ondblclick="makeEditable(this)"
-                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Roadmapitem', 'section')"
-                                ><strong>{{tobject.section}}</strong></td>
+                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_memberprofilerole', 'Memberorganizationrole', 'member')"
+                                ><strong>{{tobject.member}}</strong></td>
                                 <td width="" ondblclick="makeEditable(this)"
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Roadmapitem', 'task_name')"
-                                >{% if tobject.task_name != None %}{{tobject.task_name}}{% endif %}</td>
-                                <td width="" 
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Roadmapitem', 'status')"
-                                >{% if tobject.status != None %}{{tobject.status}}{% endif %}</td>
-                                <td data-type="date" width="" 
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Roadmapitem', 'start_date')"
-                                >{% if tobject.start_date != None %}{{tobject.start_date}}{% endif %}</td>
-                                <td data-type="date" width="" 
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Roadmapitem', 'end_date')"
-                                >{% if tobject.end_date != None %}{{tobject.end_date}}{% endif %}</td>
-                                <td width="10%">
-                                    <a href="{% url 'view_roadmapitem' org_id  tobject.id  %}"
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_memberprofilerole', 'Memberorganizationrole', 'org')"
+                                >{% if tobject.org != None %}{{tobject.org}}{% endif %}</td>
+                                <td width="" ondblclick="makeEditable(this)"
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_memberprofilerole', 'Memberorganizationrole', 'role')"
+                                >{% if tobject.role != None %}{{tobject.role}}{% endif %}</td>
+                                <td width="20%">
+                                
+                                </td>
+                                <td width="50%">
+                                    <a href="{% url 'view_memberorganizationrole' org_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'edit_roadmapitem' org_id  tobject.id %}"
+                                    <a href="{% url 'edit_memberorganizationrole' org_id  tobject.id %}"
                                     class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'delete_roadmapitem' org_id  tobject.id %}"
+                                    <a href="{% url 'delete_memberorganizationrole' org_id  tobject.id %}"
                                     class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
                                 </td>
                             </tr>
@@ -158,7 +146,7 @@
 </div>
  <div class="trash-icon">
     {% if deleted_count > 0 %}
-    <a href="{% url 'list_deleted_roadmapitems' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+    <a href="{% url 'list_deleted_memberorganizationroles' org_id %}"><i class="bi bi-trash-fill"></i></a>    
     {% endif %}
 </div>
 </form>
@@ -181,19 +169,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=5";
+      window.location.href = "{% url 'list_memberorganizationroles' org_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=10";
+      window.location.href = "{% url 'list_memberorganizationroles' org_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=15";
+      window.location.href = "{% url 'list_memberorganizationroles' org_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_roadmapitems' org_id  %}?page=1&all=25";
+      window.location.href = "{% url 'list_memberorganizationroles' org_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=50";
+      window.location.href = "{% url 'list_memberorganizationroles' org_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=100";
+      window.location.href = "{% url 'list_memberorganizationroles' org_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_roadmapitems' org_id %}?page=1&all=all";
+      window.location.href = "{% url 'list_memberorganizationroles' org_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });
@@ -215,8 +203,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 type: 'POST',
                 data : {
                   'csrfmiddlewaretoken': "{{ csrf_token }}",
-                  'model_name': 'Roadmapitem',
-                  'app_name': 'app_organization',
+                  'model_name': 'Memberorganizationrole',
+                  'app_name': 'app_memberprofilerole',
                   'sorted_list_data': JSON.stringify(arrayOrder),
                   
                 },
@@ -228,77 +216,35 @@ document.addEventListener("DOMContentLoaded", function () {
             }
     });
 </script>
+
+
 <script>
-    function makeEditable(tdElement) {
-        if (tdElement.getAttribute('data-type') === 'date') {
-            // Add an input for datepicker if the cell is for a date
-            let dateInput = document.createElement('input');
-            dateInput.type = 'text';
-            dateInput.value = tdElement.textContent.trim();
-            dateInput.className = 'form-control datepicker';
-            tdElement.innerHTML = '';  // Clear the current cell content
-            tdElement.appendChild(dateInput);
-
-            // Initialize the datepicker on this input
-            $(dateInput).datepicker({
-                format: 'M d, yyyy',
-                autoclose: true
-            });
-
-            // Focus on the input after creating it
-            dateInput.focus();
-
-            // Handle the datepicker's on close event
-            $(dateInput).on('changeDate', function() {
-                // Set the text content of the td to the selected date after closing
-                tdElement.textContent = dateInput.value;
-                
-                // Call save_element_text after the date is selected
-                save_element_text(tdElement, tdElement.getAttribute('data-id'), 'app_organization', 'Roadmapitem', tdElement.getAttribute('data-field'));
-            });
-
-        } else {
-            // Make the cell content editable for non-date fields
-            tdElement.contentEditable = true;
-            tdElement.focus();
-        }
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
     }
 
-    function save_element_text(element, id, appName, modelName, fieldName) {
-        element.contentEditable = false;  // Disable editing
 
+    function save_element_text(element, id,  appName, modelName, fieldName) {
+        element.contentEditable = false;
         $.ajax({
             url: '/common/common_ajax/ajax_save_element_text/',
             type: 'POST',
-            data: {
-                'csrfmiddlewaretoken': "{{ csrf_token }}",
-                'model_name': modelName,
-                'app_name': appName,
-                'field_name': fieldName,
-                'text': element.textContent.trim(),  // Use the trimmed text content
-                'id': id,
+            data : {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'model_name': modelName,
+            'app_name': appName,
+            'field_name': fieldName,
+            'text': element.textContent, 
+            'id': id,
             },
             dataType: 'json',
             success: function(data) {
-                if (data.status === 'success') {
-                    console.log('Save successful:', data);
-                } else {
-                    console.log('Error:', data.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', status, error);
-                alert('There was an error saving your changes: ' + error);
+            console.log(data);
             }
-        });
+        })
     }
 </script>
-
-
-
-<!-- Now load Bootstrap Datepicker -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 
 <!-- End: Content -->
 {% endblock content %}

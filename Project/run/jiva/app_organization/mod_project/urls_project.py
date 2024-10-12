@@ -6,6 +6,7 @@ from app_organization.mod_project import views_project
 
 urlpatterns = [
     # app_organization/projects: DB/Model: Project
+    path('project_homepage/<int:org_id>/<int:project_id>/', views_project.project_homepage, name='project_homepage'),
     path('list_projects/<int:org_id>/', views_project.list_projects, name='list_projects'),
     path('list_deleted_projects/<int:org_id>/', views_project.list_deleted_projects, name='list_deleted_projects'),
     path('create_project/<int:org_id>/', views_project.create_project, name='create_project'),

@@ -37,7 +37,10 @@ def list_projects(request, org_id):
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
     deleted_count = 0
-
+    has_projects_admin = False
+    is_project_admin = False
+    user_memberships = None
+    relevant_admin = False
     # Fetch the organization
     organization = get_object_or_404(Organization, id=org_id, active=True)
     memberships = Member.objects.filter(user=user, active=True)
@@ -46,11 +49,16 @@ def list_projects(request, org_id):
         member__in=memberships,
         role__name=org_admin_str
     )
-    logger.debug(f">>> === OrgAdmin: org_admin_roles:{org_admin_roles} === <<<")
+    project_admin_roles = MemberOrganizationRole.objects.filter(
+        member__in=memberships,
+        role__name=project_admin_str
+    )
+    
+    logger.debug(f">>> === OrgAdmin: org_admin_roles:{org_admin_roles}:{project_admin_roles} === <<<")
     is_org_admin = org_admin_roles.exists()
-    is_project_admin = False
-    user_memberships = None
-    relevant_admin = False
+    is_project_admin = project_admin_roles.exists()
+
+    
     # Filter projects based on user access
     if is_org_admin:
         # Org admins can see all active projects in the organizations they manage
@@ -74,7 +82,7 @@ def list_projects(request, org_id):
         ).distinct().order_by('position')
         
         admin_role_id = ProjectRole.objects.get(role_type=PROJECT_ADMIN_ROLE_STR, active=True).id
-        is_project_admin = Projectmembership.objects.filter(
+        has_projects_admin = Projectmembership.objects.filter(
                         member__in=memberships,
                         project_role_id=admin_role_id,
                         project__org_id=org_id,
@@ -441,3 +449,24 @@ def view_project(request, org_id, project_id):
     return render(request, template_file, context)
 
 
+@login_required
+@org_or_project_access_required(project_allowed_roles=[PROJECT_ADMIN_ROLE_STR, PROJECT_EDITOR_ROLE_STR, PROJECT_VIEWER_ROLE_STR])
+def project_homepage(request, org_id, project_id):
+    user = request.user
+    organization = Organization.objects.get(id=org_id, active=True, 
+                                                **first_viewable_dict)
+    
+    object = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)    
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'project_homepage',
+        'organization': organization,
+        'org_id': org_id,
+        
+        'module_path': module_path,
+        'object': object,
+        'page_title': f'Project Homepage',
+    }
+    template_file = f"{app_name}/{module_path}/project_homepage.html"
+    return render(request, template_file, context)
