@@ -148,73 +148,57 @@ def project_related_access_check(allowed_roles=None):
         return _wrapped_view
     return decorator
 
-############################################################################################################
-# def project_access_required(allowed_roles=None):
-#     if allowed_roles is None:
-#         allowed_roles = ['Viewer', 'Editor', 'Admin']  # Default roles for access
+# SA, this OA editable, or member of this org for viewable
+def site_admin_this_org_admin_or_member_of_org(view_func):
+    """
+    Decorator to check if the user is a Site Admin, Organization Admin, or Member.
+    It passes 'editable' status to the view.
+    """
 
-#     def decorator(view_func):
-#         @wraps(view_func)
-#         def _wrapped_view(request, *args, **kwargs):
-#             project_id = kwargs.get('project_id')
-#             project = Project.objects.get(id=project_id, active=True)
+    @wraps(view_func)
+    def _wrapped_view(request, org_id, *args, **kwargs):
+        user = request.user
+        
+        # Member
+        member = Member.objects.filter(user=user).first()
+        
+        # Fetch the organization
+        organization = get_object_or_404(Organization, pk=org_id, active=True)
+        
+        # Check if user is a Site Admin (general admin role)
+        is_site_admin = MemberOrganizationRole.objects.filter(name=site_admin_str).exists()
 
-#             # Check if the user is a member of the organization
-#             try:
-#                 member = Member.objects.get(user=request.user, organization=project.org)
-#             except Member.DoesNotExist:
-#                 return HttpResponseForbidden("You are not a member of this organization.")
+        # role id
+        org_admin_role_id = Role.objects.get(name=org_admin_str).id
+        
+        # Check if the user is an Organization Admin for this organization
+        is_org_admin = MemberOrganizationRole.objects.filter(
+            member_id=member.id, 
+            org=organization, 
+            role=org_admin_role_id,  # Assuming this is the role for Org Admin
+            active=True
+        ).exists()
 
-#             # Check if the member has a role in the project
-#             try:
-#                 project_membership = Projectmembership.objects.get(member=member, project=project)
-#             except Projectmembership.DoesNotExist:
-#                 return HttpResponseForbidden("You are not part of this project.")
+        # Check if the user has any member role within the organization
+        is_member = MemberOrganizationRole.objects.filter(
+            member_id=member.id,  
+            org=organization, 
+            active=True
+        ).exists()
+        
+        # Determine if the page is editable
+        editable = is_site_admin or is_org_admin
 
-#             # Check if the user's role is in the allowed roles
-#             if project_membership.role.name not in allowed_roles:
-#                 return HttpResponseForbidden(f"You must have one of these roles: {', '.join(allowed_roles)} to access this page.")
+        # If user is not a member and not a Site Admin, raise permission denied
+        if not is_member and not is_site_admin:
+            template_url = "common/error/access_denied.html"
+            context = {}
+            return render(request, template_url, context)
+        
+        # Pass 'editable' and 'organization' to the view
+        request.organization = organization
+        request.editable = editable
+        
+        return view_func(request, org_id, *args, **kwargs)
 
-#             # Pass the member and project_membership to the view
-#             return view_func(request, member, project_membership, *args, **kwargs)
-
-#         return _wrapped_view
-#     return decorator
-
-
-"""
-@project_access_required(allowed_roles=['Viewer', 'Editor', 'Admin'])
-def project_detail_view(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    return render(request, 'project_detail.html', {'project': project})
-
-@project_access_required(allowed_roles=['Editor', 'Admin'])
-def project_edit_view(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    # Editing logic here
-    return render(request, 'project_edit.html', {'project': project})
-
-@project_access_required()
-def project_general_view(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    return render(request, 'project_general.html', {'project': project})
-    
-# Example Usage:
-from django.shortcuts import render, get_object_or_404
-from .org_decorators import project_access_required
-
-@project_access_required(allowed_roles=['Viewer', 'Editor', 'Admin'])
-def project_detail_view(request, member, project_membership, project_id):
-    project = get_object_or_404(Project, id=project_id)
-
-    # Now you can access the member and their role in the project
-    user_role = project_membership.role.name  # Role of the member in the project
-
-    return render(request, 'project_detail.html', {
-        'project': project,
-        'member': member,  # You can use member information in the template
-        'user_role': user_role,  # Use the role to control what they see or can do
-    })
-
-
-"""
+    return _wrapped_view

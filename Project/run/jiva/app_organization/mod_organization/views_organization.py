@@ -399,6 +399,7 @@ def view_organization(request,  organization_id):
 
 
 @login_required
+@site_admin_this_org_admin_or_member_of_org
 def org_homepage(request,  org_id):
     user = request.user
     
@@ -408,6 +409,20 @@ def org_homepage(request,  org_id):
     logger.debug(f">>> === org_detail: {organization.org_details} === <<<")
     
     projects = organization.org_projects.filter(active=True)
+    # if it is a project admin 
+    memberships = Member.objects.filter(user=user, active=True)
+    role_ids = ProjectRole.objects.filter(active=True).values_list('id', flat=True)
+    projects = Project.objects.filter(
+                project_members__member__in=memberships,
+                project_members__project_role_id__in=role_ids,
+                project_members__active=True,
+                org_id=org_id,
+                active=True
+            ).distinct().order_by('position')
+    logger.debug(f">>> === projects: {projects} === <<<")
+    
+    
+    
     roadmap_items = organization.roadmap_items.order_by('start_date').filter(active=True)
 
     # Create a dynamic Gantt chart string for Mermaid.js
@@ -434,7 +449,11 @@ def org_homepage(request,  org_id):
         'roadmap': roadmap_str,
         'page_title': f'Organization Homepage',
     }
-    template_file = f"{app_name}/{module_path}/organization_homepage.html"
+    editable = request.editable
+    if editable:
+        template_file = f"{app_name}/{module_path}/organization_homepage.html"
+    else:
+        template_file = f"{app_name}/{module_path}/viewer_organization_homepage.html"
     return render(request, template_file, context)
 
 

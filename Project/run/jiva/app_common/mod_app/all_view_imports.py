@@ -42,7 +42,7 @@ from markdownx.utils import markdownify
 from django.db import transaction
 from collections import defaultdict
 from django.db import IntegrityError
-from django.db.models import Q
+from django.core.exceptions import PermissionDenied
 import base64
 import os
 import platform

@@ -26,5 +26,4 @@ if [ -d "$PROJECT_DIR" ]; then
 else
     echo "Project directory '$PROJECT_NAME' does not exist."
     list_projects
-    exit 1
 fi
