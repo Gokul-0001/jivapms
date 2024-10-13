@@ -43,7 +43,7 @@ def list_memberroles(request, org_id):
         tobjects = Memberrole.objects.filter(name__icontains=search_query, 
                                             org_id=org_id, **viewable_dict).order_by('position')
     else:
-        tobjects = Memberrole.objects.filter(active=True, org_id=org_id, author=user).order_by('position')
+        tobjects = Memberrole.objects.filter(active=True, org_id=org_id).order_by('position')
         deleted = Memberrole.objects.filter(active=False, deleted=False,
                                 org_id=org_id,
                                **viewable_dict).order_by('position')

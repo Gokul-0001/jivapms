@@ -209,7 +209,7 @@ def create_teammember(request, tea_id):
                                                 **first_viewable_dict)
     
     if request.method == 'POST':
-        form = TeammemberForm(request.POST)
+        form = TeammemberForm(request.POST, team=team)
         if form.is_valid():
             form.instance.author = user
             form.instance.tea_id = tea_id
@@ -218,7 +218,7 @@ def create_teammember(request, tea_id):
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('list_teammembers', tea_id=tea_id)
     else:
-        form = TeammemberForm()
+        form = TeammemberForm(team=team)
 
     context = {
         'parent_page': '___PARENTPAGE___',
