@@ -202,3 +202,63 @@ def site_admin_this_org_admin_or_member_of_org(view_func):
         return view_func(request, org_id, *args, **kwargs)
 
     return _wrapped_view
+
+
+# OA, this PA editable, or member of this org for viewable
+def org_admin_this_project_admin_or_member_of_project(view_func):
+    """
+    Decorator to check if the user is a Site Admin, Organization Admin, or Member.
+    It passes 'editable' status to the view.
+    """
+
+    @wraps(view_func)
+    def _wrapped_view(request, org_id, project_id, *args, **kwargs):
+        user = request.user
+        
+        # Member
+        member = Member.objects.filter(user=user).first()
+        
+        # Fetch the organization
+        organization = get_object_or_404(Organization, pk=org_id, active=True)
+        
+        # Check if user is a Org Admin (general admin role)
+        is_org_admin = MemberOrganizationRole.objects.filter(name=org_admin_str, 
+                                                             org=organization).exists()
+
+        # role id
+        pa_admin_role_str = ProjectRole.objects.get(role_type=PROJECT_ADMIN_ROLE_STR).role_type
+        
+        # project
+        project = get_object_or_404(Project, pk=project_id, org=organization)
+        
+        # Check if the user is an Project Admin for this Project
+        is_project_admin = Projectmembership.objects.filter(
+            member_id=member.id, 
+            project=project,
+            project_role__role_type__in=[pa_admin_role_str],  # Assuming this is the role for Project Admin
+            active=True
+        ).exists()
+        
+        # Check if the user has any member role within the organization
+        is_member = Projectmembership.objects.filter(
+            member_id=member.id,  
+            project=project,
+            active=True
+        ).exists()
+        
+        # Determine if the page is editable
+        editable = is_org_admin or is_project_admin
+
+        # If user is not a member and not a Site Admin, raise permission denied
+        if not is_member and not is_org_admin:
+            template_url = "common/error/access_denied.html"
+            context = {}
+            return render(request, template_url, context)
+        
+        # Pass 'editable' and 'organization' to the view
+        request.organization = organization
+        request.editable = editable
+        
+        return view_func(request, org_id, project_id, *args, **kwargs)
+
+    return _wrapped_view

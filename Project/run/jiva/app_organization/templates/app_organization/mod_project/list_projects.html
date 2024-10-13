@@ -117,7 +117,7 @@
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%"> 
                                     <!-- ADMINISTRATIVE ACCESS -->
-                                    {% if relevant_admin  %}
+                                    {% if relevant_admin  %}                                    
                                     <a href="{% url 'list_teams' org_id %}">Teams</a>
                                     &nbsp;&nbsp;
                                     <a href="{% url 'list_memberroles' org_id %}">Member Role</a>
@@ -132,10 +132,14 @@
                                         Backlog
                                     </a>
                                     {% include './connected_projects.html' %}
+                                    
                                     {% endif %}
                                     <!-- ADMINISTRATIVE ACCESS -->
                                 </td>
                                 <td width="50%">
+                                    <a href="{% url 'project_homepage' org_id  tobject.id  %}"
+                                    class="btn btn-sm btn-primary"><i class="bi bi-clipboard-check"></i></a>
+                                    &nbsp;&nbsp;
                                     <a href="{% url 'view_project' org_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                     &nbsp;&nbsp;

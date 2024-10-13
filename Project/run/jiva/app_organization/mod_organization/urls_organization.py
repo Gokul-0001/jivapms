@@ -5,7 +5,7 @@ from app_organization.mod_organization import views_organization
 
 urlpatterns = [
     # app_organization/organizations: DB/Model: Organization
-    path('viewer_org_homepage/<int:org_id>/', views_organization.viewer_org_homepage, name='viewer_org_homepage'),
+    
     path('org_homepage/<int:org_id>/', views_organization.org_homepage, name='org_homepage'),
     path('list_organizations/', views_organization.list_organizations, name='list_organizations'),
     path('list_deleted_organizations/', views_organization.list_deleted_organizations, name='list_deleted_organizations'),

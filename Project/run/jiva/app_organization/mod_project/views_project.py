@@ -10,6 +10,8 @@ from app_jivapms.mod_app.all_view_imports import *
 from app_organization.org_decorators import *
 from app_organization.mod_projectmembership.models_projectmembership import *
 
+from app_organization.mod_project_roadmap.models_project_roadmap import *
+
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -450,7 +452,7 @@ def view_project(request, org_id, project_id):
 
 
 @login_required
-@org_or_project_access_required(project_allowed_roles=[PROJECT_ADMIN_ROLE_STR, PROJECT_EDITOR_ROLE_STR, PROJECT_VIEWER_ROLE_STR])
+@org_admin_this_project_admin_or_member_of_project
 def project_homepage(request, org_id, project_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
@@ -458,21 +460,38 @@ def project_homepage(request, org_id, project_id):
     
     project = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)   
     project_detail = project.project_details.first() 
+    roadmap_items = ProjectRoadmap.objects.filter(active=True)
+    logger.debug(f"Roadmap items for project {project.id}: {roadmap_items}")
+
     roadmap_items = project.project_roadmap_items.order_by('start_date').filter(active=True)
+    logger.debug(f">>> === ROADMAP ITEMS: {roadmap_items} === <<<")
     # Create a dynamic Gantt chart string for Mermaid.js
-    roadmap_str = "gantt\n    title Project Roadmap\n    dateFormat  YYYY-MM-DD\n"
     
+    # Initialize the Gantt chart string
+    roadmap_str = "gantt\n    title Project Roadmap\n    dateFormat  YYYY-MM-DD\n    axisFormat  %Y-%m-%d\n"
+
+    # Track the current section to avoid repeating the same section header
     current_section = ""
-    
+
+    # Loop through each item in roadmap_items and build the Gantt chart string dynamically
     for item in roadmap_items:
+        # Check if the section has changed; if so, add a new section to the Gantt chart
         if item.section != current_section:
             roadmap_str += f"    section {item.section}\n"
             current_section = item.section
         
-        roadmap_str += f"    {item.task_name} :{item.status}, {item.start_date}, {item.end_date}\n"
+        # Append each task (task name, status, start date, end date) to the Gantt chart
+        if item.start_date and item.end_date:
+            roadmap_str += f"    {item.task_name} :{item.status}, {item.start_date}, {item.end_date}\n"
+
+    # Ensure there is no hardcoded string overwriting the dynamic one
+    # Log the final Gantt chart string to check its structure
+    logger.debug(f"Generated roadmap_str: {roadmap_str}")
+
+
 
     object = project
-    logger.debug(f">>> === PROJECT HOMEPAGE: roadmap {roadmap_str} === <<<")
+    
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'project_homepage',
@@ -486,6 +505,12 @@ def project_homepage(request, org_id, project_id):
         'roadmap': roadmap_str,
         'page_title': f'Project Homepage',
     }
-    template_file = f"{app_name}/{module_path}/project_homepage.html"
+    editable = request.editable
+
+    if editable:
+        template_file = f"{app_name}/{module_path}/project_homepage.html"
+    else:
+        template_file = f"{app_name}/{module_path}/viewer_project_homepage.html"
+    
     return render(request, template_file, context)
 

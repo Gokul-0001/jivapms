@@ -25,4 +25,4 @@ class ProjectRoadmap(BaseModelTrackImpl):
    
 
     def __str__(self):
-        return f"{self.task_name} ({self.section})"
+        return f"{self.pro_id} {self.pro} ({self.section})"
