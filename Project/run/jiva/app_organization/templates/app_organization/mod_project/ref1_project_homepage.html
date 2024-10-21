@@ -1,0 +1,125 @@
+<!-- templates/project_homepage.html -->
+{% extends './project_base_template.html' %}
+
+{% block title %}{{project}} Project Homepage{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <!-- Breadcrumb navigation -->
+        <nav aria-label="breadcrumb" class="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{organization}}</li>
+            </ol>
+        </nav>
+        <h1 class="text-center">ABC Allison Project 1</h1>
+        <table class="table table-bordered">
+            <tbody>
+                <tr><td><b>Org Name</b></td><td>ABC Organization</td></tr>
+                <tr><td><b>Project Name</b></td><td>ABC allison project1</td></tr>
+                <tr> 
+                    <td><b>Vision</b></td>
+                    <td contenteditable="true" onclick="makeEditable(this)" 
+                    onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                    '{{project.id}}','pro', 'ProjectDetail', 'vision')">
+                    {% if project_detail.vision != None %}{{ project_detail.vision }}{% endif %}</td>
+                </td>
+                <tr> 
+                    <td><b>Mission</b></td>
+                    <td contenteditable="true" onclick="makeEditable(this)" 
+                    onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                    '{{project.id}}','pro', 'ProjectDetail', 'mission')">
+                    {% if project_detail.mission != None %}{{ project_detail.mission }}{% endif %}</td>
+                </td>
+                <tr> 
+                    <td><b>Values</b></td>
+                    <td contenteditable="true" onclick="makeEditable(this)" 
+                    onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                    '{{project.id}}','pro', 'ProjectDetail', 'values')">
+                    {% if project_detail.values != None %}{{ project_detail.values }}{% endif %}</td>
+                </td>
+                <tr> 
+                    <td><b>Strategy</b></td>
+                    <td contenteditable="true" onclick="makeEditable(this)" 
+                    onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                    '{{project.id}}','pro', 'ProjectDetail', 'strategy')">
+                    {% if project_detail.strategy != None %}{{ project_detail.strategy }}{% endif %}</td>
+                </td>
+                <tr> 
+                    <td><b>Roadmap Summary</b></td>
+                    <td contenteditable="true" onclick="makeEditable(this)" 
+                    onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                    '{{project.id}}','pro', 'ProjectDetail', 'roadmap_description')">
+                    {% if project_detail.roadmap_description != None %}{{ project_detail.roadmap_description }}{% endif %}</td>
+                </td>
+                </tr>
+                <tr>
+                    <td width="20%"><b>Visual Roadmap</b>
+                    <br>
+                    <a href="{% url 'list_project_roadmaps' project.id %}">Update</a>
+                    </td>
+                    <td id="visual_roadmap">
+                        <div class="mermaid">
+                            {{ roadmap|safe }}
+                        </div>
+                    </td>
+                </tr>
+                <!-- Additional project details -->
+            </tbody>
+        </table>
+    </div>
+    {% block custom_scripts %}
+    <script>
+        function makeEditable(element) {
+            element.contentEditable = true;
+            element.focus();
+        }
+        
+    
+        function save_element_text(element, id,  appName, modelName, fieldName) {
+            element.contentEditable = false;
+            $.ajax({
+                url: '/common/common_ajax/ajax_save_element_text/',
+                type: 'POST',
+                data : {
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'model_name': modelName,
+                'app_name': appName,
+                'field_name': fieldName,
+                'text': element.textContent, 
+                'id': id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                console.log(data);
+                }
+            })
+        }
+    
+        function save_related_element_text(element, appName, parentModelName, parentId, parentModelKey, childModelName, fieldName) {
+            element.contentEditable = false;
+            $.ajax({
+                url: '/common/common_ajax/ajax_save_related_model/',
+                type: 'POST',
+                data : {
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'app_name': appName,
+                'parent_model': parentModelName,
+                'parent_id': parentId,
+                'parent_model_key': parentModelKey,
+                'child_model': childModelName,
+                'field_name': fieldName,
+                'text': element.textContent, 
+    
+                },
+                dataType: 'json',
+                success: function(data) {
+                console.log(data);
+                }
+            })
+        }
+    </script>
+    {% endblock %}
+{% endblock %}

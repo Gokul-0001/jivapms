@@ -10,7 +10,35 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     {% include 'app_common/common_files/jiva/jiva_css.html' %}
+<style>
+    .contentbar {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto; /* Make the contentbar scrollable */
+    height: calc(100vh - 66px); /* Full height minus navbar height and footer height */
+    margin-left: 10px;
+}
+ /* Breadcrumb styling with padding */
+ .breadcrumb {
+        background-color: transparent; /* Transparent background */
+        padding: 5px 0px; /* Padding around the entire breadcrumb area */
+        margin-bottom: 0; /* No bottom margin to keep it close to the content */
+        font-size: 12px; /* Adjust font size for breadcrumbs */
+    }
 
+    .breadcrumb .breadcrumb-item {
+        padding: 0 10px; /* Padding between individual breadcrumb items */
+    }
+
+    .breadcrumb a {
+        color: #007bff; /* Link color */
+        text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+        color: #6c757d; /* Color for active breadcrumb */
+    }
+</style>
     
 <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
@@ -57,6 +85,7 @@
             </div>
         </div>
     </nav>
+    
     <button class="toggle-btn" onclick="toggleSidebar()">
         <i class="bi bi-list"></i>
     </button>
@@ -66,6 +95,30 @@
             <a href="/org/organization/list_organizations/" class="nav-link">
                 <i class="bi bi-calendar"></i>
                 <span>Organizations</span>
+            </a>
+            <a href="#" class="nav-link" >
+                <i class="bi bi-collection"></i>
+                <span>Backlog</span>
+            </a>
+            <a href="#" class="nav-link" >
+                <i class="bi bi-diamond"></i>
+                <span>Workflow</span>
+            </a>
+            <a href="#" class="nav-link" >
+                <i class="bi bi-kanban"></i>
+                <span>Board</span>
+            </a>
+            <a href="#" class="nav-link" >
+                <i class="bi bi-calendar"></i>
+                <span>Events</span>
+            </a>
+            <a href="#" class="nav-link" >
+                <i class="bi bi-basket"></i>
+                <span>Release</span>
+            </a>
+            <a href="#" class="nav-link" >
+                <i class="bi bi-compass"></i>
+                <span>Metrics</span>
             </a>
         </div>
         <div class="settings">

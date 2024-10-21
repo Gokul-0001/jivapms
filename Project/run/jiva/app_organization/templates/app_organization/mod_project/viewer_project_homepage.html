@@ -1,20 +1,20 @@
-{% extends 'app_common/common_files/jiva/jiva_base_template.html' %}
+{% extends 'app_common/common_files/base_template.html' %}
 {% load static %}
 
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 
     <div class="content-wrapper">
-
         <!-- Breadcrumb navigation -->
         <nav aria-label="breadcrumb" class="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{object}}</li>
+                <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">{{project.org}}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{project}}</li>
             </ol>
         </nav>
 
@@ -22,100 +22,103 @@
         <button class="toggle-btn" onclick="toggleSidebar()">
             <i class="bi bi-list"></i>
         </button>
+        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
-            <!-- Scrollable menu section -->
             <div class="sidebar-menu">
-                <a href="{% url 'list_organizations' %}" class="nav-link">
+                <a href="/org/organization/list_organizations/" class="nav-link">
                     <i class="bi bi-calendar"></i>
                     <span>Organizations</span>
                 </a>
-                
-            </div>
-
-            <!-- Sticky settings section -->
-            <div class="settings">
                 <a href="#" class="nav-link" >
+                    <i class="bi bi-collection"></i>
+                    <span>Backlog</span>
+                </a>
+                <a href="#" class="nav-link" >
+                    <i class="bi bi-diamond"></i>
+                    <span>Workflow</span>
+                </a>
+                <a href="#" class="nav-link" >
+                    <i class="bi bi-kanban"></i>
+                    <span>Board</span>
+                </a>
+                <a href="#" class="nav-link" >
+                    <i class="bi bi-calendar"></i>
+                    <span>Events</span>
+                </a>
+                <a href="#" class="nav-link" >
+                    <i class="bi bi-basket"></i>
+                    <span>Release</span>
+                </a>
+                <a href="#" class="nav-link" >
+                    <i class="bi bi-compass"></i>
+                    <span>Metrics</span>
+                </a>
+            </div>
+            <div class="settings">
+                <a href="#" class="nav-link">
                     <i class="bi bi-gear"></i>
                     <span>Settings</span>
                 </a>
             </div>
         </div>
-
+        <!-- Content -->
         <div class="contentbar mb-5" id="contentbar">
-            <div class="container">
-                <h1 class="text-center">Viewer Project Home page:</h1>
-                
-                <table class="table table-bordered">
-                    <!-- <thead class="thead-dark">
-                    <tr>
-                        <th>Field</th>
-                        <th>Value</th>
-                    </tr>
-                    </thead> -->
-                    <tbody>
-                    <tr>
-                        <td><b>Org Name</b></td>
-                        <td  id="org-name"
-                        >{{ organization.name }}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Project Name</b></td>
-                        <td  id="project-name"
-                        >{{ object.name }}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Vision</b></td>
-                        <td contenteditable="true" id="org-vision"
-                        ondblclick="makeEditable(this)"
-                        onblur="save_related_element_text(this, 'app_organization', 'Project', '{{ project.id }}','pro', 'ProjectDetail',  'vision')"
-                        >{% if project_details.vision != None %}{{ project_details.vision }}{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Mission</b></td>
-                        <td contenteditable="true" id="org-mission"
-                        ondblclick="makeEditable(this)"
-                        onblur="save_related_element_text(this, 'app_organization', 'Project', '{{ project.id }}','pro', 'ProjectDetail',  'mission')"
-                        >{% if project_details.mission != None %}{{ project_details.mission }}{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Values</b></td>
-                        <td contenteditable="true" id="org-values"
-                        ondblclick="makeEditable(this)"
-                        onblur="save_related_element_text(this, 'app_organization', 'Project', '{{ project.id }}','pro', 'ProjectDetail',  'values')"
-                        >{% if project_details.values != None %}{{ project_details.values }}{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Strategy</b></td>
-                        <td contenteditable="true" id="org-strategy"
-                        ondblclick="makeEditable(this)"
-                        onblur="save_related_element_text(this, 'app_organization', 'Project', '{{ project.id }}','pro', 'ProjectDetail',  'strategy')"
-                        >{% if project_details.strategy != None %}{{ project_details.strategy }}{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Roadmap</b></td>
-                        <td contenteditable="true" id="org-roadmap"
-                        ondblclick="makeEditable(this)"
-                        onblur="save_related_element_text(this, 'app_organization', 'Project', '{{ project.id }}','pro', 'ProjectDetail',  'roadmap_description')"
-                        >{% if project_details.roadmap_description != None %}{{ project_details.roadmap_description }}{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Visual Roadmap</b>
-                        <br>
-                        <a href="{% url 'list_project_roadmaps' project.id %}">Update</a>
-                        </td>
-                        <td id="visual_roadmap">
-            
-                            <h3 class="mt">Project Roadmap</h3>
-                            <div class="mermaid">
-                                {{ roadmap|safe }}
-                            </div>
-            
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            
-               
+            <div class="container mt-5">
+                <h1 class="text-center">Project: {{ project }}</h1>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr><td><b>Org Name</b></td><td>{{project.org}}</td></tr>
+                            <tr><td><b>Project Name</b></td><td>{{project}}</td></tr>
+                            <tr> 
+                                <td><b>Vision</b></td>
+                                <td  
+                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                                '{{project.id}}','pro', 'ProjectDetail', 'vision')">
+                                {% if project_detail.vision != None %}{{ project_detail.vision }}{% endif %}</td>
+                            </td>
+                            <tr> 
+                                <td><b>Mission</b></td>
+                                <td  
+                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                                '{{project.id}}','pro', 'ProjectDetail', 'mission')">
+                                {% if project_detail.mission != None %}{{ project_detail.mission }}{% endif %}</td>
+                            </td>
+                            <tr> 
+                                <td><b>Values</b></td>
+                                <td  
+                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                                '{{project.id}}','pro', 'ProjectDetail', 'values')">
+                                {% if project_detail.values != None %}{{ project_detail.values }}{% endif %}</td>
+                            </td>
+                            <tr> 
+                                <td><b>Strategy</b></td>
+                                <td  
+                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                                '{{project.id}}','pro', 'ProjectDetail', 'strategy')">
+                                {% if project_detail.strategy != None %}{{ project_detail.strategy }}{% endif %}</td>
+                            </td>
+                            <tr> 
+                                <td><b>Roadmap Summary</b></td>
+                                <td  
+                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                                '{{project.id}}','pro', 'ProjectDetail', 'roadmap_description')">
+                                {% if project_detail.roadmap_description != None %}{{ project_detail.roadmap_description }}{% endif %}</td>
+                            </td>
+                            </tr>
+                            <tr>
+                                <td width="20%"><b>Visual Roadmap</b>
+                                <br>
+                                <a href="{% url 'list_project_roadmaps' project.id %}">Update</a>
+                                </td>
+                                <td id="visual_roadmap">
+                                    <div class="mermaid">
+                                        {{ roadmap|safe }}
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Additional project details -->
+                        </tbody>
+                    </table>
             </div>
     </div>
     <script>
