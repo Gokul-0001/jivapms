@@ -291,6 +291,13 @@ def create_project(request, member, org_membership, org_id):
             project.org_id = org_id
             project.save()
             
+            # STEP1: Create the Project Administration record
+            # default is initiation
+            ProjectAdministration.objects.create(
+                project=project,
+                author=user
+            )
+            
             # Check if the member has 'Project Admin' role in the organization
             if org_membership.role.name == 'Project Admin':
                 logger.debug(f">>> === {PROJECT_ADMIN_ROLE_STR}:CHECK === <<<")
@@ -458,6 +465,10 @@ def project_homepage(request, org_id, project_id):
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
+    # get project administration details
+    project_administration = ProjectAdministration.objects.filter(project_id=project_id, 
+                                                                  active=True).first()
+    
     project = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)   
     project_detail = project.project_details.first() 
     roadmap_items = ProjectRoadmap.objects.filter(active=True)
@@ -497,6 +508,8 @@ def project_homepage(request, org_id, project_id):
         'page': 'project_homepage',
         'organization': organization,
         'org_id': org_id,
+        
+        'project_administration': project_administration,
         
         'module_path': module_path,
         'object': object,

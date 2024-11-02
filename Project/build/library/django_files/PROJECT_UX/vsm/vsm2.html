@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Value Stream Mapping Tool</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body { font-family: Arial, sans-serif; }
+    .canvas {
+        width: 100%;
+        min-height: 500px;
+        border: 1px solid #ccc;
+        position: relative;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+    }
+    .step {
+        display: inline-flex;
+        align-items: center;
+        position: relative;
+        margin-right: 30px;
+        text-align: center;
+    }
+    .step:last-child {
+        margin-right: 0;
+    }
+    .arrow {
+        width: 30px;
+        height: 30px;
+    }
+    .step-info {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+        width: 150px;
+    }
+    form {
+        margin-top: 20px;
+    }
+    input, button {
+        margin: 5px;
+        padding: 10px;
+    }
+</style>
+</head>
+<body>
+<div id="vsmCanvas" class="canvas"></div>
+<form id="vsmForm" class="form-inline">
+    <input type="text" id="stepName" placeholder="Enter Step Name" required class="form-control">
+    <input type="number" id="valueTime" placeholder="Value Creation Time (minutes)" required class="form-control">
+    <input type="number" id="delayTime" placeholder="Delay Time (minutes)" required class="form-control">
+    <button type="submit" class="btn btn-primary">Add Step</button>
+</form>
+<p>Total Time: <span id="totalTime">0</span> minutes</p>
+
+<script>
+let steps = [];
+let totalTime = 0;
+
+document.getElementById('vsmForm').onsubmit = function(event) {
+    event.preventDefault();
+    addStep();
+};
+
+function addStep() {
+    const stepName = document.getElementById('stepName').value;
+    const valueTime = parseInt(document.getElementById('valueTime').value, 10);
+    const delayTime = parseInt(document.getElementById('delayTime').value, 10);
+
+    const newStep = {
+        name: stepName,
+        valueTime: valueTime,
+        delayTime: delayTime,
+        total: valueTime + delayTime
+    };
+    steps.push(newStep);
+    drawStep(newStep);
+    updateTotalTime();
+}
+
+function drawStep(step) {
+    const canvas = document.getElementById('vsmCanvas');
+    if (steps.length > 1) {
+        const arrow = document.createElement('img');
+        arrow.src = "https://cdn-icons-png.flaticon.com/512/271/271228.png";
+        arrow.className = 'arrow';
+        arrow.alt = 'Arrow';
+        canvas.appendChild(arrow);
+    }
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'step';
+    stepDiv.innerHTML = `
+        <div class="step-info">
+            <i class="bi bi-box-seam" style="font-size: 2rem;"></i>
+            <div><strong>${step.name}</strong></div>
+            <div>Value: ${step.valueTime} min</div>
+            <div>Delay: ${step.delayTime} min</div>
+        </div>
+    `;
+    canvas.appendChild(stepDiv);
+}
+
+function updateTotalTime() {
+    totalTime = steps.reduce((acc, step) => acc + step.total, 0);
+    document.getElementById('totalTime').innerText = totalTime;
+}
+</script>
+</body>
+</html>

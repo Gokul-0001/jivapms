@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Stream Mapping Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@sortablejs/sortablejs-modular/sortable.core.esm.js" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            height: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        .container-fluid {
+            height: calc(100% - 20px);
+            display: flex;
+        }
+        .left-pane {
+            width: 20%;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+        }
+        .right-pane {
+            width: 80%;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        .form-input {
+            margin-bottom: 10px;
+        }
+        .step {
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        Company Name | Value Stream Mapping Tool
+        <div class="dropdown float-end">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                User Profile
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li><a class="dropdown-item" href="#">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="left-pane">
+            <form id="stepForm">
+                <input type="text" class="form-control form-input" id="stepName" placeholder="Step Name" required>
+                <textarea class="form-control form-input" id="stepDesc" placeholder="Description" required></textarea>
+                <input type="number" class="form-control form-input" id="valueTime" placeholder="Value Creation Time (minutes)" required>
+                <input type="number" class="form-control form-input" id="delayTime" placeholder="Delay Time (minutes)" required>
+                <button type="submit" class="btn btn-primary">Add Step</button>
+            </form>
+        </div>
+        <div class="right-pane" id="vsmCanvas">
+            <!-- Steps will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@sortablejs/sortablejs-modular/sortable.core.esm.js"></script>
+    <script>
+        document.getElementById('stepForm').onsubmit = function(event) {
+            event.preventDefault();
+            addStep();
+        };
+
+        function addStep() {
+            const canvas = document.getElementById('vsmCanvas');
+            const stepName = document.getElementById('stepName').value;
+            const stepDesc = document.getElementById('stepDesc').value;
+            const valueTime = parseInt(document.getElementById('valueTime').value, 10);
+            const delayTime = parseInt(document.getElementById('delayTime').value, 10);
+
+            const stepDiv = document.createElement('div');
+            stepDiv.className = 'step';
+            stepDiv.innerHTML = `
+                <strong>${stepName}</strong><br>
+                ${stepDesc}<br>
+                Value Time: ${valueTime} min, Delay Time: ${delayTime} min
+            `;
+            canvas.appendChild(stepDiv);
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('stepForm').reset();
+        }
+
+        // Initialize Sortable
+        new Sortable(document.getElementById('vsmCanvas'), {
+            animation: 150,
+            ghostClass: 'sortable-ghost'
+        });
+    </script>
+</body>
+</html>

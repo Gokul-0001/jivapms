@@ -35,6 +35,29 @@ class ProjectRole(BaseModelTrackImpl):
     def __str__(self):
         return self.get_role_type_display()
 
+# this will be used for administration of the project
+# will tell the state and other important decisions of the project
+class ProjectAdministration(BaseModelTrackImpl):
+    
+    project = models.ForeignKey('Project', on_delete=models.CASCADE,
+                                related_name="project_administrations")
+    
+    PROJECT_STATE_CHOICES = [
+        ('Initiation', 'Initiation'),
+        ('Launched', 'Launched'),
+        ('Archived', 'Archived'),
+        # Add more states as needed
+    ]
+    project_state = models.CharField(max_length=255, choices=PROJECT_STATE_CHOICES, 
+                                 default='Initiation')
+    
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name="author_project_administrations")
+    
+    def __str__(self):
+        return self.project.name
+
+
 
 
 

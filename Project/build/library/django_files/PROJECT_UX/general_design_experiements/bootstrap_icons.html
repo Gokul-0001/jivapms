@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Icons Table</title>
+    <!-- Bootstrap Icons CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        td i {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Bootstrap Icons with Normal and Filled Variants</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Serial No</th>
+            <th>Icon Name</th>
+            <th>Normal</th>
+            <th>Filled</th>
+        </tr>
+    </thead>
+    <tbody id="iconTableBody">
+        <!-- Icons will be added here dynamically -->
+    </tbody>
+</table>
+
+<script>
+  const icons = [
+    { name: 'alarm', normal: 'bi-alarm', filled: 'bi-alarm-fill' },
+    { name: 'app', normal: 'bi-app', filled: 'bi-app-indicator' },
+    { name: 'archive', normal: 'bi-archive', filled: 'bi-archive-fill' },
+    { name: 'arrow-up', normal: 'bi-arrow-up', filled: 'bi-arrow-up-fill' },
+    { name: 'arrow-down', normal: 'bi-arrow-down', filled: 'bi-arrow-down-fill' },
+    { name: 'arrow-left', normal: 'bi-arrow-left', filled: 'bi-arrow-left-fill' },
+    { name: 'arrow-right', normal: 'bi-arrow-right', filled: 'bi-arrow-right-fill' },
+    { name: 'bag', normal: 'bi-bag', filled: 'bi-bag-fill' },
+    { name: 'bell', normal: 'bi-bell', filled: 'bi-bell-fill' },
+    { name: 'bookmark', normal: 'bi-bookmark', filled: 'bi-bookmark-fill' },
+    { name: 'calendar', normal: 'bi-calendar', filled: 'bi-calendar-fill' },
+    { name: 'camera', normal: 'bi-camera', filled: 'bi-camera-fill' },
+    { name: 'chat', normal: 'bi-chat', filled: 'bi-chat-fill' },
+    { name: 'check-circle', normal: 'bi-check-circle', filled: 'bi-check-circle-fill' },
+    { name: 'cloud', normal: 'bi-cloud', filled: 'bi-cloud-fill' },
+    { name: 'cloud-download', normal: 'bi-cloud-download', filled: 'bi-cloud-download-fill' },
+    { name: 'cloud-upload', normal: 'bi-cloud-upload', filled: 'bi-cloud-upload-fill' },
+    { name: 'collection', normal: 'bi-collection', filled: 'bi-collection-fill' },
+    { name: 'command', normal: 'bi-command', filled: 'bi-command-fill' },
+    { name: 'disc', normal: 'bi-disc', filled: 'bi-disc-fill' },
+    { name: 'file', normal: 'bi-file', filled: 'bi-file-fill' },
+    { name: 'file-earmark', normal: 'bi-file-earmark', filled: 'bi-file-earmark-fill' },
+    { name: 'file-check', normal: 'bi-file-check', filled: 'bi-file-check-fill' },
+    { name: 'file-x', normal: 'bi-file-x', filled: 'bi-file-x-fill' },
+    { name: 'folder', normal: 'bi-folder', filled: 'bi-folder-fill' },
+    { name: 'folder-plus', normal: 'bi-folder-plus', filled: 'bi-folder-plus-fill' },
+    { name: 'folder-minus', normal: 'bi-folder-minus', filled: 'bi-folder-minus-fill' },
+    { name: 'gear', normal: 'bi-gear', filled: 'bi-gear-fill' },
+    { name: 'gift', normal: 'bi-gift', filled: 'bi-gift-fill' },
+    { name: 'globe', normal: 'bi-globe', filled: 'bi-globe-fill' },
+    { name: 'grid', normal: 'bi-grid', filled: 'bi-grid-fill' },
+    { name: 'hand-thumbs-up', normal: 'bi-hand-thumbs-up', filled: 'bi-hand-thumbs-up-fill' },
+    { name: 'hand-thumbs-down', normal: 'bi-hand-thumbs-down', filled: 'bi-hand-thumbs-down-fill' },
+    { name: 'heart', normal: 'bi-heart', filled: 'bi-heart-fill' },
+    { name: 'house', normal: 'bi-house', filled: 'bi-house-fill' },
+    { name: 'inbox', normal: 'bi-inbox', filled: 'bi-inbox-fill' },
+    { name: 'info-circle', normal: 'bi-info-circle', filled: 'bi-info-circle-fill' },
+    { name: 'lightning', normal: 'bi-lightning', filled: 'bi-lightning-fill' },
+    { name: 'list', normal: 'bi-list', filled: '' },
+    { name: 'lock', normal: 'bi-lock', filled: 'bi-lock-fill' },
+    { name: 'mailbox', normal: 'bi-mailbox', filled: 'bi-mailbox2' },
+    { name: 'map', normal: 'bi-map', filled: 'bi-map-fill' },
+    { name: 'megaphone', normal: 'bi-megaphone', filled: 'bi-megaphone-fill' },
+    { name: 'mic', normal: 'bi-mic', filled: 'bi-mic-fill' },
+    { name: 'moon', normal: 'bi-moon', filled: 'bi-moon-fill' },
+    { name: 'music-note', normal: 'bi-music-note', filled: 'bi-music-note-beamed' },
+    { name: 'newspaper', normal: 'bi-newspaper', filled: 'bi-newspaper-fill' },
+    { name: 'node-plus', normal: 'bi-node-plus', filled: 'bi-node-plus-fill' },
+    { name: 'palette', normal: 'bi-palette', filled: 'bi-palette-fill' },
+    { name: 'patch-check', normal: 'bi-patch-check', filled: 'bi-patch-check-fill' },
+    { name: 'patch-exclamation', normal: 'bi-patch-exclamation', filled: 'bi-patch-exclamation-fill' },
+    { name: 'patch-minus', normal: 'bi-patch-minus', filled: 'bi-patch-minus-fill' },
+    { name: 'patch-plus', normal: 'bi-patch-plus', filled: 'bi-patch-plus-fill' },
+    { name: 'patch-question', normal: 'bi-patch-question', filled: 'bi-patch-question-fill' },
+    { name: 'pencil', normal: 'bi-pencil', filled: 'bi-pencil-fill' },
+    { name: 'people', normal: 'bi-people', filled: 'bi-people-fill' },
+    { name: 'person', normal: 'bi-person', filled: 'bi-person-fill' },
+    { name: 'phone', normal: 'bi-phone', filled: 'bi-phone-fill' },
+    { name: 'pie-chart', normal: 'bi-pie-chart', filled: 'bi-pie-chart-fill' },
+    { name: 'pin', normal: 'bi-pin', filled: 'bi-pin-fill' },
+    { name: 'play', normal: 'bi-play', filled: 'bi-play-fill' },
+    { name: 'plug', normal: 'bi-plug', filled: 'bi-plug-fill' },
+    { name: 'plus-circle', normal: 'bi-plus-circle', filled: 'bi-plus-circle-fill' },
+    { name: 'plus-square', normal: 'bi-plus-square', filled: 'bi-plus-square-fill' },
+    { name: 'printer', normal: 'bi-printer', filled: 'bi-printer-fill' },
+    { name: 'puzzle', normal: 'bi-puzzle', filled: 'bi-puzzle-fill' },
+    { name: 'question-circle', normal: 'bi-question-circle', filled: 'bi-question-circle-fill' },
+    { name: 'recycle', normal: 'bi-recycle', filled: '' },
+    { name: 'robot', normal: 'bi-robot', filled: 'bi-robot-fill' },
+    { name: 'save', normal: 'bi-save', filled: 'bi-save-fill' },
+    { name: 'scissors', normal: 'bi-scissors', filled: '' },
+    { name: 'search', normal: 'bi-search', filled: '' },
+    { name: 'shield', normal: 'bi-shield', filled: 'bi-shield-fill' },
+    { name: 'shop', normal: 'bi-shop', filled: 'bi-shop-fill' },
+    { name: 'skip-forward', normal: 'bi-skip-forward', filled: 'bi-skip-forward-fill' },
+    { name: 'speaker', normal: 'bi-speaker', filled: 'bi-speaker-fill' },
+    { name: 'square', normal: 'bi-square', filled: 'bi-square-fill' },
+    { name: 'star', normal: 'bi-star', filled: 'bi-star-fill' },
+    { name: 'stickies', normal: 'bi-stickies', filled: 'bi-stickies-fill' },
+    { name: 'stopwatch', normal: 'bi-stopwatch', filled: 'bi-stopwatch-fill' },
+    { name: 'suit-club', normal: 'bi-suit-club', filled: 'bi-suit-club-fill' },
+    { name: 'suit-diamond', normal: 'bi-suit-diamond', filled: 'bi-suit-diamond-fill' },
+    { name: 'suit-heart', normal: 'bi-suit-heart', filled: 'bi-suit-heart-fill' },
+    { name: 'suit-spade', normal: 'bi-suit-spade', filled: 'bi-suit-spade-fill' },
+    { name: 'sun', normal: 'bi-sun', filled: 'bi-sun-fill' },
+    { name: 'tablet', normal: 'bi-tablet', filled: 'bi-tablet-fill' },
+    { name: 'tag', normal: 'bi-tag', filled: 'bi-tag-fill' },
+    { name: 'thermometer', normal: 'bi-thermometer', filled: 'bi-thermometer-half' },
+    { name: 'three-dots', normal: 'bi-three-dots', filled: '' },
+    { name: 'tools', normal: 'bi-tools', filled: '' },
+    { name: 'trash', normal: 'bi-trash', filled: 'bi-trash-fill' },
+    { name: 'triangle', normal: 'bi-triangle', filled: 'bi-triangle-fill' },
+    { name: 'truck', normal: 'bi-truck', filled: 'bi-truck-flatbed' },
+    { name: 'trophy', normal: 'bi-trophy', filled: 'bi-trophy-fill' },
+    { name: 'umbrella', normal: 'bi-umbrella', filled: 'bi-umbrella-fill' },
+    { name: 'unlock', normal: 'bi-unlock', filled: 'bi-unlock-fill' },
+    { name: 'usb', normal: 'bi-usb', filled: 'bi-usb-c' },
+    { name: 'vector-pen', normal: 'bi-vector-pen', filled: 'bi-vector-pen-fill' },
+    { name: 'view-list', normal: 'bi-view-list', filled: '' },
+    { name: 'volume-up', normal: 'bi-volume-up', filled: 'bi-volume-up-fill' },
+    { name: 'wallet', normal: 'bi-wallet', filled: 'bi-wallet-fill' },
+    { name: 'watch', normal: 'bi-watch', filled: 'bi-watch-fill' },
+    { name: 'wifi', normal: 'bi-wifi', filled: 'bi-wifi-off' },
+    { name: 'wrench', normal: 'bi-wrench', filled: '' },
+    { name: 'x-circle', normal: 'bi-x-circle', filled: 'bi-x-circle-fill' },
+    { name: 'x-diamond', normal: 'bi-x-diamond', filled: 'bi-x-diamond-fill' },
+    { name: 'x-lg', normal: 'bi-x-lg', filled: '' },
+    { name: 'youtube', normal: 'bi-youtube', filled: 'bi-youtube' },
+    { name: 'zoom-in', normal: 'bi-zoom-in', filled: '' },
+    { name: 'zoom-out', normal: 'bi-zoom-out', filled: '' },
+    { name: 'apple', normal: 'bi-apple', filled: 'bi-apple-fill' },
+    { name: 'award', normal: 'bi-award', filled: 'bi-award-fill' },
+    { name: 'badge', normal: 'bi-badge', filled: 'bi-badge-fill' },
+    { name: 'bag', normal: 'bi-bag', filled: 'bi-bag-fill' },
+    { name: 'bank', normal: 'bi-bank', filled: 'bi-bank-fill' },
+    { name: 'bar-chart', normal: 'bi-bar-chart', filled: 'bi-bar-chart-fill' },
+    { name: 'basket', normal: 'bi-basket', filled: 'bi-basket-fill' },
+    { name: 'battery', normal: 'bi-battery', filled: 'bi-battery-half' },
+    { name: 'bell', normal: 'bi-bell', filled: 'bi-bell-fill' },
+    { name: 'binoculars', normal: 'bi-binoculars', filled: 'bi-binoculars-fill' },
+    { name: 'bluetooth', normal: 'bi-bluetooth', filled: 'bi-bluetooth-fill' },
+    { name: 'bookmark', normal: 'bi-bookmark', filled: 'bi-bookmark-fill' },
+    { name: 'box', normal: 'bi-box', filled: 'bi-box-fill' },
+    { name: 'briefcase', normal: 'bi-briefcase', filled: 'bi-briefcase-fill' },
+    { name: 'brightness', normal: 'bi-brightness-high', filled: 'bi-brightness-high-fill' },
+    { name: 'calendar', normal: 'bi-calendar', filled: 'bi-calendar-fill' },
+    { name: 'camera', normal: 'bi-camera', filled: 'bi-camera-fill' },
+    { name: 'capslock', normal: 'bi-capslock', filled: 'bi-capslock-fill' },
+    { name: 'car', normal: 'bi-car-front', filled: 'bi-car-front-fill' },
+    { name: 'cart', normal: 'bi-cart', filled: 'bi-cart-fill' },
+    { name: 'chat', normal: 'bi-chat', filled: 'bi-chat-fill' },
+    { name: 'check', normal: 'bi-check-circle', filled: 'bi-check-circle-fill' },
+    { name: 'clipboard', normal: 'bi-clipboard', filled: 'bi-clipboard-fill' },
+    { name: 'cloud', normal: 'bi-cloud', filled: 'bi-cloud-fill' },
+    { name: 'clock', normal: 'bi-clock', filled: 'bi-clock-fill' },
+    { name: 'code', normal: 'bi-code', filled: '' },
+    { name: 'compass', normal: 'bi-compass', filled: 'bi-compass-fill' },
+    { name: 'cpu', normal: 'bi-cpu', filled: 'bi-cpu-fill' },
+    { name: 'credit-card', normal: 'bi-credit-card', filled: 'bi-credit-card-fill' },
+    { name: 'crown', normal: 'bi-crown', filled: 'bi-crown-fill' },
+    { name: 'cup', normal: 'bi-cup', filled: 'bi-cup-fill' },
+    { name: 'currency-bitcoin', normal: 'bi-currency-bitcoin', filled: '' },
+    { name: 'currency-dollar', normal: 'bi-currency-dollar', filled: '' },
+    { name: 'currency-euro', normal: 'bi-currency-euro', filled: '' },
+    { name: 'currency-pound', normal: 'bi-currency-pound', filled: '' },
+    { name: 'currency-yen', normal: 'bi-currency-yen', filled: '' },
+    { name: 'cursor', normal: 'bi-cursor', filled: 'bi-cursor-fill' },
+    { name: 'dash', normal: 'bi-dash', filled: 'bi-dash-lg' },
+    { name: 'diagram-2', normal: 'bi-diagram-2', filled: 'bi-diagram-2-fill' },
+    { name: 'diamond', normal: 'bi-diamond', filled: 'bi-diamond-fill' },
+    { name: 'display', normal: 'bi-display', filled: 'bi-display-fill' },
+    { name: 'door', normal: 'bi-door-closed', filled: 'bi-door-closed-fill' },
+    { name: 'download', normal: 'bi-download', filled: '' },
+    { name: 'droplet', normal: 'bi-droplet', filled: 'bi-droplet-fill' },
+    { name: 'earbuds', normal: 'bi-earbuds', filled: '' },
+    { name: 'emoji-smile', normal: 'bi-emoji-smile', filled: 'bi-emoji-smile-fill' },
+    { name: 'envelope', normal: 'bi-envelope', filled: 'bi-envelope-fill' },
+    { name: 'exclamation', normal: 'bi-exclamation', filled: '' },
+    { name: 'eye', normal: 'bi-eye', filled: 'bi-eye-fill' },
+    { name: 'eyeglasses', normal: 'bi-eyeglasses', filled: '' },
+    { name: 'file', normal: 'bi-file', filled: 'bi-file-fill' },
+    { name: 'file-earmark', normal: 'bi-file-earmark', filled: 'bi-file-earmark-fill' },
+    { name: 'file-earmark-check', normal: 'bi-file-earmark-check', filled: 'bi-file-earmark-check-fill' },
+    { name: 'file-earmark-lock', normal: 'bi-file-earmark-lock', filled: 'bi-file-earmark-lock-fill' },
+    { name: 'file-medical', normal: 'bi-file-medical', filled: 'bi-file-medical-fill' },
+    { name: 'file-play', normal: 'bi-file-play', filled: 'bi-file-play-fill' },
+    { name: 'file-text', normal: 'bi-file-text', filled: 'bi-file-text-fill' },
+    { name: 'file-zip', normal: 'bi-file-zip', filled: 'bi-file-zip-fill' },
+    { name: 'film', normal: 'bi-film', filled: 'bi-film-fill' },
+    { name: 'flag', normal: 'bi-flag', filled: 'bi-flag-fill' },
+    { name: 'folder', normal: 'bi-folder', filled: 'bi-folder-fill' },
+    { name: 'folder-check', normal: 'bi-folder-check', filled: 'bi-folder-check-fill' },
+    { name: 'folder-lock', normal: 'bi-folder-lock', filled: 'bi-folder-lock-fill' },
+    { name: 'folder-symlink', normal: 'bi-folder-symlink', filled: 'bi-folder-symlink-fill' },
+    { name: 'folder-x', normal: 'bi-folder-x', filled: 'bi-folder-x-fill' },
+    { name: 'gear', normal: 'bi-gear', filled: 'bi-gear-fill' },
+    { name: 'gem', normal: 'bi-gem', filled: 'bi-gem-fill' },
+    { name: 'geo', normal: 'bi-geo', filled: 'bi-geo-fill' },
+    { name: 'gift', normal: 'bi-gift', filled: 'bi-gift-fill' },
+    { name: 'globe', normal: 'bi-globe', filled: 'bi-globe-fill' },
+    { name: 'grid', normal: 'bi-grid', filled: 'bi-grid-fill' },
+    { name: 'hammer', normal: 'bi-hammer', filled: 'bi-hammer-fill' },
+    { name: 'handbag', normal: 'bi-handbag', filled: 'bi-handbag-fill' },
+    { name: 'headphones', normal: 'bi-headphones', filled: 'bi-headphones-fill' },
+    { name: 'heart', normal: 'bi-heart', filled: 'bi-heart-fill' },
+    { name: 'heptagon', normal: 'bi-heptagon', filled: 'bi-heptagon-fill' },
+    { name: 'hexagon', normal: 'bi-hexagon', filled: 'bi-hexagon-fill' },
+    { name: 'house', normal: 'bi-house', filled: 'bi-house-fill' },
+    { name: 'hurricane', normal: 'bi-hurricane', filled: 'bi-hurricane-fill' },
+    { name: 'image', normal: 'bi-image', filled: 'bi-image-fill' },
+    { name: 'inbox', normal: 'bi-inbox', filled: 'bi-inbox-fill' },
+    { name: 'info-circle', normal: 'bi-info-circle', filled: 'bi-info-circle-fill' },
+    { name: 'joystick', normal: 'bi-joystick', filled: '' },
+    { name: 'kanban', normal: 'bi-kanban', filled: 'bi-kanban-fill' },
+    { name: 'key', normal: 'bi-key', filled: 'bi-key-fill' },
+    { name: 'keyboard', normal: 'bi-keyboard', filled: 'bi-keyboard-fill' },
+    { name: 'lamp', normal: 'bi-lamp', filled: 'bi-lamp-fill' },
+    { name: 'layers', normal: 'bi-layers', filled: 'bi-layers-fill' },
+    { name: 'lightbulb', normal: 'bi-lightbulb', filled: 'bi-lightbulb-fill' },
+    { name: 'lightning', normal: 'bi-lightning', filled: 'bi-lightning-fill' },
+    { name: 'Backlog', normal: 'bi-card-list', filled: 'bi-card-list' },
+    { name: 'Organization', normal: 'bi-diagram-3', filled: 'bi-diagram-3-fill' },
+    { name: 'Team', normal: 'bi-people', filled: 'bi-people-fill' },
+    { name: 'Events', normal: 'bi-calendar-event', filled: 'bi-calendar-event-fill' },
+    { name: 'Release', normal: 'bi-box-arrow-up-right', filled: 'bi-box-arrow-up-right' },
+    { name: 'Board', normal: 'bi-kanban', filled: 'bi-kanban-fill' },
+    { name: 'Roadmap', normal: 'bi-map', filled: 'bi-map-fill' },
+    { name: 'Vision', normal: 'bi-eye', filled: 'bi-eye-fill' },
+    { name: 'Strategy', normal: 'bi-lightbulb', filled: 'bi-lightbulb-fill' },
+    { name: 'Mission', normal: 'bi-flag', filled: 'bi-flag-fill' },
+    { name: 'Values', normal: 'bi-emoji-heart-eyes', filled: 'bi-emoji-heart-eyes-fill' },
+    { name: 'Project', normal: 'bi-folder', filled: 'bi-folder-fill' },
+    { name: 'Program', normal: 'bi-journal', filled: 'bi-journal-bookmark-fill' },
+    { name: 'Portfolio', normal: 'bi-briefcase', filled: 'bi-briefcase-fill' },
+    { name: 'Scrum', normal: 'bi-gear', filled: 'bi-gear-fill' },
+    { name: 'Kanban', normal: 'bi-kanban', filled: 'bi-kanban-fill' },
+    { name: 'Agile', normal: 'bi-arrow-repeat', filled: 'bi-arrow-repeat' },
+    { name: 'Lean', normal: 'bi-speedometer', filled: 'bi-speedometer2' },
+    { name: 'Project (Alternative 1)', normal: 'bi-file-earmark', filled: 'bi-file-earmark-fill' },
+    { name: 'Project (Alternative 2)', normal: 'bi-list-task', filled: 'bi-list-task-fill' },
+    { name: 'Project (Alternative 3)', normal: 'bi-columns', filled: 'bi-columns-gap' },
+    { name: 'Program (Alternative 1)', normal: 'bi-file-earmark-text', filled: 'bi-file-earmark-text-fill' },
+    { name: 'Program (Alternative 2)', normal: 'bi-card-text', filled: 'bi-card-text' },
+    { name: 'Program (Alternative 3)', normal: 'bi-calendar', filled: 'bi-calendar-fill' },
+];
+
+
+    const tableBody = document.getElementById('iconTableBody');
+
+    icons.forEach((icon, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${icon.name}</td>
+            <td><i class="bi ${icon.normal}"></i></td>
+            <td><i class="bi ${icon.filled}"></i></td>
+        `;
+        tableBody.appendChild(row);
+    });
+</script>
+
+</body>
+</html>

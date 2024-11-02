@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Value Stream Mapping Tool</title>
+<style>
+    body { font-family: Arial, sans-serif; }
+    .canvas {
+        width: 100%;
+        min-height: 500px;
+        border: 1px solid #ccc;
+        position: relative;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 20px;
+    }
+    .step {
+        display: inline-block;
+        position: relative;
+        width: 120px;
+        margin-right: 50px;
+        text-align: center;
+    }
+    .step img {
+        width: 50px;
+        height: 50px;
+    }
+    .step-info {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    form {
+        margin-top: 20px;
+    }
+    input, button {
+        margin: 5px;
+        padding: 10px;
+        width: 250px;
+    }
+</style>
+</head>
+<body>
+<div id="vsmCanvas" class="canvas"></div>
+<form id="vsmForm">
+    <input type="text" id="stepName" placeholder="Enter Step Name" required>
+    <input type="number" id="valueTime" placeholder="Value Creation Time (minutes)" required>
+    <input type="number" id="delayTime" placeholder="Delay Time (minutes)" required>
+    <button type="submit">Add Step</button>
+</form>
+<p>Total Time: <span id="totalTime">0</span> minutes</p>
+
+<script>
+let steps = [];
+let totalTime = 0;
+
+document.getElementById('vsmForm').onsubmit = function(event) {
+    event.preventDefault();
+    addStep();
+};
+
+function addStep() {
+    const stepName = document.getElementById('stepName').value;
+    const valueTime = parseInt(document.getElementById('valueTime').value, 10);
+    const delayTime = parseInt(document.getElementById('delayTime').value, 10);
+
+    const newStep = {
+        name: stepName,
+        valueTime: valueTime,
+        delayTime: delayTime,
+        total: valueTime + delayTime
+    };
+    steps.push(newStep);
+    drawStep(newStep);
+    updateTotalTime();
+}
+
+function drawStep(step) {
+    const canvas = document.getElementById('vsmCanvas');
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'step';
+    stepDiv.innerHTML = `
+        <div class="step-info">
+            <img src="https://via.placeholder.com/50" alt="Step Icon">
+            <div>${step.name}</div>
+            <div>Value: ${step.valueTime} min</div>
+            <div>Delay: ${step.delayTime} min</div>
+        </div>
+    `;
+    canvas.appendChild(stepDiv);
+}
+
+function updateTotalTime() {
+    totalTime = steps.reduce((acc, step) => acc + step.total, 0);
+    document.getElementById('totalTime').innerText = totalTime;
+}
+</script>
+</body>
+</html>
