@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .post {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .post h2 {
+            color: #007BFF;
+        }
+        .post p {
+            margin-top: 10px;
+        }
+        .post small {
+            display: block;
+            color: #777;
+            margin-bottom: 10px;
+        }
+        .load-more {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: #007BFF;
+            color: #fff;
+            padding: 10px;
+            margin: 20px 0;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .load-more:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Blog Posts</h1>
+        <div id="posts"></div>
+        <button class="load-more" onclick="loadMorePosts()">Load More</button>
+    </div>
+
+    <script>
+        const postsContainer = document.getElementById('posts');
+        let currentPostIndex = 0;
+        const posts = [
+            {
+                title: 'First Blog Post',
+                content: 'This is the content of the first blog post.',
+                author: 'John Doe',
+                date: 'November 3, 2024'
+            },
+            {
+                title: 'Second Blog Post',
+                content: 'Here is the content of the second blog post.',
+                author: 'Jane Smith',
+                date: 'November 2, 2024'
+            },
+            {
+                title: 'Third Blog Post',
+                content: 'Another blog post with interesting content.',
+                author: 'Chris Lee',
+                date: 'November 1, 2024'
+            },
+            // Add more blog post objects here as needed
+        ];
+
+        function loadMorePosts() {
+            if (currentPostIndex >= posts.length) {
+                alert('No more posts to load');
+                return;
+            }
+
+            for (let i = 0; i < 2 && currentPostIndex < posts.length; i++, currentPostIndex++) {
+                const post = posts[currentPostIndex];
+                const postElement = document.createElement('div');
+                postElement.classList.add('post');
+                postElement.innerHTML = `
+                    <h2>${post.title}</h2>
+                    <small>By ${post.author} on ${post.date}</small>
+                    <p>${post.content}</p>
+                `;
+                postsContainer.appendChild(postElement);
+            }
+        }
+
+        // Load initial posts
+        loadMorePosts();
+    </script>
+</body>
+</html>

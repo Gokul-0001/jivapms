@@ -44,6 +44,7 @@ class ProjectAdministration(BaseModelTrackImpl):
     
     PROJECT_STATE_CHOICES = [
         ('Initiation', 'Initiation'),
+        ('Started', 'Started'),
         ('Launched', 'Launched'),
         ('Archived', 'Archived'),
         # Add more states as needed

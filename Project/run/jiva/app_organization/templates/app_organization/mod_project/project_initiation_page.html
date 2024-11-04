@@ -1,19 +1,42 @@
-Project Initiation page
-
-<br>
-Project Template: Scrum/Kanban/Scrumban/Agile/Lean/XP/SAFe/LeSS/DAD/Spotify/Other
-
-<br>
-Project Priority:
-
-<br>
-Project Start Date:
-
-<br>
-Project End Date:
-
-<br>
-
-Project Team:
-
-<br>
+<!-- Content -->
+<form action="" method="post">
+{% csrf_token %}
+<div class="contentbar mb-5" id="contentbar">
+    <div class="container mt-5">
+        <h1 class="text-center">Project: {{ project }} {{project_administration.project_state}}</h1>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr><td><b>Org Name</b></td><td>{{project.org}}</td></tr>
+                    <tr><td><b>Project Name</b></td><td>{{project}}</td></tr>
+                    <tr> 
+                        <td><b>Project Template</b></td>
+                        <td>
+                            {{form.template}}
+                       </td>
+                    </td>
+                   </tr>
+                   <tr> 
+                        <td><b>Project Start Date</b></td>
+                        <td>
+                            {{form.start_date}}
+                        </td>
+                        </td>
+                    </tr>
+                    <tr> 
+                        <td><b>Project End Date</b></td>
+                        <td>
+                            {{form.end_date}}
+                        </td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="text-center">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </td>
+                    </tr>
+                    
+                    <!-- Additional project details -->
+                </tbody>
+            </table>
+    </div>
+</form>

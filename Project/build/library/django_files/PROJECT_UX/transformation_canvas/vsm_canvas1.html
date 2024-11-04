@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Value Stream Canvas</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.css">
+<style>
+    body, html { margin: 0; font-family: Arial, sans-serif; display: flex; flex-direction: column; height: 100%; }
+    header { background: #007BFF; color: white; padding: 10px; text-align: center; display: flex; align-items: center; }
+    header input { margin-left: 10px; flex-grow: 1; }
+    .container { display: flex; flex-grow: 1; overflow: hidden; }
+    .left-pane { width: 30%; padding: 10px; display: flex; flex-direction: column; }
+    .right-pane { flex-grow: 1; padding: 10px; overflow: auto; }
+    textarea { flex-grow: 1; margin-bottom: 10px; }
+    button { padding: 10px 20px; }
+</style>
+</head>
+<body>
+<header>Value Stream Canvas: <input type="text" id="valueStreamName" placeholder="Enter Value Stream Name"></header>
+<div class="container">
+    <div class="left-pane">
+        <textarea id="steps" placeholder="Enter steps separated by newline..."></textarea>
+        <button onclick="generateFlow()">Generate Flow</button>
+    </div>
+    <div class="right-pane">
+        <div id="mermaidChart"></div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+    mermaid.initialize({startOnLoad: false});
+
+    function generateFlow() {
+        var steps = document.getElementById('steps').value.trim().split('\n');
+        if (steps.length === 1 && steps[0] === "") {
+            document.getElementById('mermaidChart').innerText = 'Please enter one or more steps.';
+            return;
+        }
+
+        var flowChartCode = 'graph LR;\n';
+        steps.forEach((step, index) => {
+            var nextIndex = index + 1;
+            flowChartCode += `Step${nextIndex}["${step.replace(/"/g, '\\"')}"]`;
+            if (index < steps.length - 1) {
+                flowChartCode += '-->';
+            }
+        });
+
+        // Clearing the container first
+        document.getElementById('mermaidChart').innerHTML = '<div class="mermaid">' + flowChartCode + '</div>';
+        mermaid.init(undefined, document.querySelector('.mermaid'));
+    }
+
+   
+</script>
+</body>
+</html>

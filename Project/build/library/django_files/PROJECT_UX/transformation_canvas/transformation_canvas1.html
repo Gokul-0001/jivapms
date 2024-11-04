@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformation Canvas</title>
+<style>
+    body, html { height: 100%; margin: 0; font-family: Arial, sans-serif; }
+    header { background: #007BFF; color: white; padding: 20px; text-align: center; }
+    .canvas { display: grid; grid-template-areas:
+        'vision vision vision vision'
+        'objectives valuestreams valuestreams stakeholders'
+        'tools metrics risks milestones'
+        'skills budget budget budget';
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-rows: auto 1fr 1fr auto;
+      height: calc(100vh - 40px); padding: 20px; gap: 10px; }
+    .section { background: #fff; border: 1px solid #ddd; padding: 10px; position: relative; }
+    .vision { grid-area: vision; }
+    .objectives { grid-area: objectives; }
+    .stakeholders { grid-area: stakeholders; }
+    .valuestreams { grid-area: valuestreams; }
+    .tools { grid-area: tools; }
+    .skills { grid-area: skills; }
+    .metrics { grid-area: metrics; }
+    .risks { grid-area: risks; }
+    .milestones { grid-area: milestones; }
+    .budget { grid-area: budget; }
+    h2 { color: #555; margin-top: 0; margin-bottom: 10px; }
+    textarea { width: 100%; height: calc(100% - 30px); border: none; padding: 8px; box-sizing: border-box; resize: none; }
+</style>
+</head>
+<body>
+<header>Transformation Canvas</header>
+<div class="canvas">
+    <div class="section vision">
+        <h2>Vision</h2>
+        <textarea placeholder="Enter the vision for the transformation..."></textarea>
+    </div>
+    <div class="section objectives">
+        <h2>Objectives</h2>
+        <textarea placeholder="Define specific measurable objectives..."></textarea>
+    </div>
+    <div class="section stakeholders">
+        <h2>Stakeholders</h2>
+        <textarea placeholder="List key stakeholders..."></textarea>
+    </div>
+    <div class="section valuestreams">
+        <h2>Value Streams</h2>
+        <textarea placeholder="Describe value streams affected by the transformation..."></textarea>
+    </div>
+    <div class="section tools">
+        <h2>Tools & Technologies</h2>
+        <textarea placeholder="Specify necessary tools and technologies..."></textarea>
+    </div>
+    <div class="section skills">
+        <h2>Skills & Expertise</h2>
+        <textarea placeholder="Identify skills and expertise needed..."></textarea>
+    </div>
+    <div class="section metrics">
+        <h2>Metrics & KPIs</h2>
+        <textarea placeholder="Establish metrics and KPIs to monitor progress..."></textarea>
+    </div>
+    <div class="section risks">
+        <h2>Barriers & Risks</h2>
+        <textarea placeholder="Assess potential risks and barriers..."></textarea>
+    </div>
+    <div class="section milestones">
+        <h2>Milestones</h2>
+        <textarea placeholder="Outline key milestones and timelines..."></textarea>
+    </div>
+    <div class="section budget">
+        <h2>Budget</h2>
+        <textarea placeholder="Plan the budget..."></textarea>
+    </div>
+</div>
+</body>
+</html>

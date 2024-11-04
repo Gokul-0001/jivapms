@@ -1,0 +1,500 @@
+   20  . step3.goto_project jiva
+   21  python manage.py runserver
+   22  rm db.sqlite3 
+   23  python manage.py runserver
+   24  git status
+   25  cd -
+   26  git status
+   27  git add -A
+   28  git commit -m "gitignore migrations/"
+   29  git push
+   30  git status
+   31  git add -A
+   32  git commit -m "deleted migrations"
+   33  git push
+   34  last.delete_project jiva
+   35  ls
+   36  step1.setup_dev_env 
+   37  . step3.goto_project 
+   38  dir
+   39  git clone https://github.com/ARUNRGAGILITY/os_jiva_pms.git
+   40  cd os_jiva_pms/
+   41  cd Project/
+   42  cd build/make/
+   43  ls
+   44  code ../../../
+   45  step1.setup_dev_env 
+   46  . step3.goto_project jiva
+   47  ls
+   48  python manage.py makemigrations
+   49  python manage.py makemigrations
+   50  python manage.py makemigrations
+   51  python manage.py makemigrations
+   52  python manage.py makemigrations
+   53  clear
+   54  python manage.py makemigrations
+   55  python manage.py makemigrations
+   56  python manage.py makemigrations app_memberprofilerole/
+   57  python manage.py makemigrations app_memberprofilerole
+   58  python manage.py makemigrations app_organization
+   59  python manage.py migrate
+   60  python manage.py migrate
+   61  python manage.py makemigrations app_memberprofilerole
+   62  python manage.py makemigrations app_organization
+   63  python manage.py migrate
+   64  cd -
+   65  step4.copy_to_prod 
+   66  git status
+   67  git add -A
+   68  git commit -m "deps fix"
+   69  git push
+   70  cd ..
+   71  ls
+   72  rm -rf dev_env/
+   73  cd make
+   74  step1.setup_dev_env 
+   75  . step3.goto_project jiva
+   76  python manage.py makemigrations
+   77  cd -
+   78  code ../../../
+   79  . step3.goto_project jiva
+   80  dir
+   81  cd os_jiva_pms/
+   82  git log
+   83  vcs logs
+   84  vcs log
+   85  vcs history
+   86  git checkout bde8ac937938b1c6561074689f659d0d4e9b1857
+   87  ls
+   88  cd Project/
+   89  cd build/make/
+   90  ls
+   91  step1.setup_dev_env 
+   92  . step3.goto_project jiva
+   93  python manage.py makemigrations
+   94  exit
+   95  dir
+   96  cd RUN
+   97  dir
+   98  git clone https://github.com/ARUNRGAGILITY/os_jiva_pms.git
+   99  dir
+  100  cd os_jiva_pms/
+  101  dir
+  102  cd Project/
+  103  cd build/
+  104  cd make
+  105  ls
+  106  vcs history
+  107  git checkout bc36cad7406373daf4337943a80085008b073857
+  108  dir
+  109  code ../../../
+  110  . step3.goto_project jiva
+  111  git clone https://github.com/ARUNRGAGILITY/jivapms.git
+  112  cd jivapms/
+  113  dir
+  114  git status
+  115  dir
+  116  cd Project/build/make/
+  117  dir
+  118  step1
+  119  step1.setup_dev_env 
+  120  . step3.goto_project 
+  121  cd jivapms/
+  122  dir
+  123  cd Project/build/make/
+  124  . step3.goto_project jiva
+  125  python manage.py runserver
+  126  mv db.sqlite3 db.sqlite31
+  127  python manage.py migrate
+  128  python manage.py makemigrations
+  129  cp db.sqlite31 db.sqlite3
+  130  python manage.py makemigrations
+  131  python manage.py migrate
+  132  mv db.sqlite3 db.sqlite32
+  133  python manage.py makemigrations
+  134  python manage.py makemigrations
+  135  cp db.sqlite32  db.sqlite3
+  136  python manage.py makemigrations
+  137  python manage.py migrate
+  138  code .
+  139  python manage.py makemigrations
+  140  python manage.py migrate
+  141  mv db.sqlite3 db.sqlite33
+  142  python manage.py makemigrations
+  143  cp db.sqlite33 db.sqlite3
+  144  python manage.py flush
+  145  python manage.py makemigrations
+  146  python manage.py makemigrations app_memberprofilerole
+  147  python manage.py makemigrations app_memberprofilerole
+  148  python manage.py makemigrations app_memberprofilerole
+  149  python manage.py makemigrations app_memberprofilerole
+  150  python manage.py makemigrations app_memberprofilerole
+  151  cp db.sqlite33 db.sqlite34
+  152  mv db.sqlite3 onedb1
+  153  python manage.py makemigrations
+  154  python manage.py migrate
+  155  python manage.py create_superuser
+  156  code ../../../../
+  157  python manage.py create_test_accounts_from_csv --config ../../../../app_builder/test/test_data/config.json --csv ../../../../app_builder/test/test_data/user_roles.csv
+  158  python manage.py runserver
+  159  ls
+  160  cd -
+  161  step4.copy_to_prod 
+  162  git status
+  163  git add -A
+  164  git status
+  165  git commit -m "RELEASE1 from JIVAPMS"
+  166  git push
+  167  . step3.goto_project jiva
+  168  python manage.py runserver
+  169  cd -
+  170  step4.copy_to_prod 
+  171  git status
+  172  git add -A
+  173  git commit -m "create project"
+  174  git push
+  175  step4.copy_to_prod 
+  176  git status
+  177  git commit -m "About the Project jivapms"
+  178  git add -A
+  179  git commit -m "About the Project jivapms"
+  180  git push
+  181  git add -A
+  182  git commit -m "About the Project jivapms"
+  183  git push
+  184  git add -A
+  185  git commit -m "About the Project jivapms"
+  186  git push
+  187  step4.copy_to_prod 
+  188  git status
+  189  cd ../../src/
+  190  ls
+  191  cd jiva/
+  192  ls
+  193  rm -rf jiva/
+  194  rm onedb1 
+  195  cd ../..
+  196  ls
+  197  cd build
+  198  cd dev_env/project_area/env_jiva/jiva/
+  199  ls
+  200  rm -rf jiva/
+  201  rm onedb1 
+  202  git status
+  203  git status
+  204  ls
+  205  git add -A
+  206  git commit -m "project details and org name"
+  207  git push
+  208  cd -
+  209  cd make
+  210  step4
+  211  step4.copy_to_prod 
+  212  git status; git add -A
+  213  git status
+  214  git commit -m "about the project and project ux"
+  215  git push
+  216  git status
+  217  git add -A
+  218  git stauts
+  219  git status
+  220  git commit -m "UX files for Project"
+  221  git push
+  222  dir
+  223  git tag -a "RELEASE1" -m "Basic release 1.0"
+  224  git push --tags
+  225  git push-mirror
+  226  git push mirror
+  227  ls
+  228  initial.create_django_project jiva.organization.team
+  229  git status
+  230  rm ../library/django_files/PROJECT_UX/basic_project_template2.html.txt
+  231  . step3.goto_project jiva
+  232  python manage.py runserver
+  233  cd -
+  234  ls
+  235  ls
+  236  cd ..
+  237  ls
+  238  cd app_builder/
+  239  ls
+  240  cd scripts/
+  241  ls
+  242  python CRUD_ONE_LEVEL.py 
+  243  python CRUD_ONE_LEVEL.py jiva.organization organization.organization Team
+  244  cd ../../make/
+  245  ls
+  246  chmod +x app_builder 
+  247  ls
+  248  app_builder
+  249  ./app_builder
+  250  . app_builder
+  251  cd -
+  252  ls
+  253  . step3.goto_project jiva
+  254  python manage.py makemigrations
+  255  python manage.py migrate
+  256  python manage.py runserver
+  257  cd -
+  258  cd -
+  259  python manage.py runserver
+  260  cd -
+  261  git status
+  262  git status
+  263  step4.copy_to_prod 
+  264  git status
+  265  git add -A
+  266  git commit -m "added teams"
+  267  git push
+  268  dir
+  269  . step3.goto_project jiva
+  270  python manage.py runserver
+  271  python manage.py makemigrations
+  272  python manage.py migrate
+  273  python manage.py runserver
+  274  python manage.py makemigrations
+  275  python manage.py migrate
+  276  python manage.py runserver
+  277  cd -
+  278  . app_builder
+  279  ls
+  280  cd -
+  281  initial.create_django_project jiva.organization.teammember
+  282  . app_builder
+  283  ls
+  284  python CRUD_ONE_LEVEL.py 
+  285  python CRUD_ONE_LEVEL.py jiva.organziation organization.team teammember
+  286  cd -
+  287  cd -
+  288  python CRUD_ONE_LEVEL.py jiva.organization organization.team teammember
+  289  cd -
+  290  . step3.goto_project jiva
+  291  python manage.py makemigrations
+  292  python manage.py makemigrations
+  293  python manage.py makemigrations
+  294  python manage.py migrate
+  295  python manage.py runserver
+  296  cd -
+  297  . app_builder
+  298  python CRUD_ONE_LEVEL.py jiva.organization organization.team teammember
+  299  cd -
+  300  . step3.goto_project jiva
+  301  python manage.py makemigrations
+  302  python manage.py makemigrations
+  303  python manage.py makemigrations
+  304  python manage.py migrate
+  305  python manage.py runserver
+  306  pip install django-autocomplete-light
+  307  python manage.py runserver
+  308  cd -
+  309  initial.create_django_project jiva.organization.memberrole
+  310  . app_builder
+  311  python CRUD_ONE_LEVEL.py jiva.organization organization.organization memberrole
+  312  cd -
+  313  ls
+  314  . step3.goto_project jiva
+  315  python manage.py runserver
+  316  python manage.py makemigrations
+  317  python manage.py migrate
+  318  python manage.py runserver
+  319  pip uninstall django-autocomplete-light
+  320  python manage.py runserver
+  321  python manage.py runserver
+  322  python manage.py runserver
+  323  python manage.py makemigrations
+  324  python manage.py migrate
+  325  python manage.py runserver
+  326  cd -
+  327  step4.copy_to_prod 
+  328  git status
+  329  git add -A
+  330  git status
+  331  git commit -m "Team, Memberrole added"
+  332  git push
+  333  git tag -a "team_memberrole" -m "Added Team and memberrole"
+  334  git push tag team_memberrole
+  335  git push --tag team_memberrole
+  336  git push tag origin
+  337  git push origin team_memberrole
+  338  initial.create_django_project jiva.organization.backlog
+  339  . app_builder
+  340  ls
+  341  python ONE_LEVEL_TREE_CRUD.py 
+  342  python ONE_LEVEL_TREE_CRUD.py jiva.organization organization.organization Backlog
+  343  cd -
+  344  initial.create_django_project jiva.organization.BacklogSuperType
+  345  initial.create_django_project jiva.organization.BacklogType
+  346  initial.create_django_project jiva.organization.Backlog
+  347  . app_builder
+  348  python ONE_LEVEL_TREE_CRUD.py jiva.organization organization.organization BacklogSuperType
+  349  python ONE_LEVEL_TREE_CRUD.py jiva.organization organization.organization Backlog
+  350  ls
+  351  cd -
+  352  initial.create_django_project jiva.organization.backlog
+  353  initial.create_django_project jiva.organization.backlog_super_type
+  354  initial.create_django_project jiva.organization.backlog_type
+  355  . app_builder
+  356  python ONE_LEVEL_TREE_CRUD.py jiva.organization organization.organization Backlog
+  357  cd -
+  358  . step3.goto_project 
+  359  dir
+  360  cd NEW
+  361  LS
+  362  ls
+  363  code .
+  364  dir
+  365  cd jivapms/
+  366  ls
+  367  cd Project/build/make/
+  368  ls
+  369  . step3.goto_project jiva
+  370  m3
+  371  cd -
+  372  initial.create_django_project jiva.memberprofilerole.memberorganizationrole
+  373  . app_builder
+  374  ls
+  375  python CRUD_ONE_LEVEL.py 
+  376  python CRUD_ONE_LEVEL.py jiva.memberprofilerole memberprofilerole.organization MemberOrganizationRole
+  377  cd -
+  378  . step3.goto_project 
+  379  cd NEW/jivapms/Project/build/make/
+  380  . step3.goto_project  jiva
+  381  m3
+  382  cd -
+  383  . app_builder
+  384  python CRUD_ONE_LEVEL.py jiva.memberprofilerole memberprofilerole.organization Memberorganizationrole
+  385  cd -
+  386  . step3.goto_project  jiva
+  387  m3
+  388  cd -
+  389  initial.create_django_project jiva.memberprofilerole.memberorganizationrole
+  390  cd -
+  391  cd -
+  392  . app_builder
+  393  python CRUD_ONE_LEVEL.py jiva.memberprofilerole memberprofilerole.organization Memberorganizationrole
+  394  cd -
+  395  . step3.goto_project  jiva
+  396  m3
+  397  m3
+  398  m3
+  399  cd -
+  400  step4.copy_to_prod 
+  401  gitx "SiteAdmin, OrgAdmin homepage with viewer"
+  402  . step3.goto_project jiva
+  403  m3
+  404  cd -
+  405  ls
+  406  initial.create_django_project jiva.organization.projectroadmap
+  407  . app_builder
+  408  python CRUD_ONE_LEVEL.py 
+  409  python CRUD_ONE_LEVEL.py  jiva.organization organization.organization ProjectRoadmap
+  410  cd -
+  411  . step3.goto_project jiva
+  412  m3
+  413  cd -
+  414  initial.create_django_project 
+  415  initial.create_django_project jiva.organization.ProjectRoadmap
+  416  initial.create_django_project jiva.organization.project_roadmap
+  417  . app_builder
+  418  python CRUD_ONE_LEVEL.py  jiva.organization organization.organization ProjectRoadmap
+  419  cd -
+  420  . step3.goto_project jiva
+  421  m1
+  422  m1
+  423  m2
+  424  m3
+  425  cd -
+  426  ls
+  427  initial.create_django_project jiva.organization.project_detail
+  428  . app_builder
+  429  python CRUD_ONE_LEVEL.py  jiva.organization organization.project ProjectDe
+  430  cd -
+  431  ls
+  432  m1
+  433  cd -
+  434  cd -
+  435  . step3.goto_project jiva
+  436  m1
+  437  m2
+  438  m3
+  439  m1
+  440  m2
+  441  m3
+  442  cd -
+  443  . app_builder
+  444  ls
+  445  python CRUD_ONE_LEVEL.py  jiva.organization organization.project ProjectRoadmap
+  446  cd -
+  447  m1
+  448  . step3.goto_project jiva
+  449  m1
+  450  m1
+  451  m2
+  452  m3
+  453  m1
+  454  m2
+  455  m3
+  456  m1
+  457  m2
+  458  m3
+  459  step4
+  460  cd -
+  461  step4.copy_to_prod 
+  462  gitx "Organization details displayed"
+  463  . step3.goto_project 
+  464  cd NEW/
+  465  ls
+  466  cd jivapms/Project/build/make
+  467  . step3.goto_project 
+  468  ls
+  469  dir
+  470  cd NEW/
+  471  dir
+  472  cd jivapms/
+  473  dir
+  474  cd Project/
+  475  dir
+  476  cd build/make/
+  477  dir
+  478  . step3.goto_project 
+  479  ls
+  480  cd NEW/
+  481  ls
+  482  cd jivapms/
+  483  ls
+  484  cd Project/build/
+  485  cd make/
+  486  ls
+  487  . step3.goto_project 
+  488  ls
+  489  cd NEW/jivapms/Project/build/make/
+  490  ls
+  491  . step3.goto_project jiva
+  492  ls
+  493  ./m3
+  494  exit
+  495  ls
+  496  cd NEW/
+  497  ls
+  498  cd jivapms/Project/build/make/
+  499  ls
+  500  . step3.goto_project 
+  501  ls
+  502  cd NEW/
+  503  l
+  504  ls
+  505  cd jivapms/Project/build/make/
+  506  ls
+  507  . step3.goto_project jiva
+  508  ./m3
+  509  code ../../../../../
+  510  ls
+  511  cd -
+  512  ls
+  513  . app_builder
+  514  ls
+  515  cd -
+  516  ls
+  517  initial.create_django_project 
+  518  history
+  519  history > ref_commands.txt

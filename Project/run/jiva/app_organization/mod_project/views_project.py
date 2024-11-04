@@ -9,8 +9,10 @@ from app_memberprofilerole.mod_role.models_role import *
 from app_jivapms.mod_app.all_view_imports import *
 from app_organization.org_decorators import *
 from app_organization.mod_projectmembership.models_projectmembership import *
-
+from app_organization.mod_project_template.models_project_template import *
 from app_organization.mod_project_roadmap.models_project_roadmap import *
+from app_organization.mod_project_detail.forms_project_detail import *
+from app_organization.mod_project_template.forms_project_template import *
 
 app_name = 'app_organization'
 app_version = 'v1'
@@ -471,6 +473,8 @@ def project_homepage(request, org_id, project_id):
     
     project = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)   
     project_detail = project.project_details.first() 
+    
+        
     roadmap_items = ProjectRoadmap.objects.filter(active=True)
     logger.debug(f"Roadmap items for project {project.id}: {roadmap_items}")
 
@@ -499,9 +503,25 @@ def project_homepage(request, org_id, project_id):
     # Log the final Gantt chart string to check its structure
     logger.debug(f"Generated roadmap_str: {roadmap_str}")
 
-
-
     object = project
+    
+    # Project Administration 
+    project_administration = ProjectAdministration.objects.filter(project_id=project_id, 
+                                                                  active=True).first()
+    
+    # HANDLING POST DATA
+    if request.method == 'POST':
+        form = ProjectDetailForm(request.POST, instance=project_detail)
+        if form.is_valid():
+            form.instance.author = user
+            form.instance.org_id = org_id
+            form.instance.pro = project
+            project_administration.project_state = 'Started'
+            project_administration.save()
+            form.save()
+        else:
+            print(f">>> === form.errors: {form.errors} === <<<")
+        return redirect('project_homepage', org_id=org_id, project_id=project_id)
     
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -515,6 +535,7 @@ def project_homepage(request, org_id, project_id):
         'object': object,
         'project': object,
         'project_detail': project_detail,
+        'form': ProjectDetailForm(instance=project_detail),
         'roadmap': roadmap_str,
         'page_title': f'Project Homepage',
     }

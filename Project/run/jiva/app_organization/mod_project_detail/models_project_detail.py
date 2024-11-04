@@ -3,7 +3,7 @@ from app_organization.mod_app.all_model_imports import *
 from app_organization.mod_project.models_project import *
 from app_common.mod_common.models_common import *
 
-class ProjectDetail(BaseModelTrackImpl):
+class ProjectDetail(BaseModelTrackDateImpl):
     pro = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
                             related_name="project_details", null=True, blank=True)
     
@@ -18,6 +18,9 @@ class ProjectDetail(BaseModelTrackImpl):
     strategy = models.TextField(null=True, blank=True)
     roadmap_description = models.TextField(blank=True, null=True)
     
+    template = models.ForeignKey('app_organization.ProjectTemplate', on_delete=models.SET_NULL, 
+                                 null=True, blank=True,
+                                 related_name="project_template_details")
 
     def __str__(self):
         return self.pro.name

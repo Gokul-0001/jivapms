@@ -11,6 +11,7 @@ urlpatterns = [
     path('projectmembership/', include('app_organization.mod_projectmembership.urls_projectmembership')),
     path('project_detail/', include('app_organization.mod_project_detail.urls_project_detail')),
     path('project_roadmap/', include('app_organization.mod_project_roadmap.urls_project_roadmap')),
+    path('project_template/', include('app_organization.mod_project_template.urls_project_template')),
     path('roadmapitem/', include('app_organization.mod_roadmapitem.urls_roadmapitem')),
     path('team/', include('app_organization.mod_team.urls_team')),
     path('teammember/', include('app_organization.mod_teammember.urls_teammember')),

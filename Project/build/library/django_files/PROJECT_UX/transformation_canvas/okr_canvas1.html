@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OKR Canvas</title>
+<style>
+    body, html { height: 100%; margin: 0; font-family: Arial, sans-serif; }
+    header { background: #007BFF; color: white; padding: 10px; text-align: center; box-sizing: border-box; }
+    .canvas { display: grid; grid-template-areas:
+        'company company department department'
+        'team team individual individual'
+        'krc kr1 kr2 kr3';
+      grid-template-columns: repeat(4, 1fr); /* Equal width columns */
+      grid-template-rows: 1fr 1fr auto; /* Adaptive row heights */
+      height: calc(100vh - 40px); padding: 20px; gap: 10px; box-sizing: border-box; }
+    .section { background: #fff; border: 1px solid #ddd; padding: 10px; position: relative; display: flex; flex-direction: column; }
+    .section h2 { color: #555; margin: 0 0 5px 0; }
+    .section p { font-size: 12px; color: #888; margin: 0 0 5px 0; }
+    textarea { width: 100%; height: 100%; border: none; padding: 8px; box-sizing: border-box; resize: none; flex-grow: 1; }
+    .company { grid-area: company; }
+    .department { grid-area: department; }
+    .team { grid-area: team; }
+    .individual { grid-area: individual; }
+    .kr { grid-area: krc; }
+    .kr1 { grid-area: kr1; }
+    .kr2 { grid-area: kr2; }
+    .kr3 { grid-area: kr3; }
+</style>
+</head>
+<body>
+<header>OKR Canvas</header>
+<div class="canvas">
+    <div class="section company">
+        <h2>Company Objective</h2>
+        <p>Define the overarching objective for the company...</p>
+        <textarea></textarea>
+    </div>
+    <div class="section department">
+        <h2>Department Objective</h2>
+        <p>Define the main objective for your department...</p>
+        <textarea></textarea>
+    </div>
+    <div class="section team">
+        <h2>Team Objective</h2>
+        <p>What is the primary goal for your team this cycle?</p>
+        <textarea></textarea>
+    </div>
+    <div class="section individual">
+        <h2>Individual Objective</h2>
+        <p>Personal goals that align with team and company objectives...</p>
+        <textarea></textarea>
+    </div>
+    <div class="section kr">
+        <h2>Key Results</h2>
+        <p>What are the key results for the company objective?</p>
+        <textarea></textarea>
+    </div>
+    <div class="section kr1">
+        <h2>Department Key Results</h2>
+        <p>Metrics to measure the department's success...</p>
+        <textarea></textarea>
+    </div>
+    <div class="section kr2">
+        <h2>Team Key Results</h2>
+        <p>Metrics for evaluating team achievements...</p>
+        <textarea></textarea>
+    </div>
+    <div class="section kr3">
+        <h2>Individual Key Results</h2>
+        <p>Personal metrics aligned with your goals...</p>
+        <textarea></textarea>
+    </div>
+</div>
+</body>
+</html>

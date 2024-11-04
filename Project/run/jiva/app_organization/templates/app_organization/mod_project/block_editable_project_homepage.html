@@ -91,6 +91,33 @@
                         {% if project_detail.roadmap_description != None %}{{ project_detail.roadmap_description }}{% endif %}</td>
                     </td>
                     </tr>
+
+                    <!-- Project details: start date and end date -->
+                    <tr> 
+                        <td><b>Project Template</b></td>
+                        <td contenteditable="true" onclick="makeEditable(this)" 
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'template')">
+                        {% if project_detail.template != None %}{{ project_detail.template }}{% endif %}</td>
+                    </td>
+                    </tr>
+                    <tr> 
+                        <td><b>Project Start Date</b></td>
+                        <td contenteditable="true" onclick="makeEditable(this)" 
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'start_date')">
+                        {% if project_detail.start_date != None %}{{ project_detail.start_date }}{% endif %}</td>
+                    </td>
+                    </tr>
+                    <tr> 
+                        <td><b>Project End Date</b></td>
+                        <td contenteditable="true" onclick="makeEditable(this)" 
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'end_date')">
+                        {% if project_detail.end_date != None %}{{ project_detail.end_date }}{% endif %}</td>
+                    </td>
+                    </tr>
+
                     <tr>
                         <td width="20%"><b>Visual Roadmap</b>
                         <br>
