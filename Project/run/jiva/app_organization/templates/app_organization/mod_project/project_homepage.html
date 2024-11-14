@@ -12,7 +12,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">{{project.org}}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'org_homepage' project.org.id %}">{{project.org}}</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{project}}</li>
             </ol>
