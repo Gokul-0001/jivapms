@@ -8,11 +8,10 @@
 
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
-
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_projectmembership/breadcrumb_projectmemberships.html' %}
+            {% include 'app_organization/mod_dev_value_stream/breadcrumb_dev_value_streams.html' %}
         </div>
     </div>
 </div>
@@ -26,60 +25,35 @@
                     <div class="row">
                         <div class="col col-md-8">
                             <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
-                                Projectmembership</h2>
+                                Dev Value Stream</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_projectmemberships' pro_id %}"
-                             class="btn btn-sm btn-primary"><b>List Projectmembership(s)</b></a>
+                            <a href="{% url 'list_dev_value_streams' ops_id %}"
+                             class="btn btn-sm btn-primary"><b>List Dev Value Stream(s)</b></a>
                         </div>
                     </div>
                 </div>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th colspan="2">
-                                <div class="container-fluid-width">
-                                    <div class="row">
-                                        <div class="col col-md-5">
-                                            {{page_title}}:: {{form.instance}}
-                                        </div>
-                                        <div class="col col-md-7">
-                                            <div class="text-end">
-                                                <a href="{% url 'view_projectmembership' pro_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
-                                                &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_projectmembership' pro_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
-                                                
-                                            </div>
-    
-                                        </div>
-                                    </div>
-                                </div>
-                            </th>
+                            <th colspan="2">{{page_title}}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td width="15%">
-                                <strong>Member</strong>
-                            </td>
-                            <td>
-                                {{form.member|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Description</strong>
+                                <strong>Project</strong>
                             </td>
                             <td>
                                 {{form.project|as_crispy_field}}
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <strong>Description</strong>
+                            <td width="15%">
+                                <strong>Dev Value Stream</strong>
                             </td>
                             <td>
-                                {{form.project_role|as_crispy_field}}
+                                {{form.name|as_crispy_field}}
                             </td>
                         </tr>
                         <tr>
@@ -87,7 +61,7 @@
                                 <strong>Description</strong>
                             </td>
                             <td>
-                                {{form.team|as_crispy_field}}
+                                {{form.description|as_crispy_field}}
                             </td>
                         </tr>
                        <tr>

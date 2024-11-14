@@ -4,7 +4,6 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
-{% load markdown_extras  %}
 
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
@@ -12,7 +11,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_projectmembership/breadcrumb_projectmemberships.html' %}
+            {% include 'app_organization/mod_dev_value_stream/breadcrumb_dev_value_streams.html' %}
         </div>
     </div>
 </div>
@@ -25,12 +24,12 @@
                 <div class="container-fluid-width">
                     <div class="row">
                         <div class="col col-md-8">
-                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
-                                Projectmembership</h2>
+                            <h2>View 
+                                Dev Value Stream :: {{object}}</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_projectmemberships' pro_id %}"
-                             class="btn btn-sm btn-primary"><b>List Projectmembership(s)</b></a>
+                            <a href="{% url 'list_dev_value_streams' ops_id %}"
+                             class="btn btn-sm btn-primary"><b>List Dev Value Stream</b></a>
                         </div>
                     </div>
                 </div>
@@ -41,16 +40,14 @@
                                 <div class="container-fluid-width">
                                     <div class="row">
                                         <div class="col col-md-5">
-                                            {{page_title}}:: {{form.instance}}
+                                            {{page_title}}:: {{object}}
                                         </div>
                                         <div class="col col-md-7">
                                             <div class="text-end">
-                                                <a href="{% url 'view_projectmembership' pro_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
+                                                <a href="{% url 'edit_dev_value_stream' ops_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
                                                 &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_projectmembership' pro_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
-                                                
+                                                <a href="{% url 'delete_dev_value_stream' ops_id object.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
                                             </div>
-    
                                         </div>
                                     </div>
                                 </div>
@@ -60,10 +57,10 @@
                     <tbody>
                         <tr>
                             <td width="15%">
-                                <strong>Member</strong>
+                                <strong>Dev Value Stream</strong>
                             </td>
                             <td>
-                                {{form.member|as_crispy_field}}
+                                {{object.name}}
                             </td>
                         </tr>
                         <tr>
@@ -71,39 +68,14 @@
                                 <strong>Description</strong>
                             </td>
                             <td>
-                                {{form.project|as_crispy_field}}
+                                {{object.description}}
                             </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Description</strong>
-                            </td>
-                            <td>
-                                {{form.project_role|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Description</strong>
-                            </td>
-                            <td>
-                                {{form.team|as_crispy_field}}
-                            </td>
-                        </tr>
-                       <tr>
-                            <td colspan="2" class="text-center"><button type="submit"
-                                class="btn btn-sm btn-success">Save</button></td>
-                        </tr>
+                        </tr>                       
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </form>
-<script>
-    focusField = document.getElementById('id_name');
-    focusField.focus();
-</script>
-
 <!-- End: Content -->
 {% endblock content %}

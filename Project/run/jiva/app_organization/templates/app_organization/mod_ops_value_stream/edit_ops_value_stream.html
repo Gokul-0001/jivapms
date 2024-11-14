@@ -12,7 +12,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_projectmembership/breadcrumb_projectmemberships.html' %}
+            {% include 'app_organization/mod_ops_value_stream/breadcrumb_ops_value_streams.html' %}
         </div>
     </div>
 </div>
@@ -26,11 +26,11 @@
                     <div class="row">
                         <div class="col col-md-8">
                             <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
-                                Projectmembership</h2>
+                                Ops Value Stream</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_projectmemberships' pro_id %}"
-                             class="btn btn-sm btn-primary"><b>List Projectmembership(s)</b></a>
+                            <a href="{% url 'list_ops_value_streams' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List Ops Value Stream(s)</b></a>
                         </div>
                     </div>
                 </div>
@@ -45,9 +45,9 @@
                                         </div>
                                         <div class="col col-md-7">
                                             <div class="text-end">
-                                                <a href="{% url 'view_projectmembership' pro_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
+                                                <a href="{% url 'view_ops_value_stream' org_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
                                                 &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_projectmembership' pro_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
+                                                <a href="{% url 'delete_ops_value_stream' org_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
                                                 
                                             </div>
     
@@ -60,18 +60,10 @@
                     <tbody>
                         <tr>
                             <td width="15%">
-                                <strong>Member</strong>
+                                <strong>Ops Value Stream</strong>
                             </td>
                             <td>
-                                {{form.member|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Description</strong>
-                            </td>
-                            <td>
-                                {{form.project|as_crispy_field}}
+                                {{form.name|as_crispy_field}}
                             </td>
                         </tr>
                         <tr>
@@ -79,15 +71,7 @@
                                 <strong>Description</strong>
                             </td>
                             <td>
-                                {{form.project_role|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Description</strong>
-                            </td>
-                            <td>
-                                {{form.team|as_crispy_field}}
+                                {{form.description|as_crispy_field}}
                             </td>
                         </tr>
                        <tr>

@@ -419,10 +419,17 @@ def org_homepage(request,  org_id):
                 org_id=org_id,
                 active=True
             ).distinct().order_by('position')
-    logger.debug(f">>> === projects: {projects} === <<<")
+    logger.debug(f">>> === projects: {projects} with memberships {memberships} === <<<")
     
-    
-    
+    # check the organization role
+    org_admin_role = MemberOrganizationRole.objects.filter(
+                member__in=memberships,
+                role__name=org_admin_str
+            )
+    is_org_admin = org_admin_role.exists()
+    logger.debug(f">>> === USER: {user} is an ORG ADMIN {is_org_admin}, so listing all org projects === <<<")
+    if is_org_admin:
+        projects = Project.objects.filter(org_id=org_id, active=True)
     roadmap_items = organization.roadmap_items.order_by('start_date').filter(active=True)
 
     # Create a dynamic Gantt chart string for Mermaid.js
