@@ -8,7 +8,17 @@
 
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
-
+<style>
+    .input-as-text {
+    border: none;
+    background: none;
+    padding: 0;
+    font: inherit; /* Inherit font properties like size and family */
+    color: inherit; /* Match the text color */
+    outline: none; /* Remove focus outline */
+    cursor: text; /* Optional: Make it clear the field is editable */
+}
+</style>
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">

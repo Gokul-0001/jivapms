@@ -17,6 +17,7 @@
     cursor: pointer;
     color: #707070;  /* Color of the icon */
   }
+ 
 </style>
 <!-- Begin: Content -->
 <form action="" method="POST">
@@ -40,7 +41,7 @@
                             <div class="col col-md-5">
                                 <a href="{% url 'list_dev_value_streams' dev_value_stream.ops.id  %}"><b class="h2">{{dev_value_stream}}</b></a>
                                 &nbsp;&nbsp;
-                                Step List
+                               DVS Step(s)
                                
                             </div>
                             <div class="col col-md-4">
@@ -65,6 +66,26 @@
                     </div>
                     <table class="table table-bordered sortable_table">
                         <thead>
+                            <tr>
+                                <td colspan="6">
+                                    <!-- update here the following Total Value Time + Total Delay Time = Total Time, Efficency = Total Delay Time / Total Time-->
+                                    <div class="display_count">Total Time = Total Value Time + Total Delay Time</div>
+                                </td>
+                                <td colspan="3">
+                                    <!-- update the total time here -->
+                                     <div id="total_time"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6">
+                                    <!-- update here the following Total Value Time + Total Delay Time = Total Time, Efficency = Total Delay Time / Total Time-->
+                                    <div class="display_count">Efficency = (Total Delay Time / Total Time ) * 100</div>
+                                </td>
+                                <td colspan="3">
+                                  <!-- update the efficiency-->
+                                   <div id="efficiency"></div>
+                                </td>
+                            </tr>
                             <tr>
                                 <th width="2%"><i class="bi bi-grip-vertical"></i></th>
                                 <th width="2%">
@@ -102,6 +123,7 @@
                         </thead>
 
                         <tbody  id="sortable" class="sortable-tbody">
+                            
                             {% for tobject in page_obj %}
                             <tr id="{{tobject.id}}_{{ forloop.counter }}" class="sortable-row display_tr">
                                 <td class="drag-handle">
@@ -111,21 +133,19 @@
                                     <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                 </td>
                                 <td>{{forloop.counter}}</td>
-                                <td width="" ondblclick="makeEditable(this)"
+                                <td width="" onclick="makeEditable(this)"
                                  onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'name')"
                                 ><strong>{{tobject.name}}</strong></td>
-                                <td width="20%" ondblclick="makeEditable(this)"
+                                <td width="20%" onclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                <td width="5%" ondblclick="makeEditable(this)"
+                                <td width="5%" onclick="makeEditable(this)" data-field="value" 
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'value')"
                                 >{% if tobject.value != None %}{{tobject.value}}{% endif %}</td>
-                                <td width="5%" ondblclick="makeEditable(this)"
+                                <td width="5%" onclick="makeEditable(this)" data-field="delay" 
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'delay')"
                                 >{% if tobject.delay != None %}{{tobject.delay}}{% endif %}</td>
-                                <td width="20%">
-                                
-                                </td>
+                               
                                 <td width="50%">
                                     <a href="{% url 'view_dev_value_stream_step' dev_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
@@ -156,6 +176,37 @@
     {% endif %}
 </div>
 </form>
+
+<script>
+    function calculateTotals() {
+        let totalValueTime = 0;
+        let totalDelayTime = 0;
+
+        // Iterate through all rows in the table
+        document.querySelectorAll('.sortable-tbody tr').forEach(row => {
+            const valueCell = row.querySelector('[data-field="value"]');
+            const delayCell = row.querySelector('[data-field="delay"]');
+
+            const value = parseFloat(valueCell?.textContent) || 0;
+            const delay = parseFloat(delayCell?.textContent) || 0;
+
+            totalValueTime += value;
+            totalDelayTime += delay;
+        });
+
+        // Calculate Total Time
+        const totalTime = totalValueTime + totalDelayTime;
+        document.querySelector('#total_time').textContent = `Total Time = ${totalValueTime} + ${totalDelayTime} = ${totalTime}`;
+
+        // Calculate Efficiency (as a percentage of value time to total time)
+        const efficiency = totalTime > 0 ? ((totalValueTime / totalTime) * 100).toFixed(2) : 0;
+        document.querySelector('#efficiency').textContent = `Efficiency = (${totalValueTime} / ${totalTime}) × 100 = ${efficiency}%`;
+    }
+
+    document.addEventListener('DOMContentLoaded', calculateTotals);
+</script>
+
+
 <script>
 // Select all / checkbox
 function checkUncheck(checkBox) {
@@ -228,6 +279,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function makeEditable(element) {
         element.contentEditable = true;
         element.focus();
+
+        
+        element.addEventListener('blur', function () {
+            element.contentEditable = false;
+            calculateTotals(); // Recalculate totals after editing
+        });
     }
 
 

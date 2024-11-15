@@ -42,7 +42,7 @@
                                     <a href="{% url 'list_ops_value_streams' opsvaluestream.org.id %}">{{opsvaluestream}}</a>
                                 </b>
                                 &nbsp;&nbsp;
-                                Ops Value Stream Step List
+                                OVS Step(s)
                                
                             </div>
                             <div class="col col-md-4">
@@ -66,6 +66,26 @@
                     </div>
                     <table class="table table-bordered sortable_table">
                         <thead>
+                            <tr>
+                                <td colspan="6">
+                                    <!-- update here the following Total Value Time + Total Delay Time = Total Time, Efficency = Total Delay Time / Total Time-->
+                                    <div class="display_count">Total Time = Total Value Time + Total Delay Time</div>
+                                </td>
+                                <td colspan="3">
+                                    <!-- update the total time here -->
+                                     <div id="total_time"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6">
+                                    <!-- update here the following Total Value Time + Total Delay Time = Total Time, Efficency = Total Delay Time / Total Time-->
+                                    <div class="display_count">Efficency = (Total Delay Time / Total Time ) * 100</div>
+                                </td>
+                                <td colspan="3">
+                                  <!-- update the efficiency-->
+                                   <div id="efficiency"></div>
+                                </td>
+                            </tr>
                             <tr>
                                 <th width="2%"><i class="bi bi-grip-vertical"></i></th>
                                 <th width="2%">
@@ -118,10 +138,10 @@
                                 <td width="" onclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OpsValueStreamStep', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                <td width="" onclick="makeEditable(this)"
+                                <td width="" onclick="makeEditable(this)" data-field="value"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OpsValueStreamStep', 'value')"
                                 >{% if tobject.value != None %}{{tobject.value}}{% endif %}</td>
-                                <td width="" onclick="makeEditable(this)"
+                                <td width="" onclick="makeEditable(this)" data-field="delay"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OpsValueStreamStep', 'delay')"
                                 >{% if tobject.delay != None %}{{tobject.delay}}{% endif %}</td>
                                
@@ -155,6 +175,36 @@
     {% endif %}
 </div>
 </form>
+<script>
+    function calculateTotals() {
+        let totalValueTime = 0;
+        let totalDelayTime = 0;
+
+        // Iterate through all rows in the table
+        document.querySelectorAll('.sortable-tbody tr').forEach(row => {
+            const valueCell = row.querySelector('[data-field="value"]');
+            const delayCell = row.querySelector('[data-field="delay"]');
+
+            const value = parseFloat(valueCell?.textContent) || 0;
+            const delay = parseFloat(delayCell?.textContent) || 0;
+
+            totalValueTime += value;
+            totalDelayTime += delay;
+        });
+
+        // Calculate Total Time
+        const totalTime = totalValueTime + totalDelayTime;
+        document.querySelector('#total_time').textContent = `Total Time = ${totalValueTime} + ${totalDelayTime} = ${totalTime}`;
+
+        // Calculate Efficiency (as a percentage of value time to total time)
+        const efficiency = totalTime > 0 ? ((totalValueTime / totalTime) * 100).toFixed(2) : 0;
+        document.querySelector('#efficiency').textContent = `Efficiency = (${totalValueTime} / ${totalTime}) × 100 = ${efficiency}%`;
+    }
+
+    document.addEventListener('DOMContentLoaded', calculateTotals);
+</script>
+
+
 <script>
 // Select all / checkbox
 function checkUncheck(checkBox) {
@@ -227,6 +277,11 @@ document.addEventListener("DOMContentLoaded", function () {
     function makeEditable(element) {
         element.contentEditable = true;
         element.focus();
+
+        element.addEventListener('blur', function () {
+            element.contentEditable = false;
+            calculateTotals(); // Recalculate totals after editing
+        });
     }
 
 
