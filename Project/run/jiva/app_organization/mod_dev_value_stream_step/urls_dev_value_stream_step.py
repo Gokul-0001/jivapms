@@ -9,6 +9,7 @@ urlpatterns = [
     path('list_dev_value_stream_steps/<int:dev_id>/', views_dev_value_stream_step.list_dev_value_stream_steps, name='list_dev_value_stream_steps'),
     path('list_deleted_dev_value_stream_steps/<int:dev_id>/', views_dev_value_stream_step.list_deleted_dev_value_stream_steps, name='list_deleted_dev_value_stream_steps'),
     path('create_dev_value_stream_step/<int:dev_id>/', views_dev_value_stream_step.create_dev_value_stream_step, name='create_dev_value_stream_step'),
+    path('add_dev_value_stream_step/<int:dev_id>/', views_dev_value_stream_step.add_dev_value_stream_step, name='add_dev_value_stream_step'),
     path('edit_dev_value_stream_step/<int:dev_id>/<int:dev_value_stream_step_id>/', views_dev_value_stream_step.edit_dev_value_stream_step, name='edit_dev_value_stream_step'),
     path('delete_dev_value_stream_step/<int:dev_id>/<int:dev_value_stream_step_id>/', views_dev_value_stream_step.delete_dev_value_stream_step, name='delete_dev_value_stream_step'),
     path('permanent_deletion_dev_value_stream_step/<int:dev_id>/<int:dev_value_stream_step_id>/', views_dev_value_stream_step.permanent_deletion_dev_value_stream_step, name='permanent_deletion_dev_value_stream_step'),

@@ -38,7 +38,9 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">Ops Value Stream</b>
+                                <b class="h2">
+                                    <a href="{% url 'list_organizations' %}">{{organization}}</a>
+                                </b>
                                 &nbsp;&nbsp;
                                 Ops Value Stream List
                                
@@ -114,6 +116,8 @@
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OpsValueStream', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%">
+                                    <a href="{% url 'list_ops_value_stream_steps' tobject.id %}">Steps</a>
+                                    &nbsp;&nbsp;
                                     <a href="{% url 'list_dev_value_streams' tobject.id %}">DVS</a>
                                 </td>
                                 <td width="50%">

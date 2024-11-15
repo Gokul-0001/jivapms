@@ -8,6 +8,7 @@ urlpatterns = [
     path('dev_value_stream_step/', include('app_organization.mod_dev_value_stream_step.urls_dev_value_stream_step')),
     path('memberrole/', include('app_organization.mod_memberrole.urls_memberrole')),
     path('ops_value_stream/', include('app_organization.mod_ops_value_stream.urls_ops_value_stream')),
+    path('ops_value_stream_step/', include('app_organization.mod_ops_value_stream_step.urls_ops_value_stream_step')),
     path('organization/', include('app_organization.mod_organization.urls_organization')),
     path('organizationdetail/', include('app_organization.mod_organizationdetail.urls_organizationdetail')),
     path('project/', include('app_organization.mod_project.urls_project')),

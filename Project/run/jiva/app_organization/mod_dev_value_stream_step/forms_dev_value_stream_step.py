@@ -5,7 +5,7 @@ from app_organization.mod_dev_value_stream_step.models_dev_value_stream_step imp
 class DevValueStreamStepForm(forms.ModelForm):
     class Meta:
         model = DevValueStreamStep
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'value', 'delay']
     def __init__(self, *args, **kwargs):
         super(DevValueStreamStepForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()  # Note: No need to pass 'self' here

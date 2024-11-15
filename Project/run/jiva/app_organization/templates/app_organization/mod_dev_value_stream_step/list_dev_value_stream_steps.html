@@ -55,8 +55,11 @@
                             <div class="col col-md-3 text-end">
                                 <span class="display_count">{{objects_count}} dev_value_stream_step(s)</span>
                                 &nbsp;&nbsp;
-                                <a href="{% url 'create_dev_value_stream_step' dev_id  %}" 
-                                class="btn btn-sm btn-success"><b>+ Create Dev Value Stream Step</b></a>
+                                <!-- <a href="{% url 'create_dev_value_stream_step' dev_id  %}" 
+                                class="btn btn-sm btn-success"><b>+ Create Dev Value Stream Step</b></a> -->
+                                <a href="{% url 'add_dev_value_stream_step' dev_id  %}" 
+                                class="btn btn-sm btn-success"><b>+ Add Step</b></a>
+
                             </div>
                         </div>
                     </div>
@@ -68,10 +71,11 @@
                                     <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                 </th>                                
                                 <th width="2%">#</th>
-                                <th>Dev Value Stream Step</th>
-                                <th width="20%">Description</th>
-                                <th width="10%">Configure</th>
-                                <th width="50%">                                    
+                                <th width="10%">Dev Value Stream Step</th>
+                                <th width="10%">Description</th>
+                                <th width="5%">Value</th>
+                                <th width="5%">Delay</th>
+                                <th width="30%">                                    
                                     Actions
                                     &nbsp;&nbsp;
                                     <select name="pagination" id="paginationselect">
@@ -107,12 +111,18 @@
                                     <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                 </td>
                                 <td>{{forloop.counter}}</td>
-                                <td width="20%" ondblclick="makeEditable(this)"
+                                <td width="" ondblclick="makeEditable(this)"
                                  onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'name')"
                                 ><strong>{{tobject.name}}</strong></td>
-                                <td width="" ondblclick="makeEditable(this)"
+                                <td width="20%" ondblclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
+                                <td width="5%" ondblclick="makeEditable(this)"
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'value')"
+                                >{% if tobject.value != None %}{{tobject.value}}{% endif %}</td>
+                                <td width="5%" ondblclick="makeEditable(this)"
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'delay')"
+                                >{% if tobject.delay != None %}{{tobject.delay}}{% endif %}</td>
                                 <td width="20%">
                                 
                                 </td>

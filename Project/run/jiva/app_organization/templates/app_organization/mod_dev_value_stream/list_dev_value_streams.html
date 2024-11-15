@@ -38,7 +38,9 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">{{ops_value_stream}}</b>
+                                <b class="h2">
+                                    <a href="{% url 'list_ops_value_streams' ops_value_stream.org.id %}">{{ops_value_stream}}</a>
+                                </b>
                                 &nbsp;&nbsp;
                                 Dev Value Stream List
                                

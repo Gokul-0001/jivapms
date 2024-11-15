@@ -242,10 +242,10 @@ def edit_dev_value_stream(request, ops_id, dev_value_stream_id):
     user = request.user
     ops_value_stream = OpsValueStream.objects.get(id=ops_id, active=True, 
                                                 **first_viewable_dict)
-    
+    org = ops_value_stream.org
     object = get_object_or_404(DevValueStream, pk=dev_value_stream_id, active=True,**viewable_dict)
     if request.method == 'POST':
-        form = DevValueStreamForm(request.POST, instance=object)
+        form = DevValueStreamForm(request.POST, instance=object, user=user, org_id=org.id)
         if form.is_valid():
             form.instance.author = user
             form.instance.ops_id = ops_id
@@ -254,7 +254,7 @@ def edit_dev_value_stream(request, ops_id, dev_value_stream_id):
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('list_dev_value_streams', ops_id=ops_id)
     else:
-        form = DevValueStreamForm(instance=object)
+        form = DevValueStreamForm(instance=object, user=user, org_id=org.id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
