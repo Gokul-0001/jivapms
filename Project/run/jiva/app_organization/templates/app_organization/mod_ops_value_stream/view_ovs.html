@@ -32,6 +32,38 @@
     border-radius: 10px;
     font-weight: bold;
 }
+/* Specific DVS styles */
+.dvs-1 {
+    background-color: lightblue; /* Custom color for DVS 1 */
+}
+
+.dvs-2 {
+    background-color: lightcoral; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-3 {
+    background-color: lightyellow; /* Custom color for DVS 1 */
+}
+
+.dvs-4 {
+    background-color: lightslategray; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-5 {
+    background-color: lightseagreen; /* Custom color for DVS 1 */
+}
+
+.dvs-6 {
+    background-color: lightsalmon; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-7 {
+    background-color: lightsteelblue; /* Custom color for DVS 1 */
+}
+
+.dvs-8 {
+    background-color: lightyellow; /* Custom color for DVS 2 */
+}
 </style>
 <div class="container-fluid">
     <div class="row">
@@ -252,7 +284,7 @@
            
 <div class="dvs-wrapper">
     {% for dvs in object.ops_dev_value_streams.all|filter_active %}
-        <div class="dvs-container" id="dvs-container-{{ forloop.counter }}" 
+        <div class="dvs-container" id="dvs-container-{{ forloop.counter }}" data-dvs-id="{{forloop.counter}}"
              data-connect-steps="
                 {% for ops_step in dvs.supporting_ops_steps.all|filter_active %}
                     ovs-step-{{ ops_step.id }}{% if not forloop.last %},{% endif %}
@@ -286,18 +318,18 @@
                 const rect = element.getBoundingClientRect();
                 return {
                     x: rect.left + rect.width / 2 + window.scrollX ,
-                    y: rect.top + rect.height / 2 + window.scrollY - 50,
+                    y: rect.top + rect.height / 2 + window.scrollY - 80,
                 };
             }
     
             // Function to create a line element in SVG
-            function createLine(start, end) {
+            function createLine(start, end, color = "lightgrey") {
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 line.setAttribute("x1", start.x);
                 line.setAttribute("y1", start.y);
                 line.setAttribute("x2", end.x);
                 line.setAttribute("y2", end.y);
-                line.setAttribute("stroke", "lightgrey");
+                line.setAttribute("stroke", color);
                 line.setAttribute("stroke-width", "2");
                 return line;
             }
@@ -305,12 +337,24 @@
             // Main function to draw lines from DVS containers to OVS steps
             function drawConnections() {
                 svg.innerHTML = ""; // Clear existing lines
-    
-                // Loop through all DVS containers
+                // Example color map
+                const dvsColors = {
+                    1: "lightblue",  // DVS 1 color
+                    2: "lightcoral", // DVS 2 color
+                    3: "lightyellow",  // DVS 1 color
+                    4: "lightslategray", // DVS 2 color
+                    5: "lightseagreen",  // DVS 1 color
+                    6: "lightsalmon", // DVS 2 color
+                    7: "lightsteelblue",  // DVS 1 color
+                    8: "lightyellow", // DVS 2 color
+                    9: "lightblue",  // DVS 1 color
+                };
+                            // Loop through all DVS containers
                 document.querySelectorAll(".dvs-container").forEach((dvsContainer) => {
                     // Get the steps to connect from the data attribute
                     const connectSteps = dvsContainer.getAttribute("data-connect-steps").split(",");
-    
+                    const dvsId = dvsContainer.getAttribute("data-dvs-id");
+                    const lineColor = dvsColors[dvsId] || "lightgrey";
                     connectSteps.forEach((stepId) => {
                         const ovsStep = document.getElementById(stepId.trim());
     
@@ -320,7 +364,7 @@
                             const end = getCenterPosition(ovsStep);
     
                             // Create and append the line
-                            const line = createLine(start, end);
+                            const line = createLine(start, end, lineColor);
                             svg.appendChild(line);
                         } else {
                             console.warn(`No matching OVS step found for ID: ${stepId}`);
@@ -358,6 +402,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
     </script>
-    
+    </form>
 <!-- End: Content -->
 {% endblock content %}
