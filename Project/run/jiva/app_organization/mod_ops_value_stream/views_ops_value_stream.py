@@ -1,8 +1,9 @@
 
 from app_organization.mod_app.all_view_imports import *
+from app_jivapms.mod_app.all_view_imports import *
 from app_organization.mod_ops_value_stream.models_ops_value_stream import *
 from app_organization.mod_ops_value_stream.forms_ops_value_stream import *
-
+from app_organization.mod_ops_value_stream_step.models_ops_value_stream_step import *
 from app_organization.mod_organization.models_organization import *
 
 from app_common.mod_common.models_common import *
@@ -364,7 +365,20 @@ def view_ovs(request, org_id, ops_value_stream_id):
                                                 **first_viewable_dict)
     
     object = get_object_or_404(OpsValueStream, pk=ops_value_stream_id, active=True,**viewable_dict)    
-
+    # Fetch the steps for the OVS
+    steps = OpsValueStreamStep.objects.filter(ops=object).order_by('id')
+    # Fetch related OpsValueStreamStep objects
+    steps = OpsValueStreamStep.objects.filter(ops=object).order_by('id')
+    steps_data = [
+        {
+            "id": step.id,
+            "name": step.name or f"Step {step.id}",  # Default name if none exists
+            "value": step.value,
+            "delay": step.delay
+        }
+        for step in steps
+    ]
+    logger.debug(f">>> === steps_data: {steps_data} === <<<")
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'View OVS',
@@ -373,6 +387,7 @@ def view_ovs(request, org_id, ops_value_stream_id):
         
         'module_path': module_path,
         'object': object,
+        'steps_data': steps_data,
         'page_title': f'View OVS',
     }
     template_file = f"{app_name}/{module_path}/view_ovs.html"

@@ -17,13 +17,14 @@ class DevValueStreamForm(forms.ModelForm):
     )
     class Meta:
         model = DevValueStream
-        fields = ['name', 'description', 'project', 'supporting_ops_steps']
+        fields = ['name', 'description', 'project', 'supporting_ops_steps', 'trigger', 'value']
     def __init__(self, *args, **kwargs):
         #super(DevValueStreamForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()  # Note: No need to pass 'self' here
         self.helper.form_show_labels = False
         user = kwargs.pop('user', None)  # Extract the user from kwargs
         org_id = kwargs.pop('org_id', None)  # Assuming org_id is passed to the form
+        ops = kwargs.pop('ops', None)  # Assuming ovs is passed to the form
         project_id = kwargs.pop('project_id', None)  # Assuming project_id 
         super(DevValueStreamForm, self).__init__(*args, **kwargs)
         
@@ -65,5 +66,6 @@ class DevValueStreamForm(forms.ModelForm):
         if org_id:
             self.fields['supporting_ops_steps'].queryset = OpsValueStreamStep.objects.filter(
                 ops__org=organization,
+                ops=ops,
                 active=True,
             )

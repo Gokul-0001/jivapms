@@ -7,6 +7,12 @@
 
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        mermaid.initialize({ startOnLoad: true });
+    });
+</script>
 
 <div class="container-fluid">
     <div class="row">
@@ -34,7 +40,21 @@
                     </div>
                 </div>
                 <!-- display the OVS -->
-                 
+
+                 <div class="mermaid">
+                    graph LR
+                    {% for step in steps_data %}
+                        {% if forloop.first %}
+                            A[Start] --> |Delay: {{ step.delay }}<br>Value: {{ step.value }}| {{ step.id }}[{{ step.name }}]
+                        {% else %}
+                            {{ forloop.counter0 }} --> |Delay: {{ step.delay }}<br>Value: {{ step.value }}| {{ step.id }}[{{ step.name }}]
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                
+                
+                
             </div>
         </div>
     </div>
