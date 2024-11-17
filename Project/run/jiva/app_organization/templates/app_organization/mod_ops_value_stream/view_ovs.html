@@ -128,13 +128,21 @@
                 <div class="ovs-container">
                     {% for step in check_data %}
                         <!-- Render each step -->
-                        <div class="step">
-                            {% if forloop.first %}
-                                {{ object.trigger }} <!-- First step displays the trigger -->
-                            {% else %}
-                                {{ step.name }} <!-- Subsequent steps display their names -->
-                            {% endif %}
-                        </div>
+                        
+                        {% if forloop.first %}
+                             <!-- First step displays the trigger -->
+                            <div class="step">
+                                {{ object.trigger }}
+                            </div>
+                            <div class="arrow-container">                              
+                                <div class="arrow"></div>                                
+                            </div>
+                            <div class="step">{{ step.name }}</div>
+                        {% else %}
+                            <div class="step">{{ step.name }}</div>
+                             <!-- Subsequent steps display their names -->
+                        {% endif %}
+                        
 
                         <!-- Render arrow container if next_id exists -->
                         {% if step.next_id %}
