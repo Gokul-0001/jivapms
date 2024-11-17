@@ -108,13 +108,30 @@
                         background-color: red;
                         padding: 4px;
                     }
+                    .value_empty {
+                        font-size: 10px;
+                        color: white;
+                        margin-bottom: 2px; /* Slight space between value and arrow */
+                        padding: 4px;
+                    }
+                    .delay_empty {
+                        font-size: 10px;
+                        color: white;
+                        margin-top: 2px; /* Space between arrow and delay */
+                        padding: 4px;
+                    }
                     .arrow {
                         position: relative;
                         width: 80px; /* Length of the arrow */
                         height: 2px;
                         background-color: black;
                     }
-            
+                    .short_arrow {
+                        position: relative;
+                        width: 40px; /* Length of the arrow */
+                        height: 2px;
+                        background-color: black;
+                    }
                     .arrow:after {
                         content: '';
                         position: absolute;
@@ -124,154 +141,200 @@
                         border-bottom: 5px solid transparent;
                         border-left: 10px solid black;
                     }
+                    .short_arrow:after {
+                        content: '';
+                        position: absolute;
+                        right: 0;
+                        top: -6px;
+                        border-top: 7px solid transparent;
+                        border-bottom: 7px solid transparent;
+                        border-left: 8px solid black;
+                    }
                 </style>
-                <div class="ovs-container">
-                    {% for step in check_data %}
-                        <!-- Render each step -->
-                        
-                        {% if forloop.first %}
-                             <!-- First step displays the trigger -->
-                            <div class="step">
-                                {{ object.trigger }}
-                            </div>
-                            <div class="arrow-container">                              
-                                <div class="arrow"></div>                                
-                            </div>
-                            <div class="step">{{ step.name }}</div>
-                        {% else %}
-                            <div class="step">{{ step.name }}</div>
-                             <!-- Subsequent steps display their names -->
-                        {% endif %}
-                        
-
-                        <!-- Render arrow container if next_id exists -->
-                        {% if step.next_id %}
-                            <div class="arrow-container">
-                                <div class="value">Value: {{ step.value }}</div>
-                                <div class="arrow"></div>
-                                <div class="delay">Delay: {{ step.delay }}</div>
-                            </div>
-                        {% endif %}
-
-                        {% if forloop.last %}
-                            <div class="arrow-container">
-                                <div class="value">Value: {{ step.value }}</div>
-                                <div class="arrow"></div>
-                                <div class="delay">Delay: {{ step.delay }}</div>
-                            </div>
-                            <div class="step">
-                                {{ object.value }} <!-- Final step displays the object value -->
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                            
-                    <!-- Render the final step -->
-                   
-                </div>
-
-                <style>
+                 <style>
+                    /* Container for OVS steps */
                     .ovs-wrapper {
                         display: flex;
                         justify-content: center;
-                        align-items: flex-start;
                         gap: 20px;
-                        margin: 20px;
+                        margin-top: 20px;
+                        position: relative; /* For SVG positioning */
                     }
-                
+            
+                    /* Container for DVS */
                     .dvs-wrapper {
                         display: flex;
                         justify-content: center;
-                        margin-top: 40px;
-                        position: relative;
+                        margin-top: 60px;
+                        position: relative; /* For SVG positioning */
                     }
-                
-                    .ovs-step,
-                    .dvs-container {
-                        width: 150px;
-                        height: 60px;
-                        background-color: white;
+            
+                    /* Common styles for steps and containers */
+                    .step,
+                    .container {
+                        width: 120px;
+                        height: 50px;
+                        background-color: #f9f9f9;
                         border: 2px solid black;
                         border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
                         text-align: center;
-                        line-height: 60px;
                         font-weight: bold;
                         position: relative;
                     }
-                
-                    .connections {
+            
+                    /* SVG Container for drawing lines */
+                    svg {
                         position: absolute;
                         top: 0;
                         left: 0;
                         width: 100%;
                         height: 100%;
-                        pointer-events: none;
+                        pointer-events: none; /* Prevent interaction with SVG */
+                    }
+                    .dvs-container {
+                        padding: 10px;
+                        border: 2px solid black;
+                        border-radius: 10px;
+                        margin: 20px;
                     }
                 </style>
+               <div class="ovs-wrapper">
                 
+                {% for step in check_data %}
+                <!-- Render each step -->
                 
-                <!-- RENDER THE DVS related to the OVS -->
-                <div class="dvs-wrapper">
-                    <!-- Render the DVS related to the OVS -->
-                    {% for dvs in object.ops_dev_value_streams.all|filter_active %}
-                        <div class="dvs-container">
-                            {{ dvs }}
-                            &nbsp;&nbsp;&nbsp;
-                            <div class="dvs-steps">
-                                {% for ops_step in dvs.supporting_ops_steps.all|filter_active %}
-                                    <div class="dvs-step" data-ovs-step="ovs-step-{{ ops_step.id }}">
-                                        {{ ops_step.name }}
-                                    </div>
-                                {% endfor %}
-                                
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% if forloop.first %}
+                     <!-- First step displays the trigger -->
+                    <div class="step" >
+                        {{ object.trigger }}
+                    </div>
+                    <div class="arrow-container">
+                        <div class="value_empty">&nbsp;</div>
+                        <div class="short_arrow"></div>
+                        <div class="delay_empty">&nbsp;</div>
+                    </div>
+                    <div class="step"  id="ovs-step-{{ step.id }}">{{ step.name }}</div>
+                {% else %}
+                    <div class="step"  id="ovs-step-{{ step.id }}">{{ step.name }}</div>
+                     <!-- Subsequent steps display their names -->
+                {% endif %}
                 
 
+                <!-- Render arrow container if next_id exists -->
+                {% if step.next_id %}
+                    <div class="arrow-container">
+                        <div class="value">Value: {{ step.value }}</div>
+                        <div class="arrow"></div>
+                        <div class="delay">Delay: {{ step.delay }}</div>
+                    </div>
+                {% endif %}
+
+                {% if forloop.last %}
+                    <div class="arrow-container">
+                        <div class="value">Value: {{ step.value }}</div>
+                        <div class="arrow"></div>
+                        <div class="delay">Delay: {{ step.delay }}</div>
+                    </div>
+                    <div class="step"  id="ovs-step-{{ step.id }}">
+                        {{ object.value }} <!-- Final step displays the object value -->
+                    </div>
+                {% endif %}
+            {% endfor %}
+                    
             </div>
+              <!-- Render DVS and Steps -->
+           
+<div class="dvs-wrapper">
+    {% for dvs in object.ops_dev_value_streams.all|filter_active %}
+        <div class="dvs-container" id="dvs-container-{{ forloop.counter }}" 
+             data-connect-steps="
+                {% for ops_step in dvs.supporting_ops_steps.all|filter_active %}
+                    ovs-step-{{ ops_step.id }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ">
+            <b>{{ dvs.name }}</b> &nbsp;&nbsp;
+            <br>
+            {% for ops_step in dvs.supporting_ops_steps.all|filter_active %}
+                {{ ops_step.name }}
+                <br>
+            {% endfor %}
         </div>
-    </div>
-</form>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const svg = document.querySelector(".connections");
+    {% endfor %}
+</div>
 
-        function getCenterPosition(element) {
-            const rect = element.getBoundingClientRect();
-            return {
-                x: rect.left + rect.width / 2 + window.scrollX,
-                y: rect.top + rect.height / 2 + window.scrollY,
-            };
-        }
-
-        function createLine(start, end) {
-            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", start.x);
-            line.setAttribute("y1", start.y);
-            line.setAttribute("x2", end.x);
-            line.setAttribute("y2", end.y);
-            line.setAttribute("stroke", "black");
-            line.setAttribute("stroke-width", "2");
-            return line;
-        }
-
-        // Get the DVS wrapper and connect to OVS steps
-        const dvsWrapper = document.getElementById("dvs-wrapper");
-
-        document.querySelectorAll(".ovs-step").forEach((ovsStep) => {
-            // Customize which OVS steps to connect (replace logic with dynamic conditions as needed)
-            const connectToDVS = parseInt(ovsStep.id.replace("ovs-step-", ""), 10) % 2 === 0; // Example: Connect to even OVS steps only
-            if (connectToDVS) {
-                const start = getCenterPosition(dvsWrapper);
-                const end = getCenterPosition(ovsStep);
-
-                const line = createLine(start, end);
-                svg.appendChild(line);
+    <!-- SVG for Connections -->
+    <svg id="connections" xmlns="http://www.w3.org/2000/svg"></svg>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const svg = document.getElementById("connections");
+    
+            // Helper function to get the center position of an element
+            function getCenterPosition(element) {
+                const rect = element.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2 + window.scrollX ,
+                    y: rect.top + rect.height / 2 + window.scrollY + 25,
+                };
             }
+            function getCenterPositionBegin(element) {
+                const rect = element.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2 + window.scrollX ,
+                    y: rect.top + rect.height / 2 + window.scrollY - 60,
+                };
+            }
+    
+            // Function to create a line element in SVG
+            function createLine(start, end) {
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", start.x);
+                line.setAttribute("y1", start.y);
+                line.setAttribute("x2", end.x);
+                line.setAttribute("y2", end.y);
+                line.setAttribute("stroke", "lightgrey");
+                line.setAttribute("stroke-width", "2");
+                return line;
+            }
+    
+            // Main function to draw lines from DVS containers to OVS steps
+            function drawConnections() {
+                svg.innerHTML = ""; // Clear existing lines
+    
+                // Loop through all DVS containers
+                document.querySelectorAll(".dvs-container").forEach((dvsContainer) => {
+                    // Get the steps to connect from the data attribute
+                    const connectSteps = dvsContainer.getAttribute("data-connect-steps").split(",");
+    
+                    connectSteps.forEach((stepId) => {
+                        const ovsStep = document.getElementById(stepId.trim());
+    
+                        if (ovsStep) {
+                            // Get the positions of the DVS container and the corresponding OVS step
+                            const start = getCenterPositionBegin(dvsContainer);
+                            const end = getCenterPosition(ovsStep);
+    
+                            // Create and append the line
+                            const line = createLine(start, end);
+                            svg.appendChild(line);
+                        } else {
+                            console.warn(`No matching OVS step found for ID: ${stepId}`);
+                        }
+                    });
+                });
+            }
+    
+            // Draw connections after the DOM content is loaded
+            drawConnections();
+    
+            // Redraw connections on window resize
+            window.addEventListener("resize", drawConnections);
         });
-    });
-</script>
-
+    </script>
+    
+    
+    
 <!-- End: Content -->
 {% endblock content %}

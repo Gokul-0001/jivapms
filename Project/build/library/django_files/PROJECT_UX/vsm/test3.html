@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect DVS to OVS</title>
+    <title>Connect Multiple DVS to OVS</title>
     <style>
         /* Container for OVS steps */
         .ovs-wrapper {
@@ -18,13 +18,14 @@
         .dvs-wrapper {
             display: flex;
             justify-content: center;
+            gap: 40px;
             margin-top: 60px;
             position: relative; /* For SVG positioning */
         }
 
         /* Common styles for steps and containers */
         .step,
-        .container {
+        .dvs-container {
             width: 120px;
             height: 50px;
             background-color: #f9f9f9;
@@ -59,8 +60,15 @@
     </div>
 
     <div class="dvs-wrapper">
-        <!-- DVS Container -->
-        <div class="container" id="dvs-container">DVS Wrapper</div>
+        <!-- DVS 1 -->
+        <div class="dvs-container" id="dvs-container-1" data-connect-steps="ovs-step-1,ovs-step-3">
+            DVS 1
+        </div>
+
+        <!-- DVS 2 -->
+        <div class="dvs-container" id="dvs-container-2" data-connect-steps="ovs-step-2,ovs-step-4">
+            DVS 2
+        </div>
     </div>
 
     <!-- SVG for Connections -->
@@ -88,30 +96,38 @@
             return line;
         }
 
-        // Main function to draw lines from DVS Wrapper to OVS Steps
+        // Main function to draw lines from DVS containers to OVS steps
         function drawConnections() {
             const svg = document.getElementById("connections");
-            const dvs = document.getElementById("dvs-container");
-            const ovsSteps = document.querySelectorAll(".ovs-wrapper .step");
+            svg.innerHTML = ""; // Clear existing lines
 
-            // Clear any existing lines
-            svg.innerHTML = "";
+            // Loop through all DVS containers
+            document.querySelectorAll(".dvs-container").forEach((dvsContainer) => {
+                // Get the steps to connect from the data attribute
+                const connectSteps = dvsContainer.getAttribute("data-connect-steps").split(",");
 
-            // Get the center position of the DVS Wrapper
-            const dvsCenter = getCenterPosition(dvs);
+                connectSteps.forEach((stepId) => {
+                    const ovsStep = document.getElementById(stepId);
 
-            // Draw a line to each OVS step
-            ovsSteps.forEach((step) => {
-                const stepCenter = getCenterPosition(step);
-                const line = createLine(dvsCenter, stepCenter);
-                svg.appendChild(line);
+                    if (ovsStep) {
+                        // Get the positions of the DVS container and the corresponding OVS step
+                        const start = getCenterPosition(dvsContainer);
+                        const end = getCenterPosition(ovsStep);
+
+                        // Create and append the line
+                        const line = createLine(start, end);
+                        svg.appendChild(line);
+                    } else {
+                        console.warn(`No matching OVS step found for ID: ${stepId}`);
+                    }
+                });
             });
         }
 
         // Draw connections after the DOM content is loaded
         document.addEventListener("DOMContentLoaded", drawConnections);
 
-        // Redraw connections on window resize to adjust positions
+        // Redraw connections on window resize
         window.addEventListener("resize", drawConnections);
     </script>
 </body>
