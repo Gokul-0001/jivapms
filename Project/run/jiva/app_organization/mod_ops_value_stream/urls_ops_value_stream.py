@@ -14,4 +14,5 @@ urlpatterns = [
     path('permanent_deletion_ops_value_stream/<int:org_id>/<int:ops_value_stream_id>/', views_ops_value_stream.permanent_deletion_ops_value_stream, name='permanent_deletion_ops_value_stream'),
     path('restore_ops_value_stream/<int:org_id>/<int:ops_value_stream_id>/', views_ops_value_stream.restore_ops_value_stream, name='restore_ops_value_stream'),
     path('view_ops_value_stream/<int:org_id>/<int:ops_value_stream_id>/', views_ops_value_stream.view_ops_value_stream, name='view_ops_value_stream'),
+    path('view_ovs/<int:org_id>/<int:ops_value_stream_id>/', views_ops_value_stream.view_ovs, name='view_ovs'),
 ]

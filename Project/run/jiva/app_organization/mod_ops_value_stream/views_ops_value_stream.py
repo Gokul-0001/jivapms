@@ -357,3 +357,25 @@ def view_ops_value_stream(request, org_id, ops_value_stream_id):
     return render(request, template_file, context)
 
 
+@login_required
+def view_ovs(request, org_id, ops_value_stream_id):
+    user = request.user
+    organization = Organization.objects.get(id=org_id, active=True, 
+                                                **first_viewable_dict)
+    
+    object = get_object_or_404(OpsValueStream, pk=ops_value_stream_id, active=True,**viewable_dict)    
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'View OVS',
+        'organization': organization,
+        'org_id': org_id,
+        
+        'module_path': module_path,
+        'object': object,
+        'page_title': f'View OVS',
+    }
+    template_file = f"{app_name}/{module_path}/view_ovs.html"
+    return render(request, template_file, context)
+
+

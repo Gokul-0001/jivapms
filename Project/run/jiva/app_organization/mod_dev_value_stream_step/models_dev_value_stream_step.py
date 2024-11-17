@@ -9,6 +9,8 @@ class DevValueStreamStep(BaseModelImpl):
     dev = models.ForeignKey('app_organization.DevValueStream', on_delete=models.CASCADE, 
                             related_name="dev_dev_value_stream_steps", null=True, blank=True)
     
+    
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_dev_value_stream_steps")
     

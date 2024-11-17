@@ -10,9 +10,14 @@ from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
 
 class DevValueStreamForm(forms.ModelForm):
+    supporting_ops_steps = forms.ModelMultipleChoiceField(
+        queryset=OpsValueStreamStep.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
     class Meta:
         model = DevValueStream
-        fields = ['name', 'description', 'project']
+        fields = ['name', 'description', 'project', 'supporting_ops_steps']
     def __init__(self, *args, **kwargs):
         #super(DevValueStreamForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()  # Note: No need to pass 'self' here
@@ -56,3 +61,9 @@ class DevValueStreamForm(forms.ModelForm):
         else:
                 # If the user is neither an Org Admin nor a Project Admin, no projects are available
                 self.fields['project'].queryset = Project.objects.none()
+                
+        if org_id:
+            self.fields['supporting_ops_steps'].queryset = OpsValueStreamStep.objects.filter(
+                ops__org=organization,
+                active=True,
+            )

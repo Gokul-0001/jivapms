@@ -116,6 +116,8 @@
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OpsValueStream', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%">
+                                    <a href="{% url 'view_ovs' org_id tobject.id %}">View</a>
+                                    &nbsp;&nbsp;                                    
                                     <a href="{% url 'list_ops_value_stream_steps' tobject.id %}">Steps</a>
                                     &nbsp;&nbsp;
                                     <a href="{% url 'list_dev_value_streams' tobject.id %}">DVS</a>
