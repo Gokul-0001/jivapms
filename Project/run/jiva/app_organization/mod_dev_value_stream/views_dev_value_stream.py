@@ -244,6 +244,12 @@ def edit_dev_value_stream(request, ops_id, dev_value_stream_id):
                                                 **first_viewable_dict)
     org = ops_value_stream.org
     object = get_object_or_404(DevValueStream, pk=dev_value_stream_id, active=True,**viewable_dict)
+    # Check for the 'back_to' query parameter
+    back_to = None
+    if request.GET.get('back_to') == 'view_ovs':
+        back_to = request.GET.get('back_to')
+        org_id = request.GET.get('org_id')
+        ops_id = request.GET.get('ops_id')
     if request.method == 'POST':
         form = DevValueStreamForm(request.POST, instance=object, user=user, org_id=org.id, ops=ops_value_stream)
         if form.is_valid():
@@ -252,6 +258,9 @@ def edit_dev_value_stream(request, ops_id, dev_value_stream_id):
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
+        # Redirect based on 'back_to' if it exists
+        if back_to == 'view_ovs' and org_id and ops_id:
+            return redirect('view_ovs', org_id=org_id, ops_value_stream_id=ops_id)
         return redirect('list_dev_value_streams', ops_id=ops_id)
     else:
         form = DevValueStreamForm(instance=object, user=user, org_id=org.id, ops=ops_value_stream)
