@@ -74,7 +74,7 @@
                         justify-content: center;
                         align-items: center;
                         width: 100px;
-                        min-height: 50px;
+                        min-height:50px;
                         background-color: white;
                         border: 2px solid black;
                         border-radius: 10px;
@@ -85,6 +85,9 @@
                         word-wrap: break-word; /* Break words if they exceed the width */
                         overflow-wrap: break-word; /* Ensure wrapping for long words */
                         white-space: normal; /* Allow wrapping and multi-line text */
+                        line-height: 1.2; 
+                       
+                        
                     }
             
                     .arrow-container {
@@ -209,7 +212,7 @@
                 {% if forloop.first %}
                      <!-- First step displays the trigger -->
                     <div class="step" >
-                        {{ object.trigger }}
+                        {{ object.trigger }} 
                     </div>
                     <div class="arrow-container">
                         <div class="value_empty">&nbsp;</div>
@@ -255,7 +258,7 @@
                     ovs-step-{{ ops_step.id }}{% if not forloop.last %},{% endif %}
                 {% endfor %}
             ">
-            <b>{{ dvs.name }}</b> &nbsp;&nbsp;
+            <b><a href="{% url 'edit_dev_value_stream' object.id dvs.id %}?back_to=view_ovs&org_id={{org_id}}&ops_id={{object.id}}">{{ dvs.name }}</a></b> &nbsp;&nbsp;
             <br>
             {% for ops_step in dvs.supporting_ops_steps.all|filter_active %}
                 {{ ops_step.name }}
@@ -283,7 +286,7 @@
                 const rect = element.getBoundingClientRect();
                 return {
                     x: rect.left + rect.width / 2 + window.scrollX ,
-                    y: rect.top + rect.height / 2 + window.scrollY - 60,
+                    y: rect.top + rect.height / 2 + window.scrollY - 50,
                 };
             }
     
@@ -334,7 +337,27 @@
         });
     </script>
     
-    
+    <script>
+        function adjustFontSizeToFit(element) {
+    const container = element;
+    const containerWidth = container.offsetWidth;
+    const containerHeight = container.offsetHeight;
+
+    let fontSize = parseInt(window.getComputedStyle(container).fontSize);
+
+    // Reduce font size iteratively until the content fits within the box
+    while ((container.scrollWidth > containerWidth || container.scrollHeight > containerHeight) && fontSize > 10) {
+        fontSize--; // Decrease font size
+        container.style.fontSize = `${fontSize}px`;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Adjust font size for each step dynamically
+    document.querySelectorAll(".step").forEach(adjustFontSizeToFit);
+});
+
+    </script>
     
 <!-- End: Content -->
 {% endblock content %}
