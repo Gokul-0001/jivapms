@@ -380,7 +380,7 @@ def view_ovs(request, org_id, ops_value_stream_id):
     check_data = []
 
     # Filter and clean the `steps` to ensure no extra steps are added
-    valid_steps = list(filter(lambda step: step.id is not None and step.name, steps))
+    valid_steps = list(filter(lambda step: step.active and step.id is not None and step.name, steps))
 
     for i, step in enumerate(valid_steps):
         check_data.append({

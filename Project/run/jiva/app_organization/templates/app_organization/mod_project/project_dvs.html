@@ -1,0 +1,120 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+    <div class="content-wrapper">
+        <!-- Breadcrumb navigation -->
+        <nav aria-label="breadcrumb" class="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'org_homepage' project.org.id %}">{{project.org}}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{project}}</li>
+            </ol>
+        </nav>
+
+        <!-- PROJECT DVS -->
+        
+<button class="toggle-btn" onclick="toggleSidebar()">
+    <i class="bi bi-list"></i>
+</button>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-menu">
+        <a href="/org/organization/list_organizations/" class="nav-link">
+            <i class="bi bi-calendar"></i>
+            <span>Organizations</span>
+        </a>
+        <a href="{% url 'project_dvs' org_id object.id %}" class="nav-link" >
+            <i class="bi bi-diamond"></i>
+            <span>Value Stream</span>
+        </a>
+        <a href="#" class="nav-link" >
+            <i class="bi bi-collection"></i>
+            <span>Backlog</span>
+        </a>
+        <a href="#" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">groups</i>
+            
+            <span>Team</span>
+        </a>
+        <a href="#" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">arrow_forward</i>
+            <span>Workflow</span>
+        </a>
+        <a href="#" class="nav-link" >
+            <i class="bi bi-kanban"></i>
+            <span>Board</span>
+        </a>
+        <a href="#" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">event</i>
+            <span>Events</span>
+        </a>
+
+        <a href="#" class="nav-link" >
+            <i class="bi bi-basket"></i>
+            <span>Release</span>
+        </a>
+        <a href="#" class="nav-link" >
+            <i class="bi bi-compass"></i>
+            <span>Metrics</span>
+        </a>
+    </div>
+    <div class="settings">
+        <a href="#" class="nav-link">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+        </a>
+    </div>
+</div>
+<!-- Content -->
+<div class="contentbar mb-5" id="contentbar">
+    <div class="container">
+        <h1 class="text-center">Project: {{ project }}</h1>
+        <p>This project is connected with {{dvs}} Development Value Stream</p>
+        <p>Visit the Project DVS for more information here: <a href="{% url 'list_dev_value_streams' dvs.ops.id %}">Project DVS</a></p>
+    </div>
+
+    </div>
+
+<!-- PROJECT ALREADY INITIATED -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');  // Toggle the 'open' class
+        }
+    </script>
+    <script>
+        function makeEditable(element) {
+            element.contentEditable = true;
+            element.focus();
+        }
+        
+    
+    </script>
+   
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        $(document).ready(function() {
+            document.getElementById('id_start_date').setAttribute('autocomplete', 'off');
+            // Apply the jQuery UI datepicker to the input with ID #id_start_date
+            $("#id_start_date").datepicker({
+                dateFormat: "yy-mm-dd"  // Ensures the date format matches Django's default
+            });
+            document.getElementById('id_end_date').setAttribute('autocomplete', 'off');
+            // Apply the jQuery UI datepicker to the input with ID #id_start_date
+            $("#id_end_date").datepicker({
+                dateFormat: "yy-mm-dd"  // Ensures the date format matches Django's default
+            });
+        });
+    </script>
+<!-- End: Content -->
+{% endblock content %}

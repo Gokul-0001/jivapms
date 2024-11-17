@@ -13,6 +13,7 @@ from app_organization.mod_project_template.models_project_template import *
 from app_organization.mod_project_roadmap.models_project_roadmap import *
 from app_organization.mod_project_detail.forms_project_detail import *
 from app_organization.mod_project_template.forms_project_template import *
+from app_organization.mod_dev_value_stream.models_dev_value_stream import *
 
 app_name = 'app_organization'
 app_version = 'v1'
@@ -548,3 +549,36 @@ def project_homepage(request, org_id, project_id):
     
     return render(request, template_file, context)
 
+
+
+@login_required
+@org_admin_this_project_admin_or_member_of_project
+def project_dvs(request, org_id, project_id):
+    user = request.user
+    organization = Organization.objects.get(id=org_id, active=True, 
+                                                **first_viewable_dict)
+    project = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)   
+    project_detail = project.project_details.first()    
+    object = project
+    
+    # Get the DevValueStream Relation
+    dvs = DevValueStream.objects.filter(project=project, active=True).first()
+    
+    
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'project_dvs',
+        'organization': organization,
+        'org_id': org_id,
+        
+        'module_path': module_path,
+        'object': object,
+        'project': object,
+        'project_detail': project_detail,
+        'dvs': dvs,
+        'page_title': f'Project DVS',
+    }
+
+    template_file = f"{app_name}/{module_path}/project_dvs.html"
+    
+    return render(request, template_file, context)

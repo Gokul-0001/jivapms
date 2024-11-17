@@ -1,0 +1,127 @@
+
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        mermaid.initialize({ startOnLoad: true });
+    });
+</script>
+<style>
+ .step {
+            width: 120px;
+            height: 50px;
+            background-color: white;
+            border: 2px solid black;
+            color: black;
+            text-align: center;
+            line-height: 50px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .arrow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 0 auto;
+            font-size: 0.85rem;
+        }
+
+        .arrow {
+            font-size: 1.5rem;
+            color: black;
+            margin: 2px 0;
+        }
+
+        .value,
+        .delay {
+            font-size: 0.75rem;
+        }
+
+        .value {
+            margin-bottom: 2px;
+        }
+
+        .delay {
+            margin-top: 2px;
+        }
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_ops_value_stream/breadcrumb_ops_value_streams.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <b>Operational Value Stream Display :: {{object}}</b>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_ops_value_streams' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List OVS</b></a>
+                        </div>
+                    </div>
+                </div>
+                <!-- display the OVS -->
+                <!-- {{check_data}} -->
+                <div class="mermaid">
+                    graph LR
+                        {% for step in check_data %}
+                            {% if forloop.first %}
+                            A[{{object.trigger}}] -->
+                            {% endif %}
+                            {% if step.next_id %}
+                                {{ step.id }}[{{ step.name }}] --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| {{ step.next_id }}[{{ step.next_name|default:"Unnamed Step" }}]
+                            {% endif %}
+                            {% if forloop.last %}
+                                --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| B[{{object.value}}]
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                   
+                    <div class="row justify-content-center align-items-center">
+                        <!-- Loop through steps dynamically -->
+                        {% for step in check_data %}
+                            <!-- Step -->
+                            <div class="col-auto">
+                                <div class="step">{{ step.name }}</div>
+                            </div>
+                            <!-- Arrow with Value and Delay (if next_id exists) -->
+                            {% if step.next_id %}
+                            <div class="col-auto">
+                                <div class="arrow-container">
+                                    <div class="value">Value: {{ step.value }}</div>
+                                    <div class="arrow"><i class="bi bi-arrow-right"></i></div>
+                                    <div class="delay">Delay: {{ step.delay }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>   
+                        
+                        
+                        
+                
+            </div>
+        </div>
+    </div>
+</form>
+<!-- End: Content -->
+{% endblock content %}

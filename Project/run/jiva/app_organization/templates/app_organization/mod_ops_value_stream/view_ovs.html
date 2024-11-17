@@ -13,7 +13,26 @@
         mermaid.initialize({ startOnLoad: true });
     });
 </script>
+<style>
+.value, .delay, .arrow-box {
+    font-size: 12px;
+}
 
+.arrow-box {
+    padding-left: 10px;
+}
+.step-box {
+    width: 120px;
+    height: 50px;
+    background-color: white;
+    border: 2px solid black;
+    color: black;
+    text-align: center;
+    line-height: 50px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+</style>
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
@@ -42,24 +61,133 @@
                 <!-- {{check_data}} -->
                 <div class="mermaid">
                     graph LR
-                        {% for step in check_data %}
-                            {% if forloop.first %}
-                            A[{{object.trigger}}] -->
-                            {% endif %}
-                            {% if step.next_id %}
-                                {{ step.id }}[{{ step.name }}] --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| {{ step.next_id }}[{{ step.next_name|default:"Unnamed Step" }}]
-                            {% endif %}
-                            {% if forloop.last %}
-                                --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| B[{{object.value}}]
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                   
-                        
-                        
-                        
-                        
-                
+                    {% for step in check_data %}
+                        {% if forloop.first %}
+                            A[{{ object.trigger }}] -->
+                        {% endif %}
+                        {% if step.next_id %}
+                            {{ step.id }}[{{ step.name }}] --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| {{ step.next_id }}[{{ step.next_name|default:"Unnamed Step" }}]
+                        {% endif %}
+                        {% if forloop.last %}
+                            --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| B[{{ object.value }}]
+                        {% endif %}
+                    {% endfor %}
+                    
+                 
+                </div>
+                <style>
+                    .ovs-container {
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 10px;
+                        padding: 20px;
+                    }
+                    .step {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 100px;
+                        min-height: 50px;
+                        background-color: white;
+                        border: 2px solid black;
+                        border-radius: 10px;
+                        font-weight: bold;
+                        color: black;
+                        text-align: center;
+                        padding: 5px; /* Add padding for better appearance */
+                        word-wrap: break-word; /* Break words if they exceed the width */
+                        overflow-wrap: break-word; /* Ensure wrapping for long words */
+                        white-space: normal; /* Allow wrapping and multi-line text */
+                    }
+            
+                    .arrow-container {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        position: relative;
+                    }
+            
+                    .value {
+                        font-size: 10px;
+                        color: white;
+                        margin-bottom: 2px; /* Slight space between value and arrow */
+                        background-color: green;
+                        padding: 4px;
+                    }
+                    .delay {
+                        font-size: 10px;
+                        color: white;
+                        margin-top: 2px; /* Space between arrow and delay */
+                        background-color: red;
+                        padding: 4px;
+                    }
+                    .arrow {
+                        position: relative;
+                        width: 80px; /* Length of the arrow */
+                        height: 2px;
+                        background-color: black;
+                    }
+            
+                    .arrow:after {
+                        content: '';
+                        position: absolute;
+                        right: 0;
+                        top: -4px;
+                        border-top: 5px solid transparent;
+                        border-bottom: 5px solid transparent;
+                        border-left: 10px solid black;
+                    }
+                </style>
+    <div class="ovs-container">
+        <!-- Steps with Arrows in Between -->
+        <div class="step">Consumer Request</div>
+        <div class="arrow-container">
+            <div class="value">Value: 10</div>
+            <div class="arrow"></div>
+            <div class="delay">Delay: 10</div>
+        </div>
+        <div class="step">Step 2: Design the system</div>
+        <div class="arrow-container">
+            <div class="value">Value: 10</div>
+            <div class="arrow"></div>
+            <div class="delay">Delay: 10</div>
+        </div>
+
+        <div class="step">Step 3</div>
+        <div class="arrow-container">
+            <div class="value">Value: 10</div>
+            <div class="arrow"></div>
+            <div class="delay">Delay: 10</div>
+        </div>
+        <div class="step">Step 4</div>
+        <div class="arrow-container">
+            <div class="value">Value: 10</div>
+            <div class="arrow"></div>
+            <div class="delay">Delay: 10</div>
+        </div>
+
+        <div class="step">Step 5</div>
+        <div class="arrow-container">
+            <div class="value">Value: 10</div>
+            <div class="arrow"></div>
+            <div class="delay">Delay: 10</div>
+        </div>
+
+        <div class="step">Step 6</div>
+        <div class="arrow-container">
+            <div class="value">Value: 10</div>
+            <div class="arrow"></div>
+            <div class="delay">Delay: 10</div>
+        </div>
+
+      
+
+        <div class="step">Features Delivered and Customer Happy</div>
+    </div>
+
+
             </div>
         </div>
     </div>
