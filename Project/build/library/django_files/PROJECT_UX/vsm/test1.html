@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVS with Value and Delay</title>
+    <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js"></script>
+    <style>
+        #diagram {
+            width: 800px;
+            height: 300px;
+            border: 1px solid #ccc;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="diagram"></div>
+
+    <script>
+        // Initialize SVG.js
+        const draw = SVG().addTo('#diagram').size(800, 300);
+
+        // Define common properties
+        const stepWidth = 100;
+        const stepHeight = 50;
+        const stepGap = 50;
+        const startX = 50;
+        const startY = 100;
+
+        // Step data with value and delay
+        const steps = [
+            { name: "Step 1", value: 15, delay: 65 },
+            { name: "Step 2", value: 5, delay: 55 },
+            { name: "Step 3", value: 10, delay: 45 },
+            { name: "Step 4", value: 15, delay: 35 },
+            { name: "Step 5" }
+        ];
+
+        // Create OVS Steps and arrows
+        for (let i = 0; i < steps.length; i++) {
+            const x = startX + (stepWidth + stepGap) * i;
+
+            // Draw rectangle for the step
+            draw.rect(stepWidth, stepHeight).fill('lightgreen').move(x, startY);
+
+            // Add step name to the rectangle
+            draw.text(steps[i].name)
+                .move(x + stepWidth / 4, startY + stepHeight / 4)
+                .font({ size: 14, family: 'Arial', anchor: 'middle', fill: 'black' });
+
+            // Draw arrows and labels between steps
+            if (i < steps.length - 1) {
+                const x1 = x + stepWidth;
+                const x2 = x1 + stepGap;
+                const y = startY + stepHeight / 2;
+
+                // Draw line
+                draw.line(x1, y, x2, y).stroke({ width: 2, color: 'black' });
+
+                // Draw arrowhead
+                draw.polygon(`${x2 - 5},${y - 5} ${x2},${y} ${x2 - 5},${y + 5}`).fill('black');
+
+                // Add value and delay text between the steps
+                if (steps[i + 1].value !== undefined && steps[i + 1].delay !== undefined) {
+                    const textX = (x1 + x2) / 2;
+                    const textY = y + 20; // Below the arrow
+                    draw.text(`Value: ${steps[i + 1].value}\nDelay: ${steps[i + 1].delay}`)
+                        .move(textX - 40, textY) // Offset text for better alignment
+                        .font({ size: 12, family: 'Arial', anchor: 'middle', fill: 'black' });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

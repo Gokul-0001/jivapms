@@ -13,11 +13,10 @@
         mermaid.initialize({ startOnLoad: true });
     });
 </script>
-
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
-            {% include 'app_organization/mod_ops_value_stream/breadcrumb_ops_value_streams.html' %}
+            {% include 'app_organization/mod_dev_value_stream/breadcrumb_dev_value_streams.html' %}
         </div>
     </div>
 </div>
@@ -30,15 +29,17 @@
                 <div class="container-fluid-width">
                     <div class="row">
                         <div class="col col-md-8">
-                            <b>Operational Value Stream Display :: {{object}}</b>
+                            <h2>View 
+                                Dev Value Stream :: {{object}}</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_ops_value_streams' org_id %}"
-                             class="btn btn-sm btn-primary"><b>List OVS</b></a>
+                            <a href="{% url 'list_dev_value_streams' ops_id %}"
+                             class="btn btn-sm btn-primary"><b>List DVS</b></a>
                         </div>
                     </div>
                 </div>
-                <!-- display the OVS -->
+                <!-- display the DVS -->
+                
                 <!-- {{check_data}} -->
                 <div class="mermaid">
                     graph LR
@@ -54,12 +55,8 @@
                             {% endif %}
                         {% endfor %}
                     </div>
-                   
-                        
-                        
-                        
-                        
                 
+
             </div>
         </div>
     </div>

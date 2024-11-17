@@ -365,10 +365,9 @@ def view_ovs(request, org_id, ops_value_stream_id):
                                                 **first_viewable_dict)
     
     object = get_object_or_404(OpsValueStream, pk=ops_value_stream_id, active=True,**viewable_dict)    
-    # Fetch the steps for the OVS
-    steps = OpsValueStreamStep.objects.filter(ops=object).order_by('id')
+    
     # Fetch related OpsValueStreamStep objects
-    steps = OpsValueStreamStep.objects.filter(ops=object).order_by('id')
+    steps = OpsValueStreamStep.objects.filter(ops=object).order_by('position')
     steps_data = [
         {
             "id": step.id,
@@ -378,7 +377,22 @@ def view_ovs(request, org_id, ops_value_stream_id):
         }
         for step in steps
     ]
-    logger.debug(f">>> === steps_data: {steps_data} === <<<")
+    check_data = []
+
+    # Filter and clean the `steps` to ensure no extra steps are added
+    valid_steps = list(filter(lambda step: step.id is not None and step.name, steps))
+
+    for i, step in enumerate(valid_steps):
+        check_data.append({
+            "id": step.id,
+            "name": step.name or f"Step {step.id}",
+            "value": step.value,
+            "delay": step.delay,
+            "next_id": valid_steps[i + 1].id if i + 1 < len(valid_steps) else None,
+            "next_name": valid_steps[i + 1].name if i + 1 < len(valid_steps) else None,
+        })
+
+    #logger.debug(f">>> === steps_data: {steps_data} === <<<")
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'View OVS',
@@ -388,6 +402,7 @@ def view_ovs(request, org_id, ops_value_stream_id):
         'module_path': module_path,
         'object': object,
         'steps_data': steps_data,
+        'check_data': check_data,
         'page_title': f'View OVS',
     }
     template_file = f"{app_name}/{module_path}/view_ovs.html"

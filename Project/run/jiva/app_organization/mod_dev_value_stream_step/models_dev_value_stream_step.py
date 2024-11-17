@@ -7,7 +7,7 @@ class DevValueStreamStep(BaseModelImpl):
     value = models.PositiveIntegerField(default=0)
     delay = models.PositiveIntegerField(default=0)
     dev = models.ForeignKey('app_organization.DevValueStream', on_delete=models.CASCADE, 
-                            related_name="dev_dev_value_stream_steps", null=True, blank=True)
+                            related_name="dev_value_stream_steps", null=True, blank=True)
     
     
     

@@ -4,7 +4,7 @@ from app_organization.mod_dev_value_stream.models_dev_value_stream import *
 from app_organization.mod_dev_value_stream.forms_dev_value_stream import *
 
 from app_organization.mod_ops_value_stream.models_ops_value_stream import *
-
+from app_organization.mod_dev_value_stream_step.models_dev_value_stream_step import *
 from app_common.mod_common.models_common import *
 
 app_name = 'app_organization'
@@ -355,5 +355,56 @@ def view_dev_value_stream(request, ops_id, dev_value_stream_id):
     }
     template_file = f"{app_name}/{module_path}/view_dev_value_stream.html"
     return render(request, template_file, context)
+
+@login_required
+def view_dvs(request, ops_id, dev_value_stream_id):
+    user = request.user
+    ops_value_stream = OpsValueStream.objects.get(id=ops_id, active=True, 
+                                                **first_viewable_dict)
+    
+    object = get_object_or_404(DevValueStream, pk=dev_value_stream_id, active=True,**viewable_dict)    
+    # Fetch related OpsValueStreamStep objects
+    steps = DevValueStreamStep.objects.filter(dev=object).order_by('position')
+    steps_data = [
+        {
+            "id": step.id,
+            "name": step.name or f"Step {step.id}",  # Default name if none exists
+            "value": step.value,
+            "delay": step.delay
+        }
+        for step in steps
+    ]
+    check_data = []
+
+    # Filter and clean the `steps` to ensure no extra steps are added
+    valid_steps = list(filter(lambda step: step.id is not None and step.name, steps))
+
+    for i, step in enumerate(valid_steps):
+        check_data.append({
+            "id": step.id,
+            "name": step.name or f"Step {step.id}",
+            "value": step.value,
+            "delay": step.delay,
+            "next_id": valid_steps[i + 1].id if i + 1 < len(valid_steps) else None,
+            "next_name": valid_steps[i + 1].name if i + 1 < len(valid_steps) else None,
+        })
+
+    #logger.debug(f">>> === steps_data: {steps_data} === <<<")
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_dev_value_stream',
+        'ops_value_stream': ops_value_stream,
+        'ops_id': ops_id,
+        
+        'module_path': module_path,
+        'object': object,
+        'steps': steps,
+        'steps_data': steps_data,
+        'check_data': check_data,
+        'page_title': f'View DVS',
+    }
+    template_file = f"{app_name}/{module_path}/view_dvs.html"
+    return render(request, template_file, context)
+
 
 
