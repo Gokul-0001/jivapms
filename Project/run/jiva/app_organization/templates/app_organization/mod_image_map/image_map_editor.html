@@ -64,10 +64,16 @@
                 
             </table>
 
-            <div id="debug-output" style="margin-top: 20px; font-family: monospace;">
+            <!-- <div id="debug-output" style="margin-top: 20px; font-family: monospace;">
                 <h3>Debug Output:</h3>
                 <pre id="debug-data"></pre>
-            </div>
+            </div> -->
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
         </div>
     </div>
 </div>
@@ -81,7 +87,7 @@
     const linkInput = document.getElementById('area-link');
     const descInput = document.getElementById('area-description');
     const areasTable = document.getElementById('area-table').querySelector('tbody');
-    const debugOutput = document.getElementById('debug-data');
+    //const debugOutput = document.getElementById('debug-data');
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -108,7 +114,7 @@
 
         // Load existing areas
         const existingAreas = JSON.parse('{{ areas|escapejs }}');
-        debugOutput.textContent = JSON.stringify(existingAreas, null, 4); // Debug output
+        //debugOutput.textContent = JSON.stringify(existingAreas, null, 4); // Debug output
 
         existingAreas.forEach((area) => {
             const coords = area.coords.split(',').map(parseFloat);
@@ -214,7 +220,7 @@
         });
 
         if (validShapes.length === 0) {
-            alert("No valid areas to save.");
+            console.log("No valid areas to save.");
             return;
         }
 
@@ -226,7 +232,8 @@
             },
             (data) => {
                 console.log("Areas saved successfully!");
-                alert("Areas saved successfully!");
+                window.location.reload();
+
             }
         );
     });
