@@ -335,15 +335,42 @@ def image_map_editor(request, pro_id, image_map_id):
     }
     template_file = f"{app_name}/{module_path}/image_map_editor.html"
     return render(request, template_file, context)
+
+
 @login_required
 def view_visual_image_map(request, pro_id, image_map_id):
+    user = request.user
+    project = get_object_or_404(Project, id=pro_id, active=True)
+
     image_map = get_object_or_404(ImageMap, pk=image_map_id, active=True, pro_id=pro_id)
-    areas = image_map.areas.all()
-    return render(request, f"{app_name}/{module_path}/view_visual_image_map.html", {
+    areas = [
+        {
+            'shape': area.shape,
+            'coords': area.coords,
+            'link': area.link,
+            'description': area.hover_text,
+        }
+        for area in image_map.areas.filter(active=True)
+    ]
+  
+    context = {
         'image_map': image_map,
-        'areas': areas,
-    })
-    
+        'areas': json.dumps(areas), 
+        'project': project,
+        'object': project,
+        'pro_id': pro_id,
+        'org_id': project.org.id,
+        'org': project.org,
+        'module_path': module_path,
+        'parent_page': '___PARENTPAGE___',
+        'page': 'image_map_editor',
+        'page_title': f'Image Map Editor',
+        
+        'image_map': image_map,
+        
+    }
+    template_file = f"{app_name}/{module_path}/view_visual_image_map.html"
+    return render(request, template_file, context)
 
 
 @login_required

@@ -53,8 +53,8 @@
                 element.style.top = `${y}px`;
                 element.style.width = `${widthOrRadius}px`;
                 element.style.height = `${height}px`;
-                element.style.border = '0px solid red';
-                
+                element.style.border = '2px solid blue';
+                element.style.backgroundColor = 'rgba(0, 0, 255, 0.2)';
             } else if (area.shape === 'circle') {
                 // Create circle
                 element = document.createElement('div');
@@ -64,14 +64,13 @@
                 element.style.width = `${2 * widthOrRadius}px`;
                 element.style.height = `${2 * widthOrRadius}px`;
                 element.style.border = '2px solid red';
-                
+                element.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
                 element.style.borderRadius = '50%';
             }
 
             if (element) {
                 // Hover effect to highlight shape and show tooltip
                 element.addEventListener('mouseenter', (e) => {
-                    element.style.border = '1px solid red';
                     element.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
                     tooltip.style.display = 'block';
                     tooltip.textContent = area.link;
@@ -83,8 +82,6 @@
                     element.style.backgroundColor = area.shape === 'rect'
                         ? 'rgba(0, 0, 255, 0.2)'
                         : 'rgba(255, 0, 0, 0.2)';
-                    element.style.backgroundColor = 'transparent';
-                    element.style.border = '0px solid red';
                     tooltip.style.display = 'none';
                 });
 

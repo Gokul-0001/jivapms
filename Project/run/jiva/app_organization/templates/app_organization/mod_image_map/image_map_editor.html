@@ -25,12 +25,14 @@
 
             <!-- Image Editing Section -->
             <div id="editor-controls">
-                <input type="url" id="area-link" placeholder="Enter Link" class="form-control" required>
+                <input type="url" id="area-link" placeholder="Enter Link" class="form-control" required size="150">
                 <input type="text" id="area-description" placeholder="Enter Description" class="form-control">
+                <br>
                 <button id="draw-rect" class="btn btn-primary">Draw Rectangle</button>
+                &nbsp;&nbsp;
                 <button id="draw-circle" class="btn btn-primary">Draw Circle</button>
-                <button id="undo" class="btn btn-warning">Undo Last Action</button>
-                <button id="save-areas" class="btn btn-success">Save All</button>
+                &nbsp;&nbsp;
+                <button id="save-areas" class="btn btn-success">Save</button>
             </div>
 
             <div id="container" style="border: 1px solid #ccc; margin-top: 20px;"></div>
@@ -90,6 +92,7 @@
     const descInput = document.getElementById('area-description');
     const areasTable = document.getElementById('area-table').querySelector('tbody');
     //const debugOutput = document.getElementById('debug-data');
+    
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -103,13 +106,20 @@
     const imageObj = new Image();
     imageObj.src = imageSrc;
     imageObj.onload = () => {
+        // Calculate and store scaling factors
+        // Set the stage dimensions to match the image dimensions
+        stage.width(imageObj.width);
+        stage.height(imageObj.height);
+
+        // Create and add the image to the canvas
         const img = new Konva.Image({
             x: 0,
             y: 0,
             image: imageObj,
-            width: stage.width(),
-            height: (stage.width() * imageObj.height) / imageObj.width,
+            width: imageObj.width,
+            height: imageObj.height,
         });
+
 
         layer.add(img);
         layer.draw();
@@ -133,13 +143,13 @@
                 layer.add(rect);
             } else if (area.shape === 'circle') {
                 const circle = new Konva.Circle({
-                    x: coords[0],
-                    y: coords[1],
-                    radius: coords[2],
-                    fill: 'rgba(255, 0, 0, 0.3)',
-                    stroke: 'red',
-                    strokeWidth: 2,
-                });
+                x: coords[0],
+                y: coords[1],
+                radius: coords[2],
+                fill: 'rgba(255, 0, 0, 0.3)',
+                stroke: 'red',
+                strokeWidth: 2,
+            });
                 layer.add(circle);
             }
 
@@ -152,30 +162,130 @@
     let currentShape = null;
 
     function addShapeToTable(shape, type) {
-        const coords = shape.coords;
+    const coords =
+        type === 'circle'
+            ? `${shape.coords.split(',')[0]}, ${shape.coords.split(',')[1]}, ${shape.coords.split(',')[2]}`
+            : `${shape.coords.split(',')[0]}, ${shape.coords.split(',')[1]}, ${shape.coords.split(',')[2]}, ${shape.coords.split(',')[3]}`;
 
-        // Dynamically replace the placeholder '0' with the actual shape ID
-        const deleteUrl = deleteUrlTemplate.replace('/0/', `/${shape.id}/`);
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${type}</td>
-            <td>${coords}</td>
-            <td><a href="${shape.link}" target="_blank">${shape.link}</a></td>
-            <td>${shape.description || ''}</td>
-            <td>
-                <button type="button" class="btn btn-warning edit-area">Edit</button>
-                <button type="button" 
-                        class="btn btn-danger delete-area" 
-                        data-area-id="${shape.id}">Delete</button>
-            </td>
-        `;
-        areasTable.appendChild(row);
-    }
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${type}</td>
+        <td>${coords}</td>
+        <td><a href="${shape.link}" target="_blank">${shape.link}</a></td>
+        <td>${shape.description || ''}</td>
+        <td>
+            <button type="button" class="btn btn-danger delete-area" data-area-id="${shape.id || ''}">Delete</button>
+        </td>
+    `;
+    areasTable.appendChild(row);
+}
 
 
 
-    // Drawing tools
+
+
+// >>> === CIRCLE === <<<
+document.getElementById('draw-circle').addEventListener('click', () => {
+    let isDrawing = false; // Flag to track drawing
+    let initialPos = null; // Initial position of the circle
+
+    // Mousedown to start drawing the circle
+    stage.on('mousedown', () => {
+        if (currentShape) return; // Prevent multiple shapes at once
+
+        const pos = stage.getPointerPosition();
+        initialPos = pos;
+        isDrawing = true;
+
+        // Create a new circle
+        currentShape = new Konva.Circle({
+            x: pos.x,
+            y: pos.y,
+            radius: 0,
+            fill: 'rgba(255, 0, 0, 0.3)',
+            stroke: 'red',
+            strokeWidth: 2,
+            draggable: false, // Enable dragging
+        });
+
+        layer.add(currentShape);
+        layer.draw();
+    });
+
+    // Mousemove to dynamically adjust the circle's radius
+    stage.on('mousemove', () => {
+        if (!isDrawing || !currentShape) return;
+
+        const pos = stage.getPointerPosition();
+        const radius = Math.sqrt(
+            Math.pow(pos.x - initialPos.x, 2) + Math.pow(pos.y - initialPos.y, 2)
+        );
+        currentShape.radius(radius); // Update radius
+        layer.draw();
+    });
+
+    // Mouseup to finalize the circle
+    stage.on('mouseup', () => {
+        if (!isDrawing || !currentShape) return;
+
+        isDrawing = false;
+
+        // Capture final coordinates
+        const coords = `${currentShape.x()},${currentShape.y()},${currentShape.radius()}`;
+        const link = linkInput.value.trim();
+        const desc = descInput.value.trim();
+
+        if (!link) {
+            alert("Please provide a link before finalizing the circle.");
+            currentShape.destroy(); // Remove invalid circle
+            layer.draw();
+            currentShape = null;
+            return;
+        }
+
+        // Add dragend listener to update coordinates when the circle is dragged
+        currentShape.on('dragend', () => {
+            const updatedCoords = `${currentShape.x()},${currentShape.y()},${currentShape.radius()}`;
+            console.log('Updated circle coordinates after drag:', updatedCoords);
+
+            // Update the shapes array
+            const shapeIndex = shapes.findIndex(
+                (shape) => shape.shape === 'circle' && shape.coords === coords
+            );
+            if (shapeIndex !== -1) {
+                shapes[shapeIndex].coords = updatedCoords;
+            }
+            // Add to shapes array
+            shapes.push({
+                shape: 'circle',
+                coords: coords,
+                link: link,
+                description: desc,
+            });
+            addShapeToTable({ shape: 'circle', coords: coords, link: link, description: desc }, 'circle');
+            // Reset state
+            currentShape = null;
+            stage.off('mousemove mousedown mouseup'); // Clear drawing event listeners
+        });
+
+        // Add to shapes array
+        shapes.push({
+                shape: 'circle',
+                coords: coords,
+                link: link,
+                description: desc,
+            });
+
+        // Add the circle to the table
+        addShapeToTable({ shape: 'circle', coords: coords, link: link, description: desc }, 'circle');
+
+        // Reset state
+        currentShape = null;
+        stage.off('mousemove mousedown mouseup'); // Clear drawing event listeners
+    });
+});
+
+
     document.getElementById('draw-rect').addEventListener('click', () => {
         stage.on('mousedown', (e) => {
             if (currentShape) return;
@@ -262,7 +372,7 @@
         const deleteUrl = `{% url 'delete_area' 0 %}`.replace('0', areaId);
 
         // Confirm deletion
-        if (!confirm('Are you sure you want to delete this area?')) return;
+        //if (!confirm('Are you sure you want to delete this area?')) return;
 
         // Send AJAX POST request to delete the area
         $.ajax({
@@ -271,10 +381,12 @@
             headers: { 'X-CSRFToken': '{{ csrf_token }}' },
             success: (response) => {
                 console.log('Area deleted successfully:', response);
-                alert('Area deleted successfully.');
 
                 // Remove the row from the table
                 event.target.closest('tr').remove();
+
+                // reload 
+                window.location.reload();
             },
             error: (err) => {
                 console.error('Error deleting area:', err);
