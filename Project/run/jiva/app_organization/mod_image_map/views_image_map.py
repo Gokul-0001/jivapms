@@ -1,4 +1,4 @@
-
+from app_common.mod_app.all_view_imports import *
 from app_organization.mod_app.all_view_imports import *
 from app_organization.mod_image_map.models_image_map import *
 from app_organization.mod_image_map.forms_image_map import *
@@ -6,6 +6,7 @@ from app_organization.mod_image_map.forms_image_map import *
 from app_organization.mod_project.models_project import *
 
 from app_common.mod_common.models_common import *
+from app_jivapms.mod_app.all_view_imports import *
 
 app_name = 'app_organization'
 app_version = 'v1'
@@ -310,13 +311,15 @@ def image_map_editor(request, pro_id, image_map_id):
     # Retrieve existing areas
     areas = [
         {
+            'id': area.id,  # Include ID here
             'shape': area.shape,
             'coords': area.coords,
             'link': area.link,
             'description': area.hover_text,
         }
-        for area in image_map.areas.all()
+        for area in image_map.areas.filter(active=True)  # Filter active areas
     ]
+
     context = {
         'image_map': image_map,
         'areas': json.dumps(areas), 
@@ -340,6 +343,59 @@ def view_visual_image_map(request, pro_id, image_map_id):
         'image_map': image_map,
         'areas': areas,
     })
+    
+
+
+@login_required
+@require_http_methods(["PUT"])  # Allow only PUT requests
+def update_area(request, area_id):
+    try:
+        # Parse the incoming JSON data
+        data = json.loads(request.body)
+        link = data.get('link', '').strip()
+        description = data.get('description', '').strip()
+
+        # Validate the data
+        if not link:
+            return HttpResponseBadRequest(json.dumps({'error': 'Link is required.'}), content_type='application/json')
+
+        # Find the area to update
+        area = ImageMapArea.objects.get(id=area_id)
+
+        # Update the area
+        area.link = link
+        area.hover_text = description
+        area.save()
+
+        # Return success response
+        return JsonResponse({'success': True, 'message': 'Area updated successfully.'})
+    except ImageMapArea.DoesNotExist:
+        return HttpResponseBadRequest(json.dumps({'error': 'Area not found.'}), content_type='application/json')
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest(json.dumps({'error': 'Invalid JSON data.'}), content_type='application/json')
+    except Exception as e:
+        return HttpResponseBadRequest(json.dumps({'error': str(e)}), content_type='application/json')
+
+@login_required
+def delete_area(request, area_id):
+    print(f">>> === area_id: {area_id} === <<<")
+    
+    try:
+        # Fetch the area object
+        area = ImageMapArea.objects.get(id=area_id)
+
+        # Update the active flag to False
+        area.active = False
+        area.save()
+
+        logger.debug(f">>> === AREA: {area} ==> {area.active} === <<<")    
+
+        # Return success response
+        return JsonResponse({'success': True, 'message': 'Area deleted successfully.'})
+    except ImageMapArea.DoesNotExist:
+        return HttpResponseBadRequest(json.dumps({'error': 'Area not found.'}), content_type='application/json')
+    except Exception as e:
+        return HttpResponseBadRequest(json.dumps({'error': str(e)}), content_type='application/json')
 
 @login_required
 def delete_image_map(request, pro_id, image_map_id):

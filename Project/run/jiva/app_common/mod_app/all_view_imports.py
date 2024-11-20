@@ -9,7 +9,9 @@ from functools import wraps
 from django.db.models import *
 from django.http import Http404
 from django.utils.html import strip_tags
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.template import Template, Context
 from markdownx.utils import markdownify
 from django.conf import settings
