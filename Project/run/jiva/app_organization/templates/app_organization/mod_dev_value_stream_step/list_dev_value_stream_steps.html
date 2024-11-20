@@ -67,23 +67,29 @@
                     <table class="table table-bordered sortable_table">
                         <thead>
                             <tr>
-                                <td colspan="6">
+                                <td colspan="4">
                                     <!-- update here the following Total Value Time + Total Delay Time = Total Time, Efficency = Total Delay Time / Total Time-->
                                     <div class="display_count">Total Time = Total Value Time + Total Delay Time</div>
                                 </td>
                                 <td colspan="3">
                                     <!-- update the total time here -->
-                                     <div id="total_time"></div>
+                                     <div id="total_time" class="display_count"></div>
+                                </td>
+                                <td colspan="5">                                    
+                                    <div id="rolled_perc_avg" class="display_count"></div>
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="6">
+                                <td colspan="4">
                                     <!-- update here the following Total Value Time + Total Delay Time = Total Time, Efficency = Total Delay Time / Total Time-->
                                     <div class="display_count">Efficency = (Total Delay Time / Total Time ) * 100</div>
                                 </td>
                                 <td colspan="3">
                                   <!-- update the efficiency-->
-                                   <div id="efficiency"></div>
+                                   <div id="efficiency" class="display_count"></div>
+                                </td>
+                                <td colspan="5">
+                                    
                                 </td>
                             </tr>
                             <tr>
@@ -96,6 +102,7 @@
                                 <th width="10%">Description</th>
                                 <th width="5%">Value</th>
                                 <th width="5%">Delay</th>
+                                <th width="5%">% Accuracy</th>
                                 <th width="30%">                                    
                                     Actions
                                     &nbsp;&nbsp;
@@ -132,19 +139,23 @@
                                 <td width="2%">
                                     <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                 </td>
-                                <td>{{forloop.counter}}</td>
-                                <td width="" onclick="makeEditable(this)"
+                                <td>{{forloop.counter}}                                    
+                                </td>
+                                <td width="" onclick="makeEditable(this, '{{ dev_id }}')"
                                  onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'name')"
                                 ><strong>{{tobject.name}}</strong></td>
-                                <td width="20%" onclick="makeEditable(this)"
+                                <td width="20%" onclick="makeEditable(this, '{{ dev_id }}')"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                <td width="5%" onclick="makeEditable(this)" data-field="value" 
+                                <td width="5%" onclick="makeEditable(this, '{{ dev_id }}')" data-field="value" 
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'value')"
                                 >{% if tobject.value != None %}{{tobject.value}}{% endif %}</td>
-                                <td width="5%" onclick="makeEditable(this)" data-field="delay" 
+                                <td width="5%" onclick="makeEditable(this, '{{ dev_id }}')" data-field="delay" 
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'delay')"
                                 >{% if tobject.delay != None %}{{tobject.delay}}{% endif %}</td>
+                                <td width="" onclick="makeEditable(this, '{{ dev_id }}')" data-field="percentage_accuracy"
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'percentage_accuracy')"
+                                >{% if tobject.percentage_accuracy != None %}{{tobject.percentage_accuracy}}{% endif %}</td>
                                
                                 <td width="50%">
                                     <a href="{% url 'view_dev_value_stream_step' dev_id  tobject.id  %}"
@@ -178,17 +189,25 @@
 </form>
 
 <script>
-    function calculateTotals() {
+  function calculateTotals(id) {
         let totalValueTime = 0;
         let totalDelayTime = 0;
-
+        let rolledPercentage = 1; // Start with 1 for multiplication
+        
         // Iterate through all rows in the table
         document.querySelectorAll('.sortable-tbody tr').forEach(row => {
             const valueCell = row.querySelector('[data-field="value"]');
             const delayCell = row.querySelector('[data-field="delay"]');
+            const percentageCell = row.querySelector('[data-field="percentage_accuracy"]');
 
             const value = parseFloat(valueCell?.textContent) || 0;
             const delay = parseFloat(delayCell?.textContent) || 0;
+            const percentage = parseFloat(percentageCell?.textContent) || 0;
+
+            // Ignore percentages of 0.0 when calculating rolled percentage average
+            if (percentage > 0) {
+                rolledPercentage *= percentage / 100; // Convert to decimal and multiply
+            }
 
             totalValueTime += value;
             totalDelayTime += delay;
@@ -196,14 +215,27 @@
 
         // Calculate Total Time
         const totalTime = totalValueTime + totalDelayTime;
-        document.querySelector('#total_time').textContent = `Total Time = ${totalValueTime} + ${totalDelayTime} = ${totalTime}`;
+        document.querySelector('#total_time').textContent = `${totalValueTime} + ${totalDelayTime} = ${totalTime}`;
 
         // Calculate Efficiency (as a percentage of value time to total time)
         const efficiency = totalTime > 0 ? ((totalValueTime / totalTime) * 100).toFixed(2) : 0;
-        document.querySelector('#efficiency').textContent = `Efficiency = (${totalValueTime} / ${totalTime}) × 100 = ${efficiency}%`;
-    }
+        document.querySelector('#efficiency').textContent = `(${totalValueTime} / ${totalTime}) × 100 = ${efficiency}%`;
 
-    document.addEventListener('DOMContentLoaded', calculateTotals);
+        // Calculate Rolled Percentage Average
+        const rolledPercentageAvg = (rolledPercentage * 100).toFixed(2); // Convert back to percentage
+        document.querySelector('#rolled_perc_avg').textContent = 
+            `Rolled Percentage Average = ${rolledPercentage > 0 ? rolledPercentageAvg : 0}%`;
+
+        // Save the totals to the database
+        save_element_val(totalTime, id, 'app_organization', 'DevValueStream', 'total_time');
+        save_element_val(efficiency, id, 'app_organization', 'DevValueStream', 'efficiency');
+        save_element_val(rolledPercentageAvg, id, 'app_organization', 'DevValueStream', 'rolled_percentage_avg');
+        save_element_val(totalValueTime, id, 'app_organization', 'DevValueStream', 'value_time');
+        save_element_val(totalDelayTime, id, 'app_organization', 'DevValueStream', 'delay_time');
+    }
+    document.addEventListener('DOMContentLoaded', calculateTotals('{{dev_id}}'));
+   
+   
 </script>
 
 
@@ -276,14 +308,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-    function makeEditable(element) {
+    function makeEditable(element, id) {
         element.contentEditable = true;
         element.focus();
 
         
         element.addEventListener('blur', function () {
             element.contentEditable = false;
-            calculateTotals(); // Recalculate totals after editing
+            calculateTotals(id); // Recalculate totals after editing
         });
     }
 
@@ -307,6 +339,32 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         })
     }
+
+    function save_element_val(inputVal, id, appName, modelName, fieldName) {
+        // Ensure the data is correctly structured
+        const data = {
+            csrfmiddlewaretoken: "{{ csrf_token }}",  // CSRF Token for POST request
+            model_name: modelName,
+            app_name: appName,
+            field_name: fieldName,
+            text: inputVal,
+            id: id
+        };
+
+        // Use $.ajax for the POST request
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_element_text/',
+            type: 'POST',
+            data: data,  // Pass the structured data object
+            dataType: 'json',
+            success: function(response) {
+                console.log('Data saved successfully:', response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error while saving data:', error);
+            }
+        });
+    }   
 </script>
 
 <!-- End: Content -->

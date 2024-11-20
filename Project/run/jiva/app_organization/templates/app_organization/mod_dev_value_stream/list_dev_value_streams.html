@@ -108,7 +108,9 @@
                                 <td width="2%">
                                     <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                 </td>
-                                <td>{{forloop.counter}}</td>
+                                <td>{{forloop.counter}}
+                                    <!-- {{tobject.value_time}} {{tobject.delay_time}} -- {{tobject.total_time}}, {{tobject.rolled_percentage_avg}} {{tobject.efficiency}} -->
+                                </td>
                                 <td width="20%" ondblclick="makeEditable(this)"
                                  onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStream', 'name')"
                                 ><strong>{{tobject.name}}</strong></td>

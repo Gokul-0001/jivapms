@@ -9,7 +9,12 @@ class DevValueStream(BaseModelImpl):
                             related_name="ops_dev_value_streams", null=True, blank=True)
     trigger = models.CharField(max_length=150, null=True, blank=True)
     value = models.CharField(max_length=150, null=True, blank=True)
-    percentage_accuracy = models.FloatField(default=0)
+    # add all the calculated fields here    
+    total_time = models.PositiveIntegerField(default=0)
+    value_time = models.PositiveIntegerField(default=0)
+    delay_time = models.PositiveIntegerField(default=0)
+    efficiency = models.FloatField(default=0)
+    rolled_percentage_avg = models.FloatField(default=0)
     
     project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
                             related_name="dev_value_stream_project", null=True, blank=True)
