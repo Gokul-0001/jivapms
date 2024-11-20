@@ -582,3 +582,26 @@ def project_dvs(request, org_id, project_id):
     template_file = f"{app_name}/{module_path}/project_dvs.html"
     
     return render(request, template_file, context)
+
+@login_required
+@org_and_pa_only()
+def project_settings_page(request, org_id, project_id):
+    user = request.user
+    organization = Organization.objects.get(id=org_id, active=True, 
+                                                **first_viewable_dict)
+    
+    object = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)    
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'project_settings',
+        'organization': organization,
+        'org_id': org_id,
+        
+        'module_path': module_path,
+        'object': object,
+        'project': object,
+        'page_title': f'Project Settings',
+    }
+    template_file = f"{app_name}/{module_path}/project_settings.html"
+    return render(request, template_file, context)

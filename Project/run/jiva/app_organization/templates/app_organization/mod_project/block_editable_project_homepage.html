@@ -1,56 +1,5 @@
-
-<button class="toggle-btn" onclick="toggleSidebar()">
-    <i class="bi bi-list"></i>
-</button>
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-menu">
-        <a href="/org/organization/list_organizations/" class="nav-link">
-            <i class="bi bi-calendar"></i>
-            <span>Organizations</span>
-        </a>
-        <a href="{% url 'project_dvs' org_id object.id %}" class="nav-link" >
-            <i class="bi bi-diamond"></i>
-            <span>Value Stream</span>
-        </a>
-        <a href="#" class="nav-link" >
-            <i class="bi bi-collection"></i>
-            <span>Backlog</span>
-        </a>
-        <a href="#" class="nav-link" >
-            <i class="material-icons" style="font-size: 18px;">groups</i>
-            
-            <span>Team</span>
-        </a>
-        <a href="#" class="nav-link" >
-            <i class="material-icons" style="font-size: 18px;">arrow_forward</i>
-            <span>Workflow</span>
-        </a>
-        <a href="#" class="nav-link" >
-            <i class="bi bi-kanban"></i>
-            <span>Board</span>
-        </a>
-        <a href="#" class="nav-link" >
-            <i class="material-icons" style="font-size: 18px;">event</i>
-            <span>Events</span>
-        </a>
-
-        <a href="#" class="nav-link" >
-            <i class="bi bi-basket"></i>
-            <span>Release</span>
-        </a>
-        <a href="#" class="nav-link" >
-            <i class="bi bi-compass"></i>
-            <span>Metrics</span>
-        </a>
-    </div>
-    <div class="settings">
-        <a href="#" class="nav-link">
-            <i class="bi bi-gear"></i>
-            <span>Settings</span>
-        </a>
-    </div>
-</div>
+<!-- sidebar menu -->
+{% include 'app_organization/mod_project/sidebar_menu.html' %}
 <!-- Content -->
 <div class="contentbar mb-5" id="contentbar">
     <div class="container mt-5">

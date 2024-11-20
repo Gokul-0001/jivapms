@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Image Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/konva@8.4.2/konva.min.js"></script>
+    <style>
+        #container {
+            margin: 20px auto;
+            width: 80%;
+            border: 1px solid #ccc;
+            position: relative;
+        }
+
+        #editor-controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #link-input {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        button {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Image Map: {{ image_map.title }}</h1>
+
+    <div id="editor-controls">
+        <button id="draw-rect">Draw Rectangle</button>
+        <button id="draw-circle">Draw Circle</button>
+        <button id="undo">Undo Last Action</button>
+    </div>
+
+    <div id="link-input">
+        <label for="area-link">Enter Link for Area:</label>
+        <input type="url" id="area-link" placeholder="https://example.com">
+    </div>
+
+    <div id="container"></div>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" id="areas-data" name="areas">
+        <button type="submit">Save</button>
+    </form>
+
+    <script>
+        const imageSrc = "{{ image_map.image.url }}";
+        const container = document.getElementById('container');
+        const areasDataInput = document.getElementById('areas-data');
+        const linkInput = document.getElementById('area-link');
+
+        const stage = new Konva.Stage({
+            container: 'container',
+            width: container.offsetWidth,
+            height: 600, // Adjust height based on your image
+        });
+
+        const layer = new Konva.Layer();
+        stage.add(layer);
+
+        const imageObj = new Image();
+        imageObj.src = imageSrc;
+        imageObj.onload = () => {
+            const img = new Konva.Image({
+                x: 0,
+                y: 0,
+                image: imageObj,
+                width: stage.width(),
+                height: (stage.width() * imageObj.height) / imageObj.width,
+            });
+
+            layer.add(img);
+            layer.draw();
+        };
+
+        let shapes = [];
+        let currentShape = null;
+
+        function addShapeToData(shape, type) {
+            const link = linkInput.value || ''; // Get link from input
+            if (!link) {
+                alert("Please provide a link before saving the area.");
+                return;
+            }
+
+            const coords =
+                type === 'rect'
+                    ? `${shape.x()},${shape.y()},${shape.width()},${shape.height()}`
+                    : `${shape.x()},${shape.y()},${shape.radius()}`;
+
+            shapes.push({
+                shape: type,
+                coords: coords,
+                link: link, // Save the link associated with this area
+            });
+            linkInput.value = ''; // Clear link input for the next area
+        }
+
+        // Drawing tools
+        document.getElementById('draw-rect').addEventListener('click', () => {
+            stage.on('mousedown', (e) => {
+                if (currentShape) return;
+
+                const pos = stage.getPointerPosition();
+                currentShape = new Konva.Rect({
+                    x: pos.x,
+                    y: pos.y,
+                    width: 0,
+                    height: 0,
+                    fill: 'rgba(0, 0, 255, 0.3)',
+                    stroke: 'blue',
+                    strokeWidth: 2,
+                    draggable: true,
+                });
+                layer.add(currentShape);
+                layer.draw();
+            });
+
+            stage.on('mousemove', (e) => {
+                if (!currentShape) return;
+
+                const pos = stage.getPointerPosition();
+                const width = pos.x - currentShape.x();
+                const height = pos.y - currentShape.y();
+
+                currentShape.width(width);
+                currentShape.height(height);
+                layer.draw();
+            });
+
+            stage.on('mouseup', (e) => {
+                if (!currentShape) return;
+
+                addShapeToData(currentShape, 'rect');
+                currentShape = null;
+                stage.off('mousemove');
+                stage.off('mousedown');
+                stage.off('mouseup');
+            });
+        });
+
+        document.getElementById('draw-circle').addEventListener('click', () => {
+            stage.on('mousedown', (e) => {
+                if (currentShape) return;
+
+                const pos = stage.getPointerPosition();
+                currentShape = new Konva.Circle({
+                    x: pos.x,
+                    y: pos.y,
+                    radius: 0,
+                    fill: 'rgba(255, 0, 0, 0.3)',
+                    stroke: 'red',
+                    strokeWidth: 2,
+                    draggable: true,
+                });
+                layer.add(currentShape);
+                layer.draw();
+            });
+
+            stage.on('mousemove', (e) => {
+                if (!currentShape) return;
+
+                const pos = stage.getPointerPosition();
+                const radius = Math.sqrt(
+                    Math.pow(pos.x - currentShape.x(), 2) + Math.pow(pos.y - currentShape.y(), 2)
+                );
+                currentShape.radius(radius);
+                layer.draw();
+            });
+
+            stage.on('mouseup', (e) => {
+                if (!currentShape) return;
+
+                addShapeToData(currentShape, 'circle');
+                currentShape = null;
+                stage.off('mousemove');
+                stage.off('mousedown');
+                stage.off('mouseup');
+            });
+        });
+
+        document.getElementById('undo').addEventListener('click', () => {
+            if (shapes.length > 0) {
+                shapes.pop();
+                layer.removeChildren();
+                layer.add(new Konva.Image({ image: imageObj, x: 0, y: 0, width: stage.width(), height: stage.height() }));
+                shapes.forEach((shape) => {
+                    if (shape.shape === 'rect') {
+                        const [x, y, width, height] = shape.coords.split(',').map(parseFloat);
+                        layer.add(
+                            new Konva.Rect({
+                                x: x,
+                                y: y,
+                                width: width,
+                                height: height,
+                                fill: 'rgba(0, 0, 255, 0.3)',
+                                stroke: 'blue',
+                                strokeWidth: 2,
+                                draggable: true,
+                            })
+                        );
+                    } else if (shape.shape === 'circle') {
+                        const [x, y, radius] = shape.coords.split(',').map(parseFloat);
+                        layer.add(
+                            new Konva.Circle({
+                                x: x,
+                                y: y,
+                                radius: radius,
+                                fill: 'rgba(255, 0, 0, 0.3)',
+                                stroke: 'red',
+                                strokeWidth: 2,
+                                draggable: true,
+                            })
+                        );
+                    }
+                });
+                layer.draw();
+            }
+        });
+
+        document.querySelector('form').addEventListener('submit', (e) => {
+            areasDataInput.value = JSON.stringify(shapes);
+        });
+    </script>
+</body>
+</html>

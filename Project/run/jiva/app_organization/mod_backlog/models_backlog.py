@@ -2,7 +2,7 @@ from app_common.mod_common.models_common import *
 from app_organization.mod_app.all_model_imports import *
 from app_organization.mod_app.all_form_imports import *
 from app_organization.mod_backlog.models_backlog import *
-from app_organization.mod_backlog_type.models_backlog_type import *
+
 
 
 # Core Hierarchical System Database
@@ -15,7 +15,7 @@ class Backlog(MPTTModel, BaseModelImpl):
                                               related_name='backlogs')
     parent = TreeForeignKey('self', null=True, blank=True, related_name='Project', on_delete=models.CASCADE)
    
-    type = TreeForeignKey("BacklogType", null=True, blank=True, 
+    type = TreeForeignKey("app_organization.BacklogType", null=True, blank=True, 
                           related_name='backlog_types', 
                           on_delete=models.CASCADE)
      

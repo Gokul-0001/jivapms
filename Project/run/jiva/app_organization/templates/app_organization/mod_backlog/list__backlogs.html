@@ -87,7 +87,8 @@
                                 <th width="2%">#</th>
                                 <th>Backlog</th>
                                 <th width="20%">Description</th>
-                                <th width="10%">Configure</th>
+                                <th width="5%">Done</th>
+                                <th width="5%">Configure</th>
                                 <th width="50%">                                    
                                     Actions
                                     &nbsp;&nbsp;
@@ -128,6 +129,10 @@
                                 <td width="" ondblclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Backlog', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
+                                <td width="5%"ondblclick="makeEditable(this)"
+                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Backlog', 'done')"
+                                >{% if tobject.done != None %}{{tobject.done}}{% endif %}
+                                </td>
                                 <td width="20%">
                                  &nbsp;&nbsp;
                                     <a href="{% url 'list_backlogs' pro_id tobject.id %}"

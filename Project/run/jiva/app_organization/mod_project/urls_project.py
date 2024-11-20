@@ -15,5 +15,6 @@ urlpatterns = [
     path('permanent_deletion_project/<int:org_id>/<int:project_id>/', views_project.permanent_deletion_project, name='permanent_deletion_project'),
     path('restore_project/<int:org_id>/<int:project_id>/', views_project.restore_project, name='restore_project'),
     path('view_project/<int:org_id>/<int:project_id>/', views_project.view_project, name='view_project'),
+    path('project_settings_page/<int:org_id>/<int:project_id>/', views_project.project_settings_page, name='project_settings_page'),
     path('project_dvs/<int:org_id>/<int:project_id>/', views_project.project_dvs, name='project_dvs'),
 ]

@@ -114,30 +114,33 @@
                 <b class="h5">{{organization}}</b> Project(s)
                 <table class="table table-striped">
                     <thead>
-                    <tr>
-                        <th width="2%">#</th>
-                        <th>Project Name</th>
-                        <th>Description</th>
-                        <th>Actions</th>
-                    </tr>
+                        <tr>
+                            <th width="2%">#</th>
+                            <th>Project Name</th>
+                            <th>Description</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {% for project in projects %}
-                    <tr>
-                        <td width="2%">{{forloop.counter}}</td>
-                        <td>{{ project.name }}</td>
-                        <td>{{ project.description }}</td>
-                        <td>
-                            <a href="{% url 'project_homepage' organization.id project.id %}">View</a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="2" class="text-center">No projects available.</td>
-                    </tr>
-                    {% endfor %}
+                        {% for project in projects_with_roles %}
+                        <tr>
+                            <td width="2%">{{ forloop.counter }}</td>
+                            <td>{{ project.name }}</td>
+                            <td>{{ project.description }}</td>
+                            <td>{{ project.roles }}</td> <!-- Print the roles -->
+                            <td>
+                                <a href="{% url 'project_homepage' organization.id project.id %}">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No projects available.</td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
+                
             
                 <!-- <button class="btn btn-primary" onclick="saveChanges()">Save Changes</button> -->
             </div>

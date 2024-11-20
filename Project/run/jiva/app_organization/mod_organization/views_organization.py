@@ -398,6 +398,7 @@ def view_organization(request,  organization_id):
     return render(request, template_file, context)
 
 
+
 @login_required
 @site_admin_this_org_admin_or_member_of_org
 def org_homepage(request,  org_id):
@@ -412,22 +413,58 @@ def org_homepage(request,  org_id):
     # if it is a project admin 
     memberships = Member.objects.filter(user=user, active=True)
     role_ids = ProjectRole.objects.filter(active=True).values_list('id', flat=True)
-    projects = Project.objects.filter(
-                project_members__member__in=memberships,
-                project_members__project_role_id__in=role_ids,
-                project_members__active=True,
-                org_id=org_id,
-                active=True
-            ).distinct().order_by('position')
-    logger.debug(f">>> === projects: {projects} with memberships {memberships} === <<<")
     
+    
+    # Fetch projects the user has access to, along with their roles
+    project_roles = Projectmembership.objects.filter(
+        member__in=memberships,
+        project_role_id__in=role_ids,
+        active=True,
+        project__org_id=org_id,
+        project__active=True
+    ).values('project_id', 'project_role__role_type')  # Adjust field names as necessary
+    
+    
+    # Group roles by project
+    project_roles_dict = defaultdict(list)
+    for entry in project_roles:
+        project_roles_dict[entry['project_id']].append(entry['project_role__role_type'])
+
+    # Fetch the projects (distinct and ordered)
+    projects = Project.objects.filter(
+        id__in=project_roles_dict.keys()
+    ).distinct().order_by('position')
+    logger.debug(f">>> === |||||||Projects: {projects} with Roles: {dict(project_roles_dict)} === <<<")
+    
+    # To check roles for a specific project
+    for project in projects:
+        logger.debug(f"Project: {project.name}, Roles: {project_roles_dict.get(project.id, [])}")
+    
+    # projects = Project.objects.filter(
+    #             project_members__member__in=memberships,
+    #             project_members__project_role_id__in=role_ids,
+    #             project_members__active=True,
+    #             org_id=org_id,
+    #             active=True
+    #         ).distinct().order_by('position')
+    #logger.debug(f">>> === projects: {projects} with memberships {memberships} === <<<")
+    # Prepare context with projects and their roles
+    projects_with_roles = []
+    for project in projects:
+        projects_with_roles.append({
+            'id': project.id,
+            'name': project.name,
+            'description': project.description,
+            'roles': ', '.join(project_roles_dict.get(project.id, []))  # Join roles as a string
+        })
+
     # check the organization role
     org_admin_role = MemberOrganizationRole.objects.filter(
                 member__in=memberships,
                 role__name=org_admin_str
             )
     is_org_admin = org_admin_role.exists()
-    logger.debug(f">>> === USER: {user} is an ORG ADMIN {is_org_admin}, so listing all org projects === <<<")
+    logger.debug(f">>> === USER: {user} is an ORG ADMIN {is_org_admin} === <<<")
     if is_org_admin:
         projects = Project.objects.filter(org_id=org_id, active=True)
     roadmap_items = organization.roadmap_items.order_by('start_date').filter(active=True)
@@ -453,6 +490,8 @@ def org_homepage(request,  org_id):
         'organization': organization,
         'org_detail': org_detail,
         'projects': projects,
+        'project_roles_dict': dict(project_roles_dict),
+        'projects_with_roles': projects_with_roles,
         'roadmap': roadmap_str,
         'page_title': f'Organization Homepage',
     }
@@ -462,5 +501,3 @@ def org_homepage(request,  org_id):
     else:
         template_file = f"{app_name}/{module_path}/viewer_organization_homepage.html"
     return render(request, template_file, context)
-
-

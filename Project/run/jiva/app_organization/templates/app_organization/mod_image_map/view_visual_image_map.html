@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Image Map</title>
+</head>
+<body>
+    <h1>{{ image_map.title }}</h1>
+    <img src="{{ image_map.image.url }}" usemap="#image-map">
+
+    <map name="image-map">
+        {% for area in areas %}
+        <area shape="{{ area.shape }}" coords="{{ area.coords }}" href="{{ area.link }}" alt="{{ area.hover_text }}" target="_blank">
+        {% endfor %}
+    </map>
+</body>
+</html>

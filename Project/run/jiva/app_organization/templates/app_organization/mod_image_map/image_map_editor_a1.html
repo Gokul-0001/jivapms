@@ -1,0 +1,200 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<div class="content-wrapper">
+    <nav aria-label="breadcrumb" class="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
+        </ol>
+    </nav>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar" id="contentbar">
+        <div class="container-fluid">
+            <h1>Image Map Editor</h1>
+
+            <!-- Image Editing Section -->
+            <div id="editor-controls">
+                <input type="url" id="area-link" placeholder="Enter Link" class="form-control" required>
+                <input type="text" id="area-description" placeholder="Enter Description" class="form-control">
+                <button id="draw-rect" class="btn btn-primary">Draw Rectangle</button>
+                <button id="draw-circle" class="btn btn-primary">Draw Circle</button>
+                <button id="undo" class="btn btn-warning">Undo Last Action</button>
+                <button id="save-areas" class="btn btn-success">Save All</button>
+            </div>
+
+            <div id="container" style="border: 1px solid #ccc; margin-top: 20px;"></div>
+
+            <!-- Area Table -->
+            <h2>Saved Areas</h2>
+            <table id="area-table" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Shape</th>
+                        <th>Coordinates</th>
+                        <th>Link</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for area in areas %}
+                    <tr data-area-id="{{ area.id }}">
+                        <td>{{ area.shape }}</td>
+                        <td>{{ area.coords }}</td>
+                        <td><a href="{{ area.link }}" target="_blank">{{ area.link }}</a></td>
+                        <td>{{ area.hover_text }}</td>
+                        <td>
+                            <button type="button" class="btn btn-warning edit-area">Edit</button>
+                            <button type="button" class="btn btn-danger delete-area">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br><br><br>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/konva@8.4.2/konva.min.js"></script>
+
+<script>
+    const imageSrc = "{{ image_map.image.url }}";
+    const container = document.getElementById('container');
+    const linkInput = document.getElementById('area-link');
+    const descInput = document.getElementById('area-description');
+    const areasTable = document.getElementById('area-table').querySelector('tbody');
+
+    const stage = new Konva.Stage({
+        container: 'container',
+        width: container.offsetWidth,
+        height: 600,
+    });
+
+    const layer = new Konva.Layer();
+    stage.add(layer);
+
+    const imageObj = new Image();
+    imageObj.src = imageSrc;
+    imageObj.onload = () => {
+        const img = new Konva.Image({
+            x: 0,
+            y: 0,
+            image: imageObj,
+            width: stage.width(),
+            height: (stage.width() * imageObj.height) / imageObj.width,
+        });
+
+        layer.add(img);
+        layer.draw();
+    };
+
+    let shapes = [];
+    let currentShape = null;
+
+    function addShapeToTable(shape, type, link, desc) {
+        const coords =
+            type === 'rect'
+                ? `${shape.x()},${shape.y()},${shape.width()},${shape.height()}`
+                : `${shape.x()},${shape.y()},${shape.radius()}`;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${type}</td>
+            <td>${coords}</td>
+            <td><a href="${link}" target="_blank">${link}</a></td>
+            <td>${desc}</td>
+            <td>
+                <button type="button" class="btn btn-warning edit-area">Edit</button>
+                <button type="button" class="btn btn-danger delete-area">Delete</button>
+            </td>
+        `;
+        areasTable.appendChild(row);
+
+        shapes.push({ shape: type, coords: coords, link: link, description: desc });
+    }
+
+    document.getElementById('draw-rect').addEventListener('click', () => {
+        stage.on('mousedown', (e) => {
+            if (currentShape) return;
+
+            const pos = stage.getPointerPosition();
+            currentShape = new Konva.Rect({
+                x: pos.x,
+                y: pos.y,
+                width: 0,
+                height: 0,
+                fill: 'rgba(0, 0, 255, 0.3)',
+                stroke: 'blue',
+                strokeWidth: 2,
+            });
+            layer.add(currentShape);
+        });
+
+        stage.on('mousemove', (e) => {
+            if (!currentShape) return;
+
+            const pos = stage.getPointerPosition();
+            currentShape.width(pos.x - currentShape.x());
+            currentShape.height(pos.y - currentShape.y());
+            layer.draw();
+        });
+
+        stage.on('mouseup', () => {
+            if (!currentShape) return;
+
+            const link = linkInput.value;
+            const desc = descInput.value;
+
+            if (!link) {
+                alert("Please provide a link before saving.");
+                return;
+            }
+
+            addShapeToTable(currentShape, 'rect', link, desc);
+            currentShape = null;
+
+            stage.off('mousedown mousemove mouseup');
+        });
+    });
+
+    document.getElementById('undo').addEventListener('click', () => {
+        if (shapes.length > 0) {
+            shapes.pop();
+            areasTable.deleteRow(areasTable.rows.length - 1); // Remove last row
+            layer.removeChildren(); // Clear canvas and redraw
+            layer.add(new Konva.Image({ image: imageObj, x: 0, y: 0, width: stage.width(), height: stage.height() }));
+            shapes.forEach((shape) => {
+                const [x, y, width, height] = shape.coords.split(',').map(parseFloat);
+                layer.add(new Konva.Rect({ x: x, y: y, width: width, height: height, fill: 'rgba(0, 0, 255, 0.3)', stroke: 'blue', strokeWidth: 2 }));
+            });
+            layer.draw();
+        }
+    });
+
+    document.getElementById('save-areas').addEventListener('click', () => {
+        $.post(
+            "{% url 'image_map_editor' project.id image_map.id %}",
+            {
+                pro_id: "{{ project.id }}",
+                image_map_id: "{{ image_map.id }}",
+                csrfmiddlewaretoken: "{{ csrf_token }}",
+                areas: JSON.stringify(shapes),
+            },
+            (data) => {
+                alert("Areas saved successfully!");
+            }
+        );
+    });
+</script>
+{% endblock content %}

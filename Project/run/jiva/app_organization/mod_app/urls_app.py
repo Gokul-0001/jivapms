@@ -1,12 +1,17 @@
 from django.urls import include, path
 
-urlpatterns = [
-    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
+urlpatterns = [    
     path('backlog_super_type/', include('app_organization.mod_backlog_super_type.urls_backlog_super_type')),
     path('backlog_type/', include('app_organization.mod_backlog_type.urls_backlog_type')),
+    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
+    path('board/', include('app_organization.mod_board.urls_board')),
     path('dev_value_stream/', include('app_organization.mod_dev_value_stream.urls_dev_value_stream')),
     path('dev_value_stream_step/', include('app_organization.mod_dev_value_stream_step.urls_dev_value_stream_step')),
+    path('event/', include('app_organization.mod_event.urls_event')),
+    path('image_map/', include('app_organization.mod_image_map.urls_image_map')),
+    path('iteration/', include('app_organization.mod_iteration.urls_iteration')),
     path('memberrole/', include('app_organization.mod_memberrole.urls_memberrole')),
+    path('metric/', include('app_organization.mod_metric.urls_metric')),
     path('ops_value_stream/', include('app_organization.mod_ops_value_stream.urls_ops_value_stream')),
     path('ops_value_stream_step/', include('app_organization.mod_ops_value_stream_step.urls_ops_value_stream_step')),
     path('organization/', include('app_organization.mod_organization.urls_organization')),
@@ -16,8 +21,10 @@ urlpatterns = [
     path('project_detail/', include('app_organization.mod_project_detail.urls_project_detail')),
     path('project_roadmap/', include('app_organization.mod_project_roadmap.urls_project_roadmap')),
     path('project_template/', include('app_organization.mod_project_template.urls_project_template')),
+    path('release/', include('app_organization.mod_release.urls_release')),
     path('roadmapitem/', include('app_organization.mod_roadmapitem.urls_roadmapitem')),
     path('team/', include('app_organization.mod_team.urls_team')),
     path('teammember/', include('app_organization.mod_teammember.urls_teammember')),
     path('work/', include('app_organization.mod_work.urls_work')),
+    path('work_flow/', include('app_organization.mod_work_flow.urls_work_flow')),
 ]
