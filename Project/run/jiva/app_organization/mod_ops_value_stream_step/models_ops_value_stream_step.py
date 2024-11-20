@@ -6,6 +6,7 @@ from app_common.mod_common.models_common import *
 class OpsValueStreamStep(BaseModelImpl):
     value = models.PositiveIntegerField(default=0)
     delay = models.PositiveIntegerField(default=0)
+    percentage_accuracy = models.FloatField(default=0)
     ops = models.ForeignKey('app_organization.Opsvaluestream', on_delete=models.CASCADE, 
                             related_name="ops_ops_value_stream_steps", null=True, blank=True)
     

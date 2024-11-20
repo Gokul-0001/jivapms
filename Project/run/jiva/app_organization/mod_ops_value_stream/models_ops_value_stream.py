@@ -10,6 +10,13 @@ class OpsValueStream(BaseModelImpl):
     trigger = models.CharField(max_length=150, null=True, blank=True)
     value = models.CharField(max_length=150, null=True, blank=True)
     
+    # add all the calculated fields here    
+    total_time = models.PositiveIntegerField(default=0)
+    value_time = models.PositiveIntegerField(default=0)
+    delay_time = models.PositiveIntegerField(default=0)
+    efficiency = models.FloatField(default=0)
+    rolled_percentage_avg = models.FloatField(default=0)
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_ops_value_streams")
    

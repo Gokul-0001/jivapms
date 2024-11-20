@@ -21,7 +21,10 @@
 
     <div class="contentbar">
         <div class="container-fluid">
-            <h1>Visual Image Map Viewer</h1>
+            <div>
+                <b class="h3">Visual Image Map Viewer</b>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="{% url 'image_map_editor' project.id image_map.id %}" class="btn btn-primary">Editor</a>
+            </div>
             <div id="image-map-container" style="position: relative; display: inline-block;">
                 <!-- Background Image -->
                 <img id="image-map" src="{{ image_map.image.url }}" alt="Image Map" style="width: 100%; display: block;">

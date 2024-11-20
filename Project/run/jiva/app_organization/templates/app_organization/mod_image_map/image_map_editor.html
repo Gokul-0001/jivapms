@@ -33,6 +33,9 @@
                 <button id="draw-circle" class="btn btn-primary">Draw Circle</button>
                 &nbsp;&nbsp;
                 <button id="save-areas" class="btn btn-success">Save</button>
+                &nbsp;&nbsp;
+                &nbsp;&nbsp;
+                <a href="{% url 'view_visual_image_map' project.id image_map.id %}" class="btn btn-primary">Preview</a>
             </div>
 
             <div id="container" style="border: 1px solid #ccc; margin-top: 20px;"></div>
