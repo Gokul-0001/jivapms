@@ -179,10 +179,22 @@ def get_template_for_role(context):
 
 def role_homepage(request, role_name):
     user = request.user
+    member = Member.objects.get(user=user, active=True)
+    roles = member.member_roles.filter(active=True)
+    org_id = None
+    if request.GET.get('org_id'):
+        org_id = request.GET.get('org_id')
+        org = Organization.objects.get(id=org_id)
     context = {
         'parent_page': 'home',
         'page': 'role_homepage',
         'page_title': 'Role Home Page',
+        
+        'user': user,
+        'roles': roles,
+        'member': member,
+        'org_id': org_id,
+        'org': org,
     }
     template_url = f"app_jivapms/mod_web/{role_name}/{role_name}_homepage.html"
 

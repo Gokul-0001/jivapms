@@ -32,7 +32,7 @@
                     <td>{{ role.role_name }}</td>              <!-- Display role name -->
                     <td>
                         <!-- Link to role-specific dashboard -->
-                        <a href="{% url 'role_homepage' role.lc_role_name %}">
+                        <a href="{% url 'role_homepage' role.lc_role_name %}?org_id={{role.org_id}}">
                             Go to {{ role.role_name }} 
                         </a>
                     </td>

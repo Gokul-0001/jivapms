@@ -140,7 +140,7 @@ def ajax_update_task_done_state(request):
         
         model_class = apps.get_model(given_app_name, model_name)
         if id and done:
-            object = model_class.objects.filter(id=id, author=user).first()
+            object = model_class.objects.filter(id=id).first()
             if object:
                 object.done = done.lower() == 'true'
                 object.save()
