@@ -518,9 +518,7 @@ def view_image_map(request, pro_id, image_map_id):
 
 # helper files
 # image map code
-from django.shortcuts import get_object_or_404, render
-from django.contrib.auth.decorators import login_required
-import json
+
 
 @login_required
 def generate_visual_image_map_code(request, pro_id, image_map_id):
@@ -539,7 +537,7 @@ def generate_visual_image_map_code(request, pro_id, image_map_id):
         for area in image_map.areas.filter(active=True)
     ]
 
-    # Start building the HTML code
+    # Generate HTML with scaling logic
     html_code = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -552,68 +550,125 @@ def generate_visual_image_map_code(request, pro_id, image_map_id):
                 position: relative;
                 display: inline-block;
                 width: 100%;
+                max-width: 100%; /* Ensure it scales within the parent container */
             }}
             #image-map {{
                 width: 100%;
                 display: block;
             }}
+            #shapes-container {{
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: auto; /* Allow interactions for child elements */
+            }}
             .shape {{
                 position: absolute;
                 pointer-events: auto;
-                border: 1px solid transparent;
+                display: block; /* Make <a> tags behave as block elements */
+                text-decoration: none; /* Remove underline for links */
+                border: 1px solid transparent; /* Default border for shapes */
                 transition: background-color 0.3s, border 0.3s;
             }}
             .shape:hover {{
                 background-color: rgba(0, 255, 0, 0.4);
                 border: 1px solid red;
             }}
-            .tooltip {{
-                position: absolute;
-                display: none;
-                padding: 5px;
-                background: rgba(0, 0, 0, 0.7);
-                color: white;
-                border-radius: 5px;
-                font-size: 14px;
-            }}
-            .shape:hover + .tooltip {{
-                display: block;
-            }}
         </style>
     </head>
     <body>
         <div id="image-map-container">
             <img id="image-map" src="{image_map.image.url}" alt="{image_map.name}">
-    """
-
-    # Add shapes dynamically
-    for area in areas:
-        coords = list(map(int, area['coords'].split(',')))
-        if area['shape'] == 'rect':
-            x, y, width, height = coords
-            html_code += f"""
-            <div class="shape" style="left: {x}px; top: {y}px; width: {width}px; height: {height}px;" onclick="window.open('{area['link']}', '_blank');"></div>
-            <div class="tooltip" style="left: {x}px; top: {y + height + 5}px;">{area['description']}</div>
-            """
-        elif area['shape'] == 'circle':
-            x, y, radius = coords
-            html_code += f"""
-            <div class="shape" style="left: {x - radius}px; top: {y - radius}px; width: {2 * radius}px; height: {2 * radius}px; border-radius: 50%;" onclick="window.open('{area['link']}', '_blank');"></div>
-            <div class="tooltip" style="left: {x}px; top: {y + radius + 5}px;">{area['description']}</div>
-            """
-
-    # Close the HTML structure
-    html_code += """
+            <div id="shapes-container"></div>
         </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {{
+                const originalWidth = {image_map.original_width};
+                const originalHeight = {image_map.original_height};
+                const areas = {areas};
+                const shapesContainer = document.getElementById('shapes-container');
+                const imageMap = document.getElementById('image-map');
+
+                // Function to scale and render shapes
+                function renderShapes() {{
+                    // Clear existing shapes
+                    shapesContainer.innerHTML = "";
+
+                    const renderedWidth = imageMap.offsetWidth;
+                    const renderedHeight = (originalHeight / originalWidth) * renderedWidth;
+
+                    const scaleX = renderedWidth / originalWidth;
+                    const scaleY = renderedHeight / originalHeight;
+
+                    areas.forEach((area) => {{
+                        const coords = area.coords.split(',').map(Number);
+                        let element = null;
+
+                        if (area.shape === 'rect') {{
+                            const [x, y, width, height] = coords.map((value, index) =>
+                                index % 2 === 0 ? value * scaleX : value * scaleY
+                            );
+
+                            // Create a clickable link wrapped around the shape
+                            element = document.createElement('a');
+                            element.href = area.link;
+                            element.target = '_blank';
+                            element.classList.add('shape');
+                            element.style.left = `${{x}}px`;
+                            element.style.top = `${{y}}px`;
+                            element.style.width = `${{width}}px`;
+                            element.style.height = `${{height}}px`;
+                        }} else if (area.shape === 'circle') {{
+                            const [x, y, radius] = coords.map((value, index) =>
+                                index === 2 ? value * scaleX : value * (index === 0 ? scaleX : scaleY)
+                            );
+
+                            // Create a clickable link wrapped around the shape
+                            element = document.createElement('a');
+                            element.href = area.link;
+                            element.target = '_blank';
+                            element.classList.add('shape');
+                            element.style.left = `${{x - radius}}px`;
+                            element.style.top = `${{y - radius}}px`;
+                            element.style.width = `${{2 * radius}}px`;
+                            element.style.height = `${{2 * radius}}px`;
+                            element.style.borderRadius = '50%';
+                        }}
+
+                        if (element) {{
+                            // Append the shape to the container
+                            shapesContainer.appendChild(element);
+                        }}
+                    }});
+                }}
+
+                // Initial render
+                renderShapes();
+
+                // Re-render shapes on window resize
+                window.addEventListener('resize', () => {{
+                    renderShapes();
+                }});
+            }});
+        </script>
     </body>
     </html>
     """
 
     # Pass the generated HTML code to the template
     context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_image_map',
+        'page_title': f'Image Map Code',
         'html_code': html_code,
         'project': project,
         'image_map': image_map,
+        'object': project,
+        'pro_id': pro_id,
+        'org_id': project.org.id,
+        'org': project.org,
     }
 
     template_file = f"{app_name}/{module_path}/image_map_code.html"
