@@ -352,6 +352,8 @@ document.getElementById('draw-circle').addEventListener('click', () => {
             {
                 csrfmiddlewaretoken: "{{ csrf_token }}",
                 areas: JSON.stringify(validShapes),
+                original_width: imageObj.width, // Original width
+                original_height: imageObj.height, // Original height
             },
             (data) => {
                 console.log("Areas saved successfully!");

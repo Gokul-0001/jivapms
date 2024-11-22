@@ -30,6 +30,9 @@
 }
 
 </style>
+{% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
+
+
 {% include 'app_common/common_files/navbar.html' %}
 <div class="container-fluid">
     <div class="row">
@@ -68,16 +71,16 @@
 
        
 {% with counter="0" %}
-<table border="1" class="table table-bordered sortable_table serial-number-column mpttTable">
+<table border="1" class="new_excel table table-bordered sortable_table serial-number-column mpttTable">
     <thead>
         <tr>
             <th width="2%"><i class="bi bi-grip-vertical"></i></th>
             <th width="2%">#</th>
             <!-- <th width="2%">ID</th> -->
-            <th width="3%">Type</th>
-            <th width="30%">Backlog</th>
+            <th width="5%">Type</th>
+            <th width="20%">Backlog</th>
             <th width="20%">Description</th>
-            <th width="10%">Progress</th>
+            <th width="20%">Progress</th>
             <th width="5%">Status</th>
         </tr>
     </thead>
@@ -88,9 +91,9 @@
                 <i class="bi bi-grip-vertical"></i> 
             </td>
             <td width="2%" ><a href="{% url 'list_backlogs' pro_id node.id %}" style="text-decoration: none;"><strong>{{forloop.counter}}</strong></a></td>
-            <td width="3%">{{node.type}}</td>
+            <td width="5%">{{node.type}}</td>
             <!-- <td width="2%">{{node.id}}</td> -->
-            <td width="30%" style="text-decoration: none;" >
+            <td width="20%" style="text-decoration: none;" >
 
                 {% if node.level == 1 %}               
                 <strong><a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
@@ -101,37 +104,37 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <strong><a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
                 {% elif node.level == 4 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 5 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 6 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 7 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 8 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 9 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% else %}
                 <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% endif %}            
             </td>
-            <td width="10%" onclick="makeEditable(this)"
+            <td width="20%" onclick="makeEditable(this)"
                 onblur="save_element_text(this, '{{ node.id }}',  'app_organization', 'Backlog', 'description')"
                 >{% if node.description != None %}{{node.description}}{% endif %}</td>
             
-            <td width="10%">
+            <td width="20%">
                
                 <font size="-1">
                     {% if not node.is_leaf_node %}

@@ -1,0 +1,108 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<div class="content-wrapper">
+    <nav aria-label="breadcrumb" class="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
+        </ol>
+    </nav>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar">
+        <div class="container-fluid">
+            <div>
+                <b class="h3">Visual Image Map Viewer</b>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="{% url 'image_map_editor' project.id image_map.id %}" class="btn btn-primary">Editor</a>
+            </div>
+            <div id="image-map-container" style="position: relative; display: inline-block;">
+                <!-- Background Image -->
+                <img id="image-map" src="{{ image_map.image.url }}" alt="Image Map" style="width: 100%; display: block;">
+                <!-- Shapes Container -->
+                <div id="shapes-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+                <!-- Tooltip for Links -->
+                <div id="tooltip" style="position: absolute; display: none; padding: 5px; background: rgba(0, 0, 0, 0.7); color: white; border-radius: 5px; pointer-events: none; font-size: 14px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const areas = JSON.parse('{{ areas|escapejs }}');
+        const shapesContainer = document.getElementById('shapes-container');
+        const tooltip = document.getElementById('tooltip');
+
+        areas.forEach((area) => {
+            const [x, y, widthOrRadius, height] = area.coords.split(',').map(Number);
+
+            let element = null;
+            if (area.shape === 'rect') {
+                // Create rectangle
+                element = document.createElement('div');
+                element.style.position = 'absolute';
+                element.style.left = `${x}px`;
+                element.style.top = `${y}px`;
+                element.style.width = `${widthOrRadius}px`;
+                element.style.height = `${height}px`;
+                element.style.border = '0px solid red';
+                
+            } else if (area.shape === 'circle') {
+                // Create circle
+                element = document.createElement('div');
+                element.style.position = 'absolute';
+                element.style.left = `${x - widthOrRadius}px`; // Adjust for center
+                element.style.top = `${y - widthOrRadius}px`; // Adjust for center
+                element.style.width = `${2 * widthOrRadius}px`;
+                element.style.height = `${2 * widthOrRadius}px`;
+                element.style.border = '2px solid red';
+                
+                element.style.borderRadius = '50%';
+            }
+
+            if (element) {
+                // Hover effect to highlight shape and show tooltip
+                element.addEventListener('mouseenter', (e) => {
+                    element.style.border = '1px solid red';
+                    element.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
+                    tooltip.style.display = 'block';
+                    tooltip.textContent = area.link;
+                    tooltip.style.left = `${e.clientX + 10}px`;
+                    tooltip.style.top = `${e.clientY + 10}px`;
+                });
+
+                element.addEventListener('mouseleave', () => {
+                    element.style.backgroundColor = area.shape === 'rect'
+                        ? 'rgba(0, 0, 255, 0.2)'
+                        : 'rgba(255, 0, 0, 0.2)';
+                    element.style.backgroundColor = 'transparent';
+                    element.style.border = '0px solid red';
+                    tooltip.style.display = 'none';
+                });
+
+                // Click event to navigate to the link
+                if (area.link) {
+                    element.addEventListener('click', () => {
+                        window.open(area.link, '_blank');
+                    });
+                    element.style.pointerEvents = 'auto'; // Make it clickable
+                }
+
+                // Add the element to the shapes container
+                shapesContainer.appendChild(element);
+            }
+        });
+    });
+</script>
+{% endblock content %}

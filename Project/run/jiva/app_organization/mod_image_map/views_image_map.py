@@ -44,7 +44,7 @@ def list_image_maps(request, pro_id):
         tobjects = ImageMap.objects.filter(name__icontains=search_query, 
                                             pro_id=pro_id, **viewable_dict).order_by('position')
     else:
-        tobjects = ImageMap.objects.filter(active=True, pro_id=pro_id, author=user).order_by('position')
+        tobjects = ImageMap.objects.filter(active=True, pro_id=pro_id).order_by('position')
         deleted = ImageMap.objects.filter(active=False, deleted=False,
                                 pro_id=pro_id,
                                **viewable_dict).order_by('position')
@@ -288,6 +288,13 @@ def image_map_editor(request, pro_id, image_map_id):
             area for area in areas_data
             if area.get('shape') and area.get('coords') and area.get('link')
         ]
+        # set the image_map orginal width and height
+        image_map.original_height = int(request.POST.get('original_height', 0))
+        image_map.original_width = int(request.POST.get('original_width', 0))
+
+        print(f">>> === image_map.original_width: {image_map.original_width} === <<<")
+        print(f">>> === image_map.original_height: {image_map.original_height} === <<<")
+        image_map.save()
         # Clear existing areas and add new ones
         ImageMapArea.objects.filter(image_map=image_map).delete()
         for area in areas_data:
@@ -509,3 +516,105 @@ def view_image_map(request, pro_id, image_map_id):
     return render(request, template_file, context)
 
 
+# helper files
+# image map code
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
+import json
+
+@login_required
+def generate_visual_image_map_code(request, pro_id, image_map_id):
+    user = request.user
+    project = get_object_or_404(Project, id=pro_id, active=True)
+    image_map = get_object_or_404(ImageMap, pk=image_map_id, active=True, pro_id=pro_id)
+
+    # Fetch areas and prepare HTML generation
+    areas = [
+        {
+            'shape': area.shape,
+            'coords': area.coords,
+            'link': area.link,
+            'description': area.hover_text,
+        }
+        for area in image_map.areas.filter(active=True)
+    ]
+
+    # Start building the HTML code
+    html_code = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{image_map.name}</title>
+        <style>
+            #image-map-container {{
+                position: relative;
+                display: inline-block;
+                width: 100%;
+            }}
+            #image-map {{
+                width: 100%;
+                display: block;
+            }}
+            .shape {{
+                position: absolute;
+                pointer-events: auto;
+                border: 1px solid transparent;
+                transition: background-color 0.3s, border 0.3s;
+            }}
+            .shape:hover {{
+                background-color: rgba(0, 255, 0, 0.4);
+                border: 1px solid red;
+            }}
+            .tooltip {{
+                position: absolute;
+                display: none;
+                padding: 5px;
+                background: rgba(0, 0, 0, 0.7);
+                color: white;
+                border-radius: 5px;
+                font-size: 14px;
+            }}
+            .shape:hover + .tooltip {{
+                display: block;
+            }}
+        </style>
+    </head>
+    <body>
+        <div id="image-map-container">
+            <img id="image-map" src="{image_map.image.url}" alt="{image_map.name}">
+    """
+
+    # Add shapes dynamically
+    for area in areas:
+        coords = list(map(int, area['coords'].split(',')))
+        if area['shape'] == 'rect':
+            x, y, width, height = coords
+            html_code += f"""
+            <div class="shape" style="left: {x}px; top: {y}px; width: {width}px; height: {height}px;" onclick="window.open('{area['link']}', '_blank');"></div>
+            <div class="tooltip" style="left: {x}px; top: {y + height + 5}px;">{area['description']}</div>
+            """
+        elif area['shape'] == 'circle':
+            x, y, radius = coords
+            html_code += f"""
+            <div class="shape" style="left: {x - radius}px; top: {y - radius}px; width: {2 * radius}px; height: {2 * radius}px; border-radius: 50%;" onclick="window.open('{area['link']}', '_blank');"></div>
+            <div class="tooltip" style="left: {x}px; top: {y + radius + 5}px;">{area['description']}</div>
+            """
+
+    # Close the HTML structure
+    html_code += """
+        </div>
+    </body>
+    </html>
+    """
+
+    # Pass the generated HTML code to the template
+    context = {
+        'html_code': html_code,
+        'project': project,
+        'image_map': image_map,
+    }
+
+    template_file = f"{app_name}/{module_path}/image_map_code.html"
+    return render(request, template_file, context)

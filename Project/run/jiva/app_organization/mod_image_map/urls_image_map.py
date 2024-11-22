@@ -16,6 +16,7 @@ urlpatterns = [
     path('restore_image_map/<int:pro_id>/<int:image_map_id>/', views_image_map.restore_image_map, name='restore_image_map'),
     path('view_image_map/<int:pro_id>/<int:image_map_id>/', views_image_map.view_image_map, name='view_image_map'),
     path('view_visual_image_map/<int:pro_id>/<int:image_map_id>/', views_image_map.view_visual_image_map, name='view_visual_image_map'),
+    path('generate_visual_image_map_code/<int:pro_id>/<int:image_map_id>/', views_image_map.generate_visual_image_map_code, name='generate_visual_image_map_code'),
     path('delete_area/<int:area_id>/', views_image_map.delete_area, name='delete_area'),
-    path('update_area/<int:area_id>/', views_image_map.update_area, name='update_area'),
+    path('update_area/<int:area_id>/', views_image_map.update_area, name='update_area'),    
 ]

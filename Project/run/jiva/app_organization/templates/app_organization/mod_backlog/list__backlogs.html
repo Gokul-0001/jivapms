@@ -23,6 +23,7 @@
   
   }
 </style>
+{% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
 <!-- Begin: Content -->
 <div class="container-fluid">
     <div class="row">
@@ -77,7 +78,7 @@
                     </div>
                     <form method="post">
                     {% csrf_token %}
-                    <table class="table table-bordered sortable_table">
+                    <table class="new_excel table table-bordered sortable_table">
                         <thead>
                             <tr>
                                 <th width="2%"><i class="bi bi-grip-vertical"></i></th>
@@ -131,7 +132,7 @@
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="5%"ondblclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Backlog', 'done')"
-                                >{% if tobject.done != None %}{{tobject.done}}{% endif %}
+                                >{% if tobject.done != None and tobject.done != False %}Done{% endif %}
                                 </td>
                                 <td width="20%">
                                  &nbsp;&nbsp;
