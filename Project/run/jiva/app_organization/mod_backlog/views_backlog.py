@@ -4,7 +4,7 @@ from app_organization.mod_app.all_view_imports import *
 from app_organization.mod_backlog.models_backlog import *
 from app_organization.mod_backlog.forms_backlog import *
 
-
+from app_jivapms.mod_app.all_view_imports import *
 
 app_name = 'app_organization'
 app_version = 'v1'
@@ -323,7 +323,7 @@ def create_backlog(request, pro_id, parent_id):
 # Edit
 @login_required
 def edit_backlog(request, pro_id, parent_id,  content_id):
-    print(f">>> === edit_backlog: PARENT_ID: {parent_id}:{pro_id}:{content_id} === <<<")
+    logger.debug(f">>> === edit_backlog: PARENT_ID: {parent_id}:{pro_id}:{content_id} === <<<")
     user = request.user
     ref_parent_id = parent_id
     parent_id = None if parent_id == 0 else parent_id
@@ -335,7 +335,6 @@ def edit_backlog(request, pro_id, parent_id,  content_id):
     if request.method == 'POST':
         form = BacklogForm(request.POST, instance=object)
         if form.is_valid():
-            print(f">>> === form.cleaned_data: {form.cleaned_data} AND **** {parent_id} === <<<")
             form.instance.parent_id = parent_id
             form.instance.pro_id = pro_id
             form.instance.author = user
@@ -360,7 +359,6 @@ def edit_backlog(request, pro_id, parent_id,  content_id):
     }
     template_file = f"{app_name}/{module_path}/edit__backlog.html"
     return render(request, template_file, context)
-
 
 
 @login_required
@@ -597,6 +595,24 @@ def view_backlog_tree(request, pro_id, parent_id):
     return render(request, template_file, context)    
     
 
+# def build_serial_number_tree(node, current_path=[], serial_no=None):
+#     if serial_no is None:
+#         serial_no = defaultdict(int)  
+
+#     level = len(current_path)
+#     serial_no[level] += 1
+
+#     node_serial = '.'.join(map(str, current_path + [serial_no[level]]))
+#     result = [(node, node_serial)]   
+#     child_levels = list(range(level + 1, max(serial_no.keys()) + 1))
+#     for l in child_levels:
+#         serial_no[l] = 0
+
+#     children = node.get_children().order_by('position')
+#     for child in children:
+#         result.extend(build_serial_number_tree(child, current_path + [serial_no[level]], serial_no))
+
+#     return result
 def build_serial_number_tree(node, current_path=[], serial_no=None):
     if serial_no is None:
         serial_no = defaultdict(int)  
@@ -604,8 +620,13 @@ def build_serial_number_tree(node, current_path=[], serial_no=None):
     level = len(current_path)
     serial_no[level] += 1
 
+    # Debug the current node and its parent
+    parent_id = node.parent.id if node.parent else 0
+    print(f"Node ID: {node.id}, Name: {node.name}, Parent ID: {parent_id}")
+
     node_serial = '.'.join(map(str, current_path + [serial_no[level]]))
-    result = [(node, node_serial)]   
+    result = [(node, node_serial, parent_id)]  # Include parent ID
+
     child_levels = list(range(level + 1, max(serial_no.keys()) + 1))
     for l in child_levels:
         serial_no[l] = 0
@@ -615,6 +636,7 @@ def build_serial_number_tree(node, current_path=[], serial_no=None):
         result.extend(build_serial_number_tree(child, current_path + [serial_no[level]], serial_no))
 
     return result
+
 
 
 # Function to fetch a node by ID and generate its subtree with serial numbers

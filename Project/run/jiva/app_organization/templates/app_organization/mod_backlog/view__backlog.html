@@ -44,6 +44,7 @@
                                         </div>
                                         <div class="col col-md-7">
                                             <div class="text-end">
+                                                REF and PARENT: {{ref_parent_id}} and {{parent_id}}
                                                 <a href="{% url 'edit_backlog' pro_id ref_parent_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
                                                 &nbsp;&nbsp;&nbsp;
                                                 <a href="{% url 'delete_backlog' pro_id ref_parent_id object.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>

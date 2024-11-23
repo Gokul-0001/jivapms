@@ -74,7 +74,7 @@
         </tr>
     </thead>
     <tbody  id="sortable" class="sortable-tbody todo-container">
-    {% for node, serial, parent_id in serialized_nodes %}
+    {% for node, serial in serialized_nodes %}
     <tr id="{{node.id}}_{{ forloop.counter }}" class="sortable-row display_tr " >
             <td class="drag-handle" width="2%">
                 <i class="bi bi-grip-vertical"></i> 
@@ -85,38 +85,38 @@
             <td width="20%" style="text-decoration: none;" >
 
                 {% if node.level == 1 %}               
-                <strong><a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
+                <strong><a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
                 {% elif node.level == 2 %}
                 &nbsp;&nbsp;
-                <strong><a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
+                <strong><a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
                 {% elif node.level == 3 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <strong><a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
+                <strong><a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
                 {% elif node.level == 4 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
+                <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 5 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
+                <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 6 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
+                <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 7 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
+                <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 8 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
+                <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% elif node.level == 9 %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
+                <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% else %}
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
+                <a href="{% url 'view_backlog' pro_id ref_parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
                 {% endif %}            
             </td>
             <td width="20%" onclick="makeEditable(this)"
