@@ -43,7 +43,7 @@ def list_iterations(request, rel_id):
         tobjects = Iteration.objects.filter(name__icontains=search_query, 
                                             rel_id=rel_id, **viewable_dict).order_by('position')
     else:
-        tobjects = Iteration.objects.filter(active=True, rel_id=rel_id, author=user).order_by('position')
+        tobjects = Iteration.objects.filter(active=True, rel_id=rel_id).order_by('position')
         deleted = Iteration.objects.filter(active=False, deleted=False,
                                 rel_id=rel_id,
                                **viewable_dict).order_by('position')

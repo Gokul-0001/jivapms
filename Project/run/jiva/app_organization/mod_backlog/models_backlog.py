@@ -3,6 +3,10 @@ from app_organization.mod_app.all_model_imports import *
 from app_organization.mod_app.all_form_imports import *
 from app_organization.mod_backlog.models_backlog import *
 
+from app_organization.mod_release.models_release import *
+from app_organization.mod_iteration.models_iteration import *
+
+from app_organization.mod_backlog_type.models_backlog_type import *
 
 
 # Core Hierarchical System Database
@@ -18,6 +22,12 @@ class Backlog(MPTTModel, BaseModelImpl):
     type = TreeForeignKey("app_organization.BacklogType", null=True, blank=True, 
                           related_name='backlog_types', 
                           on_delete=models.CASCADE)
+    
+    release = models.ForeignKey('app_organization.Release', on_delete=models.CASCADE, 
+                            related_name="backlog_releases", null=True, blank=True)
+    
+    iteration = models.ForeignKey('app_organization.Iteration', on_delete=models.CASCADE, 
+                            related_name="backlog_iteration", null=True, blank=True)
      
     
     # for now label is a char field

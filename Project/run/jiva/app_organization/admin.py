@@ -4,10 +4,15 @@ from app_organization.mod_projectmembership.models_projectmembership import *
 from app_organization.mod_organization.models_organization import *
 from app_organization.mod_organizationdetail.models_organizationdetail import *
 
+from app_organization.mod_backlog.models_backlog import *
+
 class OrganizationDetailAdmin(admin.ModelAdmin):
     list_display = ('id', 'vision', 'mission', 'values', 'strategy', 'roadmap_description', 'created_at', 'updated_at')
 admin.site.register(Organizationdetail, OrganizationDetailAdmin)
 
+class BacklogAdmin(admin.ModelAdmin):
+    list_display = ( 'parent', 'id', 'name', 'description', 'created_at', 'updated_at')
+admin.site.register(Backlog, BacklogAdmin)
 
 
 class ProjectAdmin(admin.ModelAdmin):

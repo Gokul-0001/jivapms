@@ -59,6 +59,14 @@
                     <tbody>
                         <tr>
                             <td width="15%">
+                                <strong>Parent</strong>
+                            </td>
+                            <td>
+                                {{form.parent|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="15%">
                                 <strong>Backlog</strong>
                             </td>
                             <td>
@@ -71,6 +79,22 @@
                             </td>
                             <td>
                                 {{form.description|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Release</strong>
+                            </td>
+                            <td>
+                                {{form.release|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Iteration</strong>
+                            </td>
+                            <td>
+                                {{form.iteration|as_crispy_field}}
                             </td>
                         </tr>
                        <tr>
@@ -86,6 +110,41 @@
 <script>
     focusField = document.getElementById('id_name');
     focusField.focus();
+</script>
+<script>
+    $(document).ready(function() {
+        $('#id_release').change(function() {
+            var releaseId = $(this).val();  // Get the selected release ID
+            var csrfToken = '{{ csrf_token }}'; // CSRF token for secure POST requests
+            
+            if (releaseId) {
+                // Make an AJAX call to fetch iterations based on the selected release
+                $.ajax({
+                    url: '/org/backlog/ajax_get_iterations/' + releaseId + '/', // Correct URL
+                    method: 'POST',
+                    data: {
+                        'release_id': releaseId,
+                        'csrfmiddlewaretoken': csrfToken
+                    },
+                    success: function(data) {
+                        // Populate the iteration dropdown with new options
+                        $('#id_iteration').empty().append('<option value="">-- Select Iteration --</option>');
+                        data.forEach(function(iteration) {
+                            $('#id_iteration').append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
+                        });
+                        $('#id_iteration').prop('disabled', false);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching iterations:", error);
+                        alert('Error fetching iterations');
+                    }
+                });
+            } else {
+                // Reset the iteration dropdown if no release is selected
+                $('#id_iteration').empty().append('<option value="">-- Select Iteration --</option>').prop('disabled', true);
+            }
+        });
+    });
 </script>
 
 <!-- End: Content 

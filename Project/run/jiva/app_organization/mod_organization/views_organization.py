@@ -45,7 +45,13 @@ def list_organizations(request):
     is_project_admin = False
     # Fetch all active memberships for the user across any organization
     memberships = Member.objects.filter(user=user, active=True)
+    member_roles = MemberOrganizationRole.objects.filter(member__in=memberships)
     is_site_admin = MemberOrganizationRole.objects.filter(member__in=memberships, role__name=site_admin_str).exists()
+    
+    # non-admin roles
+    # user has no admin roles
+    non_admin_role = False
+    
     # Filter organizations based on user access
     if is_site_admin:
         # Org admins can see all active organizations in the site
@@ -85,8 +91,17 @@ def list_organizations(request):
                 tobjects = Organization.objects.filter(id__in=project_org_ids, active=True)
                 logger.debug(f">>> === ProjectAdmin Limited Access: Organizations:{project_org_ids} === <<<")
             else:
-                # If the user is neither an org admin nor a project admin
+                # If the user is a non-admin
+                project_member_roles = MemberOrganizationRole.objects.filter(
+                    member__in=memberships,
+                    role__name__in=PROJECT_MEMBER_ROLES
+                )
                 tobjects = []
+                non_admin_role = True
+                is_project_member = project_member_roles.exists()
+                project_org_ids = project_member_roles.values_list('org_id', flat=True).distinct()
+                tobjects = Organization.objects.filter(id__in=project_org_ids, active=True)
+                logger.debug(f">>> === LIST_ORGANIZATIONS: MEMBER {member_roles} === <<<")
                 logger.debug(">>> === User has no admin privileges in any organization === <<<")
     
     
@@ -94,12 +109,12 @@ def list_organizations(request):
     
     if search_query:
         tobjects = Organization.objects.filter(name__icontains=search_query, 
-                                            active=True,deleted=False, **viewable_dict ).order_by('position')
-        deleted = Organization.objects.filter(active=False, deleted=False,**viewable_dict).order_by('position')
+                                            active=True,deleted=False ).order_by('position')
+        deleted = Organization.objects.filter(active=False, deleted=False).order_by('position')
         deleted_count = deleted.count()
     else:
         #tobjects = Organization.objects.filter(active=True).order_by('position')
-        deleted = Organization.objects.filter(active=False, deleted=False,**viewable_dict).order_by('position')
+        deleted = Organization.objects.filter(active=False, deleted=False).order_by('position')
         deleted_count = deleted.count()
     
     if show_all == 'all':

@@ -1,9 +1,10 @@
 from django.urls import include, path
 
 urlpatterns = [    
+    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
     path('backlog_super_type/', include('app_organization.mod_backlog_super_type.urls_backlog_super_type')),
     path('backlog_type/', include('app_organization.mod_backlog_type.urls_backlog_type')),
-    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
+    
     path('board/', include('app_organization.mod_board.urls_board')),
     path('dev_value_stream/', include('app_organization.mod_dev_value_stream.urls_dev_value_stream')),
     path('dev_value_stream_step/', include('app_organization.mod_dev_value_stream_step.urls_dev_value_stream_step')),

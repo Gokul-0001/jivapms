@@ -3,60 +3,73 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
+{% load mptt_tags %}
+
 {% block content %}
-{% include 'app_common/common_files/navbar.html' %}
-{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!-- Begin: Content -->
 <style>
     #mpttTable {
     counter-reset: level1;  /* Initial counter reset for the first level */
-    }
+}
 
-    #mpttTable tr[data-level="1"] > td::before {
-        counter-reset: level2;  /* Each time a level 1 row is started, reset the second level counter */
-        counter-increment: level1;  /* Increment the level 1 counter */
-        content: counter(level1) ". ";  /* Display level 1 counter */
-    }
+#mpttTable tr[data-level="1"] > td::before {
+    counter-reset: level2;  /* Each time a level 1 row is started, reset the second level counter */
+    counter-increment: level1;  /* Increment the level 1 counter */
+    content: counter(level1) ". ";  /* Display level 1 counter */
+}
 
-    #mpttTable tr[data-level="2"] > td::before {
-        counter-reset: level3;  /* Reset the third level counter at each new level 2 row */
-        counter-increment: level2;  /* Increment level 2 counter */
-        content: counter(level1) "." counter(level2) ". ";  /* Display both level 1 and level 2 counters */
-    }
+#mpttTable tr[data-level="2"] > td::before {
+    counter-reset: level3;  /* Reset the third level counter at each new level 2 row */
+    counter-increment: level2;  /* Increment level 2 counter */
+    content: counter(level1) "." counter(level2) ". ";  /* Display both level 1 and level 2 counters */
+}
 
-    #mpttTable tr[data-level="3"] > td::before {
-        counter-increment: level3;  /* Increment the level 3 counter */
-        content: counter(level1) "." counter(level2) "." counter(level3) ". ";  /* Display full hierarchical numbering */
-    }
+#mpttTable tr[data-level="3"] > td::before {
+    counter-increment: level3;  /* Increment the level 3 counter */
+    content: counter(level1) "." counter(level2) "." counter(level3) ". ";  /* Display full hierarchical numbering */
+}
+
 </style>
 {% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
-<div class="content-wrapper">
-    <nav aria-label="breadcrumb" class="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
-        </ol>
-    </nav>
-    
-    {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
-    <div class="contentbar mb-5" id="contentbar">
-        <div class="container-fluid">
-            <div class="row pb-2">
-                <div class="col col-md-8">
-                    <h2>Backlog</h2> 
-                </div>
-                <div class="col col-md-4 text-end">    
-                    <!-- Dropdown for switching styles -->
-                            
-                    <a href="{% url 'list_backlogs' pro_id ref_parent_id %}" class="btn btn-sm btn-primary"><b>List Backlog(s) </b></a>
-                   
-                </div>
-            </div>
-            <!-- table content -->
+
+{% include 'app_common/common_files/navbar.html' %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_backlog/breadcrumb__backlogs.html' %}
+        </div>
+    </div>
+</div>
 <form action="" method="POST">
-    {% csrf_token %}        
+{% csrf_token %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+           
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col col-md-12">
+            <div class="container-fluid-width">
+                <div class="row pb-2">
+                    <div class="col col-md-8">
+                        <h2>Backlog</h2> 
+                    </div>
+                    <div class="col col-md-4 text-end">    
+                        <!-- Dropdown for switching styles -->
+                                
+                        <a href="{% url 'list_backlogs' pro_id ref_parent_id %}" class="btn btn-sm btn-primary"><b>List Backlog(s) </b></a>
+                       
+                    </div>
+                </div>
+               
+            </div>
+            <!-- CBA -->
+
+
+       
 {% with counter="0" %}
 <table border="1" class="new_excel table table-bordered sortable_table serial-number-column mpttTable">
     <thead>
@@ -67,8 +80,6 @@
             <th width="5%">Type</th>
             <th width="20%">Backlog</th>
             <th width="20%">Description</th>
-            <th width="8%">Release</th>
-            <th width="6%">Iteration</th>
             <th width="20%">Progress</th>
             <th width="5%">Status</th>
         </tr>
@@ -122,13 +133,6 @@
             <td width="20%" onclick="makeEditable(this)"
                 onblur="save_element_text(this, '{{ node.id }}',  'app_organization', 'Backlog', 'description')"
                 >{% if node.description != None %}{{node.description}}{% endif %}</td>
-
-                <td width="8%">
-                    {% if node.release != None %}{{node.release}}{% endif %}
-                </td>
-                <td width="6%">
-                    {% if node.iteration != None %}{{node.iteration}}{% endif %}
-                </td>
             
             <td width="20%">
                
@@ -177,16 +181,17 @@
                         {% endif %}
             </td>
         </tr>
-        {% endfor %}
-        </tbody>
-        </table>
+{% endfor %}
+</tbody>
+</table>
 
-        {% endwith %}
-                
+{% endwith %}
         </div>
     </div>
 </div>
 </form>
+
+    
 <script>
     function updateDoneState(wslistId, isType) {
     $.ajax({
@@ -239,12 +244,16 @@
               })
             }
     });
-</script>   
+</script>    
+
+
+
 <script>
     function makeEditable(element) {
         element.contentEditable = true;
         element.focus();
-    }    
+    }
+    
   
     function save_element_text(element, id,  appName, modelName, fieldName) {
         element.contentEditable = false;
@@ -265,39 +274,7 @@
             }
         })
     }
-</script>
-
-<script>
- $('#id_release').change(function() {
-            var releaseId = $(this).val();
-            var csrfToken = '{{ csrf_token }}'; // CSRF token from the template
-            console.log("Release selected:", releaseId); // Debugging line
-            if (releaseId) {
-                $.ajax({
-                    url: '/org/backlog/ajax_get_iterations/' + releaseId + '/', // Correct URL
-                    method: 'POST',
-                    data: {
-                        'csrfmiddlewaretoken': csrfToken,
-                    },
-                    success: function(data) {
-                        console.log("Iterations fetched:", data); // Debugging line
-                        $('#id_iteration').empty().append('<option value="">Select Iteration</option>');
-                        data.forEach(function(iteration) {
-                            $('#id_iteration').append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
-                        });
-                        $('#id_iteration').prop('disabled', false);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error fetching iterations:", error); // Debugging line
-                        alert('Error fetching iterations');
-                    }
-                });
-            } else {
-                $('#id_iteration').empty().append('<option value="">Select Iteration</option>').prop('disabled', true);
-            }
-        });
-</script>
-
+    </script>
     
-
+<!-- End: Content -->
 {% endblock content %}

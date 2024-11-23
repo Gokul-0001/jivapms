@@ -43,7 +43,7 @@ def list_releases(request, pro_id):
         tobjects = Release.objects.filter(name__icontains=search_query, 
                                             pro_id=pro_id, **viewable_dict).order_by('position')
     else:
-        tobjects = Release.objects.filter(active=True, pro_id=pro_id, author=user).order_by('position')
+        tobjects = Release.objects.filter(active=True, pro_id=pro_id).order_by('position')
         deleted = Release.objects.filter(active=False, deleted=False,
                                 pro_id=pro_id,
                                **viewable_dict).order_by('position')

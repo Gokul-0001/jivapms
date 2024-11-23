@@ -96,6 +96,8 @@
     const areasTable = document.getElementById('area-table').querySelector('tbody');
     //const debugOutput = document.getElementById('debug-data');
     
+    iow = "{{ image_map.original_width }}";
+    ioh = "{{ image_map.original_height }}";
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -109,21 +111,22 @@
     const imageObj = new Image();
     imageObj.src = imageSrc;
     imageObj.onload = () => {
-        // Calculate and store scaling factors
-        // Set the stage dimensions to match the image dimensions
-        stage.width(imageObj.width);
-        stage.height(imageObj.height);
+    // Use the original dimensions from the backend
+    const width = iow || imageObj.width;  // Fallback to imageObj dimensions if originalWidth is not available
+    const height = ioh || imageObj.height;
 
-        // Create and add the image to the canvas
-        const img = new Konva.Image({
-            x: 0,
-            y: 0,
-            image: imageObj,
-            width: imageObj.width,
-            height: imageObj.height,
-        });
+    // Set the stage dimensions to match the original dimensions
+    stage.width(width);
+    stage.height(height);
 
-
+    // Create and add the image to the canvas
+    const img = new Konva.Image({
+        x: 0,
+        y: 0,
+        image: imageObj,
+        width: width,
+        height: height,
+    });
         layer.add(img);
         layer.draw();
 
