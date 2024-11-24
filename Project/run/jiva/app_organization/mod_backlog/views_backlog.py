@@ -480,6 +480,8 @@ def view_backlog(request, pro_id, parent_id,  content_id):
         'parent_id': parent_id,  
         'module_path': module_path,
         'project': pro,
+        'content_id': content_id,
+        'backlog': object,
         'org': pro.org,
         'org_id': pro.org_id,
         'page_title': f'View Backlog',

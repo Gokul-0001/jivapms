@@ -34,15 +34,8 @@ org_id
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
-    <nav aria-label="breadcrumb" class="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
-        </ol>
-    </nav>
-    
+
+    {% include 'app_organization/mod_backlog/breadcrumb__backlogs.html' %}
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
     <div class="contentbar mb-5" id="contentbar">
