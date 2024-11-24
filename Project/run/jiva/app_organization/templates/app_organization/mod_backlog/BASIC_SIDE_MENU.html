@@ -3,16 +3,19 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 <!--
 required from the view
 project
-object
 org
 org_id
 -->
+<form method="post">
+{% csrf_token %}
 <div class="content-wrapper">
     <nav aria-label="breadcrumb" class="breadcrumb">
         <ol class="breadcrumb">
@@ -33,5 +36,5 @@ org_id
         </div>
     </div>
 </div>
-
+</form> 
 {% endblock content %}

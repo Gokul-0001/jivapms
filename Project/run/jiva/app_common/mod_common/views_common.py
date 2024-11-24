@@ -41,6 +41,31 @@ def ajax_update_model_list_sorted(request):
     return JsonResponse({'success': False})
 
 
+# @login_required
+# def ajax_save_element_text(request):
+#     if request.method == 'POST':
+#         text_data = request.POST.get('text')
+#         object_id = request.POST.get('id')
+#         model_name = request.POST.get('model_name')
+#         field_name = request.POST.get('field_name')
+#         got_app_name = request.POST.get('app_name', app_name)  # Default to a specific app if not provided
+
+#         try:
+#             model_class = apps.get_model(got_app_name, model_name)
+#             # Update the specified object
+#             fields_update = {field_name: text_data}
+#             obj = model_class.objects.filter(id=object_id).update(**fields_update, author=request.user)
+#             return JsonResponse({'status': 'success', 'updated_records': obj})
+#         except LookupError:
+#             return JsonResponse({'status': 'error', 'message': 'Model not found.'})
+#         except model_class.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'Object not found.'})
+#         except Exception as e:
+#             return JsonResponse({'status': 'error', 'message': str(e)})
+
+#     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
 @login_required
 def ajax_save_element_text(request):
     if request.method == 'POST':
@@ -48,14 +73,33 @@ def ajax_save_element_text(request):
         object_id = request.POST.get('id')
         model_name = request.POST.get('model_name')
         field_name = request.POST.get('field_name')
-        got_app_name = request.POST.get('app_name', app_name)  # Default to a specific app if not provided
+        got_app_name = request.POST.get('app_name', 'default_app_name')  # Default app if not provided
 
         try:
+            # Get the model class
             model_class = apps.get_model(got_app_name, model_name)
-            # Update the specified object
-            fields_update = {field_name: text_data}
-            obj = model_class.objects.filter(id=object_id).update(**fields_update, author=request.user)
-            return JsonResponse({'status': 'success', 'updated_records': obj})
+
+            # Fetch the object to be updated
+            obj = model_class.objects.get(id=object_id)
+
+            # Handle DateTimeField specifically
+            field_type = model_class._meta.get_field(field_name).get_internal_type()
+            if field_type == 'DateTimeField':
+                # Convert the input string to a timezone-aware datetime
+                naive_date = datetime.strptime(text_data, '%Y-%m-%d')  # Adjust format if necessary
+                aware_date = make_aware(naive_date, timezone=pytz.UTC)  # Use UTC or your preferred timezone
+                setattr(obj, field_name, aware_date)
+            else:
+                # For other fields, simply set the value
+                setattr(obj, field_name, text_data)
+
+            # Set the author field if applicable
+            obj.author = request.user
+
+            # Save the updated object
+            obj.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Field updated successfully'})
         except LookupError:
             return JsonResponse({'status': 'error', 'message': 'Model not found.'})
         except model_class.DoesNotExist:
@@ -64,6 +108,7 @@ def ajax_save_element_text(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
 
 @login_required
 def ajax_save_related_model(request):

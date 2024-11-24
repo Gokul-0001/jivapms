@@ -4,149 +4,161 @@
 {% load custom_tags %}
 {% load app_web_my_filters %}
 {% load markdown_extras  %}
-
+{% load mptt_tags %}
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
-
-<div class="container-fluid">
-    <div class="row">
-        <div class="col col-md-12">
-            {% include 'app_organization/mod_backlog/breadcrumb__backlogs.html' %}
-        </div>
-    </div>
-</div>
-<!-- Begin: Content -->
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!--
+required from the view
+project
+org
+org_id
+-->
 <form method="post">
-    {% csrf_token %}
-    <div class="container-fluid">
-        <div class="row pt-2">
-            <div class="col col-md-12">
-                <div class="container-fluid-width">
-                    <div class="row">
-                        <div class="col col-md-8">
-                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
-                                Backlog</h2>
-                        </div>
-                        <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_backlogs' pro_id ref_parent_id  %}"
-                             class="btn btn-sm btn-primary"><b>List backlog(s)</b></a>
+{% csrf_token %}
+<div class="content-wrapper">
+    <nav aria-label="breadcrumb" class="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
+        </ol>
+    </nav>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <div class="row pt-2">
+                <div class="col col-md-12">
+                    <div class="container-fluid-width">
+                        <div class="row">
+                            <div class="col col-md-8">
+                                <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
+                                    Backlog</h2>
+                            </div>
+                            <div class="col col-md-4 text-end">
+                                <a href="{% url 'list_backlogs' pro_id ref_parent_id  %}"
+                                 class="btn btn-sm btn-primary"><b>List backlog(s)</b></a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th colspan="2">
-                                <div class="container-fluid-width">
-                                    <div class="row">
-                                        <div class="col col-md-5">
-                                            {{page_title}}:: {{form.instance}}  REF and PARENT: {{ref_parent_id}} and {{parent_id}}
-                                        </div>
-                                        <div class="col col-md-7">
-                                            <div class="text-end">
-                                                <a href="{% url 'view_backlog' pro_id ref_parent_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
-                                                &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_backlog' pro_id ref_parent_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
-                                                
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th colspan="2">
+                                    <div class="container-fluid-width">
+                                        <div class="row">
+                                            <div class="col col-md-5">
+                                                {{page_title}}:: {{form.instance}}  
                                             </div>
-    
+                                            <div class="col col-md-7">
+                                                <div class="text-end">
+                                                    <a href="{% url 'view_backlog' pro_id ref_parent_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
+                                                    &nbsp;&nbsp;&nbsp;
+                                                    <a href="{% url 'delete_backlog' pro_id ref_parent_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
+                                                    
+                                                </div>
+        
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td width="15%">
-                                <strong>Parent</strong>
-                            </td>
-                            <td>
-                                {{form.parent|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td width="15%">
-                                <strong>Backlog</strong>
-                            </td>
-                            <td>
-                                {{form.name|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Description</strong>
-                            </td>
-                            <td>
-                                {{form.description|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Release</strong>
-                            </td>
-                            <td>
-                                {{form.release|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Iteration</strong>
-                            </td>
-                            <td>
-                                {{form.iteration|as_crispy_field}}
-                            </td>
-                        </tr>
-                       <tr>
-                            <td colspan="2" class="text-center"><button type="submit"
-                                class="btn btn-sm btn-success">Save</button></td>
-                        </tr>
-                    </tbody>
-                </table>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td width="15%">
+                                    <strong>Parent</strong>
+                                </td>
+                                <td>
+                                    {{form.parent|as_crispy_field}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="15%">
+                                    <strong>Backlog</strong>
+                                </td>
+                                <td>
+                                    {{form.name|as_crispy_field}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Description</strong>
+                                </td>
+                                <td>
+                                    {{form.description|as_crispy_field}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Release</strong>
+                                </td>
+                                <td>
+                                    {{form.release|as_crispy_field}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Iteration</strong>
+                                </td>
+                                <td>
+                                    {{form.iteration|as_crispy_field}}
+                                </td>
+                            </tr>
+                           <tr>
+                                <td colspan="2" class="text-center"><button type="submit"
+                                    class="btn btn-sm btn-success">Save</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-</form>
-<script>
-    focusField = document.getElementById('id_name');
-    focusField.focus();
-</script>
-<script>
-    $(document).ready(function() {
-        $('#id_release').change(function() {
-            var releaseId = $(this).val();  // Get the selected release ID
-            var csrfToken = '{{ csrf_token }}'; // CSRF token for secure POST requests
-            
-            if (releaseId) {
-                // Make an AJAX call to fetch iterations based on the selected release
-                $.ajax({
-                    url: '/org/backlog/ajax_get_iterations/' + releaseId + '/', // Correct URL
-                    method: 'POST',
-                    data: {
-                        'release_id': releaseId,
-                        'csrfmiddlewaretoken': csrfToken
-                    },
-                    success: function(data) {
-                        // Populate the iteration dropdown with new options
-                        $('#id_iteration').empty().append('<option value="">-- Select Iteration --</option>');
-                        data.forEach(function(iteration) {
-                            $('#id_iteration').append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
-                        });
-                        $('#id_iteration').prop('disabled', false);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error fetching iterations:", error);
-                        alert('Error fetching iterations');
-                    }
-                });
-            } else {
-                // Reset the iteration dropdown if no release is selected
-                $('#id_iteration').empty().append('<option value="">-- Select Iteration --</option>').prop('disabled', true);
-            }
+    </form>
+    <script>
+        focusField = document.getElementById('id_name');
+        focusField.focus();
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('#id_release').change(function() {
+                var releaseId = $(this).val();  // Get the selected release ID
+                var csrfToken = '{{ csrf_token }}'; // CSRF token for secure POST requests
+                
+                if (releaseId) {
+                    // Make an AJAX call to fetch iterations based on the selected release
+                    $.ajax({
+                        url: '/org/backlog/ajax_get_iterations/' + releaseId + '/', // Correct URL
+                        method: 'POST',
+                        data: {
+                            'release_id': releaseId,
+                            'csrfmiddlewaretoken': csrfToken
+                        },
+                        success: function(data) {
+                            // Populate the iteration dropdown with new options
+                            $('#id_iteration').empty().append('<option value="">-- Select Iteration --</option>');
+                            data.forEach(function(iteration) {
+                                $('#id_iteration').append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
+                            });
+                            $('#id_iteration').prop('disabled', false);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error fetching iterations:", error);
+                            alert('Error fetching iterations');
+                        }
+                    });
+                } else {
+                    // Reset the iteration dropdown if no release is selected
+                    $('#id_iteration').empty().append('<option value="">-- Select Iteration --</option>').prop('disabled', true);
+                }
+            });
         });
-    });
-</script>
-
-<!-- End: Content 
--->
+    </script>
+    
+    </div>
+</div>
+</form> 
 {% endblock content %}

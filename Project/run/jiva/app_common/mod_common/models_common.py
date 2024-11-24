@@ -1,7 +1,7 @@
 from app_common.mod_app.all_model_imports import *
 
 class BaseModelImpl(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
     description = models.CharField(max_length=200, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
     
@@ -65,7 +65,8 @@ class BaseModelTrackImpl(models.Model):
         abstract = True
 
 class BaseModelTrackDateImpl(models.Model):
-
+    name = models.CharField(max_length=100, null=True, blank=True)
+    description = models.CharField(max_length=200, null=True, blank=True)
     # position for sequence
     position = models.PositiveIntegerField(default=1000)
     

@@ -5,7 +5,7 @@ from app_organization.mod_iteration.models_iteration import *
 class IterationForm(forms.ModelForm):
     class Meta:
         model = Iteration
-        fields = ['name', 'description', 'rel']
+        fields = ['name', 'description', 'rel', 'start_date', 'end_date']
     def __init__(self, *args, **kwargs):
         super(IterationForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()  # Note: No need to pass 'self' here

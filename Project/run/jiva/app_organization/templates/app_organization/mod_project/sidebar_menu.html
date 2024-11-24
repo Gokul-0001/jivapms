@@ -8,19 +8,19 @@
             <i class="bi bi-calendar"></i>
             <span>Organizations</span>
         </a>
-        <a href="{% url 'list_image_maps' object.id %}" class="nav-link" >
+        <a href="{% url 'list_image_maps' project.id %}" class="nav-link" >
             <i class="bi bi-image"></i>
             <span>Project Layout</span>
         </a>
-        <a href="{% url 'project_dvs' org_id object.id %}" class="nav-link" >
+        <a href="{% url 'project_dvs' org_id project.id %}" class="nav-link" >
             <i class="bi bi-diamond"></i>
             <span>Value Stream</span>
         </a>
-        <!-- <a href="{% url 'list_backlog_super_types' object.id %}" class="nav-link" >
+        <!-- <a href="{% url 'list_backlog_super_types' project.id %}" class="nav-link" >
             <i class="bi bi-collection"></i>
             <span>Define Backlog Structure</span>
         </a> -->
-        <a href="{% url 'list_backlogs' object.id 0 %}" class="nav-link" >
+        <a href="{% url 'list_backlogs' project.id 0 %}" class="nav-link" >
             <i class="bi bi-collection"></i>
             <span>Backlog</span>
         </a>
@@ -29,30 +29,30 @@
             
             <span>Teams</span>
         </a>
-        <a href="{% url 'list_work_flows' object.id %}" class="nav-link" >
+        <a href="{% url 'list_work_flows' project.id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">arrow_forward</i>
             <span>Workflow</span>
         </a>
-        <a href="{% url 'list_boards' object.id %}" class="nav-link" >
+        <a href="{% url 'list_boards' project.id %}" class="nav-link" >
             <i class="bi bi-kanban"></i>
             <span>Board</span>
         </a>
-        <a href="{% url 'list_events' object.id %}" class="nav-link" >
+        <a href="{% url 'list_events' project.id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">event</i>
             <span>Events</span>
         </a>
 
-        <a href="{% url 'list_releases' object.id %}" class="nav-link" >
+        <a href="{% url 'list_releases' project.id %}" class="nav-link" >
             <i class="bi bi-basket"></i>
             <span>Release</span>
         </a>
-        <a href="{% url 'list_metrics' object.id %}" class="nav-link" >
+        <a href="{% url 'list_metrics' project.id %}" class="nav-link" >
             <i class="bi bi-compass"></i>
             <span>Metrics</span>
         </a>
     </div>
     <div class="settings">
-        <a href="{% url 'project_settings_page' org_id object.id %}" class="nav-link">
+        <a href="{% url 'project_settings_page' org_id project.id %}" class="nav-link">
             <i class="bi bi-gear"></i>
             <span>Settings</span>
         </a>

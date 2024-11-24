@@ -8,15 +8,15 @@ list_projects() {
     echo "Available projects:"
     ls -d "$BASE_PROJECT_DIR"/*/ | xargs -n 1 basename
 }
-
+PROJECT_NAME="$1"
 # Check if a project name is provided
 if [ -z "$1" ]; then
-    echo "Usage: goto <project_name>"
+    echo "Using default project: jiva"
     list_projects
-    exit 1
+    PROJECT_NAME="jiva"
 fi
 
-PROJECT_NAME="$1"
+
 PROJECT_DIR="$BASE_PROJECT_DIR/env_$PROJECT_NAME/$PROJECT_NAME"
 
 # Check if the project directory exists
