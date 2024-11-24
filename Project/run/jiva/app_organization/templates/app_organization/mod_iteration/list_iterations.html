@@ -73,10 +73,16 @@ org_id
                                             <div class="container-fluid-width">
                                                 <div class="row">
                                                     <div class="col col-md-4">                                                        
-                                                        <div >Release Start Date:
+                                                        <div ><a href="{% url 'edit_release' project.id rel_id %}">Release Start Date:</a>
                                                             &nbsp;&nbsp;{% if release.start_date != None %}
                                                             <span id="release_start_date_{{rel_id}}">{{release.start_date|date:'d-m-Y'}}</span>
                                                             {% endif %}</div>
+
+                                                            <!-- <span>
+                                                                <input type="date" id="release_start_date_{{ tobject.id }}" 
+                                                            value="{% if release.start_date %}{{ release.start_date|date:'Y-m-d' }}{% endif %}" 
+                                                                > -->
+                                                            </span>
                                                     </div>
                                                     <div class="col col-md-4 text-begin">
                                                         <div>Release End Date:
