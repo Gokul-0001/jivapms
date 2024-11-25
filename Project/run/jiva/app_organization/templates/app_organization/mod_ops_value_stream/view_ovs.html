@@ -102,6 +102,14 @@ svg {
         </div>
     </div>
 </div>
+<!--
+   # add all the calculated fields here    
+    total_time = models.PositiveIntegerField(default=0)
+    value_time = models.PositiveIntegerField(default=0)
+    delay_time = models.PositiveIntegerField(default=0)
+    efficiency = models.FloatField(default=0)
+    rolled_percentage_avg = models.FloatField(default=0)
+-->
 <!-- Begin: Content -->
 <form method="post">
     {% csrf_token %}
@@ -112,6 +120,12 @@ svg {
                     <div class="row">
                         <div class="col col-md-8">
                             <b>Operational Value Stream Display :: {{object}}</b>
+                            &nbsp;&nbsp;&nbsp;
+                            VA = {{object.value_time}} &nbsp;&nbsp;&nbsp;
+                            NVA = {{object.delay_time}} &nbsp;&nbsp;&nbsp;
+                            LT = {{object.total_time}} &nbsp;&nbsp;&nbsp;
+                            Eff = {{object.efficiency}} % &nbsp;&nbsp;&nbsp;
+                            RPA = {{object.rolled_percentage_avg}} %
                         </div>
                         <div class="col col-md-4 text-end">
                             <a href="{% url 'list_ops_value_streams' org_id %}"
@@ -143,12 +157,14 @@ svg {
                         left: 0;  /* Align to the left of the step-wrapper */
                         width: 100%;  /* Stretch across the entire width of the container */
                         background-color: orange;
-                        color: white;
+                        font-size: 10px;
+                        color: black;
                         text-align: center;
                         padding: 1px;
                         transform: translateY(-100%); /* Move it up by its own height */
                         box-sizing: border-box;  /* Include padding in height calculation */
                         border-radius: 2px;
+                        z-index: 1;
                     }
 
                     .step {
@@ -168,7 +184,7 @@ svg {
                         overflow-wrap: break-word; /* Ensure wrapping for long words */
                         white-space: normal; /* Allow wrapping and multi-line text */
                         line-height: 1.2; 
-                       
+                        z-index: 1; /* Ensure steps are above arrows */
                         
                     }
             
@@ -185,6 +201,7 @@ svg {
                         margin-bottom: 2px; /* Slight space between value and arrow */
                         background-color: green;
                         padding: 4px;
+                        z-index: 1;;
                     }
                     .delay {
                         font-size: 10px;
@@ -192,6 +209,7 @@ svg {
                         margin-top: 2px; /* Space between arrow and delay */
                         background-color: red;
                         padding: 4px;
+                        z-index: 1;
                     }
                     .value_empty {
                         font-size: 10px;
@@ -309,7 +327,7 @@ svg {
                     
                         <!-- Step Div -->
                         <div class="step" id="ovs-step-{{ step.id }}">
-                            {{ step.name }}
+                            <a href="{% url 'list_ops_value_stream_steps' object.id %}" style="text-decoration: none;">{{ step.name }} </a>
                         </div>
                     </div>
                 {% else %}
@@ -321,7 +339,7 @@ svg {
                     
                         <!-- Step Div -->
                         <div class="step" id="ovs-step-{{ step.id }}">
-                            {{ step.name }}
+                            <a href="{% url 'list_ops_value_stream_steps' object.id %}" style="text-decoration: none;">{{ step.name }} </a>
                         </div>
                     </div>
                      <!-- Subsequent steps display their names -->
@@ -363,8 +381,7 @@ svg {
             <b><a href="{% url 'edit_dev_value_stream' object.id dvs.id %}?back_to=view_ovs&org_id={{org_id}}&ops_id={{object.id}}">{{ dvs.name }}</a></b> &nbsp;&nbsp;
             <br>
             {% for ops_step in dvs.supporting_ops_steps.all|filter_active %}
-                {{ ops_step.name }}
-                <br>
+                <li>{{ ops_step.name }}</li>
             {% endfor %}
         </div>
     {% endfor %}
