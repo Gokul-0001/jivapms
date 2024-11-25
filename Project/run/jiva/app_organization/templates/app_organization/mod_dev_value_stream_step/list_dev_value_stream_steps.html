@@ -143,7 +143,7 @@
                                 </td>
                                 <td width="" onclick="makeEditable(this, '{{ dev_id }}')"
                                  onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'name')"
-                                ><strong>{{tobject.name}}</strong></td>
+                                ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
                                 <td width="20%" onclick="makeEditable(this, '{{ dev_id }}')"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'DevValueStreamStep', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>

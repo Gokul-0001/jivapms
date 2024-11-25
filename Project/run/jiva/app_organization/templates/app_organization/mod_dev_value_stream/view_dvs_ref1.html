@@ -1,0 +1,65 @@
+
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        mermaid.initialize({ startOnLoad: true });
+    });
+</script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_dev_value_stream/breadcrumb_dev_value_streams.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <h2>View 
+                                Dev Value Stream :: {{object}}</h2>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_dev_value_streams' ops_id %}"
+                             class="btn btn-sm btn-primary"><b>List DVS</b></a>
+                        </div>
+                    </div>
+                </div>
+                <!-- display the DVS -->
+                
+                <!-- {{check_data}} -->
+                <div class="mermaid">
+                    graph LR
+                        {% for step in check_data %}
+                            {% if forloop.first %}
+                            A[{{object.trigger}}] -->
+                            {% endif %}
+                            {% if step.next_id %}
+                                {{ step.id }}[{{ step.name }}] --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| {{ step.next_id }}[{{ step.next_name|default:"Unnamed Step" }}]
+                            {% endif %}
+                            {% if forloop.last %}
+                                --> |<span style="background-color:green; color:white; padding:2px;">Value: {{ step.value }}</span><br><span style="background-color:red; color:white; padding:2px;">Delay: {{ step.delay }}</span>| B[{{object.value}}]
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                
+
+            </div>
+        </div>
+    </div>
+</form>
+<!-- End: Content -->
+{% endblock content %}

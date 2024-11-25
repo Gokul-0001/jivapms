@@ -84,7 +84,7 @@
                                     <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                 </td>
                                 <td>{{forloop.counter}}</td>
-                                <td width="20%"><strong>{{tobject.name}}</strong></td>
+                                <td width="20%"><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
                                 <td width="">{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%">
                                 

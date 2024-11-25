@@ -185,7 +185,7 @@ svg {
                         white-space: normal; /* Allow wrapping and multi-line text */
                         line-height: 1.2; 
                         z-index: 1; /* Ensure steps are above arrows */
-                        
+                        font-size: clamp(12px, 2vw, 16px);
                     }
             
                     .arrow-container {
@@ -486,7 +486,7 @@ svg {
     let fontSize = parseInt(window.getComputedStyle(container).fontSize);
 
     // Reduce font size iteratively until the content fits within the box
-    while ((container.scrollWidth > containerWidth || container.scrollHeight > containerHeight) && fontSize > 10) {
+    while ((container.scrollWidth > containerWidth || container.scrollHeight > containerHeight) && fontSize > 12) {
         fontSize--; // Decrease font size
         container.style.fontSize = `${fontSize}px`;
     }

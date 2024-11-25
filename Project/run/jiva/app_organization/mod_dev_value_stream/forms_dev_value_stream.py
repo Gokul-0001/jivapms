@@ -25,6 +25,8 @@ class DevValueStreamForm(forms.ModelForm):
         user = kwargs.pop('user', None)  # Extract the user from kwargs
         org_id = kwargs.pop('org_id', None)  # Assuming org_id is passed to the form
         ops = kwargs.pop('ops', None)  # Assuming ovs is passed to the form
+        memberships = Member.objects.filter(user=user, active=True)
+        member_roles = MemberOrganizationRole.objects.filter(member__in=memberships)
         project_id = kwargs.pop('project_id', None)  # Assuming project_id 
         super(DevValueStreamForm, self).__init__(*args, **kwargs)
         
@@ -61,7 +63,20 @@ class DevValueStreamForm(forms.ModelForm):
             print(f">>> === {TEST1} === <<<")
         else:
                 # If the user is neither an Org Admin nor a Project Admin, no projects are available
-                self.fields['project'].queryset = Project.objects.none()
+                 # If the user is a non-admin
+                project_member_roles = MemberOrganizationRole.objects.filter(
+                    member__in=memberships,
+                    role__name__in=PROJECT_MEMBER_ROLES
+                )
+                tobjects = []
+                non_admin_role = True
+                is_project_member = project_member_roles.exists()
+                project_org_ids = project_member_roles.values_list('org_id', flat=True).distinct()
+                # Filter projects based on these organization IDs
+                self.fields['project'].queryset = Project.objects.filter(
+                    org_id__in=project_org_ids,
+                    active=True  # Assuming there is an 'active' field to filter active projects
+                )
                 
         if org_id:
             self.fields['supporting_ops_steps'].queryset = OpsValueStreamStep.objects.filter(

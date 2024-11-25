@@ -43,7 +43,7 @@ def list_dev_value_stream_steps(request, dev_id):
         tobjects = DevValueStreamStep.objects.filter(name__icontains=search_query, 
                                             dev_id=dev_id, **viewable_dict).order_by('position')
     else:
-        tobjects = DevValueStreamStep.objects.filter(active=True, dev_id=dev_id, author=user).order_by('position')
+        tobjects = DevValueStreamStep.objects.filter(active=True, dev_id=dev_id).order_by('position')
         deleted = DevValueStreamStep.objects.filter(active=False, deleted=False,
                                 dev_id=dev_id,
                                **viewable_dict).order_by('position')
@@ -139,10 +139,10 @@ def list_deleted_dev_value_stream_steps(request, dev_id):
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = DevValueStreamStep.objects.filter(name__icontains=search_query, 
-                                            active=False,
+                                            active=False, deleted = False,
                                             dev_id=dev_id, **viewable_dict).order_by('position')
     else:
-        tobjects = DevValueStreamStep.objects.filter(active=False, dev_id=dev_id,
+        tobjects = DevValueStreamStep.objects.filter(active=False, deleted= False, dev_id=dev_id,
                                             **viewable_dict).order_by('position')        
     
     if show_all == 'all':

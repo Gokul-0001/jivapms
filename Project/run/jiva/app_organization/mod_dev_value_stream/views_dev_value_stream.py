@@ -385,14 +385,15 @@ def view_dvs(request, ops_id, dev_value_stream_id):
             "id": step.id,
             "name": step.name or f"Step {step.id}",  # Default name if none exists
             "value": step.value,
-            "delay": step.delay
+            "delay": step.delay,
+            "percentage_accuracy": step.percentage_accuracy,
         }
         for step in steps
     ]
     check_data = []
 
     # Filter and clean the `steps` to ensure no extra steps are added
-    valid_steps = list(filter(lambda step: step.id is not None and step.name, steps))
+    valid_steps = list(filter(lambda step: step.id is not None and step.active and step.name, steps))
 
     for i, step in enumerate(valid_steps):
         check_data.append({
@@ -400,6 +401,7 @@ def view_dvs(request, ops_id, dev_value_stream_id):
             "name": step.name or f"Step {step.id}",
             "value": step.value,
             "delay": step.delay,
+            "percentage_accuracy": step.percentage_accuracy,
             "next_id": valid_steps[i + 1].id if i + 1 < len(valid_steps) else None,
             "next_name": valid_steps[i + 1].name if i + 1 < len(valid_steps) else None,
         })

@@ -17,4 +17,8 @@ class DevValueStreamStep(BaseModelImpl):
     
         
     def __str__(self):
-        return self.name
+        if self.name:
+            return self.name
+        else:
+            return str(self.id)
+
