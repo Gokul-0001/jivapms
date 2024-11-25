@@ -88,9 +88,11 @@
                                 <th width="2%">#</th>
                                 <th>Backlog</th>
                                 <th width="20%">Description</th>
+                                <th width="8%">Release</th>
+                                <th width="6%">Iteration</th>
                                 <th width="5%">Done</th>
                                 <th width="5%">Configure</th>
-                                <th width="50%">                                    
+                                <th width="30%">                                    
                                     Actions
                                     &nbsp;&nbsp;
                                     <select name="pagination" id="paginationselect">
@@ -139,7 +141,7 @@
                                     <a href="{% url 'list_backlogs' pro_id tobject.id %}"
                                     class="btn btn-sm btn-info"><i class="bi bi-diagram-3"></i> Next Level </a>
                                 </td>
-                                <td width="50%">
+                                <td width="30%">
                                     <a href="{% url 'view_backlog' pro_id ref_parent_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                     &nbsp;&nbsp;

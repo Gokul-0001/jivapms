@@ -32,7 +32,38 @@
     border-radius: 10px;
     font-weight: bold;
 }
+/* Specific DVS styles */
+.dvs-1 {
+    background-color: lightblue; /* Custom color for DVS 1 */
+}
 
+.dvs-2 {
+    background-color: lightcoral; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-3 {
+    background-color: lightyellow; /* Custom color for DVS 1 */
+}
+
+.dvs-4 {
+    background-color: lightslategray; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-5 {
+    background-color: lightseagreen; /* Custom color for DVS 1 */
+}
+
+.dvs-6 {
+    background-color: lightsalmon; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-7 {
+    background-color: lightsteelblue; /* Custom color for DVS 1 */
+}
+
+.dvs-8 {
+    background-color: lightyellow; /* Custom color for DVS 2 */
+}
 
 /* General responsive adjustments */
 @media (max-width: 768px) {
@@ -55,15 +86,13 @@
         align-items: center; /* Center-align the elements */
     }
 }
-
+.step {
+    font-size: 1.5vw; /* Adjust based on what looks good across different devices */
+}
 /* SVG responsiveness */
 svg {
     width: 100%;
     height: auto;
-}
-
-.step {
-    font-size: .6vw; /* Adjust based on what looks good across different devices */
 }
 .ovs-wrapper, .dvs-wrapper {
     display: grid;
@@ -75,22 +104,6 @@ svg {
 @media (max-width: 768px) {
     .ovs-wrapper, .dvs-wrapper {
         grid-template-columns: 1fr; /* Stack elements in a single column on small screens */
-    }
-}
-.ovs-wrapper, .dvs-wrapper {
-    display: flex;
-    flex-wrap: wrap; /* Allows items to wrap as needed on smaller screens */
-    justify-content: center;
-    gap: 20px;
-}
-
-@media (max-width: 768px) {
-    .ovs-wrapper, .dvs-wrapper {
-        flex-direction: column;
-    }
-    .step, .dvs-container, .step-box {
-        width: 100%; /* Full width on smaller screens */
-        box-sizing: border-box; /* Includes padding and border in the element's width */
     }
 }
 
@@ -131,26 +144,6 @@ svg {
                         gap: 10px;
                         padding: 20px;
                     }
-                    .step-wrapper {
-                        position: relative;  /* Establish a positioning context */
-                        display: inline-block; /* Ensures that multiple steps can line up side by side if needed */
-                    
-                    }
-
-                    .accuracy {
-                        position: absolute;  /* Absolutely position this div within its relative parent */
-                        top: 0;  /* Align to the top of the step-wrapper */
-                        left: 0;  /* Align to the left of the step-wrapper */
-                        width: 100%;  /* Stretch across the entire width of the container */
-                        background-color: orange;
-                        color: white;
-                        text-align: center;
-                        padding: 1px;
-                        transform: translateY(-100%); /* Move it up by its own height */
-                        box-sizing: border-box;  /* Include padding in height calculation */
-                        border-radius: 2px;
-                    }
-
                     .step {
                         display: flex;
                         justify-content: center;
@@ -301,29 +294,9 @@ svg {
                         <div class="short_arrow"></div>
                         <div class="delay_empty">&nbsp;</div>
                     </div>
-                    <div class="step-wrapper">
-                        <!-- Accuracy Div -->
-                        <div class="accuracy" id="accuracy-step-{{ step.id }}">
-                            {{ step.percentage_accuracy }}%
-                        </div>
-                    
-                        <!-- Step Div -->
-                        <div class="step" id="ovs-step-{{ step.id }}">
-                            {{ step.name }}
-                        </div>
-                    </div>
+                    <div class="step"  id="ovs-step-{{ step.id }}">{{ step.name }}</div>
                 {% else %}
-                    <div class="step-wrapper">
-                        <!-- Accuracy Div -->
-                        <div class="accuracy" id="accuracy-step-{{ step.id }}">
-                            {{ step.percentage_accuracy }}%
-                        </div>
-                    
-                        <!-- Step Div -->
-                        <div class="step" id="ovs-step-{{ step.id }}">
-                            {{ step.name }}
-                        </div>
-                    </div>
+                    <div class="step"  id="ovs-step-{{ step.id }}">{{ step.name }}</div>
                      <!-- Subsequent steps display their names -->
                 {% endif %}
                 
@@ -388,7 +361,7 @@ svg {
                 const rect = element.getBoundingClientRect();
                 return {
                     x: rect.left + rect.width / 2 + window.scrollX ,
-                    y: rect.top + rect.height / 2 + window.scrollY - 90,
+                    y: rect.top + rect.height / 2 + window.scrollY - 80,
                 };
             }
     
@@ -400,19 +373,10 @@ svg {
                 line.setAttribute("x2", end.x);
                 line.setAttribute("y2", end.y);
                 line.setAttribute("stroke", color);
-                line.setAttribute("stroke-width", "4");
-                line.setAttribute("stroke-linecap", "round");
-                
+                line.setAttribute("stroke-width", "2");
                 return line;
             }
-             // Adjusted function to calculate the starting position dynamically
-            function getDynamicPositionStart(dvsContainer) {
-                const rect = dvsContainer.getBoundingClientRect();
-                return {
-                    x: rect.left + rect.width / 2 + window.scrollX,
-                    y: rect.top + window.scrollY // Adjusted to remove any offset
-                };
-            }
+    
             // Main function to draw lines from DVS containers to OVS steps
             function drawConnections() {
                 svg.innerHTML = ""; // Clear existing lines
@@ -439,7 +403,7 @@ svg {
     
                         if (ovsStep) {
                             // Get the positions of the DVS container and the corresponding OVS step
-                            const start = getDynamicPositionStart(dvsContainer);
+                            const start = getCenterPositionBegin(dvsContainer);
                             const end = getCenterPosition(ovsStep);
     
                             // Create and append the line
@@ -484,39 +448,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-    function adjustFontSizeToFit(container) {
-    const maxWidth = container.clientWidth;  // Maximum width container can have
-    const maxHeight = container.clientHeight; // Maximum height container can have
-    let fontSize = parseFloat(window.getComputedStyle(container, null).getPropertyValue('font-size'));
 
-    // Decrease font size until the text fits
-    while (container.scrollWidth > maxWidth || container.scrollHeight > maxHeight && fontSize > 10) {
-        fontSize -= 1;
-        container.style.fontSize = fontSize + 'px';
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, arguments), wait);
+    };
+}
+
+
+function adjustFontSizeToFit(container) {
+    const maxWidth = container.clientWidth;  // Get the maximum width the container can have
+    const maxHeight = container.clientHeight; // Get the maximum height the container can have
+    let fontSize = parseFloat(window.getComputedStyle(container).fontSize); // Get current font size
+
+    // Decrease font size until the text fits within the container
+    while ((container.scrollWidth > maxWidth || container.scrollHeight > maxHeight) && fontSize > 10) {
+        fontSize -= 1;  // Reduce font size by 1px
+        container.style.fontSize = fontSize + 'px'; // Apply the new font size
     }
 }
+
 
 function adjustAllSteps() {
     const steps = document.querySelectorAll('.step');
     steps.forEach(step => adjustFontSizeToFit(step));
 }
 
+
 document.addEventListener("DOMContentLoaded", adjustAllSteps);
-window.addEventListener('resize', adjustAllSteps);
+window.addEventListener('resize', debounce(adjustAllSteps, 100));  // Adjust font size every 100 milliseconds during resize
 
 </script>
-
-<script>
-    function debounce(func, wait) {
-        let timeout;
-        return function() {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, arguments), wait);
-        };
-    }
-    window.addEventListener('resize', debounce(adjustAllSteps, 100));
-</script>
-
     </form>
 <!-- End: Content -->
 {% endblock content %}

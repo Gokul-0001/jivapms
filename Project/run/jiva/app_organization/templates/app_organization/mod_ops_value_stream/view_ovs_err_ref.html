@@ -32,7 +32,38 @@
     border-radius: 10px;
     font-weight: bold;
 }
+/* Specific DVS styles */
+.dvs-1 {
+    background-color: lightblue; /* Custom color for DVS 1 */
+}
 
+.dvs-2 {
+    background-color: lightcoral; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-3 {
+    background-color: lightyellow; /* Custom color for DVS 1 */
+}
+
+.dvs-4 {
+    background-color: lightslategray; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-5 {
+    background-color: lightseagreen; /* Custom color for DVS 1 */
+}
+
+.dvs-6 {
+    background-color: lightsalmon; /* Custom color for DVS 2 */
+}
+/* Specific DVS styles */
+.dvs-7 {
+    background-color: lightsteelblue; /* Custom color for DVS 1 */
+}
+
+.dvs-8 {
+    background-color: lightyellow; /* Custom color for DVS 2 */
+}
 
 /* General responsive adjustments */
 @media (max-width: 768px) {
@@ -55,44 +86,10 @@
         align-items: center; /* Center-align the elements */
     }
 }
-
-/* SVG responsiveness */
-svg {
-    width: 100%;
-    height: auto;
-}
-
 .step {
     font-size: .6vw; /* Adjust based on what looks good across different devices */
 }
-.ovs-wrapper, .dvs-wrapper {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Creates a responsive number of columns */
-    gap: 10px;
-    justify-content: center;
-}
 
-@media (max-width: 768px) {
-    .ovs-wrapper, .dvs-wrapper {
-        grid-template-columns: 1fr; /* Stack elements in a single column on small screens */
-    }
-}
-.ovs-wrapper, .dvs-wrapper {
-    display: flex;
-    flex-wrap: wrap; /* Allows items to wrap as needed on smaller screens */
-    justify-content: center;
-    gap: 20px;
-}
-
-@media (max-width: 768px) {
-    .ovs-wrapper, .dvs-wrapper {
-        flex-direction: column;
-    }
-    .step, .dvs-container, .step-box {
-        width: 100%; /* Full width on smaller screens */
-        box-sizing: border-box; /* Includes padding and border in the element's width */
-    }
-}
 
 </style>
 <div class="container-fluid">
@@ -484,26 +481,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-    function adjustFontSizeToFit(container) {
-    const maxWidth = container.clientWidth;  // Maximum width container can have
-    const maxHeight = container.clientHeight; // Maximum height container can have
-    let fontSize = parseFloat(window.getComputedStyle(container, null).getPropertyValue('font-size'));
+    function adjustFontSizeToFit(element) {
+        const maxWidth = element.clientWidth;
+        const maxHeight = element.clientHeight;
+        let fontSize = parseFloat(window.getComputedStyle(element).fontSize);
 
-    // Decrease font size until the text fits
-    while (container.scrollWidth > maxWidth || container.scrollHeight > maxHeight && fontSize > 10) {
-        fontSize -= 1;
-        container.style.fontSize = fontSize + 'px';
+        while ((element.scrollWidth > maxWidth || element.scrollHeight > maxHeight) && fontSize > 10) {
+            fontSize -= 1;
+            element.style.fontSize = fontSize + 'px';
+        }
     }
-}
 
-function adjustAllSteps() {
-    const steps = document.querySelectorAll('.step');
-    steps.forEach(step => adjustFontSizeToFit(step));
-}
+    function adjustAllElements() {
+        const elements = document.querySelectorAll('.step, .accuracy');
+        elements.forEach(element => adjustFontSizeToFit(element));
+    }
 
-document.addEventListener("DOMContentLoaded", adjustAllSteps);
-window.addEventListener('resize', adjustAllSteps);
-
+    document.addEventListener("DOMContentLoaded", adjustAllElements);
+    window.addEventListener('resize', debounce(adjustAllElements, 100));
 </script>
 
 <script>
@@ -514,7 +509,6 @@ window.addEventListener('resize', adjustAllSteps);
             timeout = setTimeout(() => func.apply(this, arguments), wait);
         };
     }
-    window.addEventListener('resize', debounce(adjustAllSteps, 100));
 </script>
 
     </form>

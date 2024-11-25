@@ -239,7 +239,15 @@ def create_release(request, pro_id):
     return render(request, template_file, context)
 
 
+#  back_to = None
+#     if request.GET.get('back_to') == 'view_ovs':
+#         back_to = request.GET.get('back_to')
+#         org_id = request.GET.get('org_id')
+#         ops_id = request.GET.get('ops_id')
 
+#   if back_to == 'view_ovs' and org_id and ops_id:
+#             return redirect('view_ovs', org_id=org_id, ops_value_stream_id=ops_id)
+#         return redirect('list_dev_value_streams', ops_id=ops_id)
 
 # Edit
 @login_required
@@ -249,6 +257,12 @@ def edit_release(request, pro_id, release_id):
                                                 **first_viewable_dict)
     
     object = get_object_or_404(Release, pk=release_id, active=True,**viewable_dict)
+    
+    back_to = None
+    if request.GET.get('back_to') == 'list_iterations':
+        back_to = request.GET.get('back_to')
+        rel_id = request.GET.get('rel_id')    
+    
     if request.method == 'POST':
         form = ReleaseForm(request.POST, instance=object)
         if form.is_valid():
@@ -257,6 +271,8 @@ def edit_release(request, pro_id, release_id):
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
+        if back_to == 'list_iterations' and rel_id:
+            return redirect('list_iterations', rel_id=rel_id)
         return redirect('list_releases', pro_id=pro_id)
     else:
         form = ReleaseForm(instance=object)

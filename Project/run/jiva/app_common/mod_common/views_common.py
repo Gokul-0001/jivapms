@@ -188,6 +188,13 @@ def ajax_update_task_done_state(request):
             object = model_class.objects.filter(id=id).first()
             if object:
                 object.done = done.lower() == 'true'
+                object.completed_at = timezone.now()
+                
+                 # Calculate duration in hours
+                if object.created_at and object.completed_at:
+                    duration = object.completed_at - object.created_at
+                    object.duration_in_hours = duration.total_seconds() / 3600  # Convert seconds to hours
+                
                 object.save()
                 return JsonResponse({'success': True})      
 

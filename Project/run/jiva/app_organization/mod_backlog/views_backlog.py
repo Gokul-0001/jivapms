@@ -661,7 +661,8 @@ def build_serial_number_tree(node, current_path=[], serial_no=None):
 
     children = node.get_children().order_by('position')
     for child in children:
-        result.extend(build_serial_number_tree(child, current_path + [serial_no[level]], serial_no))
+        if child.active == True:
+            result.extend(build_serial_number_tree(child, current_path + [serial_no[level]], serial_no)) 
 
     return result
 

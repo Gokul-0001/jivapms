@@ -43,7 +43,7 @@ def list_ops_value_stream_steps(request, ops_id):
         tobjects = OpsValueStreamStep.objects.filter(name__icontains=search_query, 
                                             ops_id=ops_id, **viewable_dict).order_by('position')
     else:
-        tobjects = OpsValueStreamStep.objects.filter(active=True, ops_id=ops_id, author=user).order_by('position')
+        tobjects = OpsValueStreamStep.objects.filter(active=True, ops_id=ops_id).order_by('position')
         deleted = OpsValueStreamStep.objects.filter(active=False, deleted=False,
                                 ops_id=ops_id,
                                **viewable_dict).order_by('position')

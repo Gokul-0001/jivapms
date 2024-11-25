@@ -121,7 +121,8 @@
             </td>
             <td width="20%" onclick="makeEditable(this)"
                 onblur="save_element_text(this, '{{ node.id }}',  'app_organization', 'Backlog', 'description')"
-                >{% if node.description != None %}{{node.description}}{% endif %}</td>
+                >{% if node.description != None %}{{node.description}}{% endif %}               
+            </td>
 
                 <td width="8%">
                     {% if node.release != None %}{{node.release}}{% endif %}

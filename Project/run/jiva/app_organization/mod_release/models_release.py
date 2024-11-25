@@ -9,6 +9,9 @@ class Release(BaseModelTrackDateImpl):
     
     release_length = models.PositiveIntegerField(default=3)
     
+    apply_release_iteration_length = models.PositiveIntegerField(default=2)
+    
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_releases")
    

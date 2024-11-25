@@ -233,9 +233,15 @@ def create_dev_value_stream(request, ops_id):
     template_file = f"{app_name}/{module_path}/create_dev_value_stream.html"
     return render(request, template_file, context)
 
+#  back_to = None
+#     if request.GET.get('back_to') == 'view_ovs':
+#         back_to = request.GET.get('back_to')
+#         org_id = request.GET.get('org_id')
+#         ops_id = request.GET.get('ops_id')
 
-
-
+#   if back_to == 'view_ovs' and org_id and ops_id:
+#             return redirect('view_ovs', org_id=org_id, ops_value_stream_id=ops_id)
+#         return redirect('list_dev_value_streams', ops_id=ops_id)
 # Edit
 @login_required
 def edit_dev_value_stream(request, ops_id, dev_value_stream_id):

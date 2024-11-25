@@ -73,7 +73,7 @@ org_id
                                             <div class="container-fluid-width">
                                                 <div class="row">
                                                     <div class="col col-md-4">                                                        
-                                                        <div ><a href="{% url 'edit_release' project.id rel_id %}?back_to=list_iterations&rel_id={{rel_id}}">Release Start Date:</a>
+                                                        <div ><a href="{% url 'edit_release' project.id rel_id %}">Release Start Date:</a>
                                                             &nbsp;&nbsp;{% if release.start_date != None %}
                                                             <span id="release_start_date_{{rel_id}}">{{release.start_date|date:'d-m-Y'}}</span>
                                                             {% endif %}</div>
@@ -147,7 +147,7 @@ org_id
                                         <td>{{forloop.counter}}</td>
                                         <td width="20%" ondblclick="makeEditable(this)"
                                          onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Iteration', 'name')"
-                                        ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
+                                        ><strong>{{tobject.name}}</strong></td>
                                         <td width="" ondblclick="makeEditable(this)"
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Iteration', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
@@ -159,17 +159,33 @@ org_id
                                                 onchange="updateEndDate('{{ tobject.id }}')">
                                         </td>
                                         <td width="8%">
-                                            <span id="iteration_length_{{ tobject.id }}">
-                                                {% if release.apply_release_iteration_length > 0 %}
-                                                    {{ release.apply_release_iteration_length }}
-                                                {% else %}
-                                                    {% if tobject.iteration_length != None %}{{tobject.iteration_length}}{% endif %}
-                                                {% endif %}
-                                                 Week(s)
-                                            </span>
-                                                
-                                        </td>
-                                       
+                                            {% if release.apply_release_iteration_length > 0 %}                                                
+                                            <select 
+                                            onchange="updateEndDate('{{ tobject.id }}')" id="iteration_length_{{ tobject.id }}">
+                                                <option value="" {% if not release.apply_release_iteration_length %}selected{% endif %}>Select Length</option>
+                                                <option value="1" {% if release.apply_release_iteration_length == 1 %}selected{% endif %}>1 Week</option>
+                                                <option value="2" {% if release.apply_release_iteration_length == 2 %}selected{% endif %}>2 Weeks</option>
+                                                <option value="3" {% if release.apply_release_iteration_length == 3 %}selected{% endif %}>3 Weeks</option>
+                                                <option value="4" {% if release.apply_release_iteration_length == 4 %}selected{% endif %}>4 Weeks</option>
+                                            </select>
+                                            {% else %}
+                                            <select 
+                                            onchange="updateEndDate('{{ tobject.id }}')" id="iteration_length_{{ tobject.id }}">
+                                                <option value="" {% if not tobject.iteration_length %}selected{% endif %}>Select Length</option>
+                                                <option value="1" {% if tobject.iteration_length == 1 %}selected{% endif %}>1 Week</option>
+                                                <option value="2" {% if tobject.iteration_length == 2 %}selected{% endif %}>2 Weeks</option>
+                                                <option value="3" {% if tobject.iteration_length == 3 %}selected{% endif %}>3 Weeks</option>
+                                                <option value="4" {% if tobject.iteration_length == 4 %}selected{% endif %}>4 Weeks</option>
+                                            </select>
+                                            {% endif %}
+                                            <!-- <select 
+                                            onchange="updateEndDate('{{ tobject.id }}')" id="iteration_length_{{ tobject.id }}">
+                                                <option value="" {% if not tobject.iteration_length %}selected{% endif %}>Select Length</option>
+                                                <option value="1" {% if tobject.iteration_length == 1 %}selected{% endif %}>1 Week</option>
+                                                <option value="2" {% if tobject.iteration_length == 2 %}selected{% endif %}>2 Weeks</option>
+                                                <option value="3" {% if tobject.iteration_length == 3 %}selected{% endif %}>3 Weeks</option>
+                                                <option value="4" {% if tobject.iteration_length == 4 %}selected{% endif %}>4 Weeks</option>
+                                            </select> -->
                                         </td>
                                         <!-- End Date with Date Picker -->
                                         <td width="8%">
@@ -317,31 +333,32 @@ org_id
 
 
 
-                function updateEndDate(id) {
-                    const startDateInput = document.getElementById(`start_date_${id}`);
-                    const iterationLengthElement = document.getElementById(`iteration_length_${id}`);
-                    const endDateInput = document.getElementById(`end_date_${id}`);
+            // 
 
-                    const startDateValue = startDateInput.value;
-                    const iterationLengthValue = parseInt(iterationLengthElement.textContent.trim(), 10);
+            function updateEndDate(id) {
+                const startDateInput = document.getElementById(`start_date_${id}`);
+                const iterationLengthInput = document.getElementById(`iteration_length_${id}`);
+                const endDateInput = document.getElementById(`end_date_${id}`);
 
-                    // Check if start date is valid and iteration length is available
-                    if (startDateValue && iterationLengthValue) {
-                        const startDate = new Date(startDateValue);
-                        const endDate = new Date(startDate);
+                const startDateValue = startDateInput.value;
+                const iterationLengthValue = parseInt(iterationLengthInput.value, 10);
 
-                        // Add the iteration length (in weeks) to the start date
-                        endDate.setDate(startDate.getDate() + iterationLengthValue * 7);
+                // Check if start date is valid and iteration length is selected
+                if (startDateValue && iterationLengthValue) {
+                    const startDate = new Date(startDateValue);
+                    const endDate = new Date(startDate);
 
-                        // Format the end date to 'YYYY-MM-DD'
-                        const formattedEndDate = endDate.toISOString().split('T')[0];
-                        endDateInput.value = formattedEndDate;
+                    // Add the iteration length (in weeks) to the start date
+                    endDate.setDate(startDate.getDate() + iterationLengthValue * 7);
 
-                        // Optionally trigger a save if needed
-                        save_element_text(endDateInput, id, 'app_organization', 'Iteration', 'end_date');
-                    }
+                    // Format the end date to 'YYYY-MM-DD'
+                    const formattedEndDate = endDate.toISOString().split('T')[0];
+                    endDateInput.value = formattedEndDate;
+
+                    // Trigger onchange to save the calculated end_date
+                    save_element_text(endDateInput, id, 'app_organization', 'Iteration', 'end_date');
                 }
-
+            }
 
         </script>
 
@@ -386,19 +403,14 @@ org_id
 
         iterationRows.forEach((iteration, index) => {
             const iterationId = iteration.id.split("_")[2]; // Extract the iteration ID
-            const iterationLengthElement = document.getElementById(`iteration_length_${iterationId}`);
+            const iterationLengthInput = document.getElementById(`iteration_length_${iterationId}`);
             const endDateInput = document.getElementById(`end_date_${iterationId}`);
-
-            if (!iterationLengthElement) {
-                console.warn(`Iteration length element not found for iteration ${iterationId}`);
-                return;
-            }
 
             // Set the start date for the current iteration
             iteration.value = formatDateYYYYMMDD(currentStartDate); // Start date in YYYY-MM-DD
 
-            // Get the iteration length (in weeks) from the span or div
-            const iterationLengthValue = parseInt(iterationLengthElement.textContent.trim(), 10);
+            // Get the iteration length (in weeks)
+            const iterationLengthValue = parseInt(iterationLengthInput.value, 10);
 
             if (iterationLengthValue && !isNaN(iterationLengthValue)) {
                 // Calculate the end date based on the iteration length
@@ -417,6 +429,15 @@ org_id
 
     // Initial calculation for all iterations
     calculateIterations();
+
+    // Recalculate when iteration length changes
+    iterationRows.forEach(iteration => {
+        const iterationId = iteration.id.split("_")[2];
+        const iterationLengthInput = document.getElementById(`iteration_length_${iterationId}`);
+        if (iterationLengthInput) {
+            iterationLengthInput.addEventListener('change', calculateIterations);
+        }
+    });
 });
 
 </script>

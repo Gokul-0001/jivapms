@@ -98,6 +98,8 @@ org_id
                                 <th width="2%">#</th>
                                 <th>Backlog</th>
                                 <th width="20%">Description</th>
+                                <th width="8%">Release</th>
+                                <th width="6%">Iteration</th>
                                 <th width="5%">Done</th>
                                 <th width="5%">Configure</th>
                                 <th width="50%">                                    
@@ -140,6 +142,12 @@ org_id
                                 <td width="" ondblclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Backlog', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
+                                <td width="8%">
+                                    {% if tobject.release != None %}{{tobject.release}}{% endif %}
+                                </td>
+                                <td width="6%">
+                                    {% if tobject.iteration != None %}{{tobject.iteration}}{% endif %}
+                                </td>
                                 <td width="5%"ondblclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Backlog', 'done')"
                                 >{% if tobject.done != None and tobject.done != False %}Done{% endif %}
