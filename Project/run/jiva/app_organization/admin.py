@@ -6,6 +6,13 @@ from app_organization.mod_organizationdetail.models_organizationdetail import *
 
 from app_organization.mod_backlog.models_backlog import *
 
+from app_organization.mod_org_image_map.models_org_image_map import *
+
+
+class OrgImageMapAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description', 'created_at', 'updated_at')
+admin.site.register(OrgImageMap, OrgImageMapAdmin)
+
 class OrganizationDetailAdmin(admin.ModelAdmin):
     list_display = ('id', 'vision', 'mission', 'values', 'strategy', 'roadmap_description', 'created_at', 'updated_at')
 admin.site.register(Organizationdetail, OrganizationDetailAdmin)
