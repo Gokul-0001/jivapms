@@ -29,7 +29,7 @@
                                 Work Flow</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_work_flows' pro_id %}"
+                            <a href="{% url 'list_work_flows' org_id %}"
                              class="btn btn-sm btn-primary"><b>List Work Flow(s)</b></a>
                         </div>
                     </div>
@@ -45,9 +45,9 @@
                                         </div>
                                         <div class="col col-md-7">
                                             <div class="text-end">
-                                                <a href="{% url 'view_work_flow' pro_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
+                                                <a href="{% url 'view_work_flow' org_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
                                                 &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_work_flow' pro_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
+                                                <a href="{% url 'delete_work_flow' org_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
                                                 
                                             </div>
     

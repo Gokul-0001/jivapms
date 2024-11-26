@@ -35,7 +35,7 @@
                             <div class="col col-md-4 text-end">
                                 <span class="display_count">{{objects_count}} work_flow(s)</span>
                                 &nbsp;&nbsp;
-                                <a href="{% url 'create_work_flow' pro_id  %}" 
+                                <a href="{% url 'create_work_flow' org_id  %}" 
                                 class="btn btn-sm btn-success"><b>+ Create Work Flow</b></a>
                             </div>
                         </div>
@@ -90,16 +90,16 @@
                                 
                                 </td>
                                 <td width="50%">
-                                    <a href="{% url 'view_work_flow' pro_id  tobject.id  %}"
+                                    <a href="{% url 'view_work_flow' org_id  tobject.id  %}"
                                     class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'edit_work_flow' pro_id  tobject.id %}"
+                                    <a href="{% url 'edit_work_flow' org_id  tobject.id %}"
                                     class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                     &nbsp;&nbsp;
-                                    <a href="{% url 'permanent_deletion_work_flow' pro_id  tobject.id %}"
+                                    <a href="{% url 'permanent_deletion_work_flow' org_id  tobject.id %}"
                                     class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
                                      &nbsp;&nbsp;
-                                    <a href="{% url 'restore_work_flow' pro_id  tobject.id %}"
+                                    <a href="{% url 'restore_work_flow' org_id  tobject.id %}"
                                     class="btn btn-sm btn-success"><i class="bi bi-x-square"></i></a>
                                 </td>
                             </tr>
@@ -136,19 +136,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_work_flows' pro_id %}?page=1&all=5";
+      window.location.href = "{% url 'list_work_flows' org_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_work_flows' pro_id %}?page=1&all=10";
+      window.location.href = "{% url 'list_work_flows' org_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_work_flows' pro_id %}?page=1&all=15";
+      window.location.href = "{% url 'list_work_flows' org_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_work_flows' pro_id  %}?page=1&all=25";
+      window.location.href = "{% url 'list_work_flows' org_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_work_flows' pro_id %}?page=1&all=50";
+      window.location.href = "{% url 'list_work_flows' org_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_work_flows' pro_id %}?page=1&all=100";
+      window.location.href = "{% url 'list_work_flows' org_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_work_flows' pro_id %}?page=1&all=all";
+      window.location.href = "{% url 'list_work_flows' org_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });

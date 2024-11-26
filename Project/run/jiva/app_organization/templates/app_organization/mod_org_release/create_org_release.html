@@ -1,0 +1,139 @@
+
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
+                                Org Release</h2>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_org_releases' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List Org Release(s)</b></a>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th colspan="2">{{page_title}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td width="15%">
+                                <strong>Org Release</strong>
+                            </td>
+                            <td>
+                                {{form.name|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Description</strong>
+                            </td>
+                            <td>
+                                {{form.description|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Start Date</strong>
+                            </td>
+                            <td>
+                                {{form.start_date|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Release Length</strong>
+                            </td>
+                            <td>
+                                {{form.release_length|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>End Date</strong>
+                            </td>
+                            <td>
+                                {{form.end_date|as_crispy_field}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Set Iteration Length</strong>
+                            </td>
+                            <td>
+                                {{form.apply_release_iteration_length|as_crispy_field}}
+                            </td>
+                        </tr>
+                       <tr>
+                            <td colspan="2" class="text-center"><button type="submit"
+                                class="btn btn-sm btn-success">Save</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    focusField = document.getElementById('id_name');
+    focusField.focus();
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const startDateInput = document.querySelector('[name="start_date"]');
+    const releaseLengthInput = document.querySelector('[name="release_length"]');
+    const endDateInput = document.querySelector('[name="end_date"]');
+
+    function calculateEndDate() {
+        const startDateValue = startDateInput.value;
+        const releaseLengthValue = parseInt(releaseLengthInput.value, 10);
+
+        if (startDateValue && releaseLengthValue) {
+            const startDate = new Date(startDateValue);
+            const endDate = new Date(startDate);
+
+            // Add months to the start date
+            endDate.setMonth(startDate.getMonth() + releaseLengthValue);
+
+            // Adjust for months where the resulting day exceeds the last day of the month
+            if (endDate.getDate() !== startDate.getDate()) {
+                endDate.setDate(0); // Set to the last day of the previous month
+            }
+
+            // Format the end date to 'YYYY-MM-DD'
+            const formattedEndDate = endDate.toISOString().split('T')[0];
+            endDateInput.value = formattedEndDate;
+        }
+    }
+
+    startDateInput.addEventListener('change', calculateEndDate);
+    releaseLengthInput.addEventListener('change', calculateEndDate);
+});
+
+</script>
+<!-- End: Content -->
+{% endblock content %}

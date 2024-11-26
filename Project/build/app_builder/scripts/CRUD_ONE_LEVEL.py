@@ -35,8 +35,7 @@ list_objects_html_single_level = """
   }
 </style>
 <!-- Begin: Content -->
-<form action="" method="POST">
-{% csrf_token %}
+
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">
@@ -54,7 +53,7 @@ list_objects_html_single_level = """
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">___DISPMODNAME___</b>
+                                <b class="h3">{{___firstname___}}</b>
                                 &nbsp;&nbsp;
                                 ___DISPMODNAME___ List
                                
@@ -76,6 +75,8 @@ list_objects_html_single_level = """
                             </div>
                         </div>
                     </div>
+                    <form action="" method="POST">
+                    {% csrf_token %}
                     <table class="table table-bordered sortable_table">
                         <thead>
                             <tr>
@@ -125,7 +126,7 @@ list_objects_html_single_level = """
                                 <td>{{forloop.counter}}</td>
                                 <td width="20%" ondblclick="makeEditable(this)"
                                  onblur="save_element_text(this, '{{ tobject.id }}',  '___APPNAME___', '___MODELNAME___', 'name')"
-                                ><strong>{{tobject.name}}</strong></td>
+                                ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
                                 <td width="" ondblclick="makeEditable(this)"
                                 onblur="save_element_text(this, '{{ tobject.id }}',  '___APPNAME___', '___MODELNAME___', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
@@ -273,8 +274,7 @@ list_deleted_objects_html_single_level = """
 {% block content %}
 
 {% include 'app_common/common_files/navbar.html' %}
-<form action="" method="POST">
-{% csrf_token %}
+
 <!-- Begin: Content -->
 <div class="container-fluid">
     <div class="row">
@@ -293,7 +293,7 @@ list_deleted_objects_html_single_level = """
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-8">
-                                <b class="h2">___DISPMODNAME___</b>
+                                <b class="h2">{{___firstname___}}</b>
                                 &nbsp;&nbsp;
                                 {{org}}/___DISPMODNAME___ Deleted List
                             </div>
@@ -305,6 +305,8 @@ list_deleted_objects_html_single_level = """
                             </div>
                         </div>
                     </div>
+                    <form action="" method="POST">
+                    {% csrf_token %}
                     <table class="table table-bordered sortable_table">
                         <thead>
                             <tr>
@@ -953,7 +955,10 @@ class ___MODELNAME___(BaseModelImpl):
    
         
     def __str__(self):
-        return self.name
+        if self.name:
+            return self.name
+        else:
+            return str(self.id)
 """
 ## views
 
@@ -1002,7 +1007,7 @@ def list____pluralmodname___(request, ___firstid___):
         tobjects = ___MODELNAME___.objects.filter(name__icontains=search_query, 
                                             ___firstid___=___firstid___, **viewable_dict).order_by('position')
     else:
-        tobjects = ___MODELNAME___.objects.filter(active=True, ___firstid___=___firstid___, author=user).order_by('position')
+        tobjects = ___MODELNAME___.objects.filter(active=True, ___firstid___=___firstid___).order_by('position')
         deleted = ___MODELNAME___.objects.filter(active=False, deleted=False,
                                 ___firstid___=___firstid___,
                                **viewable_dict).order_by('position')
@@ -1100,10 +1105,10 @@ def list_deleted____pluralmodname___(request, ___firstid___):
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = ___MODELNAME___.objects.filter(name__icontains=search_query, 
-                                            active=False,
+                                            active=False, deleted=False,
                                             ___firstid___=___firstid___, **viewable_dict).order_by('position')
     else:
-        tobjects = ___MODELNAME___.objects.filter(active=False, ___firstid___=___firstid___,
+        tobjects = ___MODELNAME___.objects.filter(active=False, deleted=False, ___firstid___=___firstid___,
                                             **viewable_dict).order_by('position')        
     
     if show_all == 'all':

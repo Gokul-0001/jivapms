@@ -1,146 +1,156 @@
 {% extends 'app_common/common_files/base_template.html' %}
 {% load static %}
-
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
-
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!--
+required from the view
+project
+org
+org_id
+-->
+<form method="post">
+{% csrf_token %}
+<div class="content-wrapper">
+    <nav aria-label="breadcrumb" class="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
+        </ol>
+    </nav>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
-    <div class="content-wrapper">
-        <!-- Breadcrumb navigation -->
-        <nav aria-label="breadcrumb" class="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">{{project.org}}</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{project}}</li>
-            </ol>
-        </nav>
-
-        {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <h1 class="text-center">Project: {{ project }}</h1>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr><td><b>Org Name test</b></td><td>{{project.org}}</td></tr>
+                    <tr><td><b>Project Name</b></td><td>{{project}}</td></tr>
+                    <tr> 
+                        <td><b>Vision</b></td>
+                        <td  
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'vision')">
+                        {% if project_detail.vision != None %}{{ project_detail.vision }}{% endif %}</td>
+                    </td>
+                    <tr> 
+                        <td><b>Mission</b></td>
+                        <td  
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'mission')">
+                        {% if project_detail.mission != None %}{{ project_detail.mission }}{% endif %}</td>
+                    </td>
+                    <tr> 
+                        <td><b>Values</b></td>
+                        <td  
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'values')">
+                        {% if project_detail.values != None %}{{ project_detail.values }}{% endif %}</td>
+                    </td>
+                    <tr> 
+                        <td><b>Strategy</b></td>
+                        <td  
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'strategy')">
+                        {% if project_detail.strategy != None %}{{ project_detail.strategy }}{% endif %}</td>
+                    </td>
+                    <tr> 
+                        <td><b>Roadmap Summary</b></td>
+                        <td  
+                        onblur="save_related_element_text(this, 'app_organization', 'Project', 
+                        '{{project.id}}','pro', 'ProjectDetail', 'roadmap_description')">
+                        {% if project_detail.roadmap_description != None %}{{ project_detail.roadmap_description }}{% endif %}</td>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td width="20%"><b>Visual Roadmap</b>
+                        <br>
+                        <a href="{% url 'list_project_roadmaps' project.id %}">Update</a>
+                        </td>
+                        <td id="visual_roadmap">
+                            <div class="mermaid">
+                                {{ roadmap|safe }}
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Additional project details -->
+                </tbody>
+            </table>
+           
+           
         </div>
-        <!-- Content -->
-        <div class="contentbar mb-5" id="contentbar">
-            <div class="container mt-5">
-                <h1 class="text-center">Project: {{ project }}</h1>
-                    <table class="table table-bordered">
-                        <tbody>
-                            <tr><td><b>Org Name</b></td><td>{{project.org}}</td></tr>
-                            <tr><td><b>Project Name</b></td><td>{{project}}</td></tr>
-                            <tr> 
-                                <td><b>Vision</b></td>
-                                <td  
-                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
-                                '{{project.id}}','pro', 'ProjectDetail', 'vision')">
-                                {% if project_detail.vision != None %}{{ project_detail.vision }}{% endif %}</td>
-                            </td>
-                            <tr> 
-                                <td><b>Mission</b></td>
-                                <td  
-                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
-                                '{{project.id}}','pro', 'ProjectDetail', 'mission')">
-                                {% if project_detail.mission != None %}{{ project_detail.mission }}{% endif %}</td>
-                            </td>
-                            <tr> 
-                                <td><b>Values</b></td>
-                                <td  
-                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
-                                '{{project.id}}','pro', 'ProjectDetail', 'values')">
-                                {% if project_detail.values != None %}{{ project_detail.values }}{% endif %}</td>
-                            </td>
-                            <tr> 
-                                <td><b>Strategy</b></td>
-                                <td  
-                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
-                                '{{project.id}}','pro', 'ProjectDetail', 'strategy')">
-                                {% if project_detail.strategy != None %}{{ project_detail.strategy }}{% endif %}</td>
-                            </td>
-                            <tr> 
-                                <td><b>Roadmap Summary</b></td>
-                                <td  
-                                onblur="save_related_element_text(this, 'app_organization', 'Project', 
-                                '{{project.id}}','pro', 'ProjectDetail', 'roadmap_description')">
-                                {% if project_detail.roadmap_description != None %}{{ project_detail.roadmap_description }}{% endif %}</td>
-                            </td>
-                            </tr>
-                            <tr>
-                                <td width="20%"><b>Visual Roadmap</b>
-                                <br>
-                                <a href="{% url 'list_project_roadmaps' project.id %}">Update</a>
-                                </td>
-                                <td id="visual_roadmap">
-                                    <div class="mermaid">
-                                        {{ roadmap|safe }}
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- Additional project details -->
-                        </tbody>
-                    </table>
-            </div>
     </div>
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');  // Toggle the 'open' class
-        }
-    </script>
-    <script>
-        function makeEditable(element) {
-            element.contentEditable = true;
-            element.focus();
-        }
-        
+</div>
+</form> 
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('open');  // Toggle the 'open' class
+    }
+</script>
+<script>
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
+    }
     
-        function save_element_text(element, id,  appName, modelName, fieldName) {
-            element.contentEditable = false;
-            $.ajax({
-                url: '/common/common_ajax/ajax_save_element_text/',
-                type: 'POST',
-                data : {
-                'csrfmiddlewaretoken': "{{ csrf_token }}",
-                'model_name': modelName,
-                'app_name': appName,
-                'field_name': fieldName,
-                'text': element.textContent, 
-                'id': id,
-                },
-                dataType: 'json',
-                success: function(data) {
-                console.log(data);
-                }
-            })
-        }
-    
-        function save_related_element_text(element, appName, parentModelName, parentId, parentModelKey, childModelName, fieldName) {
-            element.contentEditable = false;
-            $.ajax({
-                url: '/common/common_ajax/ajax_save_related_model/',
-                type: 'POST',
-                data : {
-                'csrfmiddlewaretoken': "{{ csrf_token }}",
-                'app_name': appName,
-                'parent_model': parentModelName,
-                'parent_id': parentId,
-                'parent_model_key': parentModelKey,
-                'child_model': childModelName,
-                'field_name': fieldName,
-                'text': element.textContent, 
-    
-                },
-                dataType: 'json',
-                success: function(data) {
-                console.log(data);
-                }
-            })
-        }
-    </script>
-    
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
-<!-- End: Content -->
+
+    function save_element_text(element, id,  appName, modelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_element_text/',
+            type: 'POST',
+            data : {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'model_name': modelName,
+            'app_name': appName,
+            'field_name': fieldName,
+            'text': element.textContent, 
+            'id': id,
+            },
+            dataType: 'json',
+            success: function(data) {
+            console.log(data);
+            }
+        })
+    }
+
+    function save_related_element_text(element, appName, parentModelName, parentId, parentModelKey, childModelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_related_model/',
+            type: 'POST',
+            data : {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'app_name': appName,
+            'parent_model': parentModelName,
+            'parent_id': parentId,
+            'parent_model_key': parentModelKey,
+            'child_model': childModelName,
+            'field_name': fieldName,
+            'text': element.textContent, 
+
+            },
+            dataType: 'json',
+            success: function(data) {
+            console.log(data);
+            }
+        })
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/jstree.min.js" integrity="sha512-ekwRoEshEqHU64D4luhOv/WNmhml94P8X5LnZd9FNOiOfSKgkY12cDFz3ZC6Ws+7wjMPQ4bPf94d+zZ3cOjlig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 {% endblock content %}
