@@ -25,7 +25,7 @@ def get_viewable_dicts(user, viewable_flag, first_viewable_flag):
     return viewable_dict, first_viewable_dict
 # ============================================================= #
 @login_required
-def list_org_iterations(request, org_id):
+def list_org_iterations(request, org_release_id):
     # take inputs
     # process inputs
     user = request.user       
@@ -35,20 +35,20 @@ def list_org_iterations(request, org_id):
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
     deleted_count = 0
-    org_release = OrgRelease.objects.get(id=org_id, active=True, 
+    org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
     
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = OrgIteration.objects.filter(name__icontains=search_query, 
-                                            org_id=org_id, **viewable_dict).order_by('position')
+                                            org_release_id=org_release_id, **viewable_dict).order_by('position')
     else:
-        tobjects = OrgIteration.objects.filter(active=True, rel_id=org_release.id).order_by('position')
+        tobjects = OrgIteration.objects.filter(active=True, org_release_id=org_release_id).order_by('position')
         deleted = OrgIteration.objects.filter(active=False, deleted=False,
-                                rel_id=org_release.id,
+                                org_release_id=org_release_id,
                                **viewable_dict).order_by('position')
         deleted_count = deleted.count()
-        print(f">>> === {tobjects} is the list of records === <<<")
+    
     if show_all == 'all':
         # No pagination, show all records
         page_obj = tobjects
@@ -92,16 +92,16 @@ def list_org_iterations(request, org_id):
                     object.save()
                     
                 else:
-                    redirect('list_org_iterations', org_id=org_id)
-            return redirect('list_org_iterations', org_id=org_id)
+                    redirect('list_org_iterations', org_release_id=org_release_id)
+            return redirect('list_org_iterations', org_release_id=org_release_id)
     
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'list_org_iterations',
         'org_release': org_release,
-        'org_id': org_id,
-        
+        'org_release_id': org_release_id,
+        'org_id': org_release.org_id,
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -124,7 +124,7 @@ def list_org_iterations(request, org_id):
 
 # ============================================================= #
 @login_required
-def list_deleted_org_iterations(request, org_id):
+def list_deleted_org_iterations(request, org_release_id):
     # take inputs
     # process inputs
     user = request.user       
@@ -133,16 +133,16 @@ def list_deleted_org_iterations(request, org_id):
     objects_per_page = int(show_all) if show_all != 'all' else 25
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
-    org_release = OrgRelease.objects.get(id=org_id, active=True, 
+    org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
     
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = OrgIteration.objects.filter(name__icontains=search_query, 
                                             active=False, deleted=False,
-                                            rel_id=org_release.id, **viewable_dict).order_by('position')
+                                            org_release_id=org_release_id, **viewable_dict).order_by('position')
     else:
-        tobjects = OrgIteration.objects.filter(active=False, deleted=False, rel_id=org_release.id,
+        tobjects = OrgIteration.objects.filter(active=False, deleted=False, org_release_id=org_release_id,
                                             **viewable_dict).order_by('position')        
     
     if show_all == 'all':
@@ -175,16 +175,16 @@ def list_deleted_org_iterations(request, org_id):
                         object.deleted = True             
                         object.save()    
                     else:
-                        redirect('list_org_iterations', org_id=org_id)
-                redirect('list_org_iterations', org_id=org_id)
+                        redirect('list_org_iterations', org_release_id=org_release_id)
+                redirect('list_org_iterations', org_release_id=org_release_id)
     
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'list_deleted_org_iterations',
         'org_release': org_release,
-        'org_id': org_id,
-        
+        'org_release_id': org_release_id,
+        'org_id': org_release.org_id,
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -203,23 +203,20 @@ def list_deleted_org_iterations(request, org_id):
 
 # Create View
 @login_required
-def create_org_iteration(request, org_id):
+def create_org_iteration(request, org_release_id):
     user = request.user
-    org_release = OrgRelease.objects.get(id=org_id, active=True, 
+    org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
     
     if request.method == 'POST':
         form = OrgIterationForm(request.POST)
         if form.is_valid():
             form.instance.author = user
-            form.instance.rel_id = org_id
+            form.instance.org_release_id = org_release_id
             form.save()
-            print(f">>> === form.instance: {form.instance} === <<<")
-            org_release = OrgRelease.objects.all()
-            print(f">>> === org_release : {org_release} === <<<")
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
-        return redirect('list_org_iterations', org_id=org_id)
+        return redirect('list_org_iterations', org_release_id=org_release_id)
     else:
         form = OrgIterationForm()
 
@@ -227,8 +224,8 @@ def create_org_iteration(request, org_id):
         'parent_page': '___PARENTPAGE___',
         'page': 'create_org_iteration',
         'org_release': org_release,
-        'org_id': org_id,
-        
+        'org_release_id': org_release_id,
+        'org_id': org_release.org_id,
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Org Iteration',
@@ -241,9 +238,9 @@ def create_org_iteration(request, org_id):
 
 # Edit
 @login_required
-def edit_org_iteration(request, org_id, org_iteration_id):
+def edit_org_iteration(request, org_release_id, org_iteration_id):
     user = request.user
-    org_release = OrgRelease.objects.get(id=org_id, active=True, 
+    org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(OrgIteration, pk=org_iteration_id, active=True,**viewable_dict)
@@ -251,11 +248,11 @@ def edit_org_iteration(request, org_id, org_iteration_id):
         form = OrgIterationForm(request.POST, instance=object)
         if form.is_valid():
             form.instance.author = user
-            form.instance.rel_id = org_id
+            form.instance.org_release_id = org_release_id
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
-        return redirect('list_org_iterations', org_id=org_id)
+        return redirect('list_org_iterations', org_release_id=org_release_id)
     else:
         form = OrgIterationForm(instance=object)
 
@@ -263,8 +260,8 @@ def edit_org_iteration(request, org_id, org_iteration_id):
         'parent_page': '___PARENTPAGE___',
         'page': 'edit_org_iteration',
         'org_release': org_release,
-        'org_id': org_id,
-        
+        'org_release_id': org_release_id,
+        'org_id': org_release.org_id,
         'module_path': module_path,
         'form': form,
         'object': object,
@@ -276,23 +273,23 @@ def edit_org_iteration(request, org_id, org_iteration_id):
 
 
 @login_required
-def delete_org_iteration(request, org_id, org_iteration_id):
+def delete_org_iteration(request, org_release_id, org_iteration_id):
     user = request.user
-    org_release = OrgRelease.objects.get(id=org_id, active=True, 
+    org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(OrgIteration, pk=org_iteration_id, active=True,**viewable_dict)
     if request.method == 'POST':
         object.active = False
         object.save()
-        return redirect('list_org_iterations', org_id=org_id)
+        return redirect('list_org_iterations', org_release_id=org_release_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'delete_org_iteration',
         'org_release': org_release,
-        'org_id': org_id,
-        
+        'org_release_id': org_release_id,
+        'org_id': org_release.org_id,
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Org Iteration',
@@ -302,9 +299,9 @@ def delete_org_iteration(request, org_id, org_iteration_id):
 
 
 @login_required
-def permanent_deletion_org_iteration(request, org_id, org_iteration_id):
+def permanent_deletion_org_iteration(request, org_release_id, org_iteration_id):
     user = request.user
-    org_release = OrgRelease.objects.get(id=org_id, active=True, 
+    org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(OrgIteration, pk=org_iteration_id, active=False, deleted=False, **viewable_dict)
@@ -312,14 +309,14 @@ def permanent_deletion_org_iteration(request, org_id, org_iteration_id):
         object.active = False
         object.deleted = True
         object.save()
-        return redirect('list_org_iterations', org_id=org_id)
+        return redirect('list_org_iterations', org_release_id=org_release_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'permanent_deletion_org_iteration',
         'org_release': org_release,
-        'org_id': org_id,
-        
+        'org_release_id': org_release_id,
+        'org_id': org_release.org_id,
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Org Iteration',
@@ -329,19 +326,19 @@ def permanent_deletion_org_iteration(request, org_id, org_iteration_id):
 
 
 @login_required
-def restore_org_iteration(request,  org_id, org_iteration_id):
+def restore_org_iteration(request,  org_release_id, org_iteration_id):
     user = request.user
     object = get_object_or_404(OrgIteration, pk=org_iteration_id, active=False,**viewable_dict)
     object.active = True
     object.save()
-    return redirect('list_org_iterations', org_id=org_id)
+    return redirect('list_org_iterations', org_release_id=org_release_id)
    
 
 
 @login_required
-def view_org_iteration(request, org_id, org_iteration_id):
+def view_org_iteration(request, org_release_id, org_iteration_id):
     user = request.user
-    org_release = OrgRelease.objects.get(id=org_id, active=True, 
+    org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(OrgIteration, pk=org_iteration_id, active=True,**viewable_dict)    
@@ -350,8 +347,8 @@ def view_org_iteration(request, org_id, org_iteration_id):
         'parent_page': '___PARENTPAGE___',
         'page': 'view_org_iteration',
         'org_release': org_release,
-        'org_id': org_id,
-        
+        'org_release_id': org_release_id,
+        'org_id': org_release.org_id,
         'module_path': module_path,
         'object': object,
         'page_title': f'View Org Iteration',

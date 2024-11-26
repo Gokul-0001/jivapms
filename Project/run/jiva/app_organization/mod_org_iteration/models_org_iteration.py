@@ -4,8 +4,8 @@ from app_organization.mod_org_release.models_org_release import *
 from app_common.mod_common.models_common import *
 
 class OrgIteration(BaseModelTrackDateImpl):
-    rel = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, 
-                            related_name="org_rel_iterations", null=True, blank=True)
+    org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, 
+                            related_name="org_release_org_iterations", null=True, blank=True)
     
     iteration_length = models.PositiveIntegerField(default=2)
     

@@ -1,276 +1,434 @@
-
 {% extends 'app_common/common_files/base_template.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
 {% load markdown_extras  %}
+{% load mptt_tags %}
 {% block content %}
-
 {% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!--
+required from the view
+project
+org
+org_id
+-->
 <style>
-  .trash-icon {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    font-size: 24px;  /* Size of the icon */
-    cursor: pointer;
-    color: #707070;  /* Color of the icon */
-  }
-</style>
-<!-- Begin: Content -->
-
-<div class="container-fluid">
+    .trash-icon {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      font-size: 24px;  /* Size of the icon */
+      cursor: pointer;
+      color: #707070;  /* Color of the icon */
+    }
+  </style>
+<form method="post">
+{% csrf_token %}
+<div class="content-wrapper">
     <div class="row">
         <div class="col col-md-12">
             {% include 'app_organization/mod_org_iteration/breadcrumb_org_iterations.html' %}
         </div>
     </div>
-</div>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col col-md-12">           
-            <!-- display -->
-            
-            <div class="row">
-                <div class="col col-md-12">
-                    <div class="container-fluid-width">
-                        <div class="row pb-2">
-                            <div class="col col-md-5">
-                                <b class="h3">{{org_release}}</b>
-                                &nbsp;&nbsp;
-                                Org Iteration List
-                               
-                            </div>
-                            <div class="col col-md-4">
-                                <form method="get">
-                                    <input type="text" name="search" placeholder="Search" value="{{ search }}">
-                                    &nbsp;&nbsp;  
-                                    <button type="submit" class="btn btn-sm btn-primary">Search</button> 
-                                    &nbsp;&nbsp;  
-                                    <button type="submit" class="btn btn-sm btn-info">Clear</button>   
-                                </form>
-                            </div>
-                            <div class="col col-md-3 text-end">
-                                <span class="display_count">{{objects_count}} org_iteration(s)</span>
-                                &nbsp;&nbsp;
-                                <a href="{% url 'create_org_iteration' org_id  %}" 
-                                class="btn btn-sm btn-success"><b>+ Create Org Iteration</b></a>
-                            </div>
-                        </div>
-                    </div>
-                    <form action="" method="POST">
-                    {% csrf_token %}
-                    <table class="table table-bordered sortable_table">
-                        <thead>
-                            <tr>
-                                <th width="2%"><i class="bi bi-grip-vertical"></i></th>
-                                <th width="2%">
-                                    <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
-                                </th>                                
-                                <th width="2%">#</th>
-                                <th>Org Iteration</th>
-                                <th width="20%">Description</th>
-                                <th width="8%">Start Date</th>
-                                <th width="8%">Iteration Length</th>
-                                <th width="8%">End Date</th>
-                                <th width="10%">Configure</th>
-                                <th width="30%">                                                    
-                                    Actions
-                                    &nbsp;&nbsp;
-                                    <select name="pagination" id="paginationselect">
-                                        <option value="none" {% if selected_pagination == 'none' %}selected{% endif %}>-Page-</option>
-                                        {% for option in pagination_options %}
-                                            <option value="{{ option }}" {% if show_all|lower == option|lower|stringformat:"s" %}selected{% endif %}>
-                                                {{ option|capfirst }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                    
-                                    &nbsp;&nbsp;
-                                    <b>Bulk:</b>&nbsp;&nbsp; 
-                                    <select name="bulk_operations" id="bulk_operations"  onchange="this.form.submit()">
-                                        <option value="none" {% if 'none' in selected_bulk_operations %}selected{% endif %}>-- Ops --</option>
-                                        <option value="bulk_done" {% if 'bulk_done' in selected_bulk_operations %}selected{% endif %}>Done</option>
-                                        <option value="bulk_not_done" {% if 'bulk_not_done' in selected_bulk_operations %}selected{% endif %}>Not Done</option>
-                                        <option value="bulk_blocked" {% if 'bulk_blocked' in selected_bulk_operations %}selected{% endif %}>Blocked</option>
-                                        <option value="bulk_delete" {% if 'bulk_delete' in selected_bulk_operations %}selected{% endif %}>Delete</option>
-                                    </select>
-                                                         
-                                </th>
-                            </tr>
-                        </thead>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
-                        <tbody  id="sortable" class="sortable-tbody">
-                            {% for tobject in page_obj %}
-                            <tr id="{{tobject.id}}_{{ forloop.counter }}" class="sortable-row display_tr">
-                                <td class="drag-handle">
-                                    <i class="bi bi-grip-vertical"></i>
-                                </td>
-                                <td width="2%">
-                                    <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
-                                </td>
-                                <td>{{forloop.counter}}</td>
-                                <td width="20%" ondblclick="makeEditable(this)"
-                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgIteration', 'name')"
-                                ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
-                                <td width="" ondblclick="makeEditable(this)"
-                                onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgIteration', 'description')"
-                                >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                 <!-- Start Date with Date Picker -->
-                                 <td width="8%">
-                                    <input type="date" id="start_date_{{ tobject.id }}" 
-                                    value="{% if tobject.start_date %}{{ tobject.start_date|date:'Y-m-d' }}{% endif %}" 
-                                        onchange="updateEndDate('{{ tobject.id }}')">
-                                </td>
-                                <td width="8%">
-                                    <span id="iteration_length_{{ tobject.id }}">
-                                        {% if release.apply_release_iteration_length > 0 %}
-                                            {{ release.apply_release_iteration_length }}
-                                        {% else %}
-                                            {% if tobject.iteration_length != None %}{{tobject.iteration_length}}{% endif %}
-                                        {% endif %}
-                                         Week(s)
-                                    </span>
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col col-md-12">           
+                    <!-- display -->
+                    
+                    <div class="row">
+                        <div class="col col-md-12">
+                            <div class="container-fluid-width">
+                                <div class="row pb-2">
+                                    <div class="col col-md-5">
+                                        <b class="h3">
+                                            <a href="{% url 'list_org_releases' org_release.org.id %}">{{org_release}}</a>
+                                        </b>
+                                        &nbsp;&nbsp;
+                                        Org Iteration List
+                                       
+                                    </div>
+                                    <div class="col col-md-4">
+                                        <form method="get">
+                                            <input type="text" name="search" placeholder="Search" value="{{ search }}">
+                                            &nbsp;&nbsp;  
+                                            <button type="submit" class="btn btn-sm btn-primary">Search</button> 
+                                            &nbsp;&nbsp;  
+                                            <button type="submit" class="btn btn-sm btn-info">Clear</button>   
+                                        </form>
+                                    </div>
+                                    <div class="col col-md-3 text-end">
+                                        <span class="display_count">{{objects_count}} org_iteration(s)</span>
+                                        &nbsp;&nbsp;
+                                        <a href="{% url 'create_org_iteration' org_release_id  %}" 
+                                        class="btn btn-sm btn-success"><b>+ Create Org Iteration</b></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <form action="" method="POST">
+                            {% csrf_token %}
+                            <table class="table table-bordered sortable_table">
+                                <thead>
+                                    <tr>
+                                        <td colspan="10">
+                                            
+                                            <div class="container-fluid-width">
+                                                <div class="row">
+                                                    <div class="col col-md-4">                                                        
+                                                        <div >
+                                                            
+                                                            <a href="{% url 'edit_org_release' org_release.org.id org_release.id %}?back_to=list_org_iterations&rel_id={{rel_id}}">Release Start Date:</a>
+                                                            &nbsp;&nbsp;{% if org_release.start_date != None %}
+                                                            <span id="release_start_date_{{org_release_id}}">{{org_release.start_date|date:'d-m-Y'}}</span>
+                                                            {% endif %}</div>
+        
+                                                            <!-- <span>
+                                                                <input type="date" id="release_start_date_{{ tobject.id }}" 
+                                                            value="{% if release.start_date %}{{ release.start_date|date:'Y-m-d' }}{% endif %}" 
+                                                                > -->
+                                                            </span>
+                                                    </div>
+                                                    <div class="col col-md-4 text-begin">
+                                                        <div>Release End Date:
+                                                            &nbsp;&nbsp;{% if org_release.end_date != None %}
+                                                            <span id="release_end_date_{{org_release_id}}">{{org_release.end_date|date:'d-m-Y'}}</span>
+                                                            {% endif %}
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;
+                                                            Planning Buffer: {{ org_release.planning_buffer }} Days
+                                                        </div>
+                                                    </div>
+                                                   
+                                                </div>
+                                            </div>
+                                          
+        
+                                        </td>                                        
+                                    </tr>
+                                    <tr>
+                                        <th width="2%"><i class="bi bi-grip-vertical"></i></th>
+                                        <th width="2%">
+                                            <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
+                                        </th>                                
+                                        <th width="2%">#</th>
+                                        <th>Org Iteration</th>
+                                        <th width="20%">Description</th>
+                                        <th width="8%">Start Date</th>
+                                        <th width="8%">Iteration Length</th>
+                                        <th width="8%">End Date</th>
+                                        <th width="10%">Configure</th>
+                                        <th width="30%">                                            
+                                            Actions
+                                            &nbsp;&nbsp;
+                                            <select name="pagination" id="paginationselect">
+                                                <option value="none" {% if selected_pagination == 'none' %}selected{% endif %}>-Page-</option>
+                                                {% for option in pagination_options %}
+                                                    <option value="{{ option }}" {% if show_all|lower == option|lower|stringformat:"s" %}selected{% endif %}>
+                                                        {{ option|capfirst }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            
+                                            &nbsp;&nbsp;
+                                            <b>Bulk:</b>&nbsp;&nbsp; 
+                                            <select name="bulk_operations" id="bulk_operations"  onchange="this.form.submit()">
+                                                <option value="none" {% if 'none' in selected_bulk_operations %}selected{% endif %}>-- Ops --</option>
+                                                <option value="bulk_done" {% if 'bulk_done' in selected_bulk_operations %}selected{% endif %}>Done</option>
+                                                <option value="bulk_not_done" {% if 'bulk_not_done' in selected_bulk_operations %}selected{% endif %}>Not Done</option>
+                                                <option value="bulk_blocked" {% if 'bulk_blocked' in selected_bulk_operations %}selected{% endif %}>Blocked</option>
+                                                <option value="bulk_delete" {% if 'bulk_delete' in selected_bulk_operations %}selected{% endif %}>Delete</option>
+                                            </select>
+                                                                 
+                                        </th>
+                                    </tr>
+                                </thead>
+        
+                                <tbody  id="sortable" class="sortable-tbody">
+                                    {% for tobject in page_obj %}
+                                    <tr id="{{tobject.id}}_{{ forloop.counter }}" class="sortable-row display_tr">
+                                        <td class="drag-handle">
+                                            <i class="bi bi-grip-vertical"></i>
+                                        </td>
+                                        <td width="2%">
+                                            <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
+                                        </td>
+                                        <td>{{forloop.counter}}</td>
+                                        <td width="20%" ondblclick="makeEditable(this)"
+                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgIteration', 'name')"
+                                        ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
+                                        <td width="" ondblclick="makeEditable(this)"
+                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgIteration', 'description')"
+                                        >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
+                                       <!-- Start Date with Date Picker -->
+                                       <td width="8%">
+                                        <input type="date" id="start_date_{{ tobject.id }}" 
+                                        value="{% if tobject.start_date %}{{ tobject.start_date|date:'Y-m-d' }}{% endif %}" 
+                                            onchange="updateEndDate('{{ tobject.id }}')">
+                                        </td>
+                                        <td width="8%">
+                                            <span id="iteration_length_{{ tobject.id }}">
+                                                {% if release.apply_release_iteration_length > 0 %}
+                                                    {{ release.apply_release_iteration_length }}
+                                                {% else %}
+                                                    {% if tobject.iteration_length != None %}{{tobject.iteration_length}}{% endif %}
+                                                {% endif %}
+                                                Week(s)
+                                            </span>                                        
+                                        </td>
+                                        <!-- End Date with Date Picker -->
+                                        <td width="8%">
+                                            <input type="date" id="end_date_{{ tobject.id }}"
+                                                value="{% if tobject.end_date %}{{ tobject.end_date|date:'Y-m-d' }}{% endif %}" 
+                                                onchange="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Iteration', 'end_date')">
+                                        </td>
+                                    
+                                        <td width="10%">
                                         
-                                </td>
-                               
-                                
-                                <!-- End Date with Date Picker -->
-                                <td width="8%">
-                                    <input type="date" id="end_date_{{ tobject.id }}"
-                                        value="{% if tobject.end_date %}{{ tobject.end_date|date:'Y-m-d' }}{% endif %}" 
-                                        onchange="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Iteration', 'end_date')">
-                                </td>
-                               
-                                <td width="10%">
-                                
-                                </td>
-                                <td width="30%">
-                                    <a href="{% url 'view_org_iteration' org_id  tobject.id  %}"
-                                    class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
-                                    &nbsp;&nbsp;
-                                    <a href="{% url 'edit_org_iteration' org_id  tobject.id %}"
-                                    class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
-                                    &nbsp;&nbsp;
-                                    <a href="{% url 'delete_org_iteration' org_id  tobject.id %}"
-                                    class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                            <tr>
-                                <td colspan="7">
-                                    {% include 'app_common/common_files/pagination.html' %}
-                                </td>
-                            </tr>                        
-                    </table>
-                <!-- end display -->
+                                        </td>
+                                        <td width="30%">
+                                            <a href="{% url 'view_org_iteration' org_release_id  tobject.id  %}"
+                                            class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
+                                            &nbsp;&nbsp;
+                                            <a href="{% url 'edit_org_iteration' org_release_id  tobject.id %}"
+                                            class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
+                                            &nbsp;&nbsp;
+                                            <a href="{% url 'delete_org_iteration' org_release_id  tobject.id %}"
+                                            class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                    <tr>
+                                        <td colspan="7">
+                                            {% include 'app_common/common_files/pagination.html' %}
+                                        </td>
+                                    </tr>                        
+                            </table>
+                        <!-- end display -->
+                </div>
+            </div>
+          
+        </div>
+         <div class="trash-icon">
+            {% if deleted_count > 0 %}
+            <a href="{% url 'list_deleted_org_iterations' org_release_id %}"><i class="bi bi-trash-fill"></i></a>    
+            {% endif %}
+        </div>
+        </form>
+           
+           
         </div>
     </div>
-  
 </div>
- <div class="trash-icon">
-    {% if deleted_count > 0 %}
-    <a href="{% url 'list_deleted_org_iterations' org_id %}"><i class="bi bi-trash-fill"></i></a>    
-    {% endif %}
-</div>
-</form>
+</form> 
+
+
 <script>
-// Select all / checkbox
-function checkUncheck(checkBox) {
-    get = document.getElementsByName('selected_item');
-    for(var i=0; i<get.length; i++) {
-        get[i].checked = checkBox.checked;
+    // Select all / checkbox
+    function checkUncheck(checkBox) {
+        get = document.getElementsByName('selected_item');
+        for(var i=0; i<get.length; i++) {
+            get[i].checked = checkBox.checked;
+        }
     }
-}
-</script>
-
-<script>
-    // pagination select
-document.addEventListener("DOMContentLoaded", function () {
-  const redirectSelect = document.getElementById("paginationselect");
-  redirectSelect.addEventListener("change", function () {
-    const selectedValue = redirectSelect.value;
+    </script>
     
-    // Redirect the user based on the selected value
-    if (selectedValue === "5") {
-      window.location.href = "{% url 'list_org_iterations' org_id %}?page=1&all=5";
-    } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_org_iterations' org_id %}?page=1&all=10";
-    } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_org_iterations' org_id %}?page=1&all=15";
-    } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_org_iterations' org_id  %}?page=1&all=25";
-    } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_org_iterations' org_id %}?page=1&all=50";
-    } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_org_iterations' org_id %}?page=1&all=100";
-    } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_org_iterations' org_id %}?page=1&all=all";
-    } 
-    // Add more conditions for other options as needed
-  });
-});
-</script>
-
-<script>
-    $(".sortable_table").find("tbody").sortable({
-      items: "> tr",
-      handle: ".drag-handle",
-      appendTo: "parent",
-      cancel: "[contenteditable]",
-      update: function(event, ui) {
-              var serialOrder = $('#sortable').sortable('serialize');
-              var arrayOrder = $('#sortable').sortable('toArray');
-              //alert(arrayOrder);
-              $.ajax({
-                url: '/common/common_ajax/ajax_update_model_list_sorted/',
+    <script>
+        // pagination select
+    document.addEventListener("DOMContentLoaded", function () {
+      const redirectSelect = document.getElementById("paginationselect");
+      redirectSelect.addEventListener("change", function () {
+        const selectedValue = redirectSelect.value;
+        
+        // Redirect the user based on the selected value
+        if (selectedValue === "5") {
+          window.location.href = "{% url 'list_org_iterations' org_release_id %}?page=1&all=5";
+        } else if (selectedValue === "10") {
+          window.location.href = "{% url 'list_org_iterations' org_release_id %}?page=1&all=10";
+        } else if (selectedValue === "15") {
+          window.location.href = "{% url 'list_org_iterations' org_release_id %}?page=1&all=15";
+        } else if (selectedValue === "25") {
+          window.location.href = "{% url 'list_org_iterations' org_release_id  %}?page=1&all=25";
+        } else if (selectedValue === "50") {
+          window.location.href = "{% url 'list_org_iterations' org_release_id %}?page=1&all=50";
+        } else if (selectedValue === "100") {
+          window.location.href = "{% url 'list_org_iterations' org_release_id %}?page=1&all=100";
+        } else if (selectedValue === "all") {
+          window.location.href = "{% url 'list_org_iterations' org_release_id %}?page=1&all=all";
+        } 
+        // Add more conditions for other options as needed
+      });
+    });
+    </script>
+    
+    <script>
+        $(".sortable_table").find("tbody").sortable({
+          items: "> tr",
+          handle: ".drag-handle",
+          appendTo: "parent",
+          cancel: "[contenteditable]",
+          update: function(event, ui) {
+                  var serialOrder = $('#sortable').sortable('serialize');
+                  var arrayOrder = $('#sortable').sortable('toArray');
+                  //alert(arrayOrder);
+                  $.ajax({
+                    url: '/common/common_ajax/ajax_update_model_list_sorted/',
+                    type: 'POST',
+                    data : {
+                      'csrfmiddlewaretoken': "{{ csrf_token }}",
+                      'model_name': 'OrgIteration',
+                      'app_name': 'app_organization',
+                      'sorted_list_data': JSON.stringify(arrayOrder),
+                      
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                      console.log(data);
+                    }
+                  })
+                }
+        });
+    </script>
+    
+    
+    <script>
+        function makeEditable(element) {
+            element.contentEditable = true;
+            element.focus();
+        }
+    
+    
+        function save_element_text(element, id,  appName, modelName, fieldName) {
+            element.contentEditable = false;
+            value = '';
+            if (element.tagName === 'SELECT') {
+                value = element.options[element.selectedIndex].value;
+            } else {
+                value = (element.tagName === 'INPUT') ? element.value : element.textContent.trim();
+            }
+    
+            $.ajax({
+                url: '/common/common_ajax/ajax_save_element_text/',
                 type: 'POST',
                 data : {
-                  'csrfmiddlewaretoken': "{{ csrf_token }}",
-                  'model_name': 'OrgIteration',
-                  'app_name': 'app_organization',
-                  'sorted_list_data': JSON.stringify(arrayOrder),
-                  
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'model_name': modelName,
+                'app_name': appName,
+                'field_name': fieldName,
+                'text': value, 
+                'id': id,
                 },
                 dataType: 'json',
                 success: function(data) {
-                  console.log(data);
+                console.log(data);
                 }
-              })
+            })
+        }
+    
+        function updateEndDate(id) {
+            const startDateInput = document.getElementById(`start_date_${id}`);
+            const iterationLengthElement = document.getElementById(`iteration_length_${id}`);
+            const endDateInput = document.getElementById(`end_date_${id}`);
+    
+            const startDateValue = startDateInput.value;
+            const iterationLengthValue = parseInt(iterationLengthElement.textContent.trim(), 10);
+    
+            // Check if start date is valid and iteration length is available
+            if (startDateValue && iterationLengthValue) {
+                const startDate = new Date(startDateValue);
+                const endDate = new Date(startDate);
+    
+                // Add the iteration length (in weeks) to the start date
+                endDate.setDate(startDate.getDate() + iterationLengthValue * 7);
+    
+                // Format the end date to 'YYYY-MM-DD'
+                const formattedEndDate = endDate.toISOString().split('T')[0];
+                endDateInput.value = formattedEndDate;
+    
+                // Optionally trigger a save if needed
+                save_element_text(endDateInput, id, 'app_organization', 'Iteration', 'end_date');
             }
-    });
-</script>
-
-
-<script>
-    function makeEditable(element) {
-        element.contentEditable = true;
-        element.focus();
-    }
-
-
-    function save_element_text(element, id,  appName, modelName, fieldName) {
-        element.contentEditable = false;
-        $.ajax({
-            url: '/common/common_ajax/ajax_save_element_text/',
-            type: 'POST',
-            data : {
-            'csrfmiddlewaretoken': "{{ csrf_token }}",
-            'model_name': modelName,
-            'app_name': appName,
-            'field_name': fieldName,
-            'text': element.textContent, 
-            'id': id,
-            },
-            dataType: 'json',
-            success: function(data) {
-            console.log(data);
-            }
-        })
-    }
-</script>
-
-<!-- End: Content -->
+        }
+    
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const releaseStartDateElement = document.getElementById(`release_start_date_{{org_release_id}}`);
+          const releaseStartDateText = releaseStartDateElement ? releaseStartDateElement.textContent.trim() : null;
+          // const planningBuffer = 5; // Days
+          const planningBuffer = parseInt("{{ org_release.planning_buffer }}", 10);
+          const iterationRows = document.querySelectorAll('[id^="start_date_"]'); // Select all iteration start date fields
+      
+          // Function to parse d-m-Y into a JavaScript Date object
+          function parseDateDMY(dateStr) {
+              const [day, month, year] = dateStr.split('-').map(num => parseInt(num, 10));
+              return new Date(year, month - 1, day); // JavaScript months are 0-based
+          }
+      
+          // Function to format a Date object to YYYY-MM-DD (for input fields)
+          function formatDateYYYYMMDD(date) {
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+              const day = String(date.getDate()).padStart(2, '0');
+              return `${year}-${month}-${day}`;
+          }
+      
+          // Calculate the start and end dates for iterations
+          function calculateIterations() {
+              if (!releaseStartDateText) {
+                  console.error("Release Start Date is missing or invalid.");
+                  return;
+              }
+      
+              const releaseDate = parseDateDMY(releaseStartDateText);
+      
+              if (isNaN(releaseDate)) {
+                  console.error("Release Start Date is not a valid date:", releaseStartDateText);
+                  return;
+              }
+      
+              // Add the planning buffer to the release start date for the first iteration
+              let currentStartDate = new Date(releaseDate);
+              currentStartDate.setDate(releaseDate.getDate() + planningBuffer);
+      
+              iterationRows.forEach((iteration, index) => {
+                  const iterationId = iteration.id.split("_")[2]; // Extract the iteration ID
+                  const iterationLengthElement = document.getElementById(`iteration_length_${iterationId}`);
+                  const endDateInput = document.getElementById(`end_date_${iterationId}`);
+      
+                  if (!iterationLengthElement) {
+                      console.warn(`Iteration length element not found for iteration ${iterationId}`);
+                      return;
+                  }
+      
+                  // Set the start date for the current iteration
+                  iteration.value = formatDateYYYYMMDD(currentStartDate); // Start date in YYYY-MM-DD
+      
+                  // Get the iteration length (in weeks) from the span or div
+                  const iterationLengthValue = parseInt(iterationLengthElement.textContent.trim(), 10);
+      
+                  if (iterationLengthValue && !isNaN(iterationLengthValue)) {
+                      // Calculate the end date based on the iteration length
+                      const currentEndDate = new Date(currentStartDate);
+                      currentEndDate.setDate(currentStartDate.getDate() + iterationLengthValue * 7 - 1);
+                      endDateInput.value = formatDateYYYYMMDD(currentEndDate); // End date in YYYY-MM-DD
+      
+                      // Move to the next iteration's start date
+                      currentStartDate = new Date(currentEndDate);
+                      currentStartDate.setDate(currentStartDate.getDate() + 1); // Next start date
+                  } else {
+                      console.warn(`Iteration length missing or invalid for iteration ${iterationId}`);
+                  }
+              });
+          }
+      
+          // Initial calculation for all iterations
+          calculateIterations();
+      });
+      
+      </script>
 {% endblock content %}

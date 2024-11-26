@@ -25,7 +25,7 @@ class OrgIterationForm(forms.ModelForm):
     )
     class Meta:
         model = OrgIteration
-        fields = ['name', 'description', 'rel', 'start_date', 'end_date', 'iteration_length']
+        fields = ['name', 'description', 'org_release', 'start_date', 'end_date', 'iteration_length']
     def __init__(self, *args, **kwargs):
         super(OrgIterationForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()  # Note: No need to pass 'self' here

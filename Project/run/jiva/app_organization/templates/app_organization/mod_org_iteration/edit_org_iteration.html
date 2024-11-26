@@ -26,10 +26,10 @@
                     <div class="row">
                         <div class="col col-md-8">
                             <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
-                                Org Iteration</h2>
+                                {{org_release}}</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_org_iterations' org_id %}"
+                            <a href="{% url 'list_org_iterations' org_release_id %}"
                              class="btn btn-sm btn-primary"><b>List Org Iteration(s)</b></a>
                         </div>
                     </div>
@@ -45,9 +45,9 @@
                                         </div>
                                         <div class="col col-md-7">
                                             <div class="text-end">
-                                                <a href="{% url 'view_org_iteration' org_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
+                                                <a href="{% url 'view_org_iteration' org_release_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
                                                 &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_org_iteration' org_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
+                                                <a href="{% url 'delete_org_iteration' org_release_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
                                                 
                                             </div>
     
@@ -75,14 +75,6 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <strong>Description</strong>
-                            </td>
-                            <td>
-                                {{form.description|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
                             <td><strong>Start Date</strong></td>
                             <td>{{ form.start_date|as_crispy_field }}</td>
                         </tr>
@@ -97,13 +89,12 @@
                                     Applying release iteration length of {{ org_release.apply_release_iteration_length }} Week(s).
                                     <br>
                                     To change the iteration length, please change the release iteration length.
-                                    <input type="hidden" id="id_iteration_length" name="iteration_length" value="0">
+                                    <input type="hidden" id="id_iteration_length" name="iteration_length" value="{{ org_release.apply_release_iteration_length }}">
                                 {% else %}
                                     {{ form.iteration_length|as_crispy_field }}
                                 {% endif %}
                             </td>
                         </tr>
-                        
                        <tr>
                             <td colspan="2" class="text-center"><button type="submit"
                                 class="btn btn-sm btn-success">Save</button></td>

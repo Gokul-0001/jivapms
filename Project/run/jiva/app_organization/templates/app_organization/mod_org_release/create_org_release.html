@@ -58,34 +58,27 @@
                         </tr>
                         <tr>
                             <td>
-                                <strong>Start Date</strong>
+                                <strong>Configure Schedule</strong>
                             </td>
-                            <td>
-                                {{form.start_date|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Release Length</strong>
-                            </td>
-                            <td>
-                                {{form.release_length|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>End Date</strong>
-                            </td>
-                            <td>
-                                {{form.end_date|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Set Iteration Length</strong>
-                            </td>
-                            <td>
-                                {{form.apply_release_iteration_length|as_crispy_field}}
+                            <td colspan="2">
+                                <div class="row">
+                                    <div class="col col-md-3">
+                                        <strong>Start Date</strong><br>
+                                        {{form.start_date|as_crispy_field}}
+                                    </div>
+                                    <div class="col col-md-3">
+                                        <strong>Release Length</strong><br>
+                                        {{form.release_length|as_crispy_field}}
+                                    </div>
+                                    <div class="col col-md-3">
+                                        <strong>End Date</strong><br>
+                                        {{form.end_date|as_crispy_field}}
+                                    </div>
+                                    <div class="col col-md-3">
+                                        <strong>Set Iteration Length</strong><br>
+                                        {{form.apply_release_iteration_length|as_crispy_field}}
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                        <tr>

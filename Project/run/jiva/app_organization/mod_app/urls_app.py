@@ -1,9 +1,10 @@
 from django.urls import include, path
 
 urlpatterns = [
-    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
+    
     path('backlog_super_type/', include('app_organization.mod_backlog_super_type.urls_backlog_super_type')),
     path('backlog_type/', include('app_organization.mod_backlog_type.urls_backlog_type')),
+    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
     path('board/', include('app_organization.mod_board.urls_board')),
     path('dev_value_stream/', include('app_organization.mod_dev_value_stream.urls_dev_value_stream')),
     path('dev_value_stream_step/', include('app_organization.mod_dev_value_stream_step.urls_dev_value_stream_step')),
@@ -19,7 +20,6 @@ urlpatterns = [
     path('org_board/', include('app_organization.mod_org_board.urls_org_board')),
     path('org_event/', include('app_organization.mod_org_event.urls_org_event')),
     path('org_iteration/', include('app_organization.mod_org_iteration.urls_org_iteration')),
-    
     path('org_metric/', include('app_organization.mod_org_metric.urls_org_metric')),
     path('org_release/', include('app_organization.mod_org_release.urls_org_release')),
     path('org_team/', include('app_organization.mod_org_team.urls_org_team')),

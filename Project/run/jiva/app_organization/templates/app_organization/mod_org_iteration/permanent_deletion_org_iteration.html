@@ -29,7 +29,7 @@
                                 Org Iteration :: {{object}}</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_org_iterations' org_id %}"
+                            <a href="{% url 'list_org_iterations' org_release_id %}"
                              class="btn btn-sm btn-primary"><b>List Org Iteration(s)</b></a>
                         </div>
                     </div>
@@ -44,9 +44,9 @@
                                     </div>
                                     <div class="col col-md-7">
                                         <div class="text-end">
-                                            <a href="{% url 'edit_org_iteration' org_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
+                                            <a href="{% url 'edit_org_iteration' org_release_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
                                             &nbsp;&nbsp;&nbsp;
-                                            <a href="{% url 'view_org_iteration' org_id object.id %}" class="btn btn-sm btn-danger"><b>View</b></a>
+                                            <a href="{% url 'view_org_iteration' org_release_id object.id %}" class="btn btn-sm btn-danger"><b>View</b></a>
                                             
                                         </div>
 
@@ -65,7 +65,7 @@
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-danger">Confirm</button> 
                                         &nbsp;&nbsp;&nbsp;
-                                        <a href="{% url 'list_org_iterations' org_id %}" class="btn btn-sm btn-warning">Cancel</a>
+                                        <a href="{% url 'list_org_iterations' org_release_id %}" class="btn btn-sm btn-warning">Cancel</a>
                                     </form>
                                 </div>
                             </div>

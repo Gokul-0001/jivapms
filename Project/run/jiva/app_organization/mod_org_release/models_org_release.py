@@ -9,6 +9,8 @@ class OrgRelease(BaseModelTrackDateImpl):
     
     release_length = models.PositiveIntegerField(default=3)
     
+    planning_buffer = models.PositiveIntegerField(default=2)
+    
     apply_release_iteration_length = models.PositiveIntegerField(default=2)
     
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
