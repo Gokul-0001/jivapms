@@ -27,14 +27,15 @@
 
     .topic_cropped_image {
         border: 2px solid #ccc;
-        color: darkblue;
-        background-color: lightgrey; /* Green background with opacity */
+        color: white;
+        background-color: rgba(0, 128, 0, 1); /* Green background with opacity */
         padding: 10px;
         position: absolute;
         display: none; /* Hidden until positioned dynamically */
         z-index: 20;
     }
 </style>
+
 
 <div class="content-wrapper">
     {% include 'app_organization/mod_blog/breadcrumb_blogs.html' %}
@@ -44,36 +45,41 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col col-md-4 text-start">
-                    <div id="image-map-container" style="position: relative; width: 100%; max-width: 600px; margin: auto;">
-                        <!-- Responsive Image -->
-                        <img id="responsive-image" src="{{ org_image_map.thumbnail.url }}" alt="Image Map" 
-                             style="width: 100%; height: auto; display: block;">
-                
-                        <!-- Highlighted Area -->
-                        <div id="highlight-layer"></div>
-
-                        <!-- Connecting Line -->
-                        <svg id="connector-line" width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none;">
-                            <line x1="0" y1="0" x2="0" y2="0" />
-                        </svg>
-
-                        {% if cropped_image_url %}
-                            <div id="cropped-image-container" class="topic_cropped_image">
-                                <h5>{{ area_name }}</h5>
-                                <img id="cropped-image" src="{{ cropped_image_url }}" alt="Cropped Image" 
-                                     style="width: 150px; height: auto; border: 1px solid #ccc;">
-                            </div>
-                        {% endif %}
+                    <div class="col col-md-4 text-start">
+                        <div id="image-map-container" style="position: relative; width: 100%; max-width: 600px; margin: auto;">
+                            <!-- Responsive Image -->
+                            <img id="responsive-image" src="{{ org_image_map.thumbnail.url }}" alt="Image Map" 
+                                 style="width: 100%; height: auto; display: block;">
+                    
+                            <!-- Highlighted Area -->
+                            <div id="highlight-layer"></div>
+    
+                            <!-- Connecting Line -->
+                            <svg id="connector-line" width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none;">
+                                <line x1="0" y1="0" x2="0" y2="0" />
+                            </svg>
+    
+                            {% if cropped_image_url %}
+                                <div id="cropped-image-container" class="topic_cropped_image">
+                                    <h5>{{ area_name }}</h5>
+                                    <img id="cropped-image" src="{{ cropped_image_url }}" alt="Cropped Image" 
+                                        style="width: 150px; height: auto; border: 1px solid #ccc;">
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-                <div class="col col-md-4 text-center"></div>
+                <div class="col col-md-4 text-center">
+                    
+                </div>
                 <div class="col col-md-4 text-end">
                     <a href="{{ current_url }}">
                         <button type="button" class="btn btn-primary">Big Picture</button>
                     </a>
                 </div>
             </div>
-            <div class="row mt-5">
+
+            <div class="row">
                 <div class="col col-md-12">
                     <b>{{ object }}</b>
                     <div class="blog-content">
@@ -81,10 +87,11 @@
                     </div>
                 </div>
             </div>
+
+
         </div>
     </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
     const responsiveImage = document.getElementById("responsive-image");
