@@ -20,6 +20,8 @@
     }
 
     #connector-line line {
+        stroke-dasharray: 4; /* Dashed line for better visualization */
+        stroke: grey;
         stroke-width: 2;
     }
 
@@ -31,7 +33,6 @@
         position: absolute;
         display: none; /* Hidden until positioned dynamically */
         z-index: 20;
-        left: -100px;
     }
 </style>
 <style>
@@ -58,17 +59,9 @@
 
                         <!-- Connecting Line -->
                         <svg id="connector-line" width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none;">
-                            <!-- Filled region -->
-                            <polygon id="filled-region" points="" fill="rgba(128, 128, 128, 0.3)" stroke="none"></polygon>
-                        
-                            <!-- Left connecting line -->
-                            <line id="line-left" x1="0" y1="0" x2="0" y2="0" stroke="rgba(128, 128, 128, 0.3)" stroke-width="2"></line>
-                        
-                            <!-- Right connecting line -->
-                            <line id="line-right" x1="0" y1="0" x2="0" y2="0" stroke="rgba(128, 128, 128, 0.3)" stroke-width="2"></line>
+                            <line id="line-left" x1="0" y1="0" x2="0" y2="0" />
+                            <line id="line-right" x1="0" y1="0" x2="0" y2="0" />
                         </svg>
-                        
-                        
                         
 
                         {% if cropped_image_url %}
@@ -106,7 +99,6 @@
     const highlightLayer = document.getElementById("highlight-layer");
     const lineLeft = document.getElementById("line-left");
     const lineRight = document.getElementById("line-right");
-    const filledRegion = document.getElementById("filled-region");
 
     // Original dimensions of the image
     const originalWidth = {{ org_image_map.original_width }};
@@ -177,15 +169,6 @@
         lineRight.setAttribute("y1", lineY1Right);
         lineRight.setAttribute("x2", lineX2Right);
         lineRight.setAttribute("y2", lineY2Right);
-
-        // Update polygon points to fill the region
-        const polygonPoints = `
-            ${lineX1Left},${lineY1Left} 
-            ${lineX1Right},${lineY1Right} 
-            ${lineX2Right},${lineY2Right} 
-            ${lineX2Left},${lineY2Left}
-        `;
-        filledRegion.setAttribute("points", polygonPoints.trim());
     }
 
     // Update on page load and window resize

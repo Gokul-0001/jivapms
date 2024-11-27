@@ -20,6 +20,8 @@
     }
 
     #connector-line line {
+        stroke-dasharray: 4; /* Dashed line for better visualization */
+        stroke: grey;
         stroke-width: 2;
     }
 
@@ -31,7 +33,6 @@
         position: absolute;
         display: none; /* Hidden until positioned dynamically */
         z-index: 20;
-        left: -100px;
     }
 </style>
 <style>
@@ -58,18 +59,8 @@
 
                         <!-- Connecting Line -->
                         <svg id="connector-line" width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none;">
-                            <!-- Filled region -->
-                            <polygon id="filled-region" points="" fill="rgba(128, 128, 128, 0.3)" stroke="none"></polygon>
-                        
-                            <!-- Left connecting line -->
-                            <line id="line-left" x1="0" y1="0" x2="0" y2="0" stroke="rgba(128, 128, 128, 0.3)" stroke-width="2"></line>
-                        
-                            <!-- Right connecting line -->
-                            <line id="line-right" x1="0" y1="0" x2="0" y2="0" stroke="rgba(128, 128, 128, 0.3)" stroke-width="2"></line>
+                            <line x1="0" y1="0" x2="0" y2="0" />
                         </svg>
-                        
-                        
-                        
 
                         {% if cropped_image_url %}
                             <div id="cropped-image-container" class="topic_cropped_image">
@@ -100,13 +91,11 @@
 </div>
 
 <script>
-   document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
     const responsiveImage = document.getElementById("responsive-image");
     const croppedImageContainer = document.getElementById("cropped-image-container");
     const highlightLayer = document.getElementById("highlight-layer");
-    const lineLeft = document.getElementById("line-left");
-    const lineRight = document.getElementById("line-right");
-    const filledRegion = document.getElementById("filled-region");
+    const connectorLine = document.getElementById("connector-line").querySelector("line");
 
     // Original dimensions of the image
     const originalWidth = {{ org_image_map.original_width }};
@@ -138,6 +127,8 @@
         highlightLayer.style.display = "block"; // Make it visible
 
         // Calculate position for cropped image
+        const thumbnailRect = responsiveImage.getBoundingClientRect();
+
         const croppedImageX =
             highlightX + (highlightX + highlightWidth > renderedWidth / 2 ? -180 : highlightWidth + 20);
         const croppedImageY = highlightY + highlightHeight + 20;
@@ -149,43 +140,16 @@
 
         // Calculate connector line coordinates
         const croppedRect = croppedImageContainer.getBoundingClientRect();
+        const lineX1 = highlightX + highlightWidth / 2;
+        const lineY1 = highlightY + highlightHeight / 2;
+        const lineX2 = croppedImageX + croppedRect.width / 2;
+        const lineY2 = croppedImageY + croppedRect.height / 2;
 
-        // Bottom-left corner of the thumbnail selection
-        const lineX1Left = highlightX;
-        const lineY1Left = highlightY + highlightHeight;
-
-        // Bottom-right corner of the thumbnail selection
-        const lineX1Right = highlightX + highlightWidth;
-        const lineY1Right = highlightY + highlightHeight;
-
-        // Top-left corner of the cropped image
-        const lineX2Left = croppedImageX;
-        const lineY2Left = croppedImageY;
-
-        // Top-right corner of the cropped image
-        const lineX2Right = croppedImageX + croppedRect.width;
-        const lineY2Right = croppedImageY;
-
-        // Update left line position
-        lineLeft.setAttribute("x1", lineX1Left);
-        lineLeft.setAttribute("y1", lineY1Left);
-        lineLeft.setAttribute("x2", lineX2Left);
-        lineLeft.setAttribute("y2", lineY2Left);
-
-        // Update right line position
-        lineRight.setAttribute("x1", lineX1Right);
-        lineRight.setAttribute("y1", lineY1Right);
-        lineRight.setAttribute("x2", lineX2Right);
-        lineRight.setAttribute("y2", lineY2Right);
-
-        // Update polygon points to fill the region
-        const polygonPoints = `
-            ${lineX1Left},${lineY1Left} 
-            ${lineX1Right},${lineY1Right} 
-            ${lineX2Right},${lineY2Right} 
-            ${lineX2Left},${lineY2Left}
-        `;
-        filledRegion.setAttribute("points", polygonPoints.trim());
+        // Update line position
+        connectorLine.setAttribute("x1", lineX1);
+        connectorLine.setAttribute("y1", lineY1);
+        connectorLine.setAttribute("x2", lineX2);
+        connectorLine.setAttribute("y2", lineY2);
     }
 
     // Update on page load and window resize
@@ -195,7 +159,6 @@
     // Initial render
     updateHighlightAndCroppedPosition();
 });
-
 
 </script>
 {% endblock content %}
