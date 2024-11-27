@@ -3,30 +3,25 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
-{% load markdown_extras  %}
+{% load markdown_extras %}
 {% load mptt_tags %}
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
-<!--
-required from the view
-project
-org
-org_id
--->
+
 <style>
     #highlight-layer {
         pointer-events: none; /* Prevent interactions with the highlight layer */
         z-index: 10; /* Ensure it appears above the image */
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Optional shadow for better visibility */
+        background-color: rgba(255, 0, 0, 0.3); /* Highlight color */
+        border: 2px solid red; /* Border color */
+        position: absolute;
+        display: none; /* Hidden until positioned */
     }
 </style>
 
-<form method="post">
-{% csrf_token %}
 <div class="content-wrapper">
     {% include 'app_organization/mod_blog/breadcrumb_blogs.html' %}
-    
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
     <div class="contentbar mb-5" id="contentbar">
@@ -34,36 +29,24 @@ org_id
             <div class="row">
                 <div class="col col-md-4">
                     <div id="image-map-container" style="position: relative; width: 100%; max-width: 600px; margin: auto;">
-                        <!-- Background Image -->
+                        <!-- Responsive Image -->
                         <img id="responsive-image" src="{{ org_image_map.thumbnail.url }}" alt="Image Map" 
                              style="width: 100%; height: auto; display: block;">
                         
-                        <!-- Highlighted Area Layer -->
-                        <div id="highlight-layer"
-                             style="position: absolute; background-color: rgba(255, 0, 0, 0.3); border: 2px solid red; display: none;"></div>
+                        <!-- Highlighted Area -->
+                        <div id="highlight-layer"></div>
                     </div>
-                    <script>
-                        const rawCoords = "{{ area.coords }}";  // Pass raw string
-                        const [x, y, width, height] = rawCoords.split(',').map(Number);
-                    
-                        const selectedArea = { x, y, width, height };
-                    </script>
-                    
-                    
-                              
                 </div>
-                <div class="col col-md-4">
-
-                </div>
+                <div class="col col-md-4"></div>
                 <div class="col col-md-4 text-end">
-                    <a href="">
+                    <a href="#">
                         <button type="button" class="btn btn-primary">Big Picture</button>
                     </a>
                 </div>
             </div>
             <div class="row">
                 <div class="col col-md-12">
-                    <b>{{object}}</b>
+                    <b>{{ object }}</b>
                     <div class="blog-content">
                         {{ object.content|markdown|safe }}
                     </div>
@@ -72,6 +55,49 @@ org_id
         </div>
     </div>
 </div>
-</form> 
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const responsiveImage = document.getElementById("responsive-image");
+        const highlightLayer = document.getElementById("highlight-layer");
+
+        // Original dimensions of the image
+        const originalWidth = {{ org_image_map.original_width }};
+        const originalHeight = {{ org_image_map.original_height }};
+
+        // Area coordinates (x, y, width, height)
+        const areaCoords = {{ area_coords|safe }}; // Passed as [x, y, width, height]
+
+        function updateHighlightLayer() {
+            // Get the current dimensions of the responsive image
+            const renderedWidth = responsiveImage.offsetWidth;
+            const renderedHeight = responsiveImage.offsetHeight;
+
+            // Calculate scaling factors
+            const scaleX = renderedWidth / originalWidth;
+            const scaleY = renderedHeight / originalHeight;
+
+            // Scale the coordinates
+            const highlightX = areaCoords[0] * scaleX;
+            const highlightY = areaCoords[1] * scaleY;
+            const highlightWidth = areaCoords[2] * scaleX;
+            const highlightHeight = areaCoords[3] * scaleY;
+
+            // Update the highlight layer's style
+            highlightLayer.style.left = `${highlightX}px`;
+            highlightLayer.style.top = `${highlightY}px`;
+            highlightLayer.style.width = `${highlightWidth}px`;
+            highlightLayer.style.height = `${highlightHeight}px`;
+            highlightLayer.style.display = "block"; // Make it visible
+        }
+
+        // Update the highlight layer when the image is resized
+        responsiveImage.addEventListener("load", updateHighlightLayer);
+        window.addEventListener("resize", updateHighlightLayer);
+
+        // Initial render
+        updateHighlightLayer();
+    });
+</script>
 
 {% endblock content %}
