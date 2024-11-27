@@ -95,10 +95,17 @@
                     const [x, y, width, height] = coords.map((value, index) =>
                         index % 2 === 0 ? value * scaleX : value * scaleY
                     );
-
+                    // Construct the query string with additional details
+                    const queryParams = new URLSearchParams({
+                        area_id: area.id,  // Example: area ID
+                        area_name: area.name,  // Example: area name
+                        link_ref: area.link,  // Example: blog ID
+                        selected_area: 'highlighted'  // Example: custom detail
+                    }).toString();
                     // Create a clickable link wrapped around the shape
                     element = document.createElement('a');
-                    element.href = area.link;
+                    //element.href = area.link;
+                    element.href = `${area.link}?${queryParams}`;
                     element.target = '_blank';
                     element.classList.add('shape');
                     element.style.left = `${x}px`;

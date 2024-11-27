@@ -570,6 +570,7 @@ def image_map_editor(request, organization_id, org_image_map_id):
                         shape=area['shape'],
                         coords=area['coords'],
                         link=area.get('link', ''),
+                        name=area['name'],
                         hover_text=area.get('description', ''),
                     )
             except KeyError as e:
@@ -583,6 +584,7 @@ def image_map_editor(request, organization_id, org_image_map_id):
     areas = [
         {
             'id': area.id,  # Include ID here
+            'name': area.name,
             'shape': area.shape,
             'coords': area.coords,
             'link': area.link,
@@ -617,6 +619,9 @@ def view_visual_image_map(request, organization_id, org_image_map_id):
     org_image_map = get_object_or_404(OrgImageMap, pk=org_image_map_id, active=True, organization_id=organization_id)
     areas = [
         {
+            'id': area.id,
+            'name': area.name,
+            'description': area.description,
             'shape': area.shape,
             'coords': area.coords,
             'link': area.link,

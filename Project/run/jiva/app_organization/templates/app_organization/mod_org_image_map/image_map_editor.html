@@ -18,12 +18,29 @@
 
             <!-- Image Editing Section -->
             <div id="editor-controls">
-                <input type="url" id="area-link" placeholder="Enter Link" class="form-control" required size="150">
-                <input type="text" id="area-description" placeholder="Enter Description" class="form-control">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="container-fluid-width">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <input type="text" id="area-name" placeholder="Enter Name" class="form-control" required size="150">
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="url" id="area-link" placeholder="Enter Link" class="form-control" required size="150">
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="area-description" placeholder="Enter Description" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                
                 <br>
                 <button id="draw-rect" class="btn btn-primary">Draw Rectangle</button>
-                &nbsp;&nbsp;
-                <button id="draw-circle" class="btn btn-primary">Draw Circle</button>
+                <!-- &nbsp;&nbsp;
+                <button id="draw-circle" class="btn btn-primary">Draw Circle</button> -->
                 &nbsp;&nbsp;
                 <button id="save-areas" class="btn btn-success">Save</button>
                 &nbsp;&nbsp;
@@ -38,10 +55,12 @@
             <table id="area-table" class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Shape</th>
-                        <th>Coordinates</th>
-                        <th>Link</th>
+                        <th>Name</th>
                         <th>Description</th>
+                        <th>Link</th>
+                        <th>Shape</th>
+                        <th>Coordinates</th>                  
+                        
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -49,6 +68,7 @@
                     {% for area in areas %}
                     {% if area.shape and area.coords and area.link %}
                     <tr>
+                        <td>{{area.name}}</td>
                         <td>{{ area.shape }}</td>
                         <td>{{ area.coords }}</td>
                         <td><a href="{{ area.link }}" target="_blank">{{ area.link }}</a></td>
@@ -85,6 +105,7 @@
     const imageSrc = "{{ org_image_map.image.url }}";
     const container = document.getElementById('container');
     const linkInput = document.getElementById('area-link');
+    const linkName = document.getElementById('area-name');
     const descInput = document.getElementById('area-description');
     const areasTable = document.getElementById('area-table').querySelector('tbody');
     //const debugOutput = document.getElementById('debug-data');
@@ -168,10 +189,12 @@
 
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td>${type}</td>
-        <td>${coords}</td>
-        <td><a href="${shape.link}" target="_blank">${shape.link}</a></td>
+        <td>${shape.name}</td>
         <td>${shape.description || ''}</td>
+        <td><a href="${shape.link}" target="_blank">${shape.link}</a></td>
+        <td>${type}</td>
+        <td>${coords}</td>      
+        
         <td>
             <button type="button" class="btn btn-danger delete-area" data-area-id="${shape.id || ''}">Delete</button>
         </td>
@@ -183,106 +206,6 @@
 
 
 
-// >>> === CIRCLE === <<<
-document.getElementById('draw-circle').addEventListener('click', () => {
-    let isDrawing = false; // Flag to track drawing
-    let initialPos = null; // Initial position of the circle
-
-    // Mousedown to start drawing the circle
-    stage.on('mousedown', () => {
-        if (currentShape) return; // Prevent multiple shapes at once
-
-        const pos = stage.getPointerPosition();
-        initialPos = pos;
-        isDrawing = true;
-
-        // Create a new circle
-        currentShape = new Konva.Circle({
-            x: pos.x,
-            y: pos.y,
-            radius: 0,
-            fill: 'rgba(255, 0, 0, 0.3)',
-            stroke: 'red',
-            strokeWidth: 2,
-            draggable: false, // Enable dragging
-        });
-
-        layer.add(currentShape);
-        layer.draw();
-    });
-
-    // Mousemove to dynamically adjust the circle's radius
-    stage.on('mousemove', () => {
-        if (!isDrawing || !currentShape) return;
-
-        const pos = stage.getPointerPosition();
-        const radius = Math.sqrt(
-            Math.pow(pos.x - initialPos.x, 2) + Math.pow(pos.y - initialPos.y, 2)
-        );
-        currentShape.radius(radius); // Update radius
-        layer.draw();
-    });
-
-    // Mouseup to finalize the circle
-    stage.on('mouseup', () => {
-        if (!isDrawing || !currentShape) return;
-
-        isDrawing = false;
-
-        // Capture final coordinates
-        const coords = `${currentShape.x()},${currentShape.y()},${currentShape.radius()}`;
-        const link = linkInput.value.trim();
-        const desc = descInput.value.trim();
-
-        if (!link) {
-            alert("Please provide a link before finalizing the circle.");
-            currentShape.destroy(); // Remove invalid circle
-            layer.draw();
-            currentShape = null;
-            return;
-        }
-
-        // Add dragend listener to update coordinates when the circle is dragged
-        currentShape.on('dragend', () => {
-            const updatedCoords = `${currentShape.x()},${currentShape.y()},${currentShape.radius()}`;
-            console.log('Updated circle coordinates after drag:', updatedCoords);
-
-            // Update the shapes array
-            const shapeIndex = shapes.findIndex(
-                (shape) => shape.shape === 'circle' && shape.coords === coords
-            );
-            if (shapeIndex !== -1) {
-                shapes[shapeIndex].coords = updatedCoords;
-            }
-            // Add to shapes array
-            shapes.push({
-                shape: 'circle',
-                coords: coords,
-                link: link,
-                description: desc,
-            });
-            addShapeToTable({ shape: 'circle', coords: coords, link: link, description: desc }, 'circle');
-            // Reset state
-            currentShape = null;
-            stage.off('mousemove mousedown mouseup'); // Clear drawing event listeners
-        });
-
-        // Add to shapes array
-        shapes.push({
-                shape: 'circle',
-                coords: coords,
-                link: link,
-                description: desc,
-            });
-
-        // Add the circle to the table
-        addShapeToTable({ shape: 'circle', coords: coords, link: link, description: desc }, 'circle');
-
-        // Reset state
-        currentShape = null;
-        stage.off('mousemove mousedown mouseup'); // Clear drawing event listeners
-    });
-});
 
 
     document.getElementById('draw-rect').addEventListener('click', () => {
@@ -315,6 +238,7 @@ document.getElementById('draw-circle').addEventListener('click', () => {
             if (!currentShape) return;
 
             const coords = `${currentShape.x()},${currentShape.y()},${currentShape.width()},${currentShape.height()}`;
+            const name = linkName.value.trim();
             const link = linkInput.value.trim();
             const desc = descInput.value.trim();
 
@@ -325,8 +249,8 @@ document.getElementById('draw-circle').addEventListener('click', () => {
                 return;
             }
 
-            shapes.push({ shape: 'rect', coords: coords, link: link, description: desc });
-            addShapeToTable({ shape: 'rect', coords: coords, link: link, description: desc }, 'rect');
+            shapes.push({ shape: 'rect', coords: coords, link: link, name: name,  description: desc });
+            addShapeToTable({ shape: 'rect', coords: coords, link: link, name: name, description: desc }, 'rect');
             currentShape = null;
 
             stage.off('mousedown mousemove mouseup');
@@ -335,7 +259,7 @@ document.getElementById('draw-circle').addEventListener('click', () => {
 
     document.getElementById('save-areas').addEventListener('click', () => {
         const validShapes = shapes.filter(shape => {
-            return shape.shape && shape.coords && shape.link;
+            return shape.shape && shape.coords && shape.link && shape.name;;
         });
 
         if (validShapes.length === 0) {

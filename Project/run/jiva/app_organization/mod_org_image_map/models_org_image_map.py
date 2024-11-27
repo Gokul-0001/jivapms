@@ -8,6 +8,7 @@ class OrgImageMap(BaseModelImpl):
     organization = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="organization_org_image_maps", null=True, blank=True)
     image = models.FileField(upload_to='folder_image_maps/', null=True, blank=True)
+    display_flag = models.BooleanField(default=False)
     original_width = models.PositiveIntegerField(null=True, blank=True)
     original_height = models.PositiveIntegerField(null=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
@@ -68,6 +69,8 @@ class OrgImageMap(BaseModelImpl):
                 print(f"Error processing image dimensions: {e}")
 
 class ImageMapArea(BaseModelTrackImpl):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
     image_map = models.ForeignKey(OrgImageMap, related_name='areas', on_delete=models.CASCADE, null=True, blank=True)
     shape = models.CharField(max_length=20, choices=[('rect', 'Rectangle'), ('circle', 'Circle'), ('poly', 'Polygon')], null=True, blank=True)
     coords = models.TextField(help_text="Comma-separated coordinates (e.g., x1,y1,x2,y2)", null=True, blank=True)
