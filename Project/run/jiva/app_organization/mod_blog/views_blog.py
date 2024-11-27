@@ -368,6 +368,8 @@ def display_blog(request, organization_id, blog_id):
     area_id = request.GET.get('area_id')  # Area ID
     area_name = request.GET.get('area_name')  # Area name
     link_ref = request.GET.get('link_ref')  # Link reference
+    current_url = request.GET.get('current_url')  # Current URL
+    print(f">>> === current_url: {current_url} === <<<")
     selected_area = request.GET.get('selected_area')  # Custom detail
 
     # Optional: Validate or use the parameters as needed
@@ -381,9 +383,17 @@ def display_blog(request, organization_id, blog_id):
 
     # Split the coordinates into x, y, width, height
     coords = list(map(float, area.coords.split(','))) if area and area.coords else [0, 0, 0, 0]
+     # Dynamically generate cropped image
+    cropped_image = org_image_map.generate_cropped_image(coords) if org_image_map and coords != [0, 0, 0, 0] else None
 
-        
-    print(f">>> === org_image_map: {org_image_map} === <<<")
+    if cropped_image:
+        # Save cropped image temporarily for use in the template
+        cropped_image_url = f"/media/temp/{cropped_image.name}"
+        with open(f"{settings.MEDIA_ROOT}/temp/{cropped_image.name}", "wb") as f:
+            f.write(cropped_image.read())
+    else:
+        cropped_image_url = None
+
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'display_blog',
@@ -394,9 +404,11 @@ def display_blog(request, organization_id, blog_id):
         'object': object,
         'org_image_map': org_image_map,  # Pass the image map if found
         'area_coords': coords,  
+        'cropped_image_url': cropped_image_url, 
         'area_id': area_id,
         'area_name': area_name,
         'link_ref': link_ref,
+        'current_url': current_url,
         'selected_area': selected_area,
         
         'page_title': f'Display Blog',

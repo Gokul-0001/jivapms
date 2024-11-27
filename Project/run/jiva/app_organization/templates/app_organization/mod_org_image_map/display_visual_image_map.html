@@ -67,6 +67,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const currentUrl = window.location.href;
         const originalWidth = {{ org_image_map.original_width }};
         const originalHeight = {{ org_image_map.original_height }};
         const areas = JSON.parse('{{ areas|escapejs }}');
@@ -98,6 +99,7 @@
                         area_id: area.id,  // Example: area ID
                         area_name: area.name,  // Example: area name
                         link_ref: area.link,  // Example: blog ID
+                        current_url: currentUrl,
                         selected_area: 'highlighted'  // Example: custom detail
                     }).toString();
                     // Create a clickable link wrapped around the shape

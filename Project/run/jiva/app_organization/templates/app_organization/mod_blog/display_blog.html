@@ -18,6 +18,18 @@
         position: absolute;
         display: none; /* Hidden until positioned */
     }
+
+    #connector-line line {
+        stroke-dasharray: 4; /* Dashed line for better visualization */
+        stroke: grey;
+        stroke-width: 2;
+    }
+    .topic_cropped_image {
+        border: 2px solid #ccc;
+        background-color: green;
+        margin-top: -200px;
+        margin-left: 200px;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -27,23 +39,40 @@
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
             <div class="row">
-                <div class="col col-md-4">
+                <div class="col col-md-4 text-start">
                     <div id="image-map-container" style="position: relative; width: 100%; max-width: 600px; margin: auto;">
                         <!-- Responsive Image -->
                         <img id="responsive-image" src="{{ org_image_map.thumbnail.url }}" alt="Image Map" 
                              style="width: 100%; height: auto; display: block;">
-                        
+                
                         <!-- Highlighted Area -->
                         <div id="highlight-layer"></div>
+
+                        <!-- Connecting Line -->
+                        <svg id="connector-line" width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none;">
+                            <line x1="0" y1="0" x2="0" y2="0" />
+                        </svg>
+                        {% if cropped_image_url %}
+                            <div class="topic_cropped_image">
+                                <h5>{{ area_name }}</h5>
+                                <img id="cropped-image" src="{{ cropped_image_url }}" alt="Cropped Image" 
+                                    style="width: 150px; height: auto; border: 1px solid #ccc; margin-top: 10px;">
+                            </div>
+                        {% else %}
+                            <p>No cropped image available.</p>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="col col-md-4"></div>
+                <div class="col col-md-4 text-center">
+                    
+                </div>
                 <div class="col col-md-4 text-end">
-                    <a href="#">
+                    <a href="{{ current_url }}">
                         <button type="button" class="btn btn-primary">Big Picture</button>
                     </a>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col col-md-12">
                     <b>{{ object }}</b>
@@ -52,52 +81,71 @@
                     </div>
                 </div>
             </div>
+
+
         </div>
     </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const responsiveImage = document.getElementById("responsive-image");
-        const highlightLayer = document.getElementById("highlight-layer");
+    const responsiveImage = document.getElementById("responsive-image");
+    const croppedImage = document.getElementById("cropped-image");
+    const highlightLayer = document.getElementById("highlight-layer");
+    const connectorLine = document.getElementById("connector-line").querySelector("line");
 
-        // Original dimensions of the image
-        const originalWidth = {{ org_image_map.original_width }};
-        const originalHeight = {{ org_image_map.original_height }};
+    // Original dimensions of the image
+    const originalWidth = {{ org_image_map.original_width }};
+    const originalHeight = {{ org_image_map.original_height }};
 
-        // Area coordinates (x, y, width, height)
-        const areaCoords = {{ area_coords|safe }}; // Passed as [x, y, width, height]
+    // Area coordinates (x, y, width, height)
+    const areaCoords = {{ area_coords|safe }}; // Passed as [x, y, width, height]
 
-        function updateHighlightLayer() {
-            // Get the current dimensions of the responsive image
-            const renderedWidth = responsiveImage.offsetWidth;
-            const renderedHeight = responsiveImage.offsetHeight;
+    function updateHighlightAndConnector() {
+        // Get the current dimensions of the responsive image
+        const renderedWidth = responsiveImage.offsetWidth;
+        const renderedHeight = responsiveImage.offsetHeight;
 
-            // Calculate scaling factors
-            const scaleX = renderedWidth / originalWidth;
-            const scaleY = renderedHeight / originalHeight;
+        // Calculate scaling factors
+        const scaleX = renderedWidth / originalWidth;
+        const scaleY = renderedHeight / originalHeight;
 
-            // Scale the coordinates
-            const highlightX = areaCoords[0] * scaleX;
-            const highlightY = areaCoords[1] * scaleY;
-            const highlightWidth = areaCoords[2] * scaleX;
-            const highlightHeight = areaCoords[3] * scaleY;
+        // Scale the coordinates
+        const highlightX = areaCoords[0] * scaleX;
+        const highlightY = areaCoords[1] * scaleY;
+        const highlightWidth = areaCoords[2] * scaleX;
+        const highlightHeight = areaCoords[3] * scaleY;
 
-            // Update the highlight layer's style
-            highlightLayer.style.left = `${highlightX}px`;
-            highlightLayer.style.top = `${highlightY}px`;
-            highlightLayer.style.width = `${highlightWidth}px`;
-            highlightLayer.style.height = `${highlightHeight}px`;
-            highlightLayer.style.display = "block"; // Make it visible
-        }
+        // Update the highlight layer's style
+        highlightLayer.style.left = `${highlightX}px`;
+        highlightLayer.style.top = `${highlightY}px`;
+        highlightLayer.style.width = `${highlightWidth}px`;
+        highlightLayer.style.height = `${highlightHeight}px`;
+        highlightLayer.style.display = "block"; // Make it visible
 
-        // Update the highlight layer when the image is resized
-        responsiveImage.addEventListener("load", updateHighlightLayer);
-        window.addEventListener("resize", updateHighlightLayer);
+        // Position the connector line
+        const thumbnailRect = responsiveImage.getBoundingClientRect();
+        const croppedRect = croppedImage.getBoundingClientRect();
 
-        // Initial render
-        updateHighlightLayer();
-    });
+        // Calculate line coordinates
+        const lineX1 = highlightX + highlightWidth / 2; // Center of highlighted area
+        const lineY1 = highlightY + highlightHeight / 2;
+        const lineX2 = croppedRect.left - thumbnailRect.left + croppedRect.width / 2;
+        const lineY2 = croppedRect.top - thumbnailRect.top + croppedRect.height / 2;
+
+        // Update line position
+        connectorLine.setAttribute("x1", lineX1);
+        connectorLine.setAttribute("y1", lineY1);
+        connectorLine.setAttribute("x2", lineX2);
+        connectorLine.setAttribute("y2", lineY2);
+    }
+
+    // Update on page load and window resize
+    responsiveImage.addEventListener("load", updateHighlightAndConnector);
+    window.addEventListener("resize", updateHighlightAndConnector);
+
+    // Initial render
+    updateHighlightAndConnector();
+});
+
 </script>
-
 {% endblock content %}

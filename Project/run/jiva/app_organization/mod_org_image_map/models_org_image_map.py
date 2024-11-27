@@ -98,6 +98,32 @@ class OrgImageMap(BaseModelImpl):
 
             except Exception as e:
                 print(f"Error processing image dimensions: {e}")
+                
+    def generate_cropped_image(self, coords):
+        """
+        Dynamically crops the image based on the provided coordinates.
+        Returns a file-like object of the cropped image.
+        """
+        if not self.image or not coords:
+            return None
+
+        # Open the original image
+        img = Image.open(self.image.path)
+
+        # Parse coordinates
+        x, y, width, height = map(int, coords)
+        crop_box = (x, y, x + width, y + height)
+
+        # Crop the image
+        cropped_img = img.crop(crop_box)
+
+        # Save the cropped image to a temporary in-memory file
+        cropped_io = BytesIO()
+        cropped_img.save(cropped_io, format='JPEG')
+        cropped_io.seek(0)
+
+        # Return the cropped image as a ContentFile
+        return ContentFile(cropped_io.getvalue(), name=f"cropped_{self.id}.jpg")
 
 class ImageMapArea(BaseModelTrackImpl):
     name = models.CharField(max_length=255, blank=True, null=True)

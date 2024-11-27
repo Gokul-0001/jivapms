@@ -48,6 +48,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from imagekit.models import ImageSpecField
 from imagekit.processors import *
+from imagekit.models import ProcessedImageField
 import base64
 import os
 import platform
