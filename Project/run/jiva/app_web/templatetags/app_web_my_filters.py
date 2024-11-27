@@ -126,3 +126,11 @@ def static_exists(static_path):
 # {% if image_exists %}
 #     <img src="{% static 'images/my_image.jpg' %}" alt="My Image">
 # {% endif %}
+
+
+# 27-11-2024
+
+@register.filter
+def split(value, delimiter=','):
+    """Split a string by a delimiter."""
+    return value.split(delimiter)

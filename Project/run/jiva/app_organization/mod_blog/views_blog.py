@@ -356,6 +356,26 @@ def view_blog(request, organization_id, blog_id):
     template_file = f"{app_name}/{module_path}/view_blog.html"
     return render(request, template_file, context)
 
+@login_required
+def display_blog(request, organization_id, blog_id):
+    user = request.user
+    organization = Organization.objects.get(id=organization_id, active=True, 
+                                                **first_viewable_dict)
+    
+    object = get_object_or_404(Blog, pk=blog_id, active=True,**viewable_dict)    
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'display_blog',
+        'organization': organization,
+        'organization_id': organization_id,
+        'org_id': organization_id,
+        'module_path': module_path,
+        'object': object,
+        'page_title': f'Display Blog',
+    }
+    template_file = f"{app_name}/{module_path}/display_blog.html"
+    return render(request, template_file, context)
 
 @login_required
 def big_picture_blog_view(request, organization_id, slug):

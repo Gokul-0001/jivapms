@@ -86,9 +86,10 @@ org_id
                                             <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                         </th>                                
                                         <th width="2%">#</th>
-                                        <th>Org Image Map</th>
-                                        <th width="20%">Description</th>
+                                        <th width="10%">Org Image Map</th>
+                                        <th width="10%">Description</th>
                                         <th width="8%">Display</th>
+                                        <th width="15%">Framework</th>
                                         <th width="10%">Configure</th>
                                         <th width="30%">                                    
                                             Actions
@@ -126,19 +127,26 @@ org_id
                                             <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                         </td>
                                         <td>{{forloop.counter}}</td>
-                                        <td width="20%" ondblclick="makeEditable(this)"
+                                        <td width="10%" ondblclick="makeEditable(this)"
                                          onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgImageMap', 'name')"
                                         ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
-                                        <td width="" ondblclick="makeEditable(this)"
+                                        <td width="10%" ondblclick="makeEditable(this)"
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgImageMap', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                         <td width="8%">
                                             {% if tobject.display_flag != None and tobject.display_flag %}Display{% endif %}
                                         </td>
-                                        <td width="20%">
+                                        <td width="15%">
+                                            <ul>
+                                            {% for framework in tobject.supporting_frameworks.all|filter_active %}                                            
+                                            <li >{{ framework.name }} </li>
+                                            {% endfor %}
+                                            </ul>
+                                        </td>
+                                        <td width="10%">
                                         
                                         </td>
-                                        <td width="50%">
+                                        <td width="30%">
                                             <a href="{% url 'view_org_image_map' organization_id  tobject.id  %}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                             &nbsp;&nbsp;

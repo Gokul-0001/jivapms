@@ -652,6 +652,48 @@ def view_visual_image_map(request, organization_id, org_image_map_id):
 
 
 @login_required
+def display_visual_image_map(request, organization_id, org_image_map_id, framework_id):
+    user = request.user
+    organization = get_object_or_404(Organization, id=organization_id, active=True)
+    org_image_map = get_object_or_404(OrgImageMap, pk=org_image_map_id, active=True, organization_id=organization_id)
+    framework = get_object_or_404(Framework, pk=framework_id, active=True, organization_id=organization_id)
+    areas = [
+        {
+            'id': area.id,
+            'name': area.name,
+            'description': area.description,
+            'shape': area.shape,
+            'coords': area.coords,
+            'link': area.link,
+            'description': area.hover_text,
+        }
+        for area in org_image_map.areas.filter(active=True)
+    ]
+  
+    context = {
+        'image_map': org_image_map,
+        'areas': json.dumps(areas), 
+        'organization': organization,
+        'organization_id': organization_id,
+        'org_id': organization_id,
+        'org_image_map_id': org_image_map_id,
+        'org_image_map': org_image_map,
+        'object': org_image_map,
+        'framework': framework,
+        'framework_id': framework_id,
+        
+        'module_path': module_path,
+        'parent_page': '___PARENTPAGE___',
+        'page': 'display_visual_image_map',
+        'page_title': f'Display Image Map',
+       
+        
+    }
+    template_file = f"{app_name}/{module_path}/display_visual_image_map.html"
+    return render(request, template_file, context)
+
+
+@login_required
 @require_http_methods(["PUT"])  # Allow only PUT requests
 def update_area(request, area_id):
     try:

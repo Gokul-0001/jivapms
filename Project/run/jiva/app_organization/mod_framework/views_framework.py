@@ -101,7 +101,7 @@ def list_frameworks(request, organization_id):
         'page': 'list_frameworks',
         'organization': organization,
         'organization_id': organization_id,
-        
+        'org_id': organization_id,
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -184,7 +184,7 @@ def list_deleted_frameworks(request, organization_id):
         'page': 'list_deleted_frameworks',
         'organization': organization,
         'organization_id': organization_id,
-        
+        'org_id': organization_id,
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -225,7 +225,7 @@ def create_framework(request, organization_id):
         'page': 'create_framework',
         'organization': organization,
         'organization_id': organization_id,
-        
+        'org_id': organization_id,
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Framework',
@@ -261,7 +261,7 @@ def edit_framework(request, organization_id, framework_id):
         'page': 'edit_framework',
         'organization': organization,
         'organization_id': organization_id,
-        
+        'org_id': organization_id,
         'module_path': module_path,
         'form': form,
         'object': object,
@@ -289,7 +289,7 @@ def delete_framework(request, organization_id, framework_id):
         'page': 'delete_framework',
         'organization': organization,
         'organization_id': organization_id,
-        
+        'org_id': organization_id,
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Framework',
@@ -316,7 +316,7 @@ def permanent_deletion_framework(request, organization_id, framework_id):
         'page': 'permanent_deletion_framework',
         'organization': organization,
         'organization_id': organization_id,
-        
+        'org_id': organization_id,
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Framework',
@@ -348,12 +348,13 @@ def view_framework(request, organization_id, framework_id):
         'page': 'view_framework',
         'organization': organization,
         'organization_id': organization_id,
-        
+        'org_id': organization_id,
         'module_path': module_path,
         'object': object,
         'page_title': f'View Framework',
     }
     template_file = f"{app_name}/{module_path}/view_framework.html"
     return render(request, template_file, context)
+
 
 

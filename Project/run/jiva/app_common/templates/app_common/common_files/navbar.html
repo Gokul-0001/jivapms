@@ -33,7 +33,9 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         {% for framework in organization.organization_frameworks.all|filter_active %}
-                        <li><a class="dropdown-item" href="{% url 'view_my_role' %}">{{framework}}</a></li>
+                        {% if framework.supporting_frameworks.first.id != None %}
+                        <li><a class="dropdown-item" href="{% url 'display_visual_image_map' organization.id framework.supporting_frameworks.first.id  framework.id %}">{{framework}}</a></li>
+                        {% endif %}
                         {% endfor %}
                     </ul>
                 </li>

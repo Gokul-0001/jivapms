@@ -20,4 +20,6 @@ urlpatterns = [
     path('generate_visual_image_map_code/<int:organization_id>/<int:org_image_map_id>/', views_org_image_map.generate_visual_image_map_code, name='generate_visual_image_map_code'),
     path('delete_area/<int:area_id>/', views_org_image_map.delete_area, name='delete_area'),
     path('update_area/<int:area_id>/', views_org_image_map.update_area, name='update_area'),    
+    
+    path('display_visual_image_map/<int:organization_id>/<int:org_image_map_id>/<int:framework_id>/', views_org_image_map.display_visual_image_map, name='display_visual_image_map'),
 ]

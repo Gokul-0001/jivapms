@@ -1,0 +1,153 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% block content %}
+<style>
+    #image-map-container {
+        position: relative;
+        width: 50%;
+        max-width: 50%; /* Ensure it scales within the parent container */
+    }
+
+    #image-map {
+        display: block;
+        width: 100%; /* Responsive width */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    #shapes-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: auto; /* Allow interactions for child elements */
+    }
+
+    .shape {
+        position: absolute;
+        pointer-events: auto; /* Ensure the shapes are interactive */
+        display: block; /* Make <a> tags behave as block elements */
+        text-decoration: none; /* Remove underline for links */
+        border: 1px solid transparent; /* Default border for shapes */
+        transition: background-color 0.3s, border 0.3s;
+    }
+
+    .shape:hover {
+        background-color: rgba(0, 255, 0, 0.4);
+        border: 1px solid red;
+    }
+</style>
+
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<div class="content-wrapper">
+    
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar">
+        <div class="container-fluid">
+            <div>
+                <h3>{{framework}} :: {{object}}</h3>
+            </div>
+            <div id="image-map-container" style="position: relative; display: inline-block;">
+                <!-- Background Image -->
+                <img id="image-map" src="{{ org_image_map.image.url }}" alt="Image Map" style="width: 100%; display: block;">
+                <!-- Shapes Container -->
+                <div id="shapes-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const originalWidth = {{ org_image_map.original_width }};
+        const originalHeight = {{ org_image_map.original_height }};
+        const areas = JSON.parse('{{ areas|escapejs }}');
+        const shapesContainer = document.getElementById('shapes-container');
+        const imageMap = document.getElementById('image-map');
+
+        // Function to scale and render shapes
+        function renderShapes() {
+            // Clear existing shapes
+            shapesContainer.innerHTML = "";
+
+            const renderedWidth = imageMap.offsetWidth;
+            const renderedHeight = (originalHeight / originalWidth) * renderedWidth;
+
+            const scaleX = renderedWidth / originalWidth;
+            const scaleY = renderedHeight / originalHeight;
+
+            areas.forEach((area) => {
+                const coords = area.coords.split(',').map(Number);
+                let element = null;
+
+                if (area.shape === 'rect') {
+                    const [x, y, width, height] = coords.map((value, index) =>
+                        index % 2 === 0 ? value * scaleX : value * scaleY
+                    );
+                    // Construct the query string with additional details
+                    const queryParams = new URLSearchParams({
+                        area_id: area.id,  // Example: area ID
+                        area_name: area.name,  // Example: area name
+                        link_ref: area.link,  // Example: blog ID
+                        selected_area: 'highlighted'  // Example: custom detail
+                    }).toString();
+                    // Create a clickable link wrapped around the shape
+                    element = document.createElement('a');
+                    //element.href = area.link;
+                    element.href = `${area.link}?${queryParams}`;
+                    element.target = '_blank';
+                    element.classList.add('shape');
+                    element.style.left = `${x}px`;
+                    element.style.top = `${y}px`;
+                    element.style.width = `${width}px`;
+                    element.style.height = `${height}px`;
+                } else if (area.shape === 'circle') {
+                    const [x, y, radius] = coords.map((value, index) =>
+                        index === 2 ? value * scaleX : value * (index === 0 ? scaleX : scaleY)
+                    );
+
+                    // Create a clickable link wrapped around the shape
+                    element = document.createElement('a');
+                    element.href = area.link;
+                    element.target = '_blank';
+                    element.classList.add('shape');
+                    element.style.left = `${x - radius}px`;
+                    element.style.top = `${y - radius}px`;
+                    element.style.width = `${2 * radius}px`;
+                    element.style.height = `${2 * radius}px`;
+                    element.style.borderRadius = '50%';
+                }
+
+                if (element) {
+                    // Add hover effect
+                    element.addEventListener('mouseenter', () => {
+                        element.style.backgroundColor = 'rgba(0, 255, 0, 0.4)';
+                    });
+                    element.addEventListener('mouseleave', () => {
+                        element.style.backgroundColor = 'transparent';
+                    });
+
+                    // Append the shape to the container
+                    shapesContainer.appendChild(element);
+                }
+            });
+        }
+
+        // Initial render
+        renderShapes();
+
+        // Re-render shapes on window resize
+        window.addEventListener('resize', () => {
+            renderShapes();
+        });
+    });
+</script>
+{% endblock content %}

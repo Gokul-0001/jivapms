@@ -15,5 +15,6 @@ urlpatterns = [
     path('restore_blog/<int:organization_id>/<int:blog_id>/', views_blog.restore_blog, name='restore_blog'),
     path('view_blog/<int:organization_id>/<int:blog_id>/', views_blog.view_blog, name='view_blog'),
     
+    path('display_blog/<int:organization_id>/<int:blog_id>/', views_blog.display_blog, name='display_blog'),
     path('big_picture_blog_view/<int:organization_id>/<slug:slug>/', views_blog.big_picture_blog_view, name='big_picture_blog_view'),
 ]

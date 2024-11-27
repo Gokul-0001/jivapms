@@ -9,6 +9,12 @@ class OrgImageMapForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
+    # supporting_frameworks = forms.ModelChoiceField(
+    #     queryset=Framework.objects.none(),  # Placeholder queryset
+    #     widget=forms.RadioSelect,  # Use radio buttons for selection
+    #     required=False,
+    #     empty_label="None"  # Adds a 'None' option
+    # )
     class Meta:
         model = OrgImageMap
         fields = ['name', 'description', 'image', 'display_flag', 'supporting_frameworks' ]
@@ -33,6 +39,11 @@ class OrgImageMapForm(forms.ModelForm):
                 organization=organization,
                 active=True,
             )
+            
+        # # Add an empty option ("None")
+        # self.fields['supporting_frameworks'].choices = [('', 'None')] + list(
+        #     self.fields['supporting_frameworks'].choices
+        # )
     def clean_image(self):
         image = self.cleaned_data.get('image')
         if not image:
