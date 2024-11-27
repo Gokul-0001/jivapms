@@ -1,3 +1,9 @@
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
 <nav class="navbar navbar-expand-lg navbar-light bg-white">
     <div class="container-fluid no-gutters">        
         <a class="navbar-brand" href="/">
@@ -19,8 +25,19 @@
                 <li class="nav-item">
                     <a class="nav-link {% if page == 'index' %}active{% endif %} " href="/">Home</a>
                 </li>
-               
-                
+                {% if organization.id %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if page == 'framework' or parent_page == 'framework' %}active{% endif %}" 
+                    href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{organization}} Framework
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        {% for framework in organization.organization_frameworks.all|filter_active %}
+                        <li><a class="dropdown-item" href="{% url 'view_my_role' %}">{{framework}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %} 
                 {% if user.is_authenticated %}                
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {% if page == 'user_logged_in' or parent_page == 'user_logged_in' %}active{% endif %}" 

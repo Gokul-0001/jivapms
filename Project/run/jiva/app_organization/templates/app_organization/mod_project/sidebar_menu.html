@@ -32,6 +32,11 @@
             <i class="bi bi-image"></i>
             <span>Organization Layout</span>
         </a>
+        
+        <a href="{% url 'list_frameworks' org_id %}" class="nav-link" >
+            <i class="bi bi-list"></i>
+            <span>Framework</span>
+        </a>
 
         <a href="{% url 'list_teams' org_id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">groups</i>
@@ -65,6 +70,7 @@
             <i class="bi bi-list"></i>
             <span>Blog</span>
         </a>
+
     
     {% endif %}
     </div>

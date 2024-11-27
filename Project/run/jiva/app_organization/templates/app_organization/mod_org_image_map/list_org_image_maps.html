@@ -88,8 +88,9 @@ org_id
                                         <th width="2%">#</th>
                                         <th>Org Image Map</th>
                                         <th width="20%">Description</th>
+                                        <th width="8%">Display</th>
                                         <th width="10%">Configure</th>
-                                        <th width="50%">                                    
+                                        <th width="30%">                                    
                                             Actions
                                             &nbsp;&nbsp;
                                             <select name="pagination" id="paginationselect">
@@ -131,6 +132,9 @@ org_id
                                         <td width="" ondblclick="makeEditable(this)"
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgImageMap', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
+                                        <td width="8%">
+                                            {% if tobject.display_flag != None and tobject.display_flag %}Display{% endif %}
+                                        </td>
                                         <td width="20%">
                                         
                                         </td>

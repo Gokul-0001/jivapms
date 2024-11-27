@@ -42,6 +42,9 @@ from markdownx.utils import markdownify
 from django.db import transaction
 from collections import defaultdict
 from django.template.loader import get_template, TemplateDoesNotExist
+from PIL import Image 
+from lxml import etree
+
 import base64
 import os
 import platform

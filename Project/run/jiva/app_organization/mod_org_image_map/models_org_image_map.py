@@ -4,11 +4,21 @@ from app_organization.mod_organization.models_organization import *
 from app_common.mod_common.models_common import *
 from PIL import Image 
 from lxml import etree
+
+from app_organization.mod_framework.models_framework import *
+
 class OrgImageMap(BaseModelImpl):
     organization = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="organization_org_image_maps", null=True, blank=True)
     image = models.FileField(upload_to='folder_image_maps/', null=True, blank=True)
     display_flag = models.BooleanField(default=False)
+    
+    supporting_frameworks = models.ManyToManyField(
+        Framework,
+        related_name="supporting_frameworks",
+        blank=True
+    )
+    
     original_width = models.PositiveIntegerField(null=True, blank=True)
     original_height = models.PositiveIntegerField(null=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,

@@ -200,7 +200,7 @@ def list_deleted_org_image_maps(request, organization_id):
     template_file = f"{app_name}/{module_path}/list_deleted_org_image_maps.html"
     return render(request, template_file, context)
 
-
+ 
 
 # Create View
 @login_required
@@ -210,7 +210,7 @@ def create_org_image_map(request, organization_id):
                                                 **first_viewable_dict)
     
     if request.method == 'POST':
-        form = OrgImageMapForm(request.POST, request.FILES)
+        form = OrgImageMapForm(request.POST, request.FILES, org_id=organization_id)
         if form.is_valid():
             form.instance.author = user
             form.instance.organization_id = organization_id
@@ -219,7 +219,7 @@ def create_org_image_map(request, organization_id):
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('list_org_image_maps', organization_id=organization_id)
     else:
-        form = OrgImageMapForm()
+        form = OrgImageMapForm(org_id=organization_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -248,7 +248,7 @@ def edit_org_image_map(request, organization_id, org_image_map_id):
     
     org_image_map = get_object_or_404(OrgImageMap, pk=org_image_map_id, active=True,**viewable_dict)
     if request.method == 'POST':
-        form = OrgImageMapForm(request.POST, request.FILES, instance=org_image_map)
+        form = OrgImageMapForm(request.POST, request.FILES, instance=org_image_map, org_id=organization_id)
         if form.is_valid():
             form.instance.author = user
             form.instance.organization_id = organization_id
@@ -257,7 +257,7 @@ def edit_org_image_map(request, organization_id, org_image_map_id):
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('list_org_image_maps', organization_id=organization_id)
     else:
-        form = OrgImageMapForm(instance=org_image_map)
+        form = OrgImageMapForm(instance=org_image_map, org_id=organization_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
