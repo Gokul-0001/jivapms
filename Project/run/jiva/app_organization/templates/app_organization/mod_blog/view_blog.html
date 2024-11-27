@@ -8,6 +8,8 @@
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+
 <!--
 required from the view
 project
@@ -74,7 +76,15 @@ org_id
                                 <td>
                                     {% if object.description != None %}{{object.description}}{% endif %}
                                 </td>
-                            </tr>                       
+                            </tr>    
+                            <tr>
+                                <td>
+                                    <strong>Content</strong>
+                                </td>
+                                <td>
+                                    {% if object.description != None %}{{object.content|render_markdown }}{% endif %}
+                                </td>
+                            </tr>                        
                         </tbody>
                     </table>
                 </div>

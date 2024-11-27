@@ -44,7 +44,10 @@ from collections import defaultdict
 from django.template.loader import get_template, TemplateDoesNotExist
 from PIL import Image 
 from lxml import etree
-
+from io import BytesIO
+from django.core.files.base import ContentFile
+from imagekit.models import ImageSpecField
+from imagekit.processors import *
 import base64
 import os
 import platform

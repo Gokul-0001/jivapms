@@ -94,6 +94,7 @@
                     );
                     // Construct the query string with additional details
                     const queryParams = new URLSearchParams({
+                        org_image_map_id: {{org_image_map_id}},  // Example: image map ID
                         area_id: area.id,  // Example: area ID
                         area_name: area.name,  // Example: area name
                         link_ref: area.link,  // Example: blog ID
@@ -150,4 +151,5 @@
         });
     });
 </script>
+
 {% endblock content %}

@@ -4,7 +4,7 @@ from app_organization.mod_blog.models_blog import *
 from app_organization.mod_blog.forms_blog import *
 
 from app_organization.mod_organization.models_organization import *
-
+from app_organization.mod_org_image_map.models_org_image_map import *
 from app_common.mod_common.models_common import *
 
 app_name = 'app_organization'
@@ -363,7 +363,27 @@ def display_blog(request, organization_id, blog_id):
                                                 **first_viewable_dict)
     
     object = get_object_or_404(Blog, pk=blog_id, active=True,**viewable_dict)    
+    # Retrieve query parameters
+    org_image_map_id = request.GET.get('org_image_map_id')  # Image map ID
+    area_id = request.GET.get('area_id')  # Area ID
+    area_name = request.GET.get('area_name')  # Area name
+    link_ref = request.GET.get('link_ref')  # Link reference
+    selected_area = request.GET.get('selected_area')  # Custom detail
 
+    # Optional: Validate or use the parameters as needed
+    # For example, fetch related objects or log information
+    if org_image_map_id:
+        org_image_map = OrgImageMap.objects.filter(id=org_image_map_id, active=True).first()
+    else:
+        org_image_map = None
+        
+    area = org_image_map.areas.filter(id=area_id).first() if area_id and org_image_map else None
+
+    # Split the coordinates into x, y, width, height
+    coords = list(map(float, area.coords.split(','))) if area and area.coords else [0, 0, 0, 0]
+
+        
+    print(f">>> === org_image_map: {org_image_map} === <<<")
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'display_blog',
@@ -372,6 +392,13 @@ def display_blog(request, organization_id, blog_id):
         'org_id': organization_id,
         'module_path': module_path,
         'object': object,
+        'org_image_map': org_image_map,  # Pass the image map if found
+        'area_coords': coords,  
+        'area_id': area_id,
+        'area_name': area_name,
+        'link_ref': link_ref,
+        'selected_area': selected_area,
+        
         'page_title': f'Display Blog',
     }
     template_file = f"{app_name}/{module_path}/display_blog.html"

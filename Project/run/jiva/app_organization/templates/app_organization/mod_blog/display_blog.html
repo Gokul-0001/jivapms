@@ -14,6 +14,14 @@ project
 org
 org_id
 -->
+<style>
+    #highlight-layer {
+        pointer-events: none; /* Prevent interactions with the highlight layer */
+        z-index: 10; /* Ensure it appears above the image */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Optional shadow for better visibility */
+    }
+</style>
+
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
@@ -24,12 +32,46 @@ org_id
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
             <div class="row">
+                <div class="col col-md-4">
+                    <div id="image-map-container" style="position: relative; width: 100%; max-width: 600px; margin: auto;">
+                        <!-- Background Image -->
+                        <img id="responsive-image" src="{{ org_image_map.thumbnail.url }}" alt="Image Map" 
+                             style="width: 100%; height: auto; display: block;">
+                        
+                        <!-- Highlighted Area Layer -->
+                        <div id="highlight-layer"
+                             style="position: absolute; background-color: rgba(255, 0, 0, 0.3); border: 2px solid red; display: none;"></div>
+                    </div>
+                    <script>
+                        const rawCoords = "{{ area.coords }}";  // Pass raw string
+                        const [x, y, width, height] = rawCoords.split(',').map(Number);
+                    
+                        const selectedArea = { x, y, width, height };
+                    </script>
+                    
+                    
+                              
+                </div>
+                <div class="col col-md-4">
+
+                </div>
+                <div class="col col-md-4 text-end">
+                    <a href="">
+                        <button type="button" class="btn btn-primary">Big Picture</button>
+                    </a>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col col-md-12">
-                    <h2>{{object}}</h2>
+                    <b>{{object}}</b>
+                    <div class="blog-content">
+                        {{ object.content|markdown|safe }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 </form> 
+
 {% endblock content %}

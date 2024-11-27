@@ -13,6 +13,7 @@ class Blog(BaseModelImpl):
    
         
     slug = models.SlugField(unique=True, blank=True, null=True, max_length=255)
+    content = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:  # Generate a slug only if it doesn't exist

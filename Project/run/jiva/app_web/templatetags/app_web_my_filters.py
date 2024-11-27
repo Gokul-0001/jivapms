@@ -131,6 +131,23 @@ def static_exists(static_path):
 # 27-11-2024
 
 @register.filter
-def split(value, delimiter=','):
-    """Split a string by a delimiter."""
-    return value.split(delimiter)
+def split_coords(value, index):
+    """Splits a comma-separated string and returns the specified index."""
+    try:
+        coords = value.split(',')
+        return float(coords[index])
+    except (ValueError, IndexError):
+        return 0
+
+import markdown
+from django import template
+from django.utils.safestring import mark_safe
+
+
+
+@register.filter
+def render_markdown(value):
+    """
+    Converts Markdown text to HTML.
+    """
+    return mark_safe(markdown.markdown(value, extensions=['extra', 'toc', 'codehilite']))

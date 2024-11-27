@@ -2,8 +2,7 @@
 from app_organization.mod_app.all_model_imports import *
 from app_organization.mod_organization.models_organization import *
 from app_common.mod_common.models_common import *
-from PIL import Image 
-from lxml import etree
+from app_jivapms.mod_app.all_view_imports import *
 
 from app_organization.mod_framework.models_framework import *
 
@@ -11,6 +10,12 @@ class OrgImageMap(BaseModelImpl):
     organization = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="organization_org_image_maps", null=True, blank=True)
     image = models.FileField(upload_to='folder_image_maps/', null=True, blank=True)
+    thumbnail = ImageSpecField(
+        source='image',  # Refers to the 'image' field
+        processors=[ResizeToFit(450, 350)],  # Resize the image to 150x150
+        format='PNG',
+        options={'quality': 100}  # JPEG quality set to 85%
+    )
     display_flag = models.BooleanField(default=False)
     
     supporting_frameworks = models.ManyToManyField(
@@ -34,7 +39,23 @@ class OrgImageMap(BaseModelImpl):
     def save(self, *args, **kwargs):
         # Save the instance first to ensure the file is available on disk
         super().save(*args, **kwargs)
+        if self.image and not self.thumbnail:
+            # Open the image file
+            img = Image.open(self.image.path)
 
+            # Create a thumbnail
+            img.thumbnail((150, 150), Image.ANTIALIAS)
+
+            # Save the thumbnail to an in-memory file
+            thumb_io = BytesIO()
+            img.save(thumb_io, format='JPEG')
+
+            # Save the thumbnail to the model
+            self.thumbnail.save(
+                f"thumb_{self.image.name.split('/')[-1]}",
+                ContentFile(thumb_io.getvalue()),
+                save=False
+            )
         # Check if the image exists
         if self.image:
             try:
