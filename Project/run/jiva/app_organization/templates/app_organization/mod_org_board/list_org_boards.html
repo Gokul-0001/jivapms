@@ -1,32 +1,27 @@
-
 {% extends 'app_common/common_files/base_template.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
 {% load markdown_extras  %}
+{% load mptt_tags %}
 {% block content %}
-
 {% include 'app_common/common_files/navbar.html' %}
-<style>
-  .trash-icon {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    font-size: 24px;  /* Size of the icon */
-    cursor: pointer;
-    color: #707070;  /* Color of the icon */
-  }
-</style>
-<!-- Begin: Content -->
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!--
+required from the view
+project
+org
+org_id
+-->
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col col-md-12">
-            {% include 'app_organization/mod_org_board/breadcrumb_org_boards.html' %}
-        </div>
-    </div>
-</div>
+<div class="content-wrapper">
+    {% include 'app_organization/mod_org_board/breadcrumb_org_boards.html' %}
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+       
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">           
@@ -37,7 +32,11 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h3">{{organization}}</b>
+                                <b class="h3">
+                                    <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
+                                        {{organization}}
+                                    </a>
+                                </b>
                                 &nbsp;&nbsp;
                                 Org Board List
                                
@@ -56,6 +55,14 @@
                                 &nbsp;&nbsp;
                                 <a href="{% url 'create_org_board' org_id  %}" 
                                 class="btn btn-sm btn-success"><b>+ Create Org Board</b></a>
+                                &nbsp;&nbsp;
+                                <a href="{% url 'list_organizations' %}" class="btn btn-primary">
+                                    <i class="bi bi-arrow-left"></i>
+                                </a>
+                                &nbsp;&nbsp;
+                                {% if deleted_count > 0 %}
+                                <a href="{% url 'list_deleted_org_boards' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -242,6 +249,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
     }
 </script>
-
-<!-- End: Content -->
+    </div>
+</div>
+</form> 
 {% endblock content %}

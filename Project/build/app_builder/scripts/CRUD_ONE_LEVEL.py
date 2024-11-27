@@ -52,8 +52,12 @@ list_objects_html_single_level = """
                 <div class="col col-md-12">
                     <div class="container-fluid-width">
                         <div class="row pb-2">
-                            <div class="col col-md-5">
-                                <b class="h3">{{___firstname___}}</b>
+                            <div class="col col-md-5">                                
+                                <b class="h3">
+                                <a href="{% url 'list___pluralfirstmodname___' %}" style="text-decoration: none;">
+                                    {{organization}}
+                                </a>
+                                </b>
                                 &nbsp;&nbsp;
                                 ___DISPMODNAME___ List
                                
@@ -72,6 +76,15 @@ list_objects_html_single_level = """
                                 &nbsp;&nbsp;
                                 <a href="{% url 'create____singularmodname___' ___firstid___  %}" 
                                 class="btn btn-sm btn-success"><b>+ Create ___DISPMODNAMESINGULAR___</b></a>
+                                
+                                &nbsp;&nbsp;
+                                <a href="{% url 'list___pluralfirstmodname___' %}" class="btn btn-primary">
+                                    <i class="bi bi-arrow-left"></i>
+                                </a>
+                                &nbsp;&nbsp;
+                                {% if deleted_count > 0 %}
+                                <a href="{% url 'list_deleted____pluralmodname___' ___firstid___ %}"><i class="bi bi-trash-fill"></i></a>   
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -293,15 +306,24 @@ list_deleted_objects_html_single_level = """
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-8">
-                                <b class="h2">{{___firstname___}}</b>
+                                <b class="h3">
+                                <a href="{% url 'list___pluralfirstmodname___' %}" style="text-decoration: none;">
+                                    {{organization}}
+                                </a>
+                                </b>
                                 &nbsp;&nbsp;
-                                {{org}}/___DISPMODNAME___ Deleted List
+                                ___DISPMODNAME___ List
                             </div>
                             <div class="col col-md-4 text-end">
                                 <span class="display_count">{{objects_count}} ___singularmodname___(s)</span>
                                 &nbsp;&nbsp;
                                 <a href="{% url 'create____singularmodname___' ___firstid___  %}" 
                                 class="btn btn-sm btn-success"><b>+ Create ___DISPMODNAMESINGULAR___</b></a>
+                                 
+                                &nbsp;&nbsp;
+                                <a href="{% url 'list___pluralfirstmodname___' %}" class="btn btn-primary">
+                                    <i class="bi bi-arrow-left"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -857,7 +879,7 @@ view_object_html_single_level = """
                                 <strong>___DISPMODNAMESINGULAR___</strong>
                             </td>
                             <td>
-                                {{object.name}}
+                                {% if object.name != None %}{{object.name}}{% endif %}
                             </td>
                         </tr>
                         <tr>
@@ -865,7 +887,7 @@ view_object_html_single_level = """
                                 <strong>Description</strong>
                             </td>
                             <td>
-                                {{object.description}}
+                                {% if object.description != None %}{{object.description}}{% endif %}
                             </td>
                         </tr>                       
                     </tbody>
@@ -1373,7 +1395,10 @@ second_id = module_name.lower() + "_id"
 module_path = f"mod_{module_name}"
 
 ### first model name processing
-first_id_fk_ref = process_word(first_model).lower() 
+# >>>> first_id_fk_ref = process_word(first_model).lower() 
+first_id_fk_ref = first_model.lower() 
+first_id = first_model.lower() + "_id"
+
 first_model_name_import = first_model if p.singular_noun(first_model) else p.plural(first_model)
 first_model_name_import = first_model_name_import.lower()
 singular_firstmodule_name = first_model.lower() if p.singular_noun(first_model) is False else p.singular_noun(first_model)
@@ -1381,9 +1406,10 @@ plural_firstmodule_name = first_model.lower() if p.singular_noun(first_model) el
 
 #first_app_name = f"app_{singular_firstmodule_name}".lower()
 
-first_id = process_word(first_model).lower() + "_id"
+
 first_name = first_model.lower()
 first_model_name = first_model.title()
+first_model_name = first_model_name.replace("_", "")
 
 print(f">>> === singularfirstmodname: {singular_firstmodule_name} === <<<")
 
@@ -1441,6 +1467,7 @@ var_value_dict = {
     "___firstappname___": first_app_name,
     "__singularfirstmodname___": singular_firstmodule_name,
     "__pluralfirstmodname___": plural_firstmodule_name,
+    "__pluralfirstmodnameuc___": plural_firstmodule_name.capitalize(),
     
 }
 

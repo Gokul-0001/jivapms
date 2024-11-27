@@ -27,13 +27,7 @@ org_id
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col col-md-12">
-                {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
-            </div>
-        </div>
-    </div>
+    {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
     
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
@@ -47,7 +41,11 @@ org_id
                         <div class="container-fluid-width">
                             <div class="row pb-2">
                                 <div class="col col-md-5">
-                                    <b class="h3">{{organization}}</b>
+                                    <b class="h3">
+                                        <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
+                                            {{organization}}
+                                        </a>
+                                    </b>
                                     &nbsp;&nbsp;
                                     Org Release List
                                    
@@ -66,6 +64,14 @@ org_id
                                     &nbsp;&nbsp;
                                     <a href="{% url 'create_org_release' org_id  %}" 
                                     class="btn btn-sm btn-success"><b>+ Create Org Release</b></a>
+                                    &nbsp;&nbsp;
+                                    <a href="{% url 'list_organizations' %}" class="btn btn-primary">
+                                        <i class="bi bi-arrow-left"></i>
+                                    </a>
+                                    &nbsp;&nbsp;
+                                    {% if deleted_count > 0 %}
+                                    <a href="{% url 'list_deleted_org_releases' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

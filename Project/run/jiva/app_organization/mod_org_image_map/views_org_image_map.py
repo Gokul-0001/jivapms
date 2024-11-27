@@ -227,7 +227,7 @@ def create_org_image_map(request, organization_id):
         'organization': organization,
         'organization_id': organization_id,
         'org_id': organization_id,
-      
+        
         
         'module_path': module_path,
         'form': form,
@@ -271,7 +271,6 @@ def edit_org_image_map(request, organization_id, org_image_map_id):
         
         'module_path': module_path,
         'form': form,
-        'object': object,
         'page_title': f'Edit Org Image Map',
     }
     template_file = f"{app_name}/{module_path}/edit_org_image_map.html"
@@ -286,6 +285,7 @@ def delete_org_image_map(request, organization_id, org_image_map_id):
                                                 **first_viewable_dict)
     
     org_image_map = get_object_or_404(OrgImageMap, pk=org_image_map_id, active=True,**viewable_dict)
+    object = org_image_map
     if request.method == 'POST':
         object.active = False
         object.save()
@@ -302,7 +302,6 @@ def delete_org_image_map(request, organization_id, org_image_map_id):
         'object': org_image_map,
         
         'module_path': module_path,        
-        'object': object,
         'page_title': f'Delete Org Image Map',
     }
     template_file = f"{app_name}/{module_path}/delete_org_image_map.html"
@@ -316,6 +315,7 @@ def permanent_deletion_org_image_map(request, organization_id, org_image_map_id)
                                                 **first_viewable_dict)
     
     org_image_map = get_object_or_404(OrgImageMap, pk=org_image_map_id, active=False, deleted=False, **viewable_dict)
+    object = org_image_map
     if request.method == 'POST':
         object.active = False
         object.deleted = True
@@ -333,7 +333,6 @@ def permanent_deletion_org_image_map(request, organization_id, org_image_map_id)
         'object': org_image_map,
         
         'module_path': module_path,        
-        'object': object,
         'page_title': f'Permanent Deletion Org Image Map',
     }
     template_file = f"{app_name}/{module_path}/permanent_deletion_org_image_map.html"
@@ -356,6 +355,7 @@ def view_org_image_map(request, organization_id, org_image_map_id):
     user = request.user
     organization = get_object_or_404(Organization, id=organization_id, active=True)
     org_image_map = get_object_or_404(OrgImageMap, pk=org_image_map_id, active=True, organization_id=organization_id)
+    object = org_image_map
 
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -368,10 +368,9 @@ def view_org_image_map(request, organization_id, org_image_map_id):
         'object': org_image_map,
         
         'module_path': module_path,
-        'object': object,
-        'page_title': f'View Image Map',
+        'page_title': f'View Org Image Map',
     }
-    template_file = f"{app_name}/{module_path}/view_image_map.html"
+    template_file = f"{app_name}/{module_path}/view_org_image_map.html"
     return render(request, template_file, context)
 
 

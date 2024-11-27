@@ -14,21 +14,10 @@ project
 org
 org_id
 -->
-
-<style>
-    .trash-icon {
-      position: fixed;
-      right: 10px;
-      bottom: 10px;
-      font-size: 24px;  /* Size of the icon */
-      cursor: pointer;
-      color: #707070;  /* Color of the icon */
-    }
-  </style>
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
-    {% include 'app_organization/mod_org_work_flow/breadcrumb_org_work_flows.html' %}
+    {% include 'app_organization/mod_blog/breadcrumb_blogs.html' %}
     
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
@@ -42,14 +31,14 @@ org_id
                         <div class="col col-md-12">
                             <div class="container-fluid-width">
                                 <div class="row pb-2">
-                                    <div class="col col-md-5">
+                                    <div class="col col-md-5">                                
                                         <b class="h3">
-                                            <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
-                                                {{organization}}
-                                            </a>
+                                        <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
+                                            {{organization}}
+                                        </a>
                                         </b>
                                         &nbsp;&nbsp;
-                                        Org Work Flow List
+                                        Blog List
                                        
                                     </div>
                                     <div class="col col-md-4">
@@ -62,17 +51,18 @@ org_id
                                         </form>
                                     </div>
                                     <div class="col col-md-3 text-end">
-                                        <span class="display_count">{{objects_count}} org_work_flow(s)</span>
+                                        <span class="display_count">{{objects_count}} blog(s)</span>
                                         &nbsp;&nbsp;
-                                        <a href="{% url 'create_org_work_flow' org_id  %}" 
-                                        class="btn btn-sm btn-success"><b>+ Create Org Work Flow</b></a>
+                                        <a href="{% url 'create_blog' organization_id  %}" 
+                                        class="btn btn-sm btn-success"><b>+ Create Blog</b></a>
+                                        
                                         &nbsp;&nbsp;
                                         <a href="{% url 'list_organizations' %}" class="btn btn-primary">
                                             <i class="bi bi-arrow-left"></i>
                                         </a>
                                         &nbsp;&nbsp;
                                         {% if deleted_count > 0 %}
-                                        <a href="{% url 'list_deleted_org_work_flows' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+                                        <a href="{% url 'list_deleted_blogs' organization_id %}"><i class="bi bi-trash-fill"></i></a>   
                                         {% endif %}
                                     </div>
                                 </div>
@@ -87,7 +77,7 @@ org_id
                                             <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                         </th>                                
                                         <th width="2%">#</th>
-                                        <th>Org Work Flow</th>
+                                        <th>Blog</th>
                                         <th width="20%">Description</th>
                                         <th width="10%">Configure</th>
                                         <th width="50%">                                    
@@ -127,22 +117,22 @@ org_id
                                         </td>
                                         <td>{{forloop.counter}}</td>
                                         <td width="20%" ondblclick="makeEditable(this)"
-                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgWorkFlow', 'name')"
+                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Blog', 'name')"
                                         ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
                                         <td width="" ondblclick="makeEditable(this)"
-                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgWorkFlow', 'description')"
+                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Blog', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                         <td width="20%">
-                                        
+                                            {% if tobject.slug != None %}{{tobject.slug}}{% endif %}
                                         </td>
                                         <td width="50%">
-                                            <a href="{% url 'view_org_work_flow' org_id  tobject.id  %}"
+                                            <a href="{% url 'view_blog' organization_id  tobject.id  %}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'edit_org_work_flow' org_id  tobject.id %}"
+                                            <a href="{% url 'edit_blog' organization_id  tobject.id %}"
                                             class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'delete_org_work_flow' org_id  tobject.id %}"
+                                            <a href="{% url 'delete_blog' organization_id  tobject.id %}"
                                             class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
                                         </td>
                                     </tr>
@@ -161,7 +151,7 @@ org_id
         </div>
          <div class="trash-icon">
             {% if deleted_count > 0 %}
-            <a href="{% url 'list_deleted_org_work_flows' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+            <a href="{% url 'list_deleted_blogs' organization_id %}"><i class="bi bi-trash-fill"></i></a>    
             {% endif %}
         </div>
         </form>
@@ -184,19 +174,19 @@ org_id
             
             // Redirect the user based on the selected value
             if (selectedValue === "5") {
-              window.location.href = "{% url 'list_org_work_flows' org_id %}?page=1&all=5";
+              window.location.href = "{% url 'list_blogs' organization_id %}?page=1&all=5";
             } else if (selectedValue === "10") {
-              window.location.href = "{% url 'list_org_work_flows' org_id %}?page=1&all=10";
+              window.location.href = "{% url 'list_blogs' organization_id %}?page=1&all=10";
             } else if (selectedValue === "15") {
-              window.location.href = "{% url 'list_org_work_flows' org_id %}?page=1&all=15";
+              window.location.href = "{% url 'list_blogs' organization_id %}?page=1&all=15";
             } else if (selectedValue === "25") {
-              window.location.href = "{% url 'list_org_work_flows' org_id  %}?page=1&all=25";
+              window.location.href = "{% url 'list_blogs' organization_id  %}?page=1&all=25";
             } else if (selectedValue === "50") {
-              window.location.href = "{% url 'list_org_work_flows' org_id %}?page=1&all=50";
+              window.location.href = "{% url 'list_blogs' organization_id %}?page=1&all=50";
             } else if (selectedValue === "100") {
-              window.location.href = "{% url 'list_org_work_flows' org_id %}?page=1&all=100";
+              window.location.href = "{% url 'list_blogs' organization_id %}?page=1&all=100";
             } else if (selectedValue === "all") {
-              window.location.href = "{% url 'list_org_work_flows' org_id %}?page=1&all=all";
+              window.location.href = "{% url 'list_blogs' organization_id %}?page=1&all=all";
             } 
             // Add more conditions for other options as needed
           });
@@ -218,7 +208,7 @@ org_id
                         type: 'POST',
                         data : {
                           'csrfmiddlewaretoken': "{{ csrf_token }}",
-                          'model_name': 'OrgWorkFlow',
+                          'model_name': 'Blog',
                           'app_name': 'app_organization',
                           'sorted_list_data': JSON.stringify(arrayOrder),
                           
@@ -260,7 +250,6 @@ org_id
                 })
             }
         </script>
-        
     </div>
 </div>
 </form> 

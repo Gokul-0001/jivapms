@@ -1,32 +1,29 @@
-
 {% extends 'app_common/common_files/base_template.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
 {% load markdown_extras  %}
+{% load mptt_tags %}
 {% block content %}
-
 {% include 'app_common/common_files/navbar.html' %}
-<style>
-  .trash-icon {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    font-size: 24px;  /* Size of the icon */
-    cursor: pointer;
-    color: #707070;  /* Color of the icon */
-  }
-</style>
-<!-- Begin: Content -->
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!--
+required from the view
+project
+org
+org_id
+-->
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col col-md-12">
-            {% include 'app_organization/mod_org_event/breadcrumb_org_events.html' %}
-        </div>
-    </div>
-</div>
+<form method="post">
+{% csrf_token %}
+<div class="content-wrapper">
+    {% include 'app_organization/mod_org_event/breadcrumb_org_events.html' %}
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        
 <div class="container-fluid">
     <div class="row">
         <div class="col col-md-12">           
@@ -37,7 +34,11 @@
                     <div class="container-fluid-width">
                         <div class="row pb-2">
                             <div class="col col-md-5">
-                                <b class="h2">Org Event</b>
+                                <b class="h3">
+                                    <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
+                                        {{organization}} 
+                                    </a>
+                                </b>
                                 &nbsp;&nbsp;
                                 Org Event List
                                
@@ -56,6 +57,14 @@
                                 &nbsp;&nbsp;
                                 <a href="{% url 'create_org_event' org_id  %}" 
                                 class="btn btn-sm btn-success"><b>+ Create Org Event</b></a>
+                                &nbsp;&nbsp;
+                                <a href="{% url 'list_organizations' %}" class="btn btn-primary">
+                                    <i class="bi bi-arrow-left"></i>
+                                </a>
+                                &nbsp;&nbsp;
+                                {% if deleted_count > 0 %}
+                                <a href="{% url 'list_deleted_org_events' org_id %}"><i class="bi bi-trash-fill"></i></a>    
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -138,14 +147,11 @@
                     </table>
                 <!-- end display -->
         </div>
+       
     </div>
   
 </div>
- <div class="trash-icon">
-    {% if deleted_count > 0 %}
-    <a href="{% url 'list_deleted_org_events' org_id %}"><i class="bi bi-trash-fill"></i></a>    
-    {% endif %}
-</div>
+
 </form>
 <script>
 // Select all / checkbox
@@ -215,33 +221,35 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-<script>
-    function makeEditable(element) {
-        element.contentEditable = true;
-        element.focus();
-    }
+    <script>
+        function makeEditable(element) {
+            element.contentEditable = true;
+            element.focus();
+        }
 
 
-    function save_element_text(element, id,  appName, modelName, fieldName) {
-        element.contentEditable = false;
-        $.ajax({
-            url: '/common/common_ajax/ajax_save_element_text/',
-            type: 'POST',
-            data : {
-            'csrfmiddlewaretoken': "{{ csrf_token }}",
-            'model_name': modelName,
-            'app_name': appName,
-            'field_name': fieldName,
-            'text': element.textContent, 
-            'id': id,
-            },
-            dataType: 'json',
-            success: function(data) {
-            console.log(data);
-            }
-        })
-    }
-</script>
+        function save_element_text(element, id,  appName, modelName, fieldName) {
+            element.contentEditable = false;
+            $.ajax({
+                url: '/common/common_ajax/ajax_save_element_text/',
+                type: 'POST',
+                data : {
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'model_name': modelName,
+                'app_name': appName,
+                'field_name': fieldName,
+                'text': element.textContent, 
+                'id': id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                console.log(data);
+                }
+            })
+        }
+    </script>
 
-<!-- End: Content -->
+    </div>
+</div>
+</form> 
 {% endblock content %}

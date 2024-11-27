@@ -17,7 +17,7 @@ org_id
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
-    {% include 'app_organization/mod_org_metric/breadcrumb_org_metrics.html' %}
+    {% include 'app_organization/mod_blog/breadcrumb_blogs.html' %}
     
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
@@ -29,11 +29,11 @@ org_id
                         <div class="row">
                             <div class="col col-md-8">
                                 <h2>Permanent Deletion 
-                                    Org Metric :: {{object}}</h2>
+                                    Blog :: {{object}}</h2>
                             </div>
                             <div class="col col-md-4 text-end">
-                                <a href="{% url 'list_org_metrics' org_id %}"
-                                 class="btn btn-sm btn-primary"><b>List Org Metric(s)</b></a>
+                                <a href="{% url 'list_blogs' organization_id %}"
+                                 class="btn btn-sm btn-primary"><b>List Blog(s)</b></a>
                             </div>
                         </div>
                     </div>
@@ -47,9 +47,9 @@ org_id
                                         </div>
                                         <div class="col col-md-7">
                                             <div class="text-end">
-                                                <a href="{% url 'edit_org_metric' org_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
+                                                <a href="{% url 'edit_blog' organization_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
                                                 &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'view_org_metric' org_id object.id %}" class="btn btn-sm btn-danger"><b>View</b></a>
+                                                <a href="{% url 'view_blog' organization_id object.id %}" class="btn btn-sm btn-danger"><b>View</b></a>
                                                 
                                             </div>
     
@@ -68,7 +68,7 @@ org_id
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm btn-danger">Confirm</button> 
                                             &nbsp;&nbsp;&nbsp;
-                                            <a href="{% url 'list_org_metrics' org_id %}" class="btn btn-sm btn-warning">Cancel</a>
+                                            <a href="{% url 'list_blogs' organization_id %}" class="btn btn-sm btn-warning">Cancel</a>
                                         </form>
                                     </div>
                                 </div>
