@@ -418,6 +418,7 @@ def display_blog(request, organization_id, blog_id):
         'module_path': module_path,
         'object': object,
         'org_image_map': org_image_map,  # Pass the image map if found
+        'org_image_map_id': org_image_map_id,
         'area_coords': coords,  
         'cropped_image_url': cropped_image_url, 
         'area_id': area_id,

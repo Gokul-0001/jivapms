@@ -128,7 +128,13 @@ org_id
                                         <td width="50%">
                                             <a href="{% url 'view_blog' organization_id  tobject.id  %}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
-                                           
+                                            &nbsp;&nbsp;
+                                            <a href="{% url 'display_blog' organization_id  tobject.id %}"
+                                            class="btn btn-sm btn-secondary"><i class="bi bi-list"></i></a>
+                                            &nbsp;&nbsp;
+                                            <button class="btn btn-sm btn-info" onclick="copyToClipboard('{% url 'display_blog' organization_id tobject.id %}')">
+                                                Copy Blog URL
+                                            </button>
                                             &nbsp;&nbsp;
                                             <a href="{% url 'edit_blog' organization_id  tobject.id %}"
                                             class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
@@ -251,6 +257,17 @@ org_id
                 })
             }
         </script>
+       <script>
+        function copyToClipboard(relativeUrl) {
+            navigator.clipboard.writeText(relativeUrl).then(function() {
+                alert('Relative URL copied to clipboard: ' + relativeUrl);
+            }).catch(function(error) {
+                console.error('Error copying text: ', error);
+            });
+        }
+    </script>
+    
+        
     </div>
 </div>
 </form> 

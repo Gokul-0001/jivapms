@@ -48,6 +48,7 @@
         <div class="container-fluid">
             <div class="row row_one">
                 <div class="col col-md-4 text-start">
+                    {% if org_image_map_id %}
                     <div id="image-map-container" style="position: relative; width: 100%; max-width: 600px; margin: auto;">
                         <!-- Responsive Image -->
                         <img id="responsive-image" src="{{ org_image_map.thumbnail.url }}" alt="Image Map" 
@@ -68,8 +69,6 @@
                             <line id="line-right" x1="0" y1="0" x2="0" y2="0" stroke="rgba(128, 128, 128, 0.3)" stroke-width="2"></line>
                         </svg>
                         
-                        
-                        
 
                         {% if cropped_image_url %}
                             <div id="cropped-image-container" class="topic_cropped_image">
@@ -79,12 +78,20 @@
                             </div>
                         {% endif %}
                     </div>
+                    
+                    {% endif %}
                 </div>
                 <div class="col col-md-4 text-center"></div>
                 <div class="col col-md-4 text-end">
+                    {% if org_image_map_id %}
                     <a href="{{ current_url }}">
                         <button type="button" class="btn btn-primary">Big Picture</button>
                     </a>
+                    {% else %}
+                    <a href="{% url 'list_blogs' org_id %}">
+                        <button type="button" class="btn btn-primary">List Blogs</button>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
             <div class="row mt-5">
