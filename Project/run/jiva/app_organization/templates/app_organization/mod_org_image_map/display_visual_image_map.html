@@ -64,12 +64,12 @@
         <div class="container-fluid mb-5">
             <div class="row">
                 <div class="col col-md-10">
-                    {{framework.content|markdown|safe}}
+                    {% if framework.content != None %}{{framework.content|markdown|safe}}{% endif %}
                 </div>
             </div>
             <div class="row">
                 <div class="col col-md-12">
-                    {{framework.default_text|markdown|safe}}
+                    {% if framework.default_text != None %}{{framework.default_text|markdown|safe}}{% endif %}
                 </div>
             </div>
         </div>
