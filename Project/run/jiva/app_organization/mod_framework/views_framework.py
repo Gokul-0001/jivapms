@@ -7,6 +7,8 @@ from app_organization.mod_organization.models_organization import *
 
 from app_common.mod_common.models_common import *
 
+from app_jivapms.mod_app.all_view_imports import *  
+
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -213,6 +215,19 @@ def create_framework(request, organization_id):
         if form.is_valid():
             form.instance.author = user
             form.instance.organization_id = organization_id
+            
+            # Use regex to replace either 4 spaces or a tab with 8 spaces
+            content = form.cleaned_data['content']
+            replaced_content = re.sub(r"( {3}|\t)", "        ", content)  
+            # Replace 4 spaces or tab with 8 spaces
+            form.instance.content = replaced_content
+            
+            # Use regex to replace either 4 spaces or a tab with 8 spaces
+            content = form.cleaned_data['default_text']
+            replaced_content = re.sub(r"( {3}|\t)", "        ", content)  
+            # Replace 4 spaces or tab with 8 spaces
+            form.instance.default_text = replaced_content
+            
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
@@ -249,6 +264,19 @@ def edit_framework(request, organization_id, framework_id):
         if form.is_valid():
             form.instance.author = user
             form.instance.organization_id = organization_id
+            
+            # Use regex to replace either 4 spaces or a tab with 8 spaces
+            content = form.cleaned_data['content']
+            replaced_content = re.sub(r"( {3}|\t)", "        ", content)  
+            # Replace 4 spaces or tab with 8 spaces
+            form.instance.content = replaced_content
+            
+            # Use regex to replace either 4 spaces or a tab with 8 spaces
+            content = form.cleaned_data['default_text']
+            replaced_content = re.sub(r"( {3}|\t)", "        ", content)  
+            # Replace 4 spaces or tab with 8 spaces
+            form.instance.default_text = replaced_content
+            
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")

@@ -74,6 +74,22 @@ org_id
                                 <td>
                                     {% if object.description != None %}{{object.description}}{% endif %}
                                 </td>
+                            </tr>        
+                            <tr>
+                                <td>
+                                    <strong>Content</strong>
+                                </td>
+                                <td>
+                                    {% if object.content != None %}{{object.content|markdown|safe}}{% endif %}
+                                </td>
+                            </tr>        
+                            <tr>
+                                <td>
+                                    <strong>Default Text</strong>
+                                </td>
+                                <td>
+                                    {% if object.default_text != None %}{{object.default_text|markdown|safe}}{% endif %}
+                                </td>
                             </tr>                       
                         </tbody>
                     </table>

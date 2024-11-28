@@ -71,6 +71,7 @@ org_id
             <div class="row">
                 <div class="col col-md-12">
                     <h2>{{object}}</h2>
+                    <b>Click on the Image to select the interested topic</b>
                     {% for map_data in image_maps_with_areas %}
                         <div id="image-map-container-{{ forloop.counter }}" style="position: relative; margin-bottom: 30px;">
                             <!-- Display Image Map -->
@@ -101,6 +102,20 @@ org_id
                     {% endfor %}
 
 
+                </div>
+            </div>
+            <div class="row">
+                <div class="col col-md-12">                    
+                    <div class="blog-content">
+                        {{ object.content|markdown|safe }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col col-md-12">                    
+                    <div class="blog-text">
+                        {{ object.default_text|markdown|safe }}
+                    </div>
                 </div>
             </div>
         </div>
