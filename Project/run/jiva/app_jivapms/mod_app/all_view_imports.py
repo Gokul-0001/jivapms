@@ -55,6 +55,7 @@ import platform
 import json
 import random
 import logging
+import re
 logger = logging.getLogger(__name__)
 SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
 

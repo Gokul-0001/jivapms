@@ -213,6 +213,12 @@ def create_blog(request, organization_id):
         if form.is_valid():
             form.instance.author = user
             form.instance.organization_id = organization_id
+            # Use regex to replace either 4 spaces or a tab with 8 spaces
+            content = form.cleaned_data['content']
+            replaced_content = re.sub(r"( {3}|\t)", "        ", content)  
+            # Replace 4 spaces or tab with 8 spaces
+            form.instance.content = replaced_content
+            
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
@@ -249,6 +255,12 @@ def edit_blog(request, organization_id, blog_id):
         if form.is_valid():
             form.instance.author = user
             form.instance.organization_id = organization_id
+            # Use regex to replace either 4 spaces or a tab with 8 spaces
+            content = form.cleaned_data['content']
+            replaced_content = re.sub(r"( {3}|\t)", "        ", content)  
+            # Replace 4 spaces or tab with 8 spaces
+            form.instance.content = replaced_content
+
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
@@ -333,7 +345,7 @@ def restore_blog(request,  organization_id, blog_id):
     object.save()
     return redirect('list_blogs', organization_id=organization_id)
    
-
+import markdown
 
 @login_required
 def view_blog(request, organization_id, blog_id):
@@ -343,12 +355,15 @@ def view_blog(request, organization_id, blog_id):
     
     object = get_object_or_404(Blog, pk=blog_id, active=True,**viewable_dict)    
 
+    # Replace all occurrences of 4 spaces with 8 spaces
+    formatted_content = object.content.replace("    ", "        ")
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'view_blog',
         'organization': organization,
         'organization_id': organization_id,
         'org_id': organization_id,
+        'formatted_content': formatted_content,
         'module_path': module_path,
         'object': object,
         'page_title': f'View Blog',

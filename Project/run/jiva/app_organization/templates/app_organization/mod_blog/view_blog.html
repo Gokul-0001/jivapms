@@ -9,6 +9,7 @@
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <!--
 required from the view
@@ -16,6 +17,17 @@ project
 org
 org_id
 -->
+<style>
+    /* Ensure whitespace formatting is preserved */
+    .markdown_output {
+        tab-size: 4; /* Render tabs as 4 spaces */
+        -moz-tab-size: 4; /* Support for older Firefox versions */
+        -o-tab-size: 4; /* Support for older Opera versions */
+        border: 1px solid #ccc;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+</style>
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
@@ -82,7 +94,9 @@ org_id
                                     <strong>Content</strong>
                                 </td>
                                 <td>
-                                    {% if object.description != None %}{{object.content|render_markdown }}{% endif %}
+                                    <div class="markdown_output">
+                                        {% if object.content != None %}{{formatted_content|markdown|safe}}{% endif %}
+                                    </div>
                                 </td>
                             </tr>                        
                         </tbody>

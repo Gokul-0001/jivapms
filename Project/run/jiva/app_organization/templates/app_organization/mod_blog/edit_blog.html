@@ -3,102 +3,84 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
-{% load markdown_extras  %}
+{% load markdown_extras %}
 {% load mptt_tags %}
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
-<!--
-required from the view
-project
-org
-org_id
--->
-<form method="post">
-{% csrf_token %}
-<div class="content-wrapper">
-    {% include 'app_organization/mod_blog/breadcrumb_blogs.html' %}
-    
-    {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
-    <div class="contentbar mb-5" id="contentbar">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col col-md-12">
-                    <div class="container-fluid-width">
-                        <div class="row">
-                            <div class="col col-md-8">
-                                <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
-                                    Blog</h2>
-                            </div>
-                            <div class="col col-md-4 text-end">
-                                <a href="{% url 'list_blogs' organization_id %}"
-                                 class="btn btn-sm btn-primary"><b>List Blog(s)</b></a>
-                            </div>
-                        </div>
+<style>
+    /* Preserve whitespace formatting */
+    #id_content {
+        white-space: pre-wrap;
+        font-family: monospace;
+        border: 1px solid #ccc;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+</style>
+
+<form method="post" id="blogForm">
+    {% csrf_token %}
+    <div class="content-wrapper">
+        {% include 'app_organization/mod_blog/breadcrumb_blogs.html' %}
+        {% include 'app_organization/mod_project/sidebar_menu.html' %}
+        <div class="contentbar mb-5" id="contentbar">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col col-md-12">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">
+                                        Blog Management
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Blog Name</strong></td>
+                                    <td>{{ form.name|as_crispy_field }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Description</strong></td>
+                                    <td>{{ form.description|as_crispy_field }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Content (Markdown)</strong></td>
+                                    <td>{{ form.content|as_crispy_field }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-center">
+                                        <button type="submit" class="btn btn-success">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th colspan="2">
-                                    <div class="container-fluid-width">
-                                        <div class="row">
-                                            <div class="col col-md-5">
-                                                {{page_title}}:: {{form.instance}}
-                                            </div>
-                                            <div class="col col-md-7">
-                                                <div class="text-end">
-                                                    <a href="{% url 'view_blog' organization_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
-                                                    &nbsp;&nbsp;&nbsp;
-                                                    <a href="{% url 'delete_blog' organization_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
-                                                    
-                                                </div>
-        
-                                            </div>
-                                        </div>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td width="15%">
-                                    <strong>Blog</strong>
-                                </td>
-                                <td>
-                                    {{form.name|as_crispy_field}}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>Description</strong>
-                                </td>
-                                <td>
-                                    {{form.description|as_crispy_field}}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>Content in .md syntax</strong>
-                                </td>
-                                <td>
-                                    {{form.content|as_crispy_field}}
-                                </td>
-                            </tr>
-                           <tr>
-                                <td colspan="2" class="text-center"><button type="submit"
-                                    class="btn btn-sm btn-success">Save</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
-    <script>
-        focusField = document.getElementById('id_name');
-        focusField.focus();
-    </script>
     </div>
-</div>
-</form> 
+</form>
+
+<script>
+   document.getElementById("blogForm").addEventListener("submit", function (event) {
+    // Get the textarea field
+    const contentField = document.getElementById("id_content");
+
+    if (contentField) {
+        console.log("Original Content: ", contentField.value); // Debugging original content
+
+        // Replace all tabs or 4 spaces with 8 spaces
+        contentField.value = contentField.value.replace(/ {4}|\t/g, "        "); // Replace tabs or 4 spaces with 8 spaces
+
+        console.log("Transformed Content: ", contentField.value); // Debugging transformed content
+    } else {
+        console.error("Textarea with id 'id_content' not found."); // Debug if the selector is incorrect
+    }
+});
+
+</script>
+
 {% endblock content %}
