@@ -4,11 +4,15 @@ from django.urls import path, include
 from app_jivapms.mod_web import views_web as web
 from app_jivapms.mod_web import views_ajax_web as ajax_web
 
+
 urlpatterns = [
     path('', web.index, name='index'), 
     path('about/', web.about, name='about'),
     path('about_the_project/', web.about_the_project, name='about_the_project'),
     path('blogs/', web.blogs, name='blogs'),
+    
+    path('public_frameworks/', web.public_frameworks, name='public_frameworks'),
+    path('ajax_display_public_framework/<int:framework_id>/', web.ajax_display_public_framework, name='ajax_display_public_framework'),
     
     path('tutorials/', web.tutorials, name='tutorials'),
     path('courses/', web.courses, name='courses'),

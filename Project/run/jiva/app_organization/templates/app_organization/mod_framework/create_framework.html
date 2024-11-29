@@ -45,6 +45,14 @@ org_id
                         </thead>
                         <tbody>
                             <tr>
+                                <td>
+                                    <strong>Is this public framework?</strong>
+                                </td>
+                                <td>
+                                    {{form.public_framework|as_crispy_field}}
+                                </td>
+                            </tr>
+                            <tr>
                                 <td width="15%">
                                     <strong>Framework</strong>
                                 </td>
@@ -75,7 +83,7 @@ org_id
                                 <td>
                                     {{form.default_text|as_crispy_field}}
                                 </td>
-                            </tr>
+                            </tr>                            
                            <tr>
                                 <td colspan="2" class="text-center"><button type="submit"
                                     class="btn btn-sm btn-success">Save</button></td>

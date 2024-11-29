@@ -8,9 +8,9 @@ class Framework(BaseModelImpl):
     organization = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="organization_frameworks", null=True, blank=True)
     
-    content = models.TextField(null=True, blank=True)
-    
-    default_text = models.TextField(null=True, blank=True)
+    content = models.TextField(null=True, blank=True)    
+    default_text = models.TextField(null=True, blank=True)    
+    public_framework = models.BooleanField(default=False)
     
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_frameworks")

@@ -166,7 +166,7 @@
     <!-- Landing Page Content -->
     <div class="container">
         <div class="header">Jiva PMS</div>
-        <div class="subheader">Jiva Project Management System</div>
+        <div class="subheader">Jiva Project/Product Management System</div>
 
         <!-- Bootstrap Image Carousel with Caption and Icons -->
         <div id="carouselExampleControls" class="carousel slide mt-4" data-ride="carousel" data-interval="3000">
@@ -175,7 +175,7 @@
                     <img src="https://via.placeholder.com/300x100/FFFFFF/FFFFFF" alt="Slide 1">
                     <div class="carousel-caption">
                         <i class="fas fa-project-diagram icon"></i>
-                        <p class="text-dark">Jiva is a cutting-edge, open-source Project Management System designed for individuals, teams, and enterprises seeking simplicity, flexibility, and scalability.</p>
+                        <p class="text-dark">Jiva is a cutting-edge, free, open-source Project Management System designed for individuals, teams, and enterprises seeking simplicity, flexibility, and scalability.</p>
                     </div>
                 </div>
                 <div class="carousel-item">
@@ -224,9 +224,35 @@
             <a href="{% url 'at_login' %}" class="btn">Sign In</a>
             <a href="{% url 'about_the_project' %}" class="btn">About the Project</a>
         </div>
+        
+        <div class="row">
+            <div class="col col-md-12">
+                <hr>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col col-md-2"></div>
+            <div class="col col-md-6 text-center">
+                <div class="jumbotron ">
+                    <h4 class="display-8">Curious to know more!</h4>
+                    <p class="lead">See our publically available frameworks for Startups, Enterprises and Organizations</p>
+                    <p>Build your own organization framework in jivapms software.</p>
+                    <p>Utilize them with this free software jivapms or as-is.</p>
+                    <a class="btn btn-primary btn-lg" href="{% url 'public_frameworks' %}" role="button">Learn more</a>
+                  </div>                
+            </div>
+            <div class="col col-md-2">
+                <img src="{% static 'img/jivapms/gallery_framework.png' %}" alt="" width="250" height="250">
+            </div>
+            <div class="col col-md-2"></div>
+        </div>
     </div>
 
-   
+    <!-- Frameworks -->
+    <div class="container">
+        
+    </div>
 
     <!-- Bootstrap JS, Popper.js, and jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

@@ -60,7 +60,15 @@ org_id
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody>                            
+                            <tr>
+                                <td>
+                                    <strong>Is this public framework?</strong>
+                                </td>
+                                <td>
+                                    {{form.public_framework|as_crispy_field}}
+                                </td>
+                            </tr>
                             <tr>
                                 <td width="15%">
                                     <strong>Framework</strong>

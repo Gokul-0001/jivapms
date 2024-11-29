@@ -6,86 +6,25 @@ from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
 from app_organization.mod_projectmembership.models_projectmembership import *
 
+from app_organization.mod_framework.models_framework import *
+from app_organization.mod_org_image_map.models_org_image_map import *
+
 app_name = "app_jivapms"
 version = "v1"
 module_dirname = "mod_web"
 
 from app_jivapms.mod_web.helper_web import *
 from app_jivapms.mod_web.views_ajax_web import *
-# Create your views here.
-# def index(request):
-#     user = request.user
-#     context = {
-#         'parent_page': 'home',
-#         'page': 'index',
-#         'page_title': 'Home Page',
-#         'user': user,
-#         'roles': [],
-#         'member': None,
-#         'super_user': False,
-#         'multiple_roles': False,
-#         'no_of_roles': 0,
-#         'user_roles_data': [],
-#         'anonymous': False,
-#     }
 
-#     if user.is_authenticated:
-#         logger.debug(f"User authenticated: {user.id}")
-#         if user.is_superuser:
-#             context['super_user'] = True
-#             context['role'] = COMMON_ROLE_CONFIG["SUPER_USER"]["name"]
-#         else:
-#             try:
-#                 member = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').get(user=user)
-#                 roles = member.member_roles.filter(active=True)
-
-#                 # Prepare user role data
-#                 user_data = {
-#                     'member_id': member.id,
-#                     'username': member.user.username if member.user else 'Unknown User',
-#                     'roles': []
-#                 }
-
-#                 for role in roles:
-#                     role_data = {
-#                         'org_id': role.org.id if role.org else None,
-#                         'role_id': role.role.id if role.role else None,
-#                         'role_name': role.role.name if role.role else 'No Role',
-#                         'org_name': role.org.name if role.org else 'No Org',
-#                         'lc_role_name': role.role.name.lower().replace(' ', '_') if role.role else 'no page',
-#                     }
-#                     # Append the role data to user_data['roles']
-#                     user_data['roles'].append(role_data)
-
-#                 # Add user_data to the context
-#                 context['user_roles_data'].append(user_data)
-#                 context['roles'] = roles
-#                 context['member'] = member
-#                 context['no_of_roles'] = roles.count()
-#                 context['multiple_roles'] = roles.count() > 1
-#                 context['role'] = roles.first().role.name if roles.exists() else COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
-
-#             except Member.DoesNotExist:
-#                 logger.error(f"Member not found for user: {user.id}")
-#                 context['role'] = COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
-#     else:
-#         logger.debug(f"Anonymous user")
-#         context['role'] = COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
-#         context['anonymous'] = True
-
-#     # Assign template based on role
-#     template_url = get_template_for_role(context)
-
-#     try:
-#         get_template(template_url)
-#         return render(request, template_url, context)
-#     except TemplateDoesNotExist:
-#         logger.error(f"Template not found: {template_url}")
-#         template_url = f"{app_name}/{module_dirname}/general_homepage/general_homepage.html"
-#         return render(request, template_url, context)
 
 def index(request):
     user = request.user
+    organization = Organization.objects.filter(active=True)
+    framework = Framework.objects.filter(active=True)
+    public_frameworks = Framework.objects.filter(public_framework=True, active=True)
+    # Get the related Organization objects for those Frameworks
+    org_ids = public_frameworks.values_list('organization__id', flat=True).distinct()
+    organizations = Organization.objects.filter(id__in=org_ids)
     context = {
         'parent_page': 'home',
         'page': 'index',
@@ -100,6 +39,8 @@ def index(request):
         'anonymous': not user.is_authenticated,
         'role': COMMON_ROLE_CONFIG["NO_ROLE"]["name"],  # Default role
         'project_details': [],
+        'organizations': organizations,
+        'public_frameworks': public_frameworks,
     }
 
     if user.is_authenticated:
@@ -209,7 +150,46 @@ def role_homepage(request, role_name):
         general_template_url = "app_jivapms/mod_web/general_homepage/general_homepage.html"
         return render(request, general_template_url, context)
 
+def public_frameworks(request):
+    organization = Organization.objects.filter(active=True)
+    framework = Framework.objects.filter(active=True)
+    public_frameworks = Framework.objects.filter(public_framework=True, active=True)
+    # Get the related Organization objects for those Frameworks
+    org_ids = public_frameworks.values_list('organization__id', flat=True).distinct()
+    organizations = Organization.objects.filter(id__in=org_ids)
+    
+    context = {
+        'parent_page': 'home',
+        'page': 'frameworks',
+        'page_title': 'Public Frameworks Page',
+        
+        'organizations': organizations,
+        'public_frameworks': public_frameworks,
+        
+    }
+    template_url = f"app_organization/mod_framework/public_frameworks/public_frameworks.html"
+    return render(request, template_url, context)   
 
+
+def ajax_display_public_framework(request, framework_id):
+    try:
+        # Fetch the framework
+        framework = get_object_or_404(Framework, id=framework_id, public_framework=True, active=True)
+
+        # Fetch the organization image if available
+        org_image_map = OrgImageMap.objects.filter(supporting_frameworks=framework).first()
+        image_url = org_image_map.thumbnail.url if org_image_map and org_image_map.thumbnail else ""
+
+        return JsonResponse({
+            'status': 'success',
+            'name': framework.name,  # Assuming Framework has a `name` field
+            'description': framework.description,  # Assuming Framework has a `description` field
+            'content': framework.content,  # Assuming Framework has a `content` field
+            'default_text': framework.default_text,  # Assuming Framework has a `default_text` field
+            'image_url': image_url,
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
 
 def about_the_project(request):
 

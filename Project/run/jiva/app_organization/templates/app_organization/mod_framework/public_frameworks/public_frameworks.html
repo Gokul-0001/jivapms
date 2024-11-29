@@ -1,0 +1,87 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<form method="post">
+{% csrf_token %}
+<div class="content-wrapper">
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <div class="row">
+                <div class="col col-md-1"></div>
+                <div class="col col-md-2">
+                    <h3>Public Frameworks</h3>
+                    <ul>
+                        {% for public_framework in public_frameworks.all|filter_active %}
+                            <li>
+                                <a href="#" class="framework-link" data-id="{{ public_framework.id }}">
+                                    {{ public_framework }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>                    
+                </div>
+                <div class="col col-md-8">
+                    <div class="content_area" id="framework-details">
+                        <!-- Framework details will be loaded here -->
+                    </div>
+                </div>
+                <div class="col col-md-1"></div>
+           </div>
+           
+           
+        </div>
+    </div>
+</div>
+</form> 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    $(document).on('click', '.framework-link', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
+        const frameworkId = $(this).data('id');
+        const url = '{% url "ajax_display_public_framework" 0 %}'.replace('0', frameworkId);
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function (response) {
+                if (response.status === 'success') {
+                    const mdContent = marked.parse(response.content); 
+                    const mdDefaultText = marked.parse(response.default_text); 
+                    $('#framework-details').html(`
+                        <div class="framework-image">
+                            <img src="${response.image_url}" alt="Framework Image" class="img-fluid">
+                        </div>
+                        <div class="framework-details">
+                            <h4>${response.name}</h4>
+                            <p>${response.description}</p>
+                        </div>
+                        <div class="framework-md-content">
+                            ${mdContent} <!-- Rendered Markdown -->
+                        </div>
+                        <div class="framework-md-content">
+                            ${mdDefaultText} <!-- Rendered Markdown -->
+                        </div>
+                    `);
+                } else {
+                    $('#framework-details').html('<p>Failed to load framework details.</p>');
+                }
+            },
+            error: function () {
+                $('#framework-details').html('<p>An error occurred while fetching details.</p>');
+            }
+        });
+    });
+</script>
+
+{% endblock content %}

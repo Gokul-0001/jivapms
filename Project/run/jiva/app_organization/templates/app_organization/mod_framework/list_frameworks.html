@@ -77,10 +77,11 @@ org_id
                                             <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                         </th>                                
                                         <th width="2%">#</th>
-                                        <th>Framework</th>
-                                        <th width="20%">Description</th>
+                                        <th width="10%">Framework</th>
+                                        <th width="10%">Description</th>
+                                        <th width="5%">Public</th>
                                         <th width="10%">Configure</th>
-                                        <th width="50%">                                    
+                                        <th width="30%">                                    
                                             Actions
                                             &nbsp;&nbsp;
                                             <select name="pagination" id="paginationselect">
@@ -116,16 +117,23 @@ org_id
                                             <input type="checkbox" name="selected_item" id="selected_item_ids" value="{{tobject.id}}">
                                         </td>
                                         <td>{{forloop.counter}}</td>
-                                        <td width="20%" ondblclick="makeEditable(this)"
+                                        <td width="10%" ondblclick="makeEditable(this)"
                                          onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Framework', 'name')"
                                         ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
                                         <td width="" ondblclick="makeEditable(this)"
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Framework', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                        <td width="20%">
+                                        <td width="5%">
+                                            {% if tobject.public_framework %}
+                                            <b>Yes</b>
+                                            {% else %}
+                                           
+                                            {% endif %}
+                                        </td>
+                                        <td width="10%">
                                         
                                         </td>
-                                        <td width="50%">
+                                        <td width="30%">
                                             <a href="{% url 'view_framework' organization_id  tobject.id  %}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                             &nbsp;&nbsp;
