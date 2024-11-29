@@ -8,57 +8,127 @@
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+/* Parent container configuration */
+.content-wrapper {
+    display: flex;
+    height: 100vh; /* Full viewport height */
+    overflow: hidden; /* Prevent unwanted scrolling */
+}
 
+/* Non-Scrolling Left Column */
+.non-scrolling {
+    position: fixed;
+    top: 50px; /* Adjust to align with the navbar */
+    bottom: 0;
+    left: 0;
+    width: 25%; /* Width of the left column */
+    background-color: #f8f9fa; /* Optional: Background color */
+    padding: 20px; /* Optional: Add some padding */
+    border-right: 1px solid #ddd; /* Optional: Divider */
+    overflow: hidden; /* Prevent scrolling */
+}
+
+/* Right Column Layout */
+.scrolling-frame {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden; /* Prevent column-level scrolling */
+}
+
+/* Static Section: Non-Scrolling */
+#static-details {
+    flex-shrink: 0; /* Prevent resizing */
+    padding: 20px;
+    background-color: #f9f9f9; /* Optional: Background color for clarity */
+    border-bottom: 1px solid #ddd; /* Divider for visual separation */
+    position: sticky; /* Make the section fixed relative to the column */
+    top: 0; /* Stick to the top of the column */
+    z-index: 10; /* Ensure it appears above the scrolling content */
+}
+
+/* Scrollable Section */
+#scrolling-content {
+    flex-grow: 1; /* Take remaining space */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 20px;
+    background-color: #ffffff; /* Optional: Match overall design */
+}
+/* Highlight for the selected framework */
+.framework-link.selected {
+    font-weight: bold;
+    color: #007bff; /* Bootstrap primary color */
+    background-color: #e9ecef; /* Light gray background */
+    border-radius: 5px;
+    padding: 5px;
+}
+
+</style>
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
-
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
-           <div class="row">
+            <div class="row">
+                <!-- Empty left margin -->
                 <div class="col col-md-1"></div>
-                <div class="col col-md-2">
+
+                <!-- Non-Scrolling Left Column -->
+                <div class="col col-md-2 non-scrolling">
                     <h3>Public Frameworks</h3>
                     <ul>
                         {% for public_framework in public_frameworks.all|filter_active %}
                             <li>
-                                <a href="#" class="framework-link" data-id="{{ public_framework.id }}">
+                                <a href="#" class="framework-link"  data-id="{{ public_framework.id }}">
                                     {{ public_framework }}
                                 </a>
                             </li>
                         {% endfor %}
-                    </ul>                    
+                    </ul>
                 </div>
-                <div class="col col-md-8">
+
+                <!-- Right Column: Scrolling Frame -->
+                <div class="col col-md-8 scrolling-frame" style="margin-left: 25%;"> <!-- Ensures alignment -->
                     <div class="content_area" id="framework-details">
-                        <!-- Framework details will be loaded here -->
+                        <!-- Static details (Non-scrolling section) -->
+                        <div id="static-details">
+                            <!-- Static content will be dynamically inserted here -->
+                        </div>
+                        
+                        <!-- Scrollable section -->
+                        <div id="scrolling-content">
+                            <!-- Scrolling content will be dynamically inserted here -->
+                        </div>
                     </div>
                 </div>
+
+                <!-- Empty right margin -->
                 <div class="col col-md-1"></div>
-           </div>
-           
-           
+            </div>
         </div>
     </div>
 </div>
+
 </form> 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 <script>
     $(document).on('click', '.framework-link', function (e) {
         e.preventDefault(); // Prevent default link behavior
 
         const frameworkId = $(this).data('id');
         const url = '{% url "ajax_display_public_framework" 0 %}'.replace('0', frameworkId);
+        // Remove 'selected' class from all links and add to the clicked one
+        $('.framework-link').removeClass('selected'); // Remove class from all
+        $(this).addClass('selected'); // Add class to the clicked link
 
         $.ajax({
             url: url,
             method: 'GET',
             success: function (response) {
                 if (response.status === 'success') {
-                    const mdContent = marked.parse(response.content); 
-                    const mdDefaultText = marked.parse(response.default_text); 
-                    $('#framework-details').html(`
+                    // Populate static details
+                    $('#static-details').html(`
                         <div class="framework-image">
                             <img src="${response.image_url}" alt="Framework Image" class="img-fluid">
                         </div>
@@ -66,11 +136,17 @@
                             <h4>${response.name}</h4>
                             <p>${response.description}</p>
                         </div>
+                    `);
+
+                    // Populate scrollable content
+                    const mdContent = marked.parse(response.content); // Convert Markdown to HTML
+                    const mdDefaultText = marked.parse(response.default_text); // Convert Markdown to HTML
+                    $('#scrolling-content').html(`
                         <div class="framework-md-content">
-                            ${mdContent} <!-- Rendered Markdown -->
+                            ${mdContent}
                         </div>
                         <div class="framework-md-content">
-                            ${mdDefaultText} <!-- Rendered Markdown -->
+                            ${mdDefaultText}
                         </div>
                     `);
                 } else {
