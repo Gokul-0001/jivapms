@@ -179,6 +179,7 @@ def ajax_display_public_framework(request, framework_id):
         # Fetch the organization image if available
         org_image_map = OrgImageMap.objects.filter(supporting_frameworks=framework).first()
         image_url = org_image_map.thumbnail.url if org_image_map and org_image_map.thumbnail else ""
+        image_original_url = org_image_map.image.url if org_image_map and org_image_map.image else ""
 
         return JsonResponse({
             'status': 'success',
@@ -187,6 +188,7 @@ def ajax_display_public_framework(request, framework_id):
             'content': framework.content,  # Assuming Framework has a `content` field
             'default_text': framework.default_text,  # Assuming Framework has a `default_text` field
             'image_url': image_url,
+            'image_original_url': image_original_url,
         })
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
