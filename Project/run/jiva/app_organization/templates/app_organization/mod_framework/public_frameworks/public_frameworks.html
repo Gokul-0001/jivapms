@@ -93,6 +93,7 @@
     width: 100%;
     height: auto;
 }
+
 </style>
 <form method="post">
 {% csrf_token %}
@@ -157,79 +158,37 @@
 </form> 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-    $(document).on('click', '.framework-link', function (e) {
-        e.preventDefault(); // Prevent default link behavior
-
-        const frameworkId = $(this).data('id');
-        const url = '{% url "ajax_display_public_framework" 0 %}'.replace('0', frameworkId);
-        // Remove 'selected' class from all links and add to the clicked one
-        $('.framework-link').removeClass('selected'); // Remove class from all
-        $(this).addClass('selected'); // Add class to the clicked link
-
-        $.ajax({
-            url: url,
-            method: 'GET',
-            success: function (response) {
-                if (response.status === 'success') {
-                    // Populate static details
-                    $('#static-details').html(`
-                        <div class="framework-image">
-                            <img src="${response.image_url}" alt="Framework Image" class="img-fluid">
-                        </div>
-                        <div class="framework-details">
-                            <h4>${response.name}</h4>
-                            <p>${response.description}</p>
-                        </div>
-                    `);
-
-                    // Populate scrollable content
-                    const mdContent = marked.parse(response.content); // Convert Markdown to HTML
-                    const mdDefaultText = marked.parse(response.default_text); // Convert Markdown to HTML
-                    $('#scrolling-content').html(`
-                        <div class="framework-md-content">
-                            ${mdContent}
-                        </div>
-                        <div class="framework-md-content">
-                            ${mdDefaultText}
-                        </div>
-                    `);
-                } else {
-                    $('#framework-details').html('<p>Failed to load framework details.</p>');
-                }
-            },
-            error: function () {
-                $('#framework-details').html('<p>An error occurred while fetching details.</p>');
-            }
-        });
-    });
-</script>
-<script>
-    // Function to open the modal with the full-size image
-    function openModal(imageUrl) {
+   // Function to open the modal with the full-size image and title
+    function openModal(imageUrl, imageTitle) {
         // Set the full-size image in the modal
         $('#modal-full-image').attr('src', imageUrl);
+        // Set the image title in the modal header
+        $('#imageModal .modal-title').text(imageTitle || 'Full Image');
         // Display the modal
         $('#imageModal').css('display', 'block');
-    }
-
-    // Function to close the modal
-    function closeModal() {
-        $('#imageModal').css('display', 'none');
     }
 
     // When a framework thumbnail is clicked
     $(document).on('click', '.framework-image img', function (e) {
         e.preventDefault();
         const fullImageUrl = $(this).data('original'); // Get the full image URL from the data attribute
-        openModal(fullImageUrl);
+        const altText = $(this).attr('alt'); // Get the alt text for the title
+        const imageTitle = altText.split('::')[0]; // Extract the name (before "::")
+        openModal(fullImageUrl, imageTitle); // Pass the URL and title to the modal function
     });
 
-    // AJAX function updates the thumbnail with a data attribute for the full image
-    $(document).on('click', '.framework-link', function (e) {
-        e.preventDefault();
+    // Function to close the modal
+    function closeModal() {
+        $('#imageModal').css('display', 'none');
+    }    
 
-        const frameworkId = $(this).data('id');
+    // Function to handle framework selection
+    function loadFrameworkDetails(frameworkId, linkElement) {
         const url = '{% url "ajax_display_public_framework" 0 %}'.replace('0', frameworkId);
+
+        // Remove 'selected' class from all links and add to the clicked one
+        $('.framework-link').removeClass('selected'); // Remove class from all
+        $(linkElement).addClass('selected'); // Add class to the clicked link
 
         $.ajax({
             url: url,
@@ -241,7 +200,7 @@
                         <div class="framework-image">
                             <img src="${response.image_url}" 
                                  data-original="${response.image_original_url}" 
-                                 alt="Framework Thumbnail" 
+                                 alt="${response.name}::${response.description}" 
                                  class="img-fluid"
                                  style="cursor: pointer;">
                         </div>
@@ -270,6 +229,22 @@
                 $('#framework-details').html('<p>An error occurred while fetching details.</p>');
             }
         });
+    }
+
+    // Automatically select and highlight the first framework on page load
+    $(document).ready(function () {
+        const firstFramework = $('.framework-link').first(); // Get the first framework link
+        if (firstFramework.length > 0) {
+            const frameworkId = firstFramework.data('id'); // Get the framework ID
+            loadFrameworkDetails(frameworkId, firstFramework); // Load the first framework details
+        }
+    });
+
+    // Attach click event to framework links
+    $(document).on('click', '.framework-link', function (e) {
+        e.preventDefault();
+        const frameworkId = $(this).data('id');
+        loadFrameworkDetails(frameworkId, this);
     });
 </script>
 
