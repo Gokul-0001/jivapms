@@ -1,3 +1,4 @@
+{% if user.is_authenticated %}
 <button class="toggle-btn" onclick="toggleSidebar()">
     <i class="bi bi-list"></i>
 </button>
@@ -89,3 +90,5 @@
     </div>
     {% endif %}
 </div>
+
+{% endif %}

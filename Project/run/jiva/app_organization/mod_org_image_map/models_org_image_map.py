@@ -42,7 +42,8 @@ class OrgImageMap(BaseModelImpl):
         if self.image and not self.thumbnail:
             # Open the image file
             img = Image.open(self.image.path)
-
+            # Handle images with an alpha channel
+            
             # Create a thumbnail
             img.thumbnail((150, 150), Image.ANTIALIAS)
 
@@ -109,7 +110,8 @@ class OrgImageMap(BaseModelImpl):
 
         # Open the original image
         img = Image.open(self.image.path)
-
+        if img.mode == 'RGBA':
+                img = img.convert('RGB')
         # Parse coordinates
         x, y, width, height = map(int, coords)
         crop_box = (x, y, x + width, y + height)

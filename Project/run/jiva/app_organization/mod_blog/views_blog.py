@@ -371,7 +371,8 @@ def view_blog(request, organization_id, blog_id):
     template_file = f"{app_name}/{module_path}/view_blog.html"
     return render(request, template_file, context)
 
-@login_required
+#@login_required
+# MODIFIED FOR GA
 def display_blog(request, organization_id, blog_id):
     user = request.user
     organization = Organization.objects.get(id=organization_id, active=True, 

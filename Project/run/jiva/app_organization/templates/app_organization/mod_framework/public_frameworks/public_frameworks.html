@@ -110,13 +110,14 @@
                     <ul>
                         {% for public_framework in public_frameworks.all|filter_active %}
                             <li>
-                                <a href="#" class="framework-link"  data-id="{{ public_framework.id }}">
+                                <a href="#" class="framework-link"  data-id="{{ public_framework.id }}" 
+                                        data-org-id="{{public_framework.organization.id}}" 
+                                        data-org-image-map-id="{{public_framework.supporting_frameworks.first.id}}"
+                                        data-framework-id="{{public_framework.id}}"
+                                
+                                >
                                     {{ public_framework }} 
-                                </a>
-                                &nbsp;&nbsp;
-                                <a href="{% url 'display_visual_image_map' public_framework.organization.id public_framework.supporting_frameworks.first.id public_framework.id %}" class="framework-deep-dive"  data-id="{{ public_framework.id }}">
-                                     Deep Dive
-                                </a>
+                                </a>                              
                             </li>
                         {% endfor %}
                     </ul>
@@ -128,6 +129,9 @@
                         <!-- Static details (Non-scrolling section) -->
                         <div id="static-details">
                             <!-- Static content will be dynamically inserted here -->
+                        </div>
+                        <div id="deep_dive_details_content">
+                            <!-- Deep Dive content will be dynamically inserted here -->
                         </div>
                        
                         <!-- Scrollable section -->
@@ -161,6 +165,8 @@
 
 </form> 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
 <script>
    // Function to open the modal with the full-size image and title
     function openModal(imageUrl, imageTitle) {
@@ -190,6 +196,18 @@
     function loadFrameworkDetails(frameworkId, linkElement) {
         const url = '{% url "ajax_display_public_framework" 0 %}'.replace('0', frameworkId);
 
+        // Fetch the data attributes from the clicked link
+        const orgId = $(linkElement).data('org-id');
+        const orgImageMapId = $(linkElement).data('org-image-map-id');
+        const frameworkIdFromLink = $(linkElement).data('framework-id');
+
+        // Construct the Deep Dive URL
+        const deepDiveUrl = `{% url 'display_visual_image_map' 0 0 0 %}`
+            .replace('0', orgId)
+            .replace('0', orgImageMapId)
+            .replace('0', frameworkIdFromLink);
+
+
         // Remove 'selected' class from all links and add to the clicked one
         $('.framework-link').removeClass('selected'); // Remove class from all
         $(linkElement).addClass('selected'); // Add class to the clicked link
@@ -211,7 +229,10 @@
                         <div class="framework-details">
                             <h4>${response.name}</h4>
                             <p>${response.description}</p>
-                        </div>                        
+                        </div>                
+                        <a href="${deepDiveUrl}" class="btn btn-primary" target="_blank">
+                        Deep Dive <i class="bi bi-arrow-right"></i>
+                        </a>        
                     `);
 
                     // Populate scrollable content
