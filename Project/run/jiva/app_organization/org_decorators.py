@@ -11,6 +11,41 @@ from app_jivapms.mod_app.all_view_imports import *
 org_admin_str = COMMON_ROLE_CONFIG['ORG_ADMIN']['name']
 project_admin_str = COMMON_ROLE_CONFIG['PROJECT_ADMIN']['name']
 
+
+def site_admin_only(view_func):
+    """
+    Decorator to restrict access to Site Admins only.
+    """
+
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user = request.user
+
+        # Ensure the user is authenticated
+        if not user.is_authenticated:
+            template_url = "common/error/access_denied.html"
+            return render(request, template_url, {})
+
+        # Check if the user has the Site Admin role directly
+        is_site_admin = MemberOrganizationRole.objects.filter(
+            member__user=user,
+            role__name=site_admin_str,  # Assuming 'site_admin_str' is the role name
+            active=True
+        ).exists()
+
+        # If not a Site Admin, deny access
+        if not is_site_admin:
+            template_url = "common/error/access_denied.html"
+            return render(request, template_url, {})
+
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view
+
+
+
+
+
 def org_access_required(allowed_roles=None):
     if allowed_roles is None:
         allowed_roles = [org_admin_str, project_admin_str]  # Use dynamic role names from configuration

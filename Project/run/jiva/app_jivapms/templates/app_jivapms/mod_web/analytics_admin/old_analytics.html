@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics Dashboard - URI Breakdown</title>
+</head>
+<body>
+    <h1>Analytics Dashboard</h1>
+
+    <h2>Daily Visits</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Path</th>
+                <th>Query Parameters</th>
+                <th>Visits</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in daily_visits %}
+            <tr>
+                <td>{{ visit.day }}</td>
+                <td>{{ visit.path }}</td>
+                <td>
+                    {% for key, value in visit.query.items %}
+                        {{ key }}: {{ value|join:", " }}<br>
+                    {% endfor %}
+                </td>
+                <td>{{ visit.visits }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Weekly Visits</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Week</th>
+                <th>Path</th>
+                <th>Query Parameters</th>
+                <th>Visits</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in weekly_visits %}
+            <tr>
+                <td>{{ visit.week }}</td>
+                <td>{{ visit.path }}</td>
+                <td>
+                    {% for key, value in visit.query.items %}
+                        {{ key }}: {{ value|join:", " }}<br>
+                    {% endfor %}
+                </td>
+                <td>{{ visit.visits }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Monthly Visits</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Path</th>
+                <th>Query Parameters</th>
+                <th>Visits</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in monthly_visits %}
+            <tr>
+                <td>{{ visit.month }}</td>
+                <td>{{ visit.path }}</td>
+                <td>
+                    {% for key, value in visit.query.items %}
+                        {{ key }}: {{ value|join:", " }}<br>
+                    {% endfor %}
+                </td>
+                <td>{{ visit.visits }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

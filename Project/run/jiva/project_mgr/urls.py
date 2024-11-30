@@ -17,6 +17,9 @@ urlpatterns = [
     # organization
     path('org/', include('app_organization.mod_app.urls_app')),
     
+    # Analytics
+    path('infos/', include('app_analytics.mod_app.urls_app')),
+    
     
     # memberprofilerole
     path('mpr/', include('app_memberprofilerole.mod_app.urls_app')),

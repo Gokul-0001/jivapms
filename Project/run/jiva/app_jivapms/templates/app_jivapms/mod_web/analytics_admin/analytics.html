@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics Dashboard</title>
+</head>
+<body>
+    <h1>Analytics Dashboard</h1>
+
+    <h2>Daily Report</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>URI</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Visits</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in daily_report %}
+            <tr>
+                <td>{{ visit.uri }}</td>
+                <td>{{ visit.date }}</td>
+                <td>{{ visit.time }}</td>
+                <td>{{ visit.visits }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Weekly Report</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Week</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in weekly_report %}
+            <tr>
+                <td>{{ week.week }}</td>
+                <td>
+                    <ul>
+                        {% for detail in week.details %}
+                        <li>
+                            URI: {{ detail.uri }} | Date: {{ detail.date }} | Time: {{ detail.time }} | Visits: {{ detail.visits }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Yearly Report</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Year</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for year in yearly_report %}
+            <tr>
+                <td>{{ year.year }}</td>
+                <td>
+                    <ul>
+                        {% for detail in year.details %}
+                        <li>
+                            URI: {{ detail.uri }} | Date: {{ detail.date }} | Time: {{ detail.time }} | Visits: {{ detail.visits }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

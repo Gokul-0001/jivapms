@@ -11,6 +11,7 @@ urlpatterns = [
     path('event/', include('app_organization.mod_event.urls_event')),
     path('framework/', include('app_organization.mod_framework.urls_framework')),
     path('iteration/', include('app_organization.mod_iteration.urls_iteration')),
+    path('iteration_backlog/', include('app_organization.mod_iteration_backlog.urls_iteration_backlog')),
     path('memberrole/', include('app_organization.mod_memberrole.urls_memberrole')),
     path('metric/', include('app_organization.mod_metric.urls_metric')),
     path('ops_value_stream/', include('app_organization.mod_ops_value_stream.urls_ops_value_stream')),

@@ -651,7 +651,7 @@ def view_visual_image_map(request, organization_id, org_image_map_id):
     return render(request, template_file, context)
 
 
-@login_required
+
 def display_visual_image_map(request, organization_id, org_image_map_id, framework_id):
     user = request.user
     organization = get_object_or_404(Organization, id=organization_id, active=True)

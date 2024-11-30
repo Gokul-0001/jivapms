@@ -23,6 +23,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'projektmgr.com', 'www.projektmgr.com
 DBBACKUP_FILESYSTEM_DIRECTORY = os.path.join(BASE_DIR, 'dbbackup')
 INSTALLED_APPS = [
     #'app_system',
+    
+    'app_analytics',
     'app_jivapms',
     'app_memberprofilerole',
     'app_organization',
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app_analytics.middleware.page_visit_middleware.PageAnalyticsMiddleware',
 ]
 
 ROOT_URLCONF = 'project_mgr.urls'

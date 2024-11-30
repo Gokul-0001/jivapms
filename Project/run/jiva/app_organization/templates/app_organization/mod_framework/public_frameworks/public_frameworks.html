@@ -111,7 +111,11 @@
                         {% for public_framework in public_frameworks.all|filter_active %}
                             <li>
                                 <a href="#" class="framework-link"  data-id="{{ public_framework.id }}">
-                                    {{ public_framework }}
+                                    {{ public_framework }} 
+                                </a>
+                                &nbsp;&nbsp;
+                                <a href="{% url 'display_visual_image_map' public_framework.organization.id public_framework.supporting_frameworks.first.id public_framework.id %}" class="framework-deep-dive"  data-id="{{ public_framework.id }}">
+                                     Deep Dive
                                 </a>
                             </li>
                         {% endfor %}
@@ -125,7 +129,7 @@
                         <div id="static-details">
                             <!-- Static content will be dynamically inserted here -->
                         </div>
-                        
+                       
                         <!-- Scrollable section -->
                         <div id="scrolling-content">
                             <!-- Scrolling content will be dynamically inserted here -->
@@ -207,7 +211,7 @@
                         <div class="framework-details">
                             <h4>${response.name}</h4>
                             <p>${response.description}</p>
-                        </div>
+                        </div>                        
                     `);
 
                     // Populate scrollable content

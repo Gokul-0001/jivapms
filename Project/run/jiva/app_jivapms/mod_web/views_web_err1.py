@@ -159,7 +159,6 @@ def public_frameworks(request):
     org_ids = public_frameworks.values_list('organization__id', flat=True).distinct()
     organizations = Organization.objects.filter(id__in=org_ids)
     
-    
     context = {
         'parent_page': 'home',
         'page': 'frameworks',
@@ -242,3 +241,168 @@ def about(request):
     template_url = f"app_common/common_files/specific/about.html"
     return render(request, template_url, context)   
 
+
+
+
+
+from urllib.parse import urlparse, parse_qs
+from datetime import datetime, timedelta
+from django.db.models import Count
+import io
+from django.core.files.base import ContentFile
+import io
+from collections import defaultdict
+
+
+def get_week_number_and_year(date):
+    """
+    Get ISO week number and year from a given date.
+    """
+    year, week, _ = date.isocalendar()
+    return f"{year}-W{week}"
+
+
+
+def compute_and_cache_report(report_type, start_date, end_date=None):
+    """
+    Compute and cache a report for the given period.
+    """
+    if report_type == 'daily':
+        # Group visits by URI and time for the day
+        visits = (
+            PageVisit.objects.filter(visit_date__date=start_date)
+            .values('visit_date', 'url')
+            .annotate(visits=Count('id'))
+            .order_by('visit_date')
+        )
+        data = [
+            {
+                'uri': item['url'],
+                'date': item['visit_date'].strftime('%Y-%m-%d'),
+                'time': item['visit_date'].strftime('%H:%M:%S'),
+                'visits': item['visits'],
+            }
+            for item in visits
+        ]
+
+    elif report_type == 'weekly':
+        # Group visits by URI and week
+        visits = PageVisit.objects.filter(visit_date__date__gte=start_date, visit_date__date__lte=end_date)
+        weekly_data = defaultdict(list)
+
+        for visit in visits:
+            week = visit.visit_date.date().isocalendar()[1]  # Get the ISO week number
+            weekly_data[week].append({
+                'uri': visit.url,
+                'date': visit.visit_date.strftime('%Y-%m-%d'),
+                'time': visit.visit_date.strftime('%H:%M:%S'),
+                'visits': 1,
+            })
+
+        data = [{'week': week, 'details': details} for week, details in weekly_data.items()]
+
+    elif report_type == 'yearly':
+        # Group visits by year
+        visits = PageVisit.objects.all()
+        yearly_data = defaultdict(list)
+
+        for visit in visits:
+            year = visit.visit_date.year
+            yearly_data[year].append({
+                'uri': visit.url,
+                'date': visit.visit_date.strftime('%Y-%m-%d'),
+                'time': visit.visit_date.strftime('%H:%M:%S'),
+                'visits': 1,
+            })
+
+        data = [{'year': year, 'details': details} for year, details in yearly_data.items()]
+
+    else:
+        raise ValueError("Invalid report type")
+
+    # Cache the report data
+    cached_report, created = CachedAnalytics.objects.update_or_create(
+        report_type=report_type,
+        start_date=start_date,
+        end_date=end_date,
+        defaults={'data': data},
+    )
+    return cached_report
+
+
+@login_required
+@site_admin_only
+def analytics_view(request):
+    today = datetime.today().date()
+    start_of_week = today - timedelta(days=today.weekday())  # Start of the current week
+    end_of_week = start_of_week + timedelta(days=6)  # End of the current week
+    start_of_year = today.replace(month=1, day=1)
+
+    # Compute or retrieve cached reports
+    daily_report = compute_and_cache_report('daily', today)
+    weekly_report = compute_and_cache_report('weekly', start_of_week, end_of_week)
+    yearly_report = compute_and_cache_report('yearly', start_of_year)
+
+    context= {
+        'daily_report': daily_report.data,
+        'weekly_report': weekly_report.data,
+        'yearly_report': yearly_report.data,
+    }
+
+    # Render the analytics page
+    template_url = f"app_jivapms/mod_web/analytics_admin/analytics.html"
+    return render(request, template_url, context)   
+
+@login_required
+@site_admin_only
+def old_analytics_view(request):
+    # Daily visits with URL path and query parameters
+    daily_visits = (
+        PageVisit.objects.extra({'day': 'DATE(visit_date)'})
+        .values('day', 'url')
+        .annotate(visits=Count('id'))
+        .order_by('day')
+    )
+
+    for visit in daily_visits:
+        parsed_url = urlparse(visit['url'])
+        visit['path'] = parsed_url.path  # Extracted path
+        visit['query'] = parse_qs(parsed_url.query)  # Extracted query parameters as dict
+
+    # Weekly visits with URL path and query parameters
+    weekly_visits = (
+        PageVisit.objects.extra({'week': 'strftime("%Y-%W", visit_date)'})
+        .values('week', 'url')
+        .annotate(visits=Count('id'))
+        .order_by('week')
+    )
+
+    for visit in weekly_visits:
+        parsed_url = urlparse(visit['url'])
+        visit['path'] = parsed_url.path
+        visit['query'] = parse_qs(parsed_url.query)
+
+    # Monthly visits with URL path and query parameters
+    monthly_visits = (
+        PageVisit.objects.extra({'month': 'strftime("%Y-%m", visit_date)'})
+        .values('month', 'url')
+        .annotate(visits=Count('id'))
+        .order_by('month')
+    )
+
+    for visit in monthly_visits:
+        parsed_url = urlparse(visit['url'])
+        visit['path'] = parsed_url.path
+        visit['query'] = parse_qs(parsed_url.query)
+
+
+    context = {
+       "daily_visits": list(daily_visits),  # Convert QuerySet to list
+        "weekly_visits": list(weekly_visits),
+        "monthly_visits": list(monthly_visits),
+    }
+    
+    
+    # Render the analytics page
+    template_url = f"app_jivapms/mod_web/analytics_admin/old_analytics.html"
+    return render(request, template_url, context)   

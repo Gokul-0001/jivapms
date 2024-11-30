@@ -11,6 +11,7 @@ urlpatterns = [
     path('about_the_project/', web.about_the_project, name='about_the_project'),
     path('blogs/', web.blogs, name='blogs'),
     
+
     path('public_frameworks/', web.public_frameworks, name='public_frameworks'),
     path('ajax_display_public_framework/<int:framework_id>/', web.ajax_display_public_framework, name='ajax_display_public_framework'),
     
