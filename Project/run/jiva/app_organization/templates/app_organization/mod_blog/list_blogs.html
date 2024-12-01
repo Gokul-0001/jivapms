@@ -14,8 +14,7 @@ project
 org
 org_id
 -->
-<form method="post">
-{% csrf_token %}
+
 <div class="content-wrapper">
     {% include 'app_organization/mod_blog/breadcrumb_blogs.html' %}
     
@@ -161,7 +160,7 @@ org_id
             <a href="{% url 'list_deleted_blogs' organization_id %}"><i class="bi bi-trash-fill"></i></a>    
             {% endif %}
         </div>
-        </form>
+
         <script>
         // Select all / checkbox
         function checkUncheck(checkBox) {
