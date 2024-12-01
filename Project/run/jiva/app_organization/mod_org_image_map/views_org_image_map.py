@@ -657,7 +657,7 @@ def display_visual_image_map(request, organization_id, org_image_map_id, framewo
     organization = get_object_or_404(Organization, id=organization_id, active=True)
     org_image_map = get_object_or_404(OrgImageMap, pk=org_image_map_id, active=True, organization_id=organization_id)
     framework = get_object_or_404(Framework, pk=framework_id, active=True, organization_id=organization_id)
-    print(f">>> === display_visual_image_map: {framework} {framework.content} === <<<")
+    #print(f">>> === display_visual_image_map: {framework} {framework.content} === <<<")
     areas = [
         {
             'id': area.id,
