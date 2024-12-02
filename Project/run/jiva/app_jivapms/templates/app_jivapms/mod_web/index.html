@@ -33,6 +33,12 @@
             font-weight: normal;
         }
 
+        .subheader2 {
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: normal;
+        }
+
         /* Carousel Item Styling */
         .carousel-item {
             background-color: white; /* Set background to white */
@@ -159,6 +165,12 @@
                 font-size: 30px; /* Reduced icon size for mobile */
             }
         }
+
+        a img {
+        border: 1px solid #ddd; /* Add a grey border */
+        outline: none;
+        display: block; /* Ensures it behaves like an inline-block for images */
+    }
     </style>
 
 
@@ -166,7 +178,8 @@
     <!-- Landing Page Content -->
     <div class="container">
         <div class="header">Jiva PMS</div>
-        <div class="subheader">Jiva Project/Product Management System</div>
+        <div class="subheader">Jiva Purpose/Project/Product Management System</div>
+     
 
         <!-- Bootstrap Image Carousel with Caption and Icons -->
         <div id="carouselExampleControls" class="carousel slide mt-4" data-ride="carousel" data-interval="3000">
@@ -175,7 +188,7 @@
                     <img src="https://via.placeholder.com/300x100/FFFFFF/FFFFFF" alt="Slide 1">
                     <div class="carousel-caption">
                         <i class="fas fa-project-diagram icon"></i>
-                        <p class="text-dark">Jiva is a cutting-edge, free, open-source Project Management System designed for individuals, teams, and enterprises seeking simplicity, flexibility, and scalability.</p>
+                        <p class="text-dark">Jiva is a cutting-edge, free, open-source Purpose/Project Management System designed for individuals, teams, and enterprises seeking simplicity, flexibility, and scalability.</p>
                     </div>
                 </div>
                 <div class="carousel-item">
@@ -243,7 +256,9 @@
                   </div>                
             </div>
             <div class="col col-md-2">
-                <img src="{% static 'img/jivapms/gallery_framework.png' %}" alt="" width="250" height="250">
+                <a href="{% url 'public_frameworks' %}" style="display: inline-block;">
+                    <img src="{% static 'img/jivapms/gallery_framework.png' %}" alt="Gallery Framework" width="250" height="250" style="border: none; display: block;">
+                </a>
             </div>
             <div class="col col-md-2"></div>
         </div>

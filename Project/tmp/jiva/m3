@@ -1,4 +1,0 @@
-#!/bin/bash
-
-# M3: python manage.py makemigrations
-python manage.py runserver
