@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Mapping Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+       
+        header {
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+        }
+        header .menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .content {
+            display: flex;
+            flex: 1;
+        }
+        .left-pane {
+            width: 25%;
+            background: #f4f4f9;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .right-pane {
+            width: 75%;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        footer {
+            height: 12px;
+            background-color: #4CAF50;
+            text-align: center;
+            font-size: 10px;
+            color: white;
+            line-height: 12px;
+        }
+       
+        .rendering_container {
+            width: 100%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertically center content */
+            align-items: flex-start; /* Align content to the left */
+            box-sizing: border-box;
+            padding-left: 20px; /* Padding for left alignment */
+        }
+        .goal-box {
+            width: 200px;
+            height: auto; /* Allow height to adjust dynamically */
+            background-color: #FFD700;
+            border: 2px solid #FFA500;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Prevent content overflow */
+            word-wrap: break-word; /* Enable text wrapping */
+            text-align: center; /* Center-align text */
+        }
+
+        .goal-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            overflow: hidden; /* Prevent overflow for long titles */
+            word-wrap: break-word; /* Enable wrapping for long titles */
+            text-align: center; /* Center-align title text */
+        }
+
+        .goal-description {
+            font-size: 14px;
+            color: #555;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            border-radius: 5px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .actor-container {
+            display: flex;
+            justify-content: space-around; /* Equal horizontal spacing */
+            align-items: flex-start; /* Align actors at the top */
+            margin-top: 20px;
+            position: relative;
+            width: 100%;
+        }
+
+        .actor-box {
+            width: 150px;
+            height: auto; /* Allow dynamic height */
+            background-color: #ADD8E6;
+            border: 1px solid #007BFF;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+
+
+        /** test **/
+        #wrapper {
+            position: relative;
+        }
+   
+/** ------------------------------------------------- */
+.tree, .tree ul, .tree li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.tree {
+    display: flex;
+    flex-direction: row; /* Align the tree horizontally */
+    justify-content: flex-start; /* Start alignment for child nodes */
+}
+
+.tree ul {
+    display: flex;
+    flex-direction: column; /* Vertical stacking for children */
+    margin-left: 40px; /* Space between parent and children */
+    position: relative;
+}
+
+.tree li {
+    position: relative;
+    margin: 20px 0; /* Vertical spacing between siblings */
+    text-align: center;
+}
+
+.tree li::before,
+.tree li::after {
+    content: '';
+    position: absolute;
+    left: -20px; /* Horizontal position for lines */
+    border: 1px solid #666;
+}
+
+.tree li::before {
+    top: 50%;
+    width: 20px; /* Length of the horizontal connector */
+    height: 0;
+}
+
+.tree li::after {
+    top: 0;
+    height: 100%; /* Height of the vertical connector */
+    width: 0;
+}
+
+.tree li:first-child::after {
+    top: 50%;
+    height: 50%;
+}
+
+.tree li:last-child::after {
+    height: 50%;
+}
+
+.tree li span {
+    display: inline-block;
+    padding: 10px 15px;
+    border: 1px solid #666;
+    background-color: #fff;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.goal {
+    background-color: yellowgreen;
+    color: white;
+    font-weight: bold;
+}
+
+.actor {
+    background-color: skyblue;
+    color: white;
+}
+
+.impact {
+    background-color: orange;
+    color: white;
+}
+
+.deliverable {
+    background-color: purple;
+    color: white;
+}
+
+.task {
+    background-color: lightgray;
+    color: black;
+}
+
+
+/** ------------------------------------------------- */
+.goal {
+    background-color: yellowgreen;
+    color: black;
+    border: 30px solid green;
+}
+.actor {
+    background-color: skyblue;
+    color: black;
+    border: 30px solid green;
+}
+.impact {
+    background-color: orange;
+    color: black;
+    border: 30px solid green;
+}
+.deliverable {
+    background-color: purple;
+    color: white;
+    border: 30px solid green;
+}
+.task {
+    background-color: lightgrey;
+    color: black;
+    border: 30px solid green;
+}
+.root {
+    background-color: yellow;
+    color: black;
+    border: 30px solid green;
+}
+
+
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <header>
+        <div class="logo">Impact Mapping Tool</div>
+        <div class="menu">
+            <a href="#" class="text-white text-decoration-none">Home</a>
+            <a href="#" class="text-white text-decoration-none">Help</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle text-white text-decoration-none" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    User
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <div class="content">
+        <div class="left-pane">
+            <h3>Impact Map Structure</h3>
+            <div id="jstree"></div>
+        </div>
+
+        <div class="right-pane">
+            <h3>Impact Map Visualization</h3>
+            <div id="wrapper">
+                
+  <ul class="tree" id="impact-map">
+    <li><span>Home</span>
+      <ul>
+        <li><span>About us</span>
+          <ul>
+            <li><span>Our history</span>
+              <ul>
+                <li><span>Founder</span></li>
+              </ul>
+            </li>
+            <li><span>Our board</span>
+              <ul>
+                <li><span>TEST2</span></li>
+                <li><span>TEST1</span></li>
+                <li><span>TEST3</span></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><span>Our products</span>
+          <ul>
+            <li><span>GH1</span>
+              <ul>
+                <li><span>tes22</span></li>
+              </ul>
+            </li>
+            <li><span>sam</span>
+              <ul>
+                <li><span>Order form</span></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><span>Contact us</span>
+          <ul>
+            <li><span>Social media</span>
+              <ul>
+                <li><span>Facebook</span></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>&copy; <span id="current-year"></span> Your Company</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        // Initialize jsTree
+        $('#jstree').jstree({
+            core: {
+                data: [
+                    { id: 'root', text: 'Impact Map', state: { opened: true }, type: 'root', children: [] }
+                ],
+                check_callback: function (operation, node, node_parent, node_position, more) {
+                    // Restrict only one goal under root
+                    if (operation === "create_node" && node_parent.id === "root") {
+                        const existingGoals = $('#jstree').jstree().get_children_dom(node_parent)
+                            .filter((index, childNode) => $('#jstree').jstree().get_node(childNode).type === 'Goal');
+
+                        if (existingGoals.length > 0) {
+                            alert("Only one Goal is allowed under the root.");
+                            return false;
+                        }
+                    }
+                    return true; // Allow other operations
+                }
+            },
+            types: {
+                root: { valid_children: ["Goal"], icon: "fas fa-project-diagram" },
+                Goal: { valid_children: ["Actor"], icon: "fas fa-bullseye" },
+                Actor: { valid_children: ["Impact"], icon: "fas fa-user" },
+                Impact: { valid_children: ["Deliverable"], icon: "fas fa-bolt" },
+                Deliverable: { valid_children: ["Task"], icon: "fas fa-box" },
+                Task: { valid_children: [], icon: "fas fa-check-circle" }
+            },
+            plugins: ["contextmenu", "types", "state"],
+            contextmenu: {
+                items: function (node) {
+                    const items = {};
+
+                    // Add option at the top
+                    if (node.type === "root") {
+                        items.addGoal = {
+                            label: "Add Goal",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Goal", type: "Goal" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Goal") {
+                        items.addActor = {
+                            label: "Add Actor",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Actor", type: "Actor" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Actor") {
+                        items.addImpact = {
+                            label: "Add Impact",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Impact", type: "Impact" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Impact") {
+                        items.addDeliverable = {
+                            label: "Add Deliverable",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Deliverable", type: "Deliverable" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Deliverable") {
+                        items.addTask = {
+                            label: "Add Task",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Task", type: "Task" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    }
+
+                    // Edit option
+                    items.editNode = {
+                        label: "Edit",
+                        action: function () {
+                            $('#jstree').jstree().edit(node);
+                            updateImpactMap();
+                        }
+                    };
+
+                    // Delete option
+                    items.deleteNode = {
+                        label: "Delete",
+                        action: function () {
+                            $('#jstree').jstree().delete_node(node);
+                            updateImpactMap();
+                        }
+                    };
+
+                    return items;
+                }
+            }
+        });
+
+        // Expand the parent node and make the new node editable
+        function expandAndEditNode(newNodeId) {
+            const tree = $('#jstree').jstree(true);
+            tree.open_node(tree.get_parent(newNodeId));
+            tree.edit(newNodeId);
+        }
+        // Track node renaming and update the visualization
+        $('#jstree').on("rename_node.jstree", function (event, data) {
+            updateImpactMap();
+        });
+        // Prevent node folding/collapsing on double-click when editing
+        $('#jstree').on("dblclick.jstree", function (event) {
+            event.preventDefault(); // Stop default toggle behavior
+            const instance = $('#jstree').jstree(true);
+            const node = instance.get_node(event.target);
+
+            if (node) {
+                instance.open_node(node); // Ensure the node remains open
+                instance.edit(node); // Trigger edit mode
+            }
+        });
+
+
+        
+
+        // Render the impact map recursively
+        function renderImpactMap(node, rows) {
+            if (!node) return;
+
+            const box = document.createElement('div');
+            box.className = `box ${node.type ? node.type.toLowerCase() : ''}`;
+            box.textContent = node.text;
+            box.id = node.id;
+
+            if (rows[node.type]) {
+                rows[node.type].appendChild(box);
+            }
+
+
+            // Render children if any
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => renderImpactMap(child, rows));
+            }
+        }
+
+
+        // Set the current year in the footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Initialize the first visualization
+        updateImpactMap();
+        // Track node renaming and update the visualization
+        $('#jstree').on("rename_node.jstree", function () {
+            updateImpactMap();
+        });
+
+         // Initialize the first visualization
+        document.addEventListener('DOMContentLoaded', () => {
+            updateImpactMap();
+            window.addEventListener('resize', drawArrows);
+        });
+       
+
+        
+    </script>
+
+
+<script>
+function drawArrows() {
+
+}
+
+const renderBranch = (node) => {
+    // Create a list item for the node
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = node.text; // Set the text content of the node
+    // Add a class based on the type of the node
+    if (node.type) {
+        span.classList.add(node.type.toLowerCase()); // Add type as a class
+    }
+    li.appendChild(span);
+
+    
+
+    // If the node has children, create a nested `ul` element
+    if (node.children && node.children.length > 0) {
+        const ul = document.createElement('ul');
+        node.children.forEach((child) => {
+            const childLi = renderBranch(child); // Recursively render child nodes
+            ul.appendChild(childLi);
+        });
+        li.appendChild(ul);
+    }
+
+    return li;
+};
+
+const updateImpactMap = () => {
+    const treeData = $('#jstree').jstree(true).get_json('#', { flat: false });
+    const impactMap = document.getElementById('impact-map');
+    impactMap.innerHTML = ''; // Clear existing content
+
+    // Render the root nodes
+    treeData.forEach((rootNode) => {
+        const rootLi = renderBranch(rootNode);
+        impactMap.appendChild(rootLi);
+    });
+};
+
+    // Event listeners for DOM changes
+    $('#jstree').on('rename_node.jstree create_node.jstree delete_node.jstree', () => {
+        updateImpactMap();
+        drawArrows();
+    });
+</script>
+</body>
+</html>
