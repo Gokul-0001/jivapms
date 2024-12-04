@@ -367,7 +367,7 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
     impact_mapping = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True, **viewable_dict)
 
     # Fetch root nodes (nodes with no parent)
-    root_nodes = ImpactMap.objects.filter(parent__isnull=True, impact_map=impact_mapping)
+    root_nodes = ImpactMap.objects.filter(parent__isnull=True, impact_map=impact_mapping).order_by('position')
  
 
     # Recursive function to map nodes
