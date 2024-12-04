@@ -45,12 +45,12 @@
         <div class="container-fluid">
             <div class="row pb-2">
                 <div class="col col-md-8">
-                    <h2>Backlog</h2> 
+                    <h2>Iterate Backlog</h2> 
                 </div>
                 <div class="col col-md-4 text-end">    
                     <!-- Dropdown for switching styles -->
-                    <a href="{% url 'iterate__backlog' pro_id ref_parent_id %}" class="btn btn-sm btn-warning">Iterate</a>
-                     &nbsp;&nbsp;&nbsp;&nbsp;    
+                    <a href="{% url 'story_mapping_backlog' pro_id ref_parent_id %}" class="btn btn-sm btn-warning">Story Mapping</a>
+                    &nbsp;&nbsp;&nbsp;
                     <a href="{% url 'list_backlogs' pro_id ref_parent_id %}" class="btn btn-sm btn-primary"><b>List Backlog(s) </b></a>
                    
                 </div>
@@ -60,131 +60,39 @@
     {% csrf_token %}        
 {% with counter="0" %}
 <table border="1" class="new_excel table table-bordered sortable_table serial-number-column mpttTable">
-    <thead>
-        <tr>
-            <th width="2%"><i class="bi bi-grip-vertical"></i></th>
-            <th width="2%">#</th>
-            <!-- <th width="2%">ID</th> -->
-            <th width="5%">Type</th>
-            <th width="20%">Backlog</th>
-            <th width="20%">Description</th>
-            <th width="8%">Release</th>
-            <th width="6%">Iteration</th>
-            <th width="20%">Progress</th>
-            <th width="5%">Status</th>
-        </tr>
-    </thead>
+    
     <tbody  id="sortable" class="sortable-tbody todo-container">
     {% for node, serial, parent_id in serialized_nodes %}
+
+        {% if node.type.name == 'User Story' %}
+
+        
     <tr id="{{node.id}}_{{ forloop.counter }}" class="sortable-row display_tr " >
             <td class="drag-handle" width="2%">
                 <i class="bi bi-grip-vertical"></i> 
             </td>
-            <td width="2%" ><a href="{% url 'list_backlogs' pro_id node.id %}" style="text-decoration: none;"><strong>{{forloop.counter}}</strong></a></td>
-            <td width="5%">{{node.type}}</td>
-            <!-- <td width="2%">{{node.id}}</td> -->
-            <td width="20%" style="text-decoration: none;" >
-
-                {% if node.level == 1 %}               
-                <strong><a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
-                {% elif node.level == 2 %}
-                &nbsp;&nbsp;
-                <strong><a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
-                {% elif node.level == 3 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <strong><a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a></strong>
-                {% elif node.level == 4 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
-                {% elif node.level == 5 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
-                {% elif node.level == 6 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
-                {% elif node.level == 7 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
-                {% elif node.level == 8 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
-                {% elif node.level == 9 %}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
-                {% else %}
-                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">{{ node.name }}</a>
-                {% endif %}            
+          
+            <td width="60%" style="text-decoration: none;" >
+                <a href="{% url 'view_backlog' pro_id parent_id node.id %}" style="text-decoration: none;">
+                    {% if node.name != None %}{{node.name}}{% endif %}
+                </a>
             </td>
-            <td width="20%" onclick="makeEditable(this)"
-                onblur="save_element_text(this, '{{ node.id }}',  'app_organization', 'Backlog', 'description')"
-                >{% if node.description != None %}{{node.description}}{% endif %}               
-            </td>
-
-                <td width="8%">
-                    {% if node.release != None %}{{node.release}}{% endif %}
-                </td>
-                <td width="6%">
-                    {% if node.iteration != None %}{{node.iteration}}{% endif %}
-                </td>
-            
-            <td width="20%">
-               
-                <font size="-1">
-                    {% if not node.is_leaf_node %}
-                    {% with completion_stats=node.get_completion_stats %}
-                    {{ completion_stats.completed_count }}/{{ completion_stats.total_count }} done.
-                    {{ completion_stats.percent_complete }}%
-                     <div class="progress">
-                      <div class="progress-bar" role="progressbar"
-                      style="width:{{ completion_stats.percent_complete }}%;"
-                      aria-valuenow="{{ completion_stats.percent_complete }}"
-                      aria-valuemin="0"
-                      aria-valuemax="100"></div>
-                  </div>
-                    {% endwith %}
-                    {% else %}
-                    {% if node.done  %}
-                      <b>Done</b>
-                      {% else %}
-                      <b>TBC</b>
-                    {% endif %}
-                    {% endif %}
-                    </font>
+            <td width="8%">
+                {% if node.release != None %}
+                <span class="btn btn-sm btn-primary small_font">{{node.release}}</span>
+                {% if node.iteration != None %}<span class="btn btn-sm btn-warning small_font">{{node.iteration}}</span>{% endif %}
+                {% endif %}
             </td>
             
-            <td>
-                <div class="form-check
-                    {% if node.done %}
-                        text-success
-                    {% else %}
-                        text-danger
-                    {% endif %}">
-                    <input class="form-check-input" type="checkbox" value="" 
-                    id="flexCheckDefault" {% if node.done %}checked{% endif %} onclick="updateDoneState('{{ node.id }}', this.checked)">   
-                    <label class="form-check
-                        {% if node.done %}
-                            text-success
-                        {% else %}
-                            text-danger
-                        {% endif %}" for="flexCheckDefault">
-                        {% if node.done %}
-                            Done
-                        {% else %}
-                            Not Done
-                        {% endif %}
-            </td>
         </tr>
+        {% endif %}
         {% endfor %}
+        
         </tbody>
         </table>
 
         {% endwith %}
-                
+        
         </div>
     </div>
 </div>

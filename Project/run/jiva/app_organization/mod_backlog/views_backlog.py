@@ -773,3 +773,180 @@ def ajax_get_iterations(request, release_id):
     data = [{'id': iteration.id, 'name': iteration.name} for iteration in iterations]
     print(f">>> === AJAX_GET_ITERATIONS data: {data} === <<<")
     return JsonResponse(data, safe=False)
+
+
+@login_required
+def iterate__backlog(request, pro_id, parent_id):
+    # take inputs
+    user = request.user
+    ref_parent_id = parent_id
+    form = None
+    form = BacklogForm()
+    parent_id = None if parent_id == 0 else parent_id
+   
+    # connect with connect id
+    pro = get_object_or_404(Project, pk=pro_id)
+    # process inputs
+    
+    workspace = None
+    wslist = None
+    objects_per_page = 100
+    objects_count = 0
+    
+    parent = get_object_or_404(Backlog, id=parent_id)
+    children = None 
+    ancestors = None
+    root = parent.get_root()
+    root_workspace = None
+      
+    if not parent.is_leaf_node():
+        children = parent.get_active_children()    
+    if not children:
+        ancestors = parent.get_ancestors()
+        
+    if children != None:
+        for child in children:
+            ancestors = child.get_ancestors()
+            if ancestors:
+                parent = ancestors[0]    
+
+    ## Check whether an workspace item exists in treedb
+    treedb = Backlog.objects.filter(id=parent_id, 
+                                          pro_id=pro_id,
+                                         
+                                          ).first()
+
+    if treedb:
+        wslist = treedb.get_active_children().order_by('position')
+        objects_count = wslist.count()
+        #print(f">>> === Getting Tree wslist: {wslist} === <<<")
+    show_all = request.GET.get('all', 'false').lower() == 'true'
+   
+    if show_all:
+        # No pagination, show all records
+        page_obj = wslist
+        serialized_nodes = get_serialized_subtree_from_node(request, parent_id)
+    else:
+        paginator = Paginator(wslist, objects_per_page)  # Show 10 topics per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        serialized_nodes = get_serialized_subtree_from_node(request, parent_id)
+    
+    
+    # send outputs (info, template,
+    context = {
+        'parent_page': '__PARENTPAGE__',
+        'page': 'iterate',
+        'user': user,
+        'ancestors': ancestors,
+
+        'wslist': wslist,
+        'treedb': treedb,
+        'root': root,
+        'pro_id': pro_id,
+        'pro': pro,
+        'project': pro,
+        'object': pro,
+        'org': pro.org,
+        'org_id': pro.org_id,
+        'ref_parent_id': ref_parent_id,
+        'parend_id': parent_id,
+        'serialized_nodes': serialized_nodes,
+        'form': form,
+        'page_obj': page_obj,
+        'objects_count': objects_count,
+        'objects_per_page': objects_per_page,
+        'show_all': show_all,
+        'page_title': f'Iterate Backlog',
+    }       
+    template_file = f"{app_name}/{module_path}/iterate__backlog.html"
+    return render(request, template_file, context)    
+
+
+
+@login_required
+def story_mapping_backlog(request, pro_id, parent_id):
+    # take inputs
+    user = request.user
+    ref_parent_id = parent_id
+    form = None
+    form = BacklogForm()
+    parent_id = None if parent_id == 0 else parent_id
+   
+    # connect with connect id
+    pro = get_object_or_404(Project, pk=pro_id)
+    # process inputs
+    
+    workspace = None
+    wslist = None
+    objects_per_page = 100
+    objects_count = 0
+    
+    parent = get_object_or_404(Backlog, id=parent_id)
+    children = None 
+    ancestors = None
+    root = parent.get_root()
+    root_workspace = None
+      
+    if not parent.is_leaf_node():
+        children = parent.get_active_children()    
+    if not children:
+        ancestors = parent.get_ancestors()
+        
+    if children != None:
+        for child in children:
+            ancestors = child.get_ancestors()
+            if ancestors:
+                parent = ancestors[0]    
+
+    ## Check whether an workspace item exists in treedb
+    treedb = Backlog.objects.filter(id=parent_id, 
+                                          pro_id=pro_id,
+                                         
+                                          ).first()
+
+    if treedb:
+        wslist = treedb.get_active_children().order_by('position')
+        objects_count = wslist.count()
+        #print(f">>> === Getting Tree wslist: {wslist} === <<<")
+    show_all = request.GET.get('all', 'false').lower() == 'true'
+   
+    if show_all:
+        # No pagination, show all records
+        page_obj = wslist
+        serialized_nodes = get_serialized_subtree_from_node(request, parent_id)
+    else:
+        paginator = Paginator(wslist, objects_per_page)  # Show 10 topics per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        serialized_nodes = get_serialized_subtree_from_node(request, parent_id)
+    
+    
+    # send outputs (info, template,
+    context = {
+        'parent_page': '__PARENTPAGE__',
+        'page': 'iterate',
+        'user': user,
+        'ancestors': ancestors,
+
+        'wslist': wslist,
+        'treedb': treedb,
+        'root': root,
+        'pro_id': pro_id,
+        'pro': pro,
+        'project': pro,
+        'object': pro,
+        'org': pro.org,
+        'org_id': pro.org_id,
+        'ref_parent_id': ref_parent_id,
+        'parend_id': parent_id,
+        'serialized_nodes': serialized_nodes,
+        'form': form,
+        'page_obj': page_obj,
+        'objects_count': objects_count,
+        'objects_per_page': objects_per_page,
+        'show_all': show_all,
+        'page_title': f'Iterate Backlog',
+    }       
+    template_file = f"{app_name}/{module_path}/story_mapping_backlog.html"
+    return render(request, template_file, context)    

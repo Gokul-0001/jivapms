@@ -1,0 +1,325 @@
+
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+{% include 'app_jivapms/mod_web/common_files/impact_mapping_css.html' %}
+
+<!-- Begin: Content -->
+<div class="content-wrapper">
+   {% include 'app_organization/mod_impact_mapping/breadcrumb_impact_mappings.html' %}
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    <form method="post">
+    {% csrf_token %}
+    <div class="contentbar mb-5" id="contentbar">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <b class="h3">Editor 
+                                Impact Mapping :: {{object}}</b>
+                                {{tree_data}}
+                                &nbsp;&nbsp;
+                                <button id="save-button" class="btn btn-success">Save Impact Map</button>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_impact_mappings' organization_id %}"
+                             class="btn btn-sm btn-primary"><b>List Impact Mapping</b></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+
+
+                         <!-- Main Content -->
+    <div class="content">
+        <div class="left-pane">
+            <h3>Impact Map Structure</h3>
+            
+            <div id="jstree"></div>
+        </div>
+
+        <div class="right-pane">
+            <h3>Impact Map Visualization</h3>
+            <div id="wrapper">
+               
+
+                <ul class="tree" id="impact-map">
+                    
+                </ul>
+
+
+            </div>
+        </div>
+    </div>
+       
+</div>
+</form>
+    
+
+
+<script>
+        function saveImpactMap() {
+            const treeData = $('#jstree').jstree(true).get_json('#', { flat: false });
+
+            $.ajax({
+                    url: "{% url 'ajax_save_impact_mappings' %}",
+                    type: 'POST',
+                    data : {
+                    'csrfmiddlewaretoken': "{{ csrf_token }}",
+                    'organization_id': {{ organization_id }},
+                    'impact_mapping_id': {{object.id}},
+                    'impact_map': JSON.stringify(treeData),
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                    console.log(data);
+                    }
+                });
+        }
+
+        // Attach save functionality to a button (or call it directly after changes)
+        document.getElementById('save-button').addEventListener('click', saveImpactMap);
+
+    
+</script>
+<script>
+
+const treeData = JSON.parse('{{ tree_data|escapejs }}');
+
+        // Initialize jsTree
+        $('#jstree').jstree({
+            core: {
+                data: treeData,
+                check_callback: function (operation, node, node_parent, node_position, more) {
+                    // Restrict only one goal under root
+                    if (operation === "create_node" && node_parent.id === "root") {
+                        const existingGoals = $('#jstree').jstree().get_children_dom(node_parent)
+                            .filter((index, childNode) => $('#jstree').jstree().get_node(childNode).type === 'Goal');
+
+                        if (existingGoals.length > 0) {
+                            alert("Only one Goal is allowed under the root.");
+                            return false;
+                        }
+                    }
+                    return true; // Allow other operations
+                }
+            },
+            types: {
+                root: { valid_children: ["Goal"], icon: "fas fa-project-diagram" },
+                Goal: { valid_children: ["Actor"], icon: "fas fa-bullseye" },
+                Actor: { valid_children: ["Impact"], icon: "fas fa-user" },
+                Impact: { valid_children: ["Deliverable"], icon: "fas fa-bolt" },
+                Deliverable: { valid_children: ["Task"], icon: "fas fa-box" },
+                Task: { valid_children: [], icon: "fas fa-check-circle" }
+            },
+            plugins: ["contextmenu", "types", "state"],
+            contextmenu: {
+                items: function (node) {
+                    const items = {};
+
+                    // Add option at the top
+                    if (node.type === "root") {
+                        items.addGoal = {
+                            label: "Add Goal",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Goal", data: { node_type: "Goal" }, type: "Goal" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Goal") {
+                        items.addActor = {
+                            label: "Add Actor",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Actor", data: { node_type: "Actor" }, type: "Actor" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Actor") {
+                        items.addImpact = {
+                            label: "Add Impact",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Impact", data: { node_type: "Impact" }, type: "Impact" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Impact") {
+                        items.addDeliverable = {
+                            label: "Add Deliverable",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Deliverable", data: { node_type: "Deliverable" }, type: "Deliverable" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    } else if (node.type === "Deliverable") {
+                        items.addTask = {
+                            label: "Add Task",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, { text: "New Task", text: "New Task", data: { node_type: "Task" }, type: "Task" });
+                                expandAndEditNode(newNode);
+                                updateImpactMap();
+                            }
+                        };
+                    }
+
+                    // Edit option
+                    items.editNode = {
+                        label: "Edit",
+                        action: function () {
+                            $('#jstree').jstree().edit(node);
+                            updateImpactMap();
+                        }
+                    };
+
+                    // Delete option
+                    items.deleteNode = {
+                        label: "Delete",
+                        action: function () {
+                            $('#jstree').jstree().delete_node(node);
+                            updateImpactMap();
+                        }
+                    };
+
+                    return items;
+                }
+            }
+
+            
+        });
+
+        
+
+        // Expand the parent node and make the new node editable
+        function expandAndEditNode(newNodeId) {
+            const tree = $('#jstree').jstree(true);
+            tree.open_node(tree.get_parent(newNodeId));
+            tree.edit(newNodeId);
+        }
+        // Track node renaming and update the visualization
+        $('#jstree').on("rename_node.jstree", function (event, data) {
+            updateImpactMap();
+        });
+        // Prevent node folding/collapsing on double-click when editing
+        $('#jstree').on("dblclick.jstree", function (event) {
+            event.preventDefault(); // Stop default toggle behavior
+            const instance = $('#jstree').jstree(true);
+            const node = instance.get_node(event.target);
+
+            if (node) {
+                instance.open_node(node); // Ensure the node remains open
+                instance.edit(node); // Trigger edit mode
+            }
+        });
+
+
+        
+
+        // Render the impact map recursively
+        function renderImpactMap(node, rows) {
+            if (!node) return;
+
+            const box = document.createElement('div');
+            box.className = `box ${node.type ? node.type.toLowerCase() : ''}`;
+            box.textContent = node.text;
+            box.id = node.id;
+
+            if (rows[node.type]) {
+                rows[node.type].appendChild(box);
+            }
+
+
+            // Render children if any
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => renderImpactMap(child, rows));
+            }
+        }
+
+
+        // Set the current year in the footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Initialize the first visualization
+        updateImpactMap();
+        // Track node renaming and update the visualization
+        $('#jstree').on("rename_node.jstree", function () {
+            updateImpactMap();
+        });
+
+         // Initialize the first visualization
+        document.addEventListener('DOMContentLoaded', () => {
+            updateImpactMap();
+            window.addEventListener('resize', drawArrows);
+        });
+       
+
+        
+    </script>
+
+
+<script>
+function drawArrows() {
+
+}
+
+const renderBranch = (node) => {
+    // Create a list item for the node
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = node.text; // Set the text content of the node
+    // Add a class based on the type of the node
+    if (node.type) {
+        span.classList.add(node.type.toLowerCase()); // Add type as a class
+    }
+    li.appendChild(span);
+
+    
+
+    // If the node has children, create a nested `ul` element
+    if (node.children && node.children.length > 0) {
+        const ul = document.createElement('ul');
+        node.children.forEach((child) => {
+            const childLi = renderBranch(child); // Recursively render child nodes
+            ul.appendChild(childLi);
+        });
+        li.appendChild(ul);
+    }
+
+    return li;
+};
+
+const updateImpactMap = () => {
+    const treeData = $('#jstree').jstree(true).get_json('#', { flat: false });
+    const impactMap = document.getElementById('impact-map');
+    impactMap.innerHTML = ''; // Clear existing content
+
+    // Render the root nodes
+    treeData.forEach((rootNode) => {
+        const rootLi = renderBranch(rootNode);
+        impactMap.appendChild(rootLi);
+    });
+};
+
+    // Event listeners for DOM changes
+    $('#jstree').on('rename_node.jstree create_node.jstree delete_node.jstree', () => {
+        updateImpactMap();
+        drawArrows();
+        saveImpactMap();
+    });
+</script>
+
+<!-- End: Content -->
+{% endblock content %}

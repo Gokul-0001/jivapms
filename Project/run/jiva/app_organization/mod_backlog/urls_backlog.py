@@ -18,6 +18,8 @@ urlpatterns = [
     path('view_backlog/<int:pro_id>/<int:parent_id>/<int:content_id>/', views_backlog.view_backlog, name='view_backlog'),
     path('view_tree__backlog/<int:pro_id>/<int:parent_id>/', views_backlog.view_tree__backlog, name='view_tree__backlog'),
     
+    path('iterate__backlog/<int:pro_id>/<int:parent_id>/', views_backlog.iterate__backlog, name='iterate__backlog'), 
+    path('story_mapping_backlog/<int:pro_id>/<int:parent_id>/', views_backlog.story_mapping_backlog, name='story_mapping_backlog'),
     # ajax updates
     path('ajax_get_iterations/<int:release_id>/', views_backlog.ajax_get_iterations, name='ajax_get_iterations'),
 ]

@@ -1,0 +1,404 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    #mpttTable {
+    counter-reset: level1;  /* Initial counter reset for the first level */
+    }
+
+    #mpttTable tr[data-level="1"] > td::before {
+        counter-reset: level2;  /* Each time a level 1 row is started, reset the second level counter */
+        counter-increment: level1;  /* Increment the level 1 counter */
+        content: counter(level1) ". ";  /* Display level 1 counter */
+    }
+
+    #mpttTable tr[data-level="2"] > td::before {
+        counter-reset: level3;  /* Reset the third level counter at each new level 2 row */
+        counter-increment: level2;  /* Increment level 2 counter */
+        content: counter(level1) "." counter(level2) ". ";  /* Display both level 1 and level 2 counters */
+    }
+
+    #mpttTable tr[data-level="3"] > td::before {
+        counter-increment: level3;  /* Increment the level 3 counter */
+        content: counter(level1) "." counter(level2) "." counter(level3) ". ";  /* Display full hierarchical numbering */
+    }
+</style>
+
+<style>
+     /* Styling the two-pane layout */
+     .left-pane {
+            width: 20%;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 2px solid #ddd;
+            padding: 15px;
+            background-color: #f8f9fa;
+            overflow-y: hidden; 
+            flex-shrink: 0;
+        }
+
+        .right-pane {
+            width: 80%;
+            height: 100vh;
+            padding: 15px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .story-item {
+            cursor: grab;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .dropzone {
+            min-height: 100px;
+            border: 2px dashed #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .dropzone:hover {
+            border-color: #007bff;
+            background-color: #e9ecef;
+        }
+
+        .table {
+            width: 100%;
+            text-align: center;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+        }
+
+        .sub-step-header {
+            font-size: 0.8rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .d-flex {
+    display: flex;
+    height: 100%; /* Ensure the layout takes full height */
+}
+
+.left-pane {
+    width: 20%;
+    height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Independent scrolling for the left pane */
+    border-right: 2px solid #ddd;
+    padding: 15px;
+    background-color: #f8f9fa;
+}
+
+.right-pane {
+    width: 80%;
+    height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Only one scrollbar for the right pane */
+    padding: 15px;
+}
+
+.table-responsive {
+    overflow-x: auto; /* Allow horizontal scrolling for wide tables */
+    overflow-y: visible; /* Ensure the table is fully visible */
+    display: block; /* Ensure proper layout for scrolling */
+}
+
+.table {
+    width: 100%;
+    text-align: center;
+}
+
+.table-responsive {
+    overflow-x: auto; /* Horizontal scroll for wide tables if needed */
+    overflow-y: visible; /* Ensure the table isn't clipped vertically */
+}
+</style>
+{% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
+<div class="content-wrapper">
+    <nav aria-label="breadcrumb" class="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
+        </ol>
+    </nav>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col col-md-8">
+                    <h2>Story Mapping Backlog</h2> 
+                </div>
+                <div class="col col-md-4 text-end">    
+                    <!-- Dropdown for switching styles -->
+                    
+                    <a href="{% url 'list_backlogs' pro_id ref_parent_id %}" class="btn btn-sm btn-primary"><b>List Backlog(s) </b></a>
+                   
+                </div>
+            </div>
+            
+            <!-- story mapping -->
+            <form action="" method="POST">
+            {% csrf_token %}        
+            <!-- add drag and drop -->
+            <div class="d-flex mb-5">
+                <!-- Left Pane: User Stories -->
+                <div class="left-pane">
+                    <h4>User Stories</h4>
+                    <ul id="story-list" class="list-group">
+                        {% for story in user_stories %}
+                            <li class="list-group-item story-item" draggable="true" data-story-id="{{ story.id }}">
+                                {{ story.name }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+        
+                <!-- Right Pane: Story Mapping Table -->
+                <div class="right-pane">
+                    <h4>Story Mapping Exercise</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">Release/Iteration</th>
+                                    {% for step in steps %}
+                                        <th colspan="2">Step {{ forloop.counter }}</th>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for step in steps %}
+                                        <th class="sub-step-header">Sub-Step 1</th>
+                                        <th class="sub-step-header">Sub-Step 2</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for release in releases %}
+                                    {% for iteration in release.iterations.all %}
+                                        <tr>
+                                            <td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>
+                                            {% for step in steps %}
+                                                <td>
+                                                    <div class="dropzone" 
+                                                         data-release-id="{{ release.id }}" 
+                                                         data-iteration-id="{{ iteration.id }}" 
+                                                         data-step-id="{{ step.id }}" 
+                                                         data-sub-step-id="1"></div>
+                                                </td>
+                                                <td>
+                                                    <div class="dropzone" 
+                                                         data-release-id="{{ release.id }}" 
+                                                         data-iteration-id="{{ iteration.id }}" 
+                                                         data-step-id="{{ step.id }}" 
+                                                         data-sub-step-id="2"></div>
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+            </div>
+        
+            <script>
+                // Add basic interactivity for drag-and-drop
+                document.addEventListener('DOMContentLoaded', () => {
+                    const stories = document.querySelectorAll('.story-item');
+                    const dropzones = document.querySelectorAll('.dropzone');
+        
+                    let draggedStory = null;
+        
+                    // Dragging stories
+                    stories.forEach(story => {
+                        story.addEventListener('dragstart', e => {
+                            draggedStory = story;
+                            e.dataTransfer.setData('text/plain', story.dataset.storyId);
+                        });
+        
+                        story.addEventListener('dragend', () => {
+                            draggedStory = null;
+                        });
+                    });
+        
+                    // Handling drop zones
+                    dropzones.forEach(dropzone => {
+                        dropzone.addEventListener('dragover', e => {
+                            e.preventDefault();
+                        });
+        
+                        dropzone.addEventListener('drop', e => {
+                            e.preventDefault();
+                            if (draggedStory) {
+                                dropzone.appendChild(draggedStory);
+        
+                                // AJAX to save mapping
+                                const storyId = draggedStory.dataset.storyId;
+                                const releaseId = dropzone.dataset.releaseId;
+                                const stepId = dropzone.dataset.stepId;
+                                const subStepId = dropzone.dataset.subStepId;
+        
+                                fetch('/save_story_mapping/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': '{{ csrf_token }}',
+                                    },
+                                    body: JSON.stringify({
+                                        story_id: storyId,
+                                        release_id: releaseId,
+                                        step_id: stepId,
+                                        sub_step_id: subStepId,
+                                    }),
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('Mapping saved:', data);
+                                })
+                                .catch(error => {
+                                    console.error('Error saving mapping:', error);
+                                });
+                            }
+                        });
+                    });
+                });
+            </script>
+        
+
+        
+        </div>
+    </div>
+</div>
+</form>
+<script>
+    function updateDoneState(wslistId, isType) {
+    $.ajax({
+        url: '/common/common_ajax/ajax_update_task_done_state/',  // Ensure this URL is correct and handled properly in Django
+        type: 'POST',
+        data: {
+            'id': wslistId,
+            'done': isType,
+            'model_name': 'Backlog',
+            'app_name': 'app_organization',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            console.log('Update successful!');
+            // Optionally, trigger a DOM update here to visually confirm the change
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.log('An error occurred: ' + error);
+        }
+    });
+}
+</script>
+
+
+<script>
+    $(".sortable_table").find("tbody").sortable({
+      items: "> tr",
+      handle: ".drag-handle",
+      appendTo: "parent",
+      cancel: "[contenteditable]",
+      update: function(event, ui) {
+              var serialOrder = $('#sortable').sortable('serialize');
+              var arrayOrder = $('#sortable').sortable('toArray');
+              //alert(arrayOrder);
+              $.ajax({
+                url: '/common/common_ajax/ajax_update_model_list_sorted/',
+                type: 'POST',
+                data : {
+                  'csrfmiddlewaretoken': "{{ csrf_token }}",
+                  'model_name': 'Backlog',
+                  'app_name': 'app_organization',
+                  'sorted_list_data': JSON.stringify(arrayOrder),
+                  
+                },
+                dataType: 'json',
+                success: function(data) {
+                  console.log(data);
+                }
+              })
+            }
+    });
+</script>   
+<script>
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
+    }    
+  
+    function save_element_text(element, id,  appName, modelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_element_text/',
+            type: 'POST',
+            data : {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'model_name': modelName,
+            'app_name': appName,
+            'field_name': fieldName,
+            'text': element.textContent, 
+            'id': id,
+            },
+            dataType: 'json',
+            success: function(data) {
+            console.log(data);
+            }
+        })
+    }
+</script>
+
+<script>
+ $('#id_release').change(function() {
+            var releaseId = $(this).val();
+            var csrfToken = '{{ csrf_token }}'; // CSRF token from the template
+            console.log("Release selected:", releaseId); // Debugging line
+            if (releaseId) {
+                $.ajax({
+                    url: '/org/backlog/ajax_get_iterations/' + releaseId + '/', // Correct URL
+                    method: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': csrfToken,
+                    },
+                    success: function(data) {
+                        console.log("Iterations fetched:", data); // Debugging line
+                        $('#id_iteration').empty().append('<option value="">Select Iteration</option>');
+                        data.forEach(function(iteration) {
+                            $('#id_iteration').append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
+                        });
+                        $('#id_iteration').prop('disabled', false);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching iterations:", error); // Debugging line
+                        alert('Error fetching iterations');
+                    }
+                });
+            } else {
+                $('#id_iteration').empty().append('<option value="">Select Iteration</option>').prop('disabled', true);
+            }
+        });
+</script>
+
+    
+
+{% endblock content %}

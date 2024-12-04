@@ -6,38 +6,8 @@
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 
     <div class="content-wrapper">
-        <button class="toggle-btn" onclick="toggleSidebar()">
-            <i class="bi bi-list"></i>
-        </button>
-        <div class="sidebar" id="sidebar">
-            <!-- Scrollable menu section -->
-            <div class="sidebar-menu">
-                <a href="#" class="nav-link active" onclick="displayContent('listSiteContent', 'Site Administration')">
-                    <i class="bi bi-grid"></i>
-                    <span>Product Ownership</span>
-                </a>
-                <a href="#" class="nav-link active" onclick="displayContent('dashboardContent', 'Dashboard')">
-                    <i class="bi bi-collection"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{% url 'list_organizations' %}" class="nav-link active">
-                    <i class="bi bi-calendar"></i>
-                    <span>Organizations</span>
-                </a>
-                <a href="{% url 'list_projects' org_id %}" class="nav-link active">
-                    <i class="bi bi-calendar"></i>
-                    <span>Projects</span>
-                </a>
-            </div>
-
-            <!-- Sticky settings section -->
-            <div class="settings">
-                <a href="#" class="nav-link" onclick="displayContent('settingsContent', 'Settings')">
-                    <i class="bi bi-gear"></i>
-                    <span>Settings</span>
-                </a>
-            </div>
-        </div>
+        {% include 'app_organization/mod_project/sidebar_menu.html' %}
+        
 
         <div class="contentbar" id="contentbar">
             <!-- <div id="loading">Loading...</div> -->

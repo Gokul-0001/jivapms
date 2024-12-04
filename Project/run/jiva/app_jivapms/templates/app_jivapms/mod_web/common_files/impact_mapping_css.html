@@ -1,0 +1,223 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+   
+    header {
+        background-color: #4CAF50;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+    }
+    header .menu {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .content {
+        display: flex;
+        flex: 1;
+    }
+    .left-pane {
+        width: 25%;
+        background: #f4f4f9;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+    .right-pane {
+        width: 75%;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+  
+    .rendering_container {
+        width: 100%;
+        height: 80%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Vertically center content */
+        align-items: flex-start; /* Align content to the left */
+        box-sizing: border-box;
+        padding-left: 20px; /* Padding for left alignment */
+    }
+    .goal-box {
+        width: 200px;
+        height: auto; /* Allow height to adjust dynamically */
+        background-color: #FFD700;
+        border: 2px solid #FFA500;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden; /* Prevent content overflow */
+        word-wrap: break-word; /* Enable text wrapping */
+        text-align: center; /* Center-align text */
+    }
+
+    .goal-title {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 10px;
+        overflow: hidden; /* Prevent overflow for long titles */
+        word-wrap: break-word; /* Enable wrapping for long titles */
+        text-align: center; /* Center-align title text */
+    }
+
+    .goal-description {
+        font-size: 14px;
+        color: #555;
+        border: 1px dashed #ccc;
+        padding: 5px;
+        border-radius: 5px;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .actor-container {
+        display: flex;
+        justify-content: space-around; /* Equal horizontal spacing */
+        align-items: flex-start; /* Align actors at the top */
+        margin-top: 20px;
+        position: relative;
+        width: 100%;
+    }
+
+    .actor-box {
+        width: 150px;
+        height: auto; /* Allow dynamic height */
+        background-color: #ADD8E6;
+        border: 1px solid #007BFF;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        word-wrap: break-word;
+        position: relative;
+    }
+
+
+
+    /** test **/
+    #wrapper {
+        position: relative;
+    }
+
+
+
+
+/* It's supposed to look like a tree diagram */
+.tree, .tree ul, .tree li {
+list-style: none;
+margin: 0;
+padding: 0;
+position: relative;
+}
+
+.tree {
+margin: 0 0 1em;
+text-align: center;
+}
+.tree, .tree ul {
+display: table;
+}
+.tree ul {
+width: 100%;
+}
+.tree li {
+    display: table-cell;
+    padding: .5em 0;
+    vertical-align: top;
+}
+
+    .tree li:before {
+        outline: solid 1px #666;
+        content: "";
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    .tree li:first-child:before {left: 50%;}
+    .tree li:last-child:before {right: 50%;}
+
+    .tree code, .tree span {
+        border: solid .1em #666;
+        border-radius: .2em;
+        display: inline-block;
+        margin: 0 .2em .5em;
+        padding: .2em .5em;
+        position: relative;
+    }
+    /* If the tree represents DOM structure */
+    .tree code {
+        font-family: monaco, Consolas, 'Lucida Console', monospace;
+    }
+
+        /* | */
+        .tree ul:before,
+        .tree code:before,
+        .tree span:before {
+            outline: solid 1px #666;
+            content: "";
+            height: .5em;
+            left: 50%;
+            position: absolute;
+        }
+        .tree ul:before {
+            top: -.5em;
+        }
+        .tree code:before,
+        .tree span:before {
+            top: -.55em;
+        }
+
+/* The root node doesn't connect upwards */
+.tree > li {margin-top: 0;}
+.tree > li:before,
+.tree > li:after,
+.tree > li > code:before,
+.tree > li > span:before {
+  outline: none;
+}
+.goal {
+background-color: yellowgreen;
+color: black;
+border: 30px solid green;
+}
+.actor {
+background-color: skyblue;
+color: black;
+border: 30px solid green;
+}
+.impact {
+background-color: orange;
+color: black;
+border: 30px solid green;
+}
+.deliverable {
+background-color: purple;
+color: white;
+border: 30px solid green;
+}
+.task {
+background-color: lightgrey;
+color: black;
+border: 30px solid green;
+}
+.root {
+background-color: yellow;
+color: black;
+border: 30px solid green;
+}
+
+
+</style>
