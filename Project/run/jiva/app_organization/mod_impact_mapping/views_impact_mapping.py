@@ -368,8 +368,7 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
 
     # Fetch root nodes (nodes with no parent)
     root_nodes = ImpactMap.objects.filter(parent__isnull=True, impact_map=impact_mapping)
-    print(f">>> Root Nodes Query: {root_nodes.query} <<<")  # Debug SQL query
-    print(f">>> Root Nodes Results: {list(root_nodes)} <<<")  # Debug results
+ 
 
     # Recursive function to map nodes
     def map_node(node):
@@ -378,6 +377,7 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
             'text': node.name,
             'data': {'node_type': node.node_type},
             'state': {'opened': True},  # Adjust as needed
+            'icon': 'fas fa-project-diagram' if node.node_type == 'Root' else None,
             'type': node.node_type,  # Add the type field
             'children': [map_node(child) for child in node.get_children()]
         }
@@ -391,7 +391,7 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
         tree_data_from_db = False
         tree_data = [{
             'id': 'root',
-            'text': 'Impact Map',
+            'text': impact_mapping.name,
             'data': {'node_type': 'Root'},
             'state': {'opened': True},
             'type': 'root',

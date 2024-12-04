@@ -98,13 +98,6 @@
 const treeData = JSON.parse('{{ tree_data|escapejs }}');
 
 function initializeJsTree(treeData) {
-    // Add default type and icon to root node if missing
-    treeData.forEach(node => {
-        if (node.id === 'root') {
-            node.type = node.type || 'root';
-            node.icon = node.icon || 'fas fa-project-diagram';
-        }
-    });
         // Initialize jsTree
         $('#jstree').jstree({
             core: {
@@ -330,10 +323,6 @@ function initializeJsTree(treeData) {
         drawArrows();
         saveImpactMap();
     });
-
-  
-
-
 </script>
 
 <script>
