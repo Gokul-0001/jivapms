@@ -27,7 +27,7 @@
                         <div class="col col-md-8">
                             <b class="h3">Editor 
                                 Impact Mapping :: {{object}}</b>
-                              
+                                {{tree_data}}
                                 &nbsp;&nbsp;
                                 <button id="save-button" class="btn btn-success">Save Impact Map</button>
                         </div>
@@ -97,7 +97,6 @@
 
 const treeData = JSON.parse('{{ tree_data|escapejs }}');
 
-function initializeJsTree(treeData) {
         // Initialize jsTree
         $('#jstree').jstree({
             core: {
@@ -202,23 +201,7 @@ function initializeJsTree(treeData) {
             
         });
 
-
-    // Attach double-click handler explicitly
-    $('#jstree').on("dblclick.jstree", function (event) {
-        event.preventDefault(); // Prevent default behavior
-        const instance = $('#jstree').jstree(true);
-        const nodeId = $(event.target).closest('li').attr('id'); // Get the closest node's ID
-
-        if (nodeId) {
-            const node = instance.get_node(nodeId);
-            if (node) {
-                instance.open_node(node); // Ensure the node remains open
-                instance.edit(node); // Trigger edit mode
-            }
-        }
-    });
-
-    }
+        
 
         // Expand the parent node and make the new node editable
         function expandAndEditNode(newNodeId) {
@@ -245,6 +228,25 @@ function initializeJsTree(treeData) {
 
         
 
+        // Render the impact map recursively
+        function renderImpactMap(node, rows) {
+            if (!node) return;
+
+            const box = document.createElement('div');
+            box.className = `box ${node.type ? node.type.toLowerCase() : ''}`;
+            box.textContent = node.text;
+            box.id = node.id;
+
+            if (rows[node.type]) {
+                rows[node.type].appendChild(box);
+            }
+
+
+            // Render children if any
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => renderImpactMap(child, rows));
+            }
+        }
 
 
         // Set the current year in the footer
@@ -273,28 +275,18 @@ function drawArrows() {
 
 }
 
-const renderImpactMap = (treeData) => {
-    const impactMap = document.getElementById('impact-map');
-    impactMap.innerHTML = ''; // Clear existing content
-
-    // Recursively render nodes and append to impact map
-    treeData.forEach((rootNode) => {
-        const rootLi = renderBranch(rootNode);
-        impactMap.appendChild(rootLi);
-    });
-};
-
 const renderBranch = (node) => {
     // Create a list item for the node
     const li = document.createElement('li');
     const span = document.createElement('span');
     span.textContent = node.text; // Set the text content of the node
-
     // Add a class based on the type of the node
     if (node.type) {
         span.classList.add(node.type.toLowerCase()); // Add type as a class
     }
     li.appendChild(span);
+
+    
 
     // If the node has children, create a nested `ul` element
     if (node.children && node.children.length > 0) {
@@ -327,21 +319,6 @@ const updateImpactMap = () => {
         drawArrows();
         saveImpactMap();
     });
-</script>
-
-<script>
-    // Call the function to initialize jsTree
-document.addEventListener('DOMContentLoaded', () => {
-    const treeData = JSON.parse('{{ tree_data|escapejs }}');
-    initializeJsTree(treeData);
-     // Render the impact map
-     renderImpactMap(treeData);
-
-    // Listen for tree changes
-    $('#jstree').on('rename_node.jstree create_node.jstree delete_node.jstree', () => {
-        updateImpactMap();
-    });
-});
 </script>
 
 <!-- End: Content -->

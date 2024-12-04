@@ -27,7 +27,7 @@
                         <div class="col col-md-8">
                             <b class="h3">Editor 
                                 Impact Mapping :: {{object}}</b>
-                              
+                                {{tree_data}}
                                 &nbsp;&nbsp;
                                 <button id="save-button" class="btn btn-success">Save Impact Map</button>
                         </div>
@@ -97,7 +97,7 @@
 
 const treeData = JSON.parse('{{ tree_data|escapejs }}');
 
-function initializeJsTree(treeData) {
+const initializeJsTree = (treeData) => {
         // Initialize jsTree
         $('#jstree').jstree({
             core: {
@@ -201,22 +201,6 @@ function initializeJsTree(treeData) {
 
             
         });
-
-
-    // Attach double-click handler explicitly
-    $('#jstree').on("dblclick.jstree", function (event) {
-        event.preventDefault(); // Prevent default behavior
-        const instance = $('#jstree').jstree(true);
-        const nodeId = $(event.target).closest('li').attr('id'); // Get the closest node's ID
-
-        if (nodeId) {
-            const node = instance.get_node(nodeId);
-            if (node) {
-                instance.open_node(node); // Ensure the node remains open
-                instance.edit(node); // Trigger edit mode
-            }
-        }
-    });
 
     }
 
@@ -330,18 +314,20 @@ const updateImpactMap = () => {
 </script>
 
 <script>
-    // Call the function to initialize jsTree
-document.addEventListener('DOMContentLoaded', () => {
-    const treeData = JSON.parse('{{ tree_data|escapejs }}');
-    initializeJsTree(treeData);
-     // Render the impact map
-     renderImpactMap(treeData);
+    document.addEventListener('DOMContentLoaded', () => {
+            const treeData = JSON.parse('{{ tree_data|escapejs }}');
 
-    // Listen for tree changes
-    $('#jstree').on('rename_node.jstree create_node.jstree delete_node.jstree', () => {
-        updateImpactMap();
-    });
-});
+            // Initialize jsTree
+            initializeJsTree(treeData);
+
+            // Render the impact map
+            renderImpactMap(treeData);
+
+            // Listen for tree changes
+            $('#jstree').on('rename_node.jstree create_node.jstree delete_node.jstree', () => {
+                updateImpactMap();
+            });
+        });
 </script>
 
 <!-- End: Content -->
