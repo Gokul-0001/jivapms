@@ -21,7 +21,7 @@
 </style>
 <!-- Begin: Content -->
 <div class="content-wrapper">
-   {% include 'app_organization/mod_impact_mapping/breadcrumb_impact_mappings.html' %}
+   {% include 'app_organization/mod_impactmap/breadcrumb_impactmaps.html' %}
     
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
     <form method="post">
@@ -38,12 +38,12 @@
                                 <div class="row pb-2">
                                     <div class="col col-md-5">                                
                                         <b class="h3">
-                                        <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
+                                        <a href="{% url 'list_impactmaps' %}" style="text-decoration: none;">
                                             {{organization}}
                                         </a>
                                         </b>
                                         &nbsp;&nbsp;
-                                        Impact Mapping List
+                                        Impactmap List
                                     
                                     </div>
                                     <div class="col col-md-4">
@@ -56,18 +56,18 @@
                                         </form>
                                     </div>
                                     <div class="col col-md-3 text-end">
-                                        <span class="display_count">{{objects_count}} impact_mapping(s)</span>
+                                        <span class="display_count">{{objects_count}} impactmap(s)</span>
                                         &nbsp;&nbsp;
-                                        <a href="{% url 'create_impact_mapping' organization_id  %}" 
-                                        class="btn btn-sm btn-success"><b>+ Create Impact Mapping</b></a>
+                                        <a href="{% url 'create_impactmap' impactmap_id  %}" 
+                                        class="btn btn-sm btn-success"><b>+ Create Impactmap</b></a>
                                         
                                         &nbsp;&nbsp;
-                                        <a href="{% url 'list_organizations' %}" class="btn btn-primary">
+                                        <a href="{% url 'list_impactmaps' %}" class="btn btn-primary">
                                             <i class="bi bi-arrow-left"></i>
                                         </a>
                                         &nbsp;&nbsp;
                                         {% if deleted_count > 0 %}
-                                        <a href="{% url 'list_deleted_impact_mappings' organization_id %}"><i class="bi bi-trash-fill"></i></a>   
+                                        <a href="{% url 'list_deleted_impactmaps' impactmap_id %}"><i class="bi bi-trash-fill"></i></a>   
                                         {% endif %}
                                     </div>
                                 </div>
@@ -82,7 +82,7 @@
                                             <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                         </th>                                
                                         <th width="2%">#</th>
-                                        <th>Impact Mapping</th>
+                                        <th>Impactmap</th>
                                         <th width="20%">Description</th>
                                         <th width="10%">Configure</th>
                                         <th width="50%">                                    
@@ -122,31 +122,23 @@
                                         </td>
                                         <td>{{forloop.counter}}</td>
                                         <td width="20%" ondblclick="makeEditable(this)"
-                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'ImpactMapping', 'name')"
+                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Impactmap', 'name')"
                                         ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
                                         <td width="" ondblclick="makeEditable(this)"
-                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'ImpactMapping', 'description')"
+                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Impactmap', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                         <td width="20%">
                                         
                                         </td>
                                         <td width="50%">
-                                            <a href="{% url 'view_impact_mapping' organization_id  tobject.id  %}"
+                                            <a href="{% url 'view_impactmap' impactmap_id  tobject.id  %}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'edit_impact_mapping' organization_id  tobject.id %}"
+                                            <a href="{% url 'edit_impactmap' impactmap_id  tobject.id %}"
                                             class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'delete_impact_mapping' organization_id  tobject.id %}"
+                                            <a href="{% url 'delete_impactmap' impactmap_id  tobject.id %}"
                                             class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
-                                            &nbsp;&nbsp;
-                                            &nbsp;&nbsp;
-                                            <a href="{% url 'editor_impact_mapping' organization_id  tobject.id %}"
-                                            class="btn btn-sm btn-warning"><i class="bi bi-square"></i></a>
-                                            &nbsp;&nbsp;
-                                            &nbsp;&nbsp;
-                                            <a href="{% url 'view_tree_table_mapping' organization_id  tobject.id %}"
-                                            class="btn btn-sm btn-warning"><i class="bi bi-triangle"></i></a>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -184,19 +176,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_impact_mappings' organization_id %}?page=1&all=5";
+      window.location.href = "{% url 'list_impactmaps' impactmap_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_impact_mappings' organization_id %}?page=1&all=10";
+      window.location.href = "{% url 'list_impactmaps' impactmap_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_impact_mappings' organization_id %}?page=1&all=15";
+      window.location.href = "{% url 'list_impactmaps' impactmap_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_impact_mappings' organization_id  %}?page=1&all=25";
+      window.location.href = "{% url 'list_impactmaps' impactmap_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_impact_mappings' organization_id %}?page=1&all=50";
+      window.location.href = "{% url 'list_impactmaps' impactmap_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_impact_mappings' organization_id %}?page=1&all=100";
+      window.location.href = "{% url 'list_impactmaps' impactmap_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_impact_mappings' organization_id %}?page=1&all=all";
+      window.location.href = "{% url 'list_impactmaps' impactmap_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });
@@ -218,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 type: 'POST',
                 data : {
                   'csrfmiddlewaretoken': "{{ csrf_token }}",
-                  'model_name': 'ImpactMapping',
+                  'model_name': 'Impactmap',
                   'app_name': 'app_organization',
                   'sorted_list_data': JSON.stringify(arrayOrder),
                   

@@ -375,7 +375,7 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
         return {
             'id': node.id,
             'text': node.name,
-            'data': {'node_type': node.node_type},
+            'data': {'node_type': node.node_type, 'link_text': node.link_text},
             'state': {'opened': True},  # Adjust as needed
             'icon': 'fas fa-project-diagram' if node.node_type == 'Root' else None,
             'type': node.node_type,  # Add the type field
@@ -437,6 +437,7 @@ def ajax_save_impact_mappings(request):
                 # Recursive function to save nodes
                 def save_node(node, parent=None):
                     node_type = node.get('data', {}).get('node_type')  # Safely get node_type
+                    link_text = node.get('data', {}).get('link_text')
                     if not node_type:
                         raise ValueError(f"Node missing 'node_type': {node}")
 
@@ -444,6 +445,7 @@ def ajax_save_impact_mappings(request):
                     impact_map_node = ImpactMap.objects.create(
                         name=node['text'],
                         node_type=node_type,
+                        link_text=link_text,
                         parent=parent
                     )
 
@@ -465,3 +467,65 @@ def ajax_save_impact_mappings(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+
+@login_required
+def view_tree_table_mapping(request, organization_id, impact_mapping_id):
+    user = request.user
+
+    # Validate Organization
+    organization = Organization.objects.get(id=organization_id, active=True, **first_viewable_dict)
+
+    # Validate ImpactMapping
+    impact_mapping = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True, **viewable_dict)
+
+    # Fetch root nodes (nodes with no parent)
+    root_nodes = ImpactMap.objects.filter(parent__isnull=True, impact_map=impact_mapping).order_by('position')
+ 
+
+    # Recursive function to map nodes
+    def map_node(node):
+        return {
+            'id': node.id,            
+            'text': node.name,
+            'data': {'parent_db_id': impact_mapping.id, 'this_db_id': node.id, 'node_type': node.node_type},
+            'state': {'opened': True},  # Adjust as needed
+            'icon': 'fas fa-project-diagram' if node.node_type == 'Root' else None,
+            'type': node.node_type,  # Add the type field
+            'position': node.position,
+            'children': [map_node(child) for child in node.get_children()]
+        }
+
+    # Build tree data starting from root nodes
+    tree_data = [map_node(node) for node in root_nodes]
+
+    # Add default root node if no data exists
+    tree_data_from_db = True
+    if not tree_data:
+        tree_data_from_db = False
+        tree_data = [{
+            'id': 'root',
+            'text': impact_mapping.name,
+            'data': {'node_type': 'Root'},
+            'state': {'opened': True},
+            'type': 'root',
+            'position': 0,
+            'children': []
+        }]
+        
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_tree_table_mapping',
+        'organization': organization,
+        'organization_id': organization_id,
+        'org_id': organization_id,
+        'tree_data': json.dumps(tree_data),  # Convert tree data to JSON
+        'tree_data_from_db': tree_data_from_db,
+        'module_path': module_path,
+        'object': impact_mapping,
+        'page_title': f'Tree Table Impact Mapping',
+    }
+
+    template_file = f"{app_name}/{module_path}/view_tree_table_mapping.html"
+    return render(request, template_file, context)

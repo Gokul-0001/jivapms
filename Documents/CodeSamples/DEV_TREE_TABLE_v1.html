@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Mapping Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+       
+        header {
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+        }
+        header .menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .content {
+            display: flex;
+            flex: 1;
+        }
+        .left-pane {
+            width: 25%;
+            background: #f4f4f9;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .right-pane {
+            width: 75%;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        footer {
+            height: 12px;
+            background-color: #4CAF50;
+            text-align: center;
+            font-size: 10px;
+            color: white;
+            line-height: 12px;
+        }
+       
+        .rendering_container {
+            width: 100%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertically center content */
+            align-items: flex-start; /* Align content to the left */
+            box-sizing: border-box;
+            padding-left: 20px; /* Padding for left alignment */
+        }
+        .goal-box {
+            width: 200px;
+            height: auto; /* Allow height to adjust dynamically */
+            background-color: #FFD700;
+            border: 2px solid #FFA500;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Prevent content overflow */
+            word-wrap: break-word; /* Enable text wrapping */
+            text-align: center; /* Center-align text */
+        }
+
+        .goal-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            overflow: hidden; /* Prevent overflow for long titles */
+            word-wrap: break-word; /* Enable wrapping for long titles */
+            text-align: center; /* Center-align title text */
+        }
+
+        .goal-description {
+            font-size: 14px;
+            color: #555;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            border-radius: 5px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .actor-container {
+            display: flex;
+            justify-content: space-around; /* Equal horizontal spacing */
+            align-items: flex-start; /* Align actors at the top */
+            margin-top: 20px;
+            position: relative;
+            width: 100%;
+        }
+
+        .actor-box {
+            width: 150px;
+            height: auto; /* Allow dynamic height */
+            background-color: #ADD8E6;
+            border: 1px solid #007BFF;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+
+
+        /** test **/
+        #wrapper {
+            position: relative;
+        }
+   
+
+
+
+/* It's supposed to look like a tree diagram */
+.tree, .tree ul, .tree li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.tree {
+    margin: 0 0 1em;
+    text-align: center;
+}
+.tree, .tree ul {
+    display: table;
+}
+.tree ul {
+  width: 100%;
+}
+    .tree li {
+        display: table-cell;
+        padding: .5em 0;
+        vertical-align: top;
+    }
+  
+        .tree li:before {
+            outline: solid 1px #666;
+            content: "";
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+        .tree li:first-child:before {left: 50%;}
+        .tree li:last-child:before {right: 50%;}
+
+        .tree code, .tree span {
+            border: solid .1em #666;
+            border-radius: .2em;
+            display: inline-block;
+            margin: 0 .2em .5em;
+            padding: .2em .5em;
+            position: relative;
+        }
+        /* If the tree represents DOM structure */
+        .tree code {
+            font-family: monaco, Consolas, 'Lucida Console', monospace;
+        }
+
+            /* | */
+            .tree ul:before,
+            .tree code:before,
+            .tree span:before {
+                outline: solid 1px #666;
+                content: "";
+                height: .5em;
+                left: 50%;
+                position: absolute;
+            }
+            .tree ul:before {
+                top: -.5em;
+            }
+            .tree code:before,
+            .tree span:before {
+                top: -.55em;
+            }
+
+/* The root node doesn't connect upwards */
+.tree > li {margin-top: 0;}
+    .tree > li:before,
+    .tree > li:after,
+    .tree > li > code:before,
+    .tree > li > span:before {
+      outline: none;
+    }
+.goal {
+    background-color: yellowgreen;
+    color: black;
+    border: 30px solid green;
+}
+.actor {
+    background-color: skyblue;
+    color: black;
+    border: 30px solid green;
+}
+.impact {
+    background-color: orange;
+    color: black;
+    border: 30px solid green;
+}
+.deliverable {
+    background-color: purple;
+    color: white;
+    border: 30px solid green;
+}
+.task {
+    background-color: lightgrey;
+    color: black;
+    border: 30px solid green;
+}
+.root {
+    background-color: yellow;
+    color: black;
+    border: 30px solid green;
+}
+
+
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <header>
+        <div class="logo">Impact Mapping Tool</div>
+        <div class="menu">
+            <a href="#" class="text-white text-decoration-none">Home</a>
+            <a href="#" class="text-white text-decoration-none">Help</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle text-white text-decoration-none" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    User
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <div class="content">
+        <div class="left-pane">
+            <h3>Impact Map Structure</h3>
+            <div id="jstree"></div>
+        </div>
+    
+        <div class="right-pane">
+            <h3>Child Node Details</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody id="node-details">
+                    <tr>
+                        <td colspan="3" class="text-center">Select a node to view details.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+
+
+    <!-- Footer -->
+    <footer>&copy; <span id="current-year"></span> Your Company</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+
+    <script>document.addEventListener("DOMContentLoaded", function () {
+        // Initialize jsTree
+        $('#jstree').jstree({
+            core: {
+                data: [
+                    { id: 'root', text: 'Impact Map', state: { opened: true }, type: 'root', children: [] }
+                ],
+                check_callback: function (operation, node, node_parent) {
+                    if (operation === "create_node" && node_parent.id === "root") {
+                        const existingGoals = $('#jstree').jstree()
+                            .get_children_dom(node_parent)
+                            .filter((index, childNode) =>
+                                $('#jstree').jstree().get_node(childNode).type === 'Goal'
+                            );
+    
+                        if (existingGoals.length > 0) {
+                            alert("Only one Goal is allowed under the root.");
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            },
+            types: {
+                root: { valid_children: ["Goal"], icon: "fas fa-project-diagram" },
+                Goal: { valid_children: ["Actor"], icon: "fas fa-bullseye" },
+                Actor: { valid_children: ["Impact"], icon: "fas fa-user" },
+                Impact: { valid_children: ["Deliverable"], icon: "fas fa-bolt" },
+                Deliverable: { valid_children: ["Task"], icon: "fas fa-box" },
+                Task: { valid_children: [], icon: "fas fa-check-circle" }
+            },
+            plugins: ["contextmenu", "types"],
+            contextmenu: {
+                items: function (node) {
+                    const items = {};
+    
+                    if (node.type === "root") {
+                        items.addGoal = {
+                            label: "Add Goal",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, {
+                                    text: "New Goal",
+                                    type: "Goal"
+                                });
+                                expandAndEditNode(newNode);
+                            }
+                        };
+                    } else if (node.type === "Goal") {
+                        items.addActor = {
+                            label: "Add Actor",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, {
+                                    text: "New Actor",
+                                    type: "Actor"
+                                });
+                                expandAndEditNode(newNode);
+                            }
+                        };
+                    } else if (node.type === "Actor") {
+                        items.addImpact = {
+                            label: "Add Impact",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, {
+                                    text: "New Impact",
+                                    type: "Impact"
+                                });
+                                expandAndEditNode(newNode);
+                            }
+                        };
+                    } else if (node.type === "Impact") {
+                        items.addDeliverable = {
+                            label: "Add Deliverable",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, {
+                                    text: "New Deliverable",
+                                    type: "Deliverable"
+                                });
+                                expandAndEditNode(newNode);
+                            }
+                        };
+                    } else if (node.type === "Deliverable") {
+                        items.addTask = {
+                            label: "Add Task",
+                            action: function () {
+                                const newNode = $('#jstree').jstree().create_node(node, {
+                                    text: "New Task",
+                                    type: "Task"
+                                });
+                                expandAndEditNode(newNode);
+                            }
+                        };
+                    }
+    
+                    items.editNode = {
+                        label: "Edit",
+                        action: function () {
+                            $('#jstree').jstree().edit(node);
+                        }
+                    };
+    
+                    items.deleteNode = {
+                        label: "Delete",
+                        action: function () {
+                            $('#jstree').jstree().delete_node(node);
+                        }
+                    };
+    
+                    return items;
+                }
+            }
+        });
+    
+        // Handle node selection and update the table
+        $('#jstree').on('select_node.jstree', function (e, data) {
+            const selectedNode = data.node;
+            const children = selectedNode.children.map(id =>
+                $('#jstree').jstree(true).get_node(id)
+            );
+    
+            // Populate table with child node details
+            const tbody = document.getElementById('node-details');
+            tbody.innerHTML = '';
+    
+            if (children.length === 0) {
+                tbody.innerHTML =
+                    '<tr><td colspan="3" class="text-center">No children found for this node.</td></tr>';
+            } else {
+                children.forEach(child => {
+                    const row = `
+                        <tr>
+                            <td>${child.text}</td>
+                            <td>${child.data?.description || 'No description'}</td>
+                            <td>${child.type}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+        });
+    
+        // Helper function to expand and edit a node
+        function expandAndEditNode(newNodeId) {
+            const tree = $('#jstree').jstree(true);
+            tree.open_node(tree.get_parent(newNodeId));
+            tree.edit(newNodeId);
+        }
+    
+        // Update the footer year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    });
+    
+        // Track node renaming and update the visualization
+        $('#jstree').on("rename_node.jstree", function (event, data) {
+            updateImpactMap();
+        });
+        // Prevent node folding/collapsing on double-click when editing
+        $('#jstree').on("dblclick.jstree", function (event) {
+            event.preventDefault(); // Stop default toggle behavior
+            const instance = $('#jstree').jstree(true);
+            const node = instance.get_node(event.target);
+
+            if (node) {
+                instance.open_node(node); // Ensure the node remains open
+                instance.edit(node); // Trigger edit mode
+            }
+        });
+
+
+        
+
+        // Render the impact map recursively
+        function renderImpactMap(node, rows) {
+            if (!node) return;
+
+            const box = document.createElement('div');
+            box.className = `box ${node.type ? node.type.toLowerCase() : ''}`;
+            box.textContent = node.text;
+            box.id = node.id;
+
+            if (rows[node.type]) {
+                rows[node.type].appendChild(box);
+            }
+
+
+            // Render children if any
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => renderImpactMap(child, rows));
+            }
+        }
+
+
+        // Set the current year in the footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Initialize the first visualization
+        updateImpactMap();
+        // Track node renaming and update the visualization
+        $('#jstree').on("rename_node.jstree", function () {
+            updateImpactMap();
+        });
+
+         // Initialize the first visualization
+        document.addEventListener('DOMContentLoaded', () => {
+            updateImpactMap();
+            window.addEventListener('resize', drawArrows);
+        });
+       
+
+        
+    </script>
+
+
+<script>
+function drawArrows() {
+
+}
+
+const renderBranch = (node) => {
+    // Create a list item for the node
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = node.text; // Set the text content of the node
+    // Add a class based on the type of the node
+    if (node.type) {
+        span.classList.add(node.type.toLowerCase()); // Add type as a class
+    }
+    li.appendChild(span);
+
+    
+
+    // If the node has children, create a nested `ul` element
+    if (node.children && node.children.length > 0) {
+        const ul = document.createElement('ul');
+        node.children.forEach((child) => {
+            const childLi = renderBranch(child); // Recursively render child nodes
+            ul.appendChild(childLi);
+        });
+        li.appendChild(ul);
+    }
+
+    return li;
+};
+
+const updateImpactMap = () => {
+  
+};
+
+    // Event listeners for DOM changes
+    $('#jstree').on('rename_node.jstree create_node.jstree delete_node.jstree', () => {
+        updateImpactMap();
+        drawArrows();
+    });
+</script>
+</body>
+</html>

@@ -10,6 +10,7 @@ urlpatterns = [
     path('dev_value_stream_step/', include('app_organization.mod_dev_value_stream_step.urls_dev_value_stream_step')),
     path('event/', include('app_organization.mod_event.urls_event')),
     path('framework/', include('app_organization.mod_framework.urls_framework')),
+    path('impact_map/', include('app_organization.mod_impact_map.urls_impact_map')),
     path('impact_mapping/', include('app_organization.mod_impact_mapping.urls_impact_mapping')),
     path('iteration/', include('app_organization.mod_iteration.urls_iteration')),
     path('iteration_backlog/', include('app_organization.mod_iteration_backlog.urls_iteration_backlog')),
@@ -23,7 +24,6 @@ urlpatterns = [
     path('org_event/', include('app_organization.mod_org_event.urls_org_event')),
     path('org_image_map/', include('app_organization.mod_org_image_map.urls_org_image_map')),
     path('org_iteration/', include('app_organization.mod_org_iteration.urls_org_iteration')),
-    
     path('org_metric/', include('app_organization.mod_org_metric.urls_org_metric')),
     path('org_release/', include('app_organization.mod_org_release.urls_org_release')),
     path('org_team/', include('app_organization.mod_org_team.urls_org_team')),

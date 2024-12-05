@@ -48,16 +48,24 @@
         </div>
 
         <div class="right-pane">
-            <h3>Impact Map Visualization</h3>
-            <div id="wrapper">
-               
-
-                <ul class="tree" id="impact-map">
-                    
-                </ul>
-
-
-            </div>
+            <b class="h3" id="node_parent_details">Details</b>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th width="2%">#</th>
+                        <th width="8%">Type</th>
+                        <th width="20%">Name</th>
+                        <th with="20%">Description</th>
+                        <th with="20%">Action</th>
+                        
+                    </tr>
+                </thead>
+                <tbody id="node-details">
+                    <tr>
+                        <td colspan="3" class="text-center">Select a node to view details.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
        
@@ -205,6 +213,8 @@ function initializeJsTree(treeData) {
             }
 
             
+
+            
         });
 
 
@@ -223,14 +233,70 @@ function initializeJsTree(treeData) {
         }
     });
 
-    }
+     // Handle node selection and update the table
+     $('#jstree').on('select_node.jstree', function (e, data) {
+        const selectedNode = data.node;
+        const parentNode = $('#jstree').jstree(true).get_node(selectedNode.parent);
 
-    // Expand the parent node and make the new node editable
+       // Retrieve db_id from the node's data
+        const parent_db_id = selectedNode.data?.parent_db_id;
+        if (!parent_db_id) {
+            console.error("db_id is undefined. Ensure the backend `map_node` sets it correctly.");
+            return;
+        }
+        // Update the header with the parent node's name
+        const header = document.getElementById('node_parent_details');
+        if (parentNode && parentNode.id !== '#') {
+            header.textContent = `${parentNode.text}`;
+        } else {
+            header.textContent = ''; // Default if no parent
+        }
+
+        const children = selectedNode.children.map(id =>
+            $('#jstree').jstree(true).get_node(id)
+        );
+
+        // Populate table with child node details
+        const tbody = document.getElementById('node-details');
+        tbody.innerHTML = '';
+
+        if (children.length === 0) {
+            tbody.innerHTML =
+                '<tr><td colspan="4" class="text-center"></td></tr>';
+        } else {
+            children.forEach(child => {
+                
+                const child_db_id = child.data?.this_db_id;
+                const row = `
+                    <tr>
+                        <td width="2%">${child.id}</td>
+                        <td width="10%">${child.type}</td>
+                        <td width="20%">${child.text}</td>
+                        <td width="20%">${child.data?.description || ''}</td>
+                        <td width="20%">
+                            <a href="/org/impact_map/list_impact_maps/${parent_db_id}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
+                            &nbsp;&nbsp;&nbsp;
+                            <a href="/org/impact_map/edit_impact_map/${parent_db_id}/${child_db_id}" class="btn btn-sm btn-primary"><i class="bi bi-pencil-square"></i></a>
+                           
+                        </td>
+                        
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+    });
+
+    // Helper function to expand and edit a node
     function expandAndEditNode(newNodeId) {
         const tree = $('#jstree').jstree(true);
         tree.open_node(tree.get_parent(newNodeId));
         tree.edit(newNodeId);
     }
+
+    }
+
+    
     // Track node renaming and update the visualization
     $('#jstree').on("rename_node.jstree", function (event, data) {
         updateImpactMap();
@@ -284,63 +350,34 @@ function initializeJsTree(treeData) {
             impactMap.appendChild(rootLi);
         });
     };
+
     const renderBranch = (node) => {
-    // Create a list item for the node
-    const li = document.createElement('li');
+        // Create a list item for the node
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.textContent = node.text; // Set the text content of the node
 
-    // Create a span for the node name
-    const span = document.createElement('span');
-    span.textContent = node.text; // Set the text content of the node
+        // Add a class based on the type of the node
+        if (node.type) {
+            span.classList.add(node.type.toLowerCase()); // Add type as a class
+        }
+        li.appendChild(span);
 
-    // Add a class based on the type of the node
-    if (node.type) {
-        span.classList.add(node.type.toLowerCase()); // Add type as a class
-    }
+        // If the node has children, create a nested `ul` element
+        if (node.children && node.children.length > 0) {
+            const ul = document.createElement('ul');
+            node.children.forEach((child) => {
+                const childLi = renderBranch(child); // Recursively render child nodes
+                ul.appendChild(childLi);
+            });
+            li.appendChild(ul);
+        }
 
-    // Append the node text span to the list item
-    li.appendChild(span);
-
-    // If link_text is present, add a Bootstrap icon link
-    if (node.data?.link_text) {
-        const linkIcon = document.createElement('a');
-        linkIcon.href = node.data.link_text; // Use link_text as the URL
-        linkIcon.target = '_blank'; // Open in a new tab
-        linkIcon.classList.add('ms-2', 'text-decoration-none'); // Add spacing and remove underline
-
-        // Add the icon inside the link
-        const icon = document.createElement('i');
-        icon.classList.add('bi', 'bi-box-arrow-up-right'); // Bootstrap icon class
-        linkIcon.appendChild(icon);
-
-        // Append the link (icon) next to the span inside the li
-        span.appendChild(linkIcon);
-    }
-
-    // If the node has children, create a nested `ul` element
-    if (node.children && node.children.length > 0) {
-        const ul = document.createElement('ul');
-        node.children.forEach((child) => {
-            const childLi = renderBranch(child); // Recursively render child nodes
-            ul.appendChild(childLi);
-        });
-        li.appendChild(ul);
-    }
-
-    return li;
-};
-
-
+        return li;
+    };
 
     const updateImpactMap = () => {
-        const treeData = $('#jstree').jstree(true).get_json('#', { flat: false });
-        const impactMap = document.getElementById('impact-map');
-        impactMap.innerHTML = ''; // Clear existing content
-
-        // Render the root nodes
-        treeData.forEach((rootNode) => {
-            const rootLi = renderBranch(rootNode);
-            impactMap.appendChild(rootLi);
-        });
+      
     };
 
     // Event listeners for DOM changes

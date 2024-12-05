@@ -41,7 +41,7 @@ class ImpactMap(BaseModelTrackDateImpl, MPTTModel):
 
     node_type = models.CharField(max_length=20, choices=NODE_TYPES, default=None)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
-
+    link_text = models.CharField(max_length=255, null=True, blank=True)
    
         
     def get_children(self):

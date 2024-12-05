@@ -16,6 +16,7 @@ urlpatterns = [
     path('view_impact_mapping/<int:organization_id>/<int:impact_mapping_id>/', views_impact_mapping.view_impact_mapping, name='view_impact_mapping'),
     
     path('editor_impact_mapping/<int:organization_id>/<int:impact_mapping_id>/', views_impact_mapping.editor_impact_mapping, name='editor_impact_mapping'),
+    path('view_tree_table_mapping/<int:organization_id>/<int:impact_mapping_id>/', views_impact_mapping.view_tree_table_mapping, name='view_tree_table_mapping'),
     
     path('ajax_save_impact_mappings/', views_impact_mapping.ajax_save_impact_mappings, name='ajax_save_impact_mappings'),
 ]
