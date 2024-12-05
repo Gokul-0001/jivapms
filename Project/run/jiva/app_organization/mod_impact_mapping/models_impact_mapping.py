@@ -42,8 +42,10 @@ class ImpactMap(BaseModelTrackDateImpl, MPTTModel):
     node_type = models.CharField(max_length=20, choices=NODE_TYPES, default=None)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
 
-    class MPTTMeta:
-        order_insertion_by = ['name']
+   
+        
+    def get_children(self):
+        return self.children.filter(active=True).order_by('position')
 
     def __str__(self):
         return f"{self.node_type}: {self.name}"

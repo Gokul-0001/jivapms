@@ -379,6 +379,7 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
             'state': {'opened': True},  # Adjust as needed
             'icon': 'fas fa-project-diagram' if node.node_type == 'Root' else None,
             'type': node.node_type,  # Add the type field
+            'position': node.position,
             'children': [map_node(child) for child in node.get_children()]
         }
 
@@ -395,10 +396,11 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
             'data': {'node_type': 'Root'},
             'state': {'opened': True},
             'type': 'root',
+            'position': 0,
             'children': []
         }]
         
-    print(f">>> Tree Data: {tree_data} <<<")  # Debug tree data
+
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'editor_impact_mapping',
@@ -460,7 +462,6 @@ def ajax_save_impact_mappings(request):
 
             return JsonResponse({'status': 'success', 'message': 'Impact Mapping saved successfully!'})
         except Exception as e:
-            print(f"Error: {e}")
             return JsonResponse({'status': 'error', 'message': str(e)})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
