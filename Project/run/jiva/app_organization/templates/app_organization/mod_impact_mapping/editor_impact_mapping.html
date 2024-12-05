@@ -129,7 +129,7 @@ function initializeJsTree(treeData) {
                 Deliverable: { valid_children: ["Task"], icon: "fas fa-box" },
                 Task: { valid_children: [], icon: "fas fa-check-circle" }
             },
-            plugins: ["contextmenu", "types", "state"],
+            plugins: ["contextmenu", "types", "state", "dnd"],
             contextmenu: {
                 items: function (node) {
                     const items = {};
@@ -221,6 +221,14 @@ function initializeJsTree(treeData) {
                 instance.edit(node); // Trigger edit mode
             }
         }
+    });
+
+    // Handle node movement (drag and drop)
+    $('#jstree').on('move_node.jstree', function (event, data) {     
+
+        // Optional: Trigger save to update backend after a node is moved
+        saveImpactMap();
+        updateImpactMap();
     });
 
     }
