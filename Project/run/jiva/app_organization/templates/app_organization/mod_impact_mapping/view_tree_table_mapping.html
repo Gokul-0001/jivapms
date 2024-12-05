@@ -48,7 +48,18 @@
         </div>
 
         <div class="right-pane">
-            <b class="h3" id="node_parent_details">Details</b>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <td width="20%"><b class="h3" id="node_parent_details">Details</b></td>
+                        <td id="node_parent_desc"></td>
+                    </tr>
+                    <tr>
+                        <td width="20%"><b class="h3" id="this_node_details">Node Details</b></td>
+                        <td id="this_node_desc"></td>
+                    </tr>
+                </tbody>
+            </table>
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -244,7 +255,8 @@ function initializeJsTree(treeData) {
      $('#jstree').on('select_node.jstree', function (e, data) {
         const selectedNode = data.node;
         const parentNode = $('#jstree').jstree(true).get_node(selectedNode.parent);
-
+        const selectedNode_Name = selectedNode.text;
+        const selectedNode_Desc = selectedNode.data?.description;
        // Retrieve db_id from the node's data
         const parent_db_id = selectedNode.data?.parent_db_id;
         if (!parent_db_id) {
@@ -258,6 +270,21 @@ function initializeJsTree(treeData) {
         } else {
             header.textContent = ''; // Default if no parent
         }
+
+        // Update the header with the parent node's name
+        const this_node_details = document.getElementById('this_node_details');
+        if (selectedNode_Name && selectedNode_Name !== '#') {
+            this_node_details.textContent = `${selectedNode_Name}`;
+        } else {
+            this_node_details.textContent = ''; // Default if no parent
+        }
+        const this_node_desc = document.getElementById('this_node_desc');
+        if (selectedNode_Desc && selectedNode_Desc !== '#') {
+            this_node_desc.textContent = `${selectedNode_Desc}`;
+        } else {
+            this_node_desc.textContent = ''; // Default if no parent
+        }
+
 
         const children = selectedNode.children.map(id =>
             $('#jstree').jstree(true).get_node(id)

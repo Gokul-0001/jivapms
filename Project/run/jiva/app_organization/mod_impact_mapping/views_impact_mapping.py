@@ -375,7 +375,7 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
         return {
             'id': node.id,
             'text': node.name,
-            'data': {'node_type': node.node_type, 'link_text': node.link_text},
+            'data': {'node_type': node.node_type, 'link_text': node.link_text, 'description': node.description},
             'state': {'opened': True},  # Adjust as needed
             'icon': 'fas fa-project-diagram' if node.node_type == 'Root' else None,
             'type': node.node_type,  # Add the type field
@@ -438,6 +438,7 @@ def ajax_save_impact_mappings(request):
                 def save_node(node, parent=None):
                     node_type = node.get('data', {}).get('node_type')  # Safely get node_type
                     link_text = node.get('data', {}).get('link_text')
+                    description = node.get('data', {}).get('description')
                     if not node_type:
                         raise ValueError(f"Node missing 'node_type': {node}")
 
@@ -446,6 +447,7 @@ def ajax_save_impact_mappings(request):
                         name=node['text'],
                         node_type=node_type,
                         link_text=link_text,
+                        description=description,
                         parent=parent
                     )
 
@@ -488,7 +490,7 @@ def view_tree_table_mapping(request, organization_id, impact_mapping_id):
         return {
             'id': node.id,            
             'text': node.name,
-            'data': {'parent_db_id': impact_mapping.id, 'this_db_id': node.id, 'node_type': node.node_type},
+            'data': {'parent_db_id': impact_mapping.id, 'this_db_id': node.id, 'node_type': node.node_type, 'description': node.description},
             'state': {'opened': True},  # Adjust as needed
             'icon': 'fas fa-project-diagram' if node.node_type == 'Root' else None,
             'type': node.node_type,  # Add the type field
