@@ -15,6 +15,8 @@ from app_organization.mod_project_detail.forms_project_detail import *
 from app_organization.mod_project_template.forms_project_template import *
 from app_organization.mod_dev_value_stream.models_dev_value_stream import *
 
+from app_organization.mod_backlog.models_backlog import *
+
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -468,6 +470,9 @@ def project_homepage(request, org_id, project_id):
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
+    # Backlog
+    backlog = Backlog.objects.filter(pro_id=project_id, active=True)
+    
     # get project administration details
     project_administration = ProjectAdministration.objects.filter(project_id=project_id, 
                                                                   active=True).first()
@@ -523,7 +528,7 @@ def project_homepage(request, org_id, project_id):
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('project_homepage', org_id=org_id, project_id=project_id)
-    
+    print(f">>> === backlog: {backlog} === <<<")
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'project_homepage',
@@ -531,7 +536,7 @@ def project_homepage(request, org_id, project_id):
         'org_id': org_id,
         
         'project_administration': project_administration,
-        
+        'backlog': backlog,
         'module_path': module_path,
         'object': object,
         'project': object,

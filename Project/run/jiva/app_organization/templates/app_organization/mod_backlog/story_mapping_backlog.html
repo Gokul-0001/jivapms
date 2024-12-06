@@ -160,132 +160,96 @@
                 <div class="left-pane">
                     <h4>User Stories</h4>
                     <ul id="story-list" class="list-group">
-                        {% for story in user_stories %}
+                        {% for node, serial, parent_id in serialized_nodes %}
+
+                            {% if node.type.name == 'User Story' %}
+
                             <li class="list-group-item story-item" draggable="true" data-story-id="{{ story.id }}">
-                                {{ story.name }}
+                                {{ node.name }}
                             </li>
+                            {% endif %}
                         {% endfor %}
                     </ul>
                 </div>
                 
-        
-                <!-- Right Pane: Story Mapping Table -->
-                <div class="right-pane">
-                    <h4>Story Mapping Exercise</h4>
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2">Release/Iteration</th>
-                                    {% for step in steps %}
-                                        <th colspan="2">Step {{ forloop.counter }}</th>
-                                    {% endfor %}
-                                </tr>
-                                <tr>
-                                    {% for step in steps %}
-                                        <th class="sub-step-header">Sub-Step 1</th>
-                                        <th class="sub-step-header">Sub-Step 2</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for release in releases %}
-                                    {% for iteration in release.iterations.all %}
-                                        <tr>
-                                            <td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>
-                                            {% for step in steps %}
-                                                <td>
-                                                    <div class="dropzone" 
-                                                         data-release-id="{{ release.id }}" 
-                                                         data-iteration-id="{{ iteration.id }}" 
-                                                         data-step-id="{{ step.id }}" 
-                                                         data-sub-step-id="1"></div>
-                                                </td>
-                                                <td>
-                                                    <div class="dropzone" 
-                                                         data-release-id="{{ release.id }}" 
-                                                         data-iteration-id="{{ iteration.id }}" 
-                                                         data-step-id="{{ step.id }}" 
-                                                         data-sub-step-id="2"></div>
-                                                </td>
-                                            {% endfor %}
-                                        </tr>
-                                    {% endfor %}
+            
+            <!-- Right Pane: Story Mapping Table -->
+            <div class="right-pane">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col col-md-4"><b class="h4">Story Mapping Exercise</b></div>
+                        <div class="col-md-4">
+                            <label for="personaSelector">Choose a Persona:</label>
+                            <select id="personaSelector" class="form-control">
+                                <option value="">-- Select Persona --</option>
+                                {% for persona in personae %}
+                                    <option value="{{ persona.id }}">{{ persona.name }}</option>
                                 {% endfor %}
-                            </tbody>
-                        </table>
+                            </select>
+                                      
+                        </div>
+                        <div class="col col-md-2"><a href="{% url 'list_personae' org_id %}">List Personas</a>
+                           
+                        </div>
                     </div>
                 </div>
-                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <tr>
+                                    <th rowspan="2">Release/Iteration</th>
+                                  
+                                </tr>
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for release in releases %}
+                                {% for iteration in release.org_release_org_iterations.all|filter_active %}
+                                    <tr>
+                                        <td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>
+                                        <!-- Manually create dropzones for each potential step -->
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="1"></div>
+                                        </td>
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="2"></div>
+                                        </td>
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="3"></div>
+                                        </td>
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="4"></div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        
-            <script>
-                // Add basic interactivity for drag-and-drop
-                document.addEventListener('DOMContentLoaded', () => {
-                    const stories = document.querySelectorAll('.story-item');
-                    const dropzones = document.querySelectorAll('.dropzone');
-        
-                    let draggedStory = null;
-        
-                    // Dragging stories
-                    stories.forEach(story => {
-                        story.addEventListener('dragstart', e => {
-                            draggedStory = story;
-                            e.dataTransfer.setData('text/plain', story.dataset.storyId);
-                        });
-        
-                        story.addEventListener('dragend', () => {
-                            draggedStory = null;
-                        });
-                    });
-        
-                    // Handling drop zones
-                    dropzones.forEach(dropzone => {
-                        dropzone.addEventListener('dragover', e => {
-                            e.preventDefault();
-                        });
-        
-                        dropzone.addEventListener('drop', e => {
-                            e.preventDefault();
-                            if (draggedStory) {
-                                dropzone.appendChild(draggedStory);
-        
-                                // AJAX to save mapping
-                                const storyId = draggedStory.dataset.storyId;
-                                const releaseId = dropzone.dataset.releaseId;
-                                const stepId = dropzone.dataset.stepId;
-                                const subStepId = dropzone.dataset.subStepId;
-        
-                                fetch('/save_story_mapping/', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRFToken': '{{ csrf_token }}',
-                                    },
-                                    body: JSON.stringify({
-                                        story_id: storyId,
-                                        release_id: releaseId,
-                                        step_id: stepId,
-                                        sub_step_id: subStepId,
-                                    }),
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log('Mapping saved:', data);
-                                })
-                                .catch(error => {
-                                    console.error('Error saving mapping:', error);
-                                });
-                            }
-                        });
-                    });
-                });
-            </script>
-        
 
-        
+
+
         </div>
     </div>
+
+    <!-- Drag-and-Drop Script -->
+   
+</div>
 </div>
 </form>
 <script>
@@ -398,7 +362,84 @@
             }
         });
 </script>
+<script>
+    document.getElementById('personaSelector').addEventListener('change', function() {
+        var personaId = this.value;
+        if (personaId) {
+            js_ajax_fetch_persona_activities(personaId);
+        }
+    });
+    
+    function js_ajax_fetch_persona_activities(personaId) {
+        $.ajax({
+            url: "{% url 'ajax_fetch_persona_activities' %}", // Ensure this URL is correct
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'persona_id': personaId
+            },
+            dataType: 'json',
+            success: function(data) {
+                if (data.activities) {
+                    updateStoryTable(data.activities);
+                } else {
+                    console.error('Error fetching activities:', data.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+    function updateStoryTable(activities) {
+    const tableHead = document.querySelector('.table thead');
+    const firstRow = tableHead.rows[0];
+    let secondRow = tableHead.rows[1] || tableHead.insertRow(1);
+
+    // Reset the content of the rows to ensure they start clean
+    firstRow.innerHTML = '<th rowspan="2">Release/Iteration</th>'; // The fixed first column header for both rows
+    secondRow.innerHTML = ''; // Clear second row to repopulate properly
+
+    activities.forEach(activity => {
+        const stepCount = activity.steps.length;
+
+        // Append activity name and set the appropriate colspan if there are any steps
+        if (stepCount > 0) {
+            firstRow.innerHTML += `<th colspan="${stepCount}">${activity.name}</th>`;
+            // Append step names directly under their respective activity
+            activity.steps.forEach(step => {
+                secondRow.innerHTML += `<th>${step.name}</th>`;
+            });
+        } else {
+            // For activities without steps, add a single column for the activity name
+            firstRow.innerHTML += `<th>${activity.name}</th>`;
+            // Also add an empty <th> under the activity for visual alignment if no steps exist
+            secondRow.innerHTML += `<th></th>`;
+        }
+    });
+}
+
 
     
-
+    // Ensure the body is initialized only once and not disturbed by header updates
+    if (!window.bodyInitialized) {
+        initializeBodyPlaceholder();
+        window.bodyInitialized = true; // Set a flag to avoid re-initialization
+    }
+    
+    function initializeBodyPlaceholder() {
+        const tableBody = document.querySelector('.table tbody');
+        releases.forEach(release => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${release.name}</td>`;
+            activities.forEach(activity => {
+                activity.steps.forEach(() => {
+                    row.innerHTML += '<td class="dropzone"></td>';
+                });
+            });
+            tableBody.appendChild(row);
+        });
+    }
+    </script>
+    
 {% endblock content %}

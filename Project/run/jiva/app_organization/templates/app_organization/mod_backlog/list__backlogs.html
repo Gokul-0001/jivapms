@@ -30,7 +30,7 @@ org_id
     
     }
 </style>
-{% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
+
 <form method="post">
 {% csrf_token %}
 <div class="content-wrapper">
@@ -155,7 +155,7 @@ org_id
                                 <td width="20%">
                                  &nbsp;&nbsp;
                                     <a href="{% url 'list_backlogs' pro_id tobject.id %}"
-                                    class="btn btn-sm btn-info"><i class="bi bi-diagram-3"></i> Next Level </a>
+                                    class="btn btn-sm btn-info"><i class="bi bi-diagram-3"></i> Next Level  </a>
                                 </td>
                                 <td width="50%">
                                     <a href="{% url 'view_backlog' pro_id ref_parent_id  tobject.id  %}"

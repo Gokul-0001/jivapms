@@ -3,7 +3,10 @@ from app_organization.mod_project.models_project import *
 from app_organization.mod_app.all_view_imports import *
 from app_organization.mod_backlog.models_backlog import *
 from app_organization.mod_backlog.forms_backlog import *
-
+from app_organization.mod_org_release.models_org_release import *
+from app_organization.mod_persona.models_persona import *
+from app_organization.mod_activity.models_activity import *
+from app_organization.mod_step.models_step import *
 from app_jivapms.mod_app.all_view_imports import *
 
 app_name = 'app_organization'
@@ -37,7 +40,7 @@ def list_backlogs(request, pro_id, parent_id):
         parent = get_object_or_404(Backlog, pk=parent_id, pro_id=pro_id, 
                                    **viewable_dict)
         ctypes = BacklogType.objects.filter(pk=parent.type_id, pro_id=pro_id ).order_by('position')
-        print(f">>> === parent: {parent}:{ctypes} === <<<")
+        
     # connect with connect id
     pro = get_object_or_404(Project, pk=pro_id, **viewable_dict)
     # process inputs
@@ -768,10 +771,10 @@ def view_tree__backlog(request, pro_id, parent_id):
 # Release and Iteration Processing
 @login_required
 def ajax_get_iterations(request, release_id):
-    print(f">>> === AJAX_GET_ITERATIONS release_id: {release_id} === <<<")
+    
     iterations = Iteration.objects.filter(rel_id=release_id, active=True)
     data = [{'id': iteration.id, 'name': iteration.name} for iteration in iterations]
-    print(f">>> === AJAX_GET_ITERATIONS data: {data} === <<<")
+
     return JsonResponse(data, safe=False)
 
 
@@ -875,7 +878,16 @@ def story_mapping_backlog(request, pro_id, parent_id):
    
     # connect with connect id
     pro = get_object_or_404(Project, pk=pro_id)
+    organization = pro.org
     # process inputs
+   
+            
+    ############################ STORY MAPPING ################################
+    # getting the release
+    release = None
+    releases = OrgRelease.objects.filter(org=organization, active=True).prefetch_related('org_release_org_iterations')
+    # Fetch all personas to populate the dropdown
+    personae = Persona.objects.filter(active=True, organization=organization)
     
     workspace = None
     wslist = None
@@ -928,7 +940,7 @@ def story_mapping_backlog(request, pro_id, parent_id):
         'page': 'iterate',
         'user': user,
         'ancestors': ancestors,
-
+        'releases': releases,
         'wslist': wslist,
         'treedb': treedb,
         'root': root,
@@ -938,6 +950,7 @@ def story_mapping_backlog(request, pro_id, parent_id):
         'object': pro,
         'org': pro.org,
         'org_id': pro.org_id,
+        'personae': personae,
         'ref_parent_id': ref_parent_id,
         'parend_id': parent_id,
         'serialized_nodes': serialized_nodes,
@@ -950,3 +963,38 @@ def story_mapping_backlog(request, pro_id, parent_id):
     }       
     template_file = f"{app_name}/{module_path}/story_mapping_backlog.html"
     return render(request, template_file, context)    
+
+
+
+@login_required
+def ajax_fetch_persona_activities(request):
+    # Get persona_id from POST data
+    persona_id = request.POST.get('persona_id')
+    persona = Persona.objects.get(id=persona_id)
+    organization = persona.organization
+    #Persona.objects.all().delete()
+    # Proceed only if persona_id is provided
+    if persona_id:
+        try:
+            # Fetch the persona based on the provided ID
+            persona = Persona.objects.get(id=persona_id)
+            
+            
+            # Fetch activities related to the persona and prefetch related steps
+            activities = Activity.objects.filter(persona=persona, active=True).prefetch_related('activity_steps')
+            
+            # Prepare the data to be sent as JSON
+            activities_data = [{
+                'name': activity.name,
+                'steps': [{'name': step.name} for step in activity.activity_steps.filter(active=True)]
+            } for activity in activities]
+            
+            # Return the activities and their steps as JSON
+            return JsonResponse({'activities': activities_data}, safe=False)
+        
+        except Persona.DoesNotExist:
+            # Handle the case where the persona is not found
+            return JsonResponse({'error': 'Persona not found'}, status=404)
+    else:
+        # Persona ID was not provided in the POST request
+        return JsonResponse({'error': 'No persona selected'}, status=400)

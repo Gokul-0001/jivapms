@@ -1,6 +1,7 @@
 from django.urls import include, path
 
 urlpatterns = [
+    path('activity/', include('app_organization.mod_activity.urls_activity')),
     path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
     path('backlog_super_type/', include('app_organization.mod_backlog_super_type.urls_backlog_super_type')),
     path('backlog_type/', include('app_organization.mod_backlog_type.urls_backlog_type')),
@@ -28,6 +29,7 @@ urlpatterns = [
     path('org_release/', include('app_organization.mod_org_release.urls_org_release')),
     path('org_team/', include('app_organization.mod_org_team.urls_org_team')),
     path('org_work_flow/', include('app_organization.mod_org_work_flow.urls_org_work_flow')),
+    path('persona/', include('app_organization.mod_persona.urls_persona')),
     path('project/', include('app_organization.mod_project.urls_project')),
     path('projectmembership/', include('app_organization.mod_projectmembership.urls_projectmembership')),
     path('project_detail/', include('app_organization.mod_project_detail.urls_project_detail')),
@@ -36,6 +38,7 @@ urlpatterns = [
     path('project_work_flow/', include('app_organization.mod_project_work_flow.urls_project_work_flow')),
     path('release/', include('app_organization.mod_release.urls_release')),
     path('roadmapitem/', include('app_organization.mod_roadmapitem.urls_roadmapitem')),
+    path('step/', include('app_organization.mod_step.urls_step')),
     path('team/', include('app_organization.mod_team.urls_team')),
     path('teammember/', include('app_organization.mod_teammember.urls_teammember')),
     path('work_flow/', include('app_organization.mod_work_flow.urls_work_flow')),
