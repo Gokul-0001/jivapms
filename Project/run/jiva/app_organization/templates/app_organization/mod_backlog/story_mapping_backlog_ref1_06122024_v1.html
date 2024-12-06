@@ -78,7 +78,7 @@
         }
 
         .table th, .table td {
-            vertical-align: top;
+            vertical-align: middle;
         }
 
         .sub-step-header {
@@ -164,7 +164,7 @@
 
                             {% if node.type.name == 'User Story' %}
 
-                            <li class="list-group-item story-item" draggable="true" data-story-id="{{ node.id }}">
+                            <li class="list-group-item story-item" draggable="true" data-story-id="{{ story.id }}">
                                 {{ node.name }}
                             </li>
                             {% endif %}
@@ -450,53 +450,20 @@ function bindDragAndDrop() {
     });
 
     document.querySelectorAll('.dropzone').forEach(dropzone => {
-    dropzone.addEventListener('dragover', function(e) {
-        e.preventDefault();  // Necessary to allow a drop
-        e.dataTransfer.dropEffect = 'move';
+        dropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+
+        dropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const storyId = e.dataTransfer.getData('text/plain');
+            const story = document.querySelector(`[data-story-id="${storyId}"]`);
+            if (story) {
+                dropzone.appendChild(story);
+            }
+        });
     });
-
-    dropzone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        const storyId = e.dataTransfer.getData('text/plain');  // Retrieve the story ID transferred
-        const story = document.querySelector(`[data-story-id="${storyId}"]`);  // Find the story element
-
-        if (story) {
-            dropzone.appendChild(story);  // Append the story to the dropzone
-            // Send the AJAX request
-            sendUpdateRequest(story.dataset.storyId, dropzone.dataset);
-        }
-    });
-});
-
-function sendUpdateRequest(storyId, data) {
-    const url = "{% url 'ajax_recieve_story_mapped_details' %}";  // URL where your backend handles updates
-    console.log('StoryID:', storyId);
-    console.log('Sending update request:', storyId, data);
-    const payload = {
-        story_id: storyId,
-        release_id: data.releaseId,
-        iteration_id: data.iterationId,
-        activity_id: data.activityId,
-        step_id: data.stepId,
-        persona_id: document.getElementById('personaSelector').value
-    };
-
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'  // Ensure CSRF token is included if needed
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Update successful:', data);
-        // Optionally handle any follow-up actions
-    })
-    .catch(error => console.error('Error updating story location:', error));
-}
-
 }
 
 

@@ -987,7 +987,7 @@ def ajax_fetch_persona_activities(request):
             activities_data = [{
                 'id': activity.id,
                 'name': activity.name,
-                'steps': [{'name': step.name} for step in activity.activity_steps.filter(active=True)]
+                'steps': [{'id': step.id, 'name': step.name} for step in activity.activity_steps.filter(active=True)]
             } for activity in activities]
             
             # Return the activities and their steps as JSON
@@ -999,3 +999,32 @@ def ajax_fetch_persona_activities(request):
     else:
         # Persona ID was not provided in the POST request
         return JsonResponse({'error': 'No persona selected'}, status=400)
+
+
+
+
+@login_required
+def ajax_recieve_story_mapped_details(request):
+    try:
+        data = json.loads(request.body)  # Correctly parsing JSON data from the request body
+        story_id = data['story_id']
+        release_id = data['release_id']
+        iteration_id = data['iteration_id']
+        activity_id = data['activity_id']
+        step_id = data['step_id']
+        persona_id = data['persona_id']
+        
+        print(f">>> === Story ID: {story_id} === <<<")
+        print(f">>> === Release ID: {release_id} === <<<")
+        print(f">>> === Iteration ID: {iteration_id} === <<<")
+        print(f">>> === Activity ID: {activity_id} === <<<")
+        print(f">>> === Step ID: {step_id} === <<<")
+        print(f">>> === Persona ID: {persona_id} === <<<")
+        
+        # Further processing and validation can go here
+
+        return JsonResponse({"status": "success", "message": "Story Mapped successfully."})
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+    except KeyError:
+        return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
