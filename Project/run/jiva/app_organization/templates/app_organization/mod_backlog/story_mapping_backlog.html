@@ -216,24 +216,7 @@
                                                 data-iteration-id="{{ iteration.id }}" 
                                                 data-step-id="1"></div>
                                         </td>
-                                        <td>
-                                            <div class="dropzone" 
-                                                data-release-id="{{ release.id }}" 
-                                                data-iteration-id="{{ iteration.id }}" 
-                                                data-step-id="2"></div>
-                                        </td>
-                                        <td>
-                                            <div class="dropzone" 
-                                                data-release-id="{{ release.id }}" 
-                                                data-iteration-id="{{ iteration.id }}" 
-                                                data-step-id="3"></div>
-                                        </td>
-                                        <td>
-                                            <div class="dropzone" 
-                                                data-release-id="{{ release.id }}" 
-                                                data-iteration-id="{{ iteration.id }}" 
-                                                data-step-id="4"></div>
-                                        </td>
+                                       
                                     </tr>
                                 {% endfor %}
                             {% endfor %}
@@ -382,6 +365,7 @@
             success: function(data) {
                 if (data.activities) {
                     updateStoryTable(data.activities);
+                    updateActivitiesAndSteps(data.activities);
                 } else {
                     console.error('Error fetching activities:', data.error);
                 }
@@ -440,6 +424,39 @@
             tableBody.appendChild(row);
         });
     }
+
+
+
+
+
+    function updateActivitiesAndSteps(activities) {
+    const tableBody = document.querySelector('.table tbody');
+    tableBody.innerHTML = ''; // Clear existing rows if needed
+
+    {% for release in releases %}
+        {% for iteration in release.org_release_org_iterations.all|filter_active %}
+            row = document.createElement('tr');
+            row.innerHTML = `<td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>`;
+            
+            activities.forEach(activity => {
+                activity.steps.forEach(step => {
+                    row.innerHTML += `
+                        <td>
+                            <div class="dropzone" 
+                                data-release-id="{{ release.id }}" 
+                                data-iteration-id="{{ iteration.id }}"
+                                data-activity-id="${activity.id}"
+                                data-step-id="${step.id}"></div>
+                        </td>`;
+                });
+            });
+
+            tableBody.appendChild(row);
+        {% endfor %}
+    {% endfor %}
+}
+
+
     </script>
     
 {% endblock content %}

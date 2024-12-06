@@ -985,6 +985,7 @@ def ajax_fetch_persona_activities(request):
             
             # Prepare the data to be sent as JSON
             activities_data = [{
+                'id': activity.id,
                 'name': activity.name,
                 'steps': [{'name': step.name} for step in activity.activity_steps.filter(active=True)]
             } for activity in activities]
