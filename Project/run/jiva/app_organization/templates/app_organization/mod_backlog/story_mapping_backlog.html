@@ -60,11 +60,15 @@
             text-align: center;
         }
 
-        .dropzone {
+        .dropzone,  #story-list {
             min-height: 100px;
             border: 2px dashed #ccc;
             padding: 10px;
             background-color: #f9f9f9;
+        }
+        #story-list {
+            display: flex;
+            flex-direction: column;
         }
 
         .dropzone:hover {
@@ -159,7 +163,7 @@
                 <!-- Left Pane: User Stories -->
                 <div class="left-pane">
                     <h4>User Stories</h4>
-                    <ul id="story-list" class="list-group">
+                    <ul id="story-list" class="list-group dropzone story-list">
                         {% for node, serial, parent_id in serialized_nodes %}
 
                             {% if node.type.name == 'User Story' %}
@@ -449,7 +453,7 @@ function bindDragAndDrop() {
         });
     });
 
-    document.querySelectorAll('.dropzone').forEach(dropzone => {
+    document.querySelectorAll('.dropzone, #story-list').forEach(dropzone => {
     dropzone.addEventListener('dragover', function(e) {
         e.preventDefault();  // Necessary to allow a drop
         e.dataTransfer.dropEffect = 'move';
@@ -463,7 +467,12 @@ function bindDragAndDrop() {
         if (story) {
             dropzone.appendChild(story);  // Append the story to the dropzone
             // Send the AJAX request
-            sendUpdateRequest(story.dataset.storyId, dropzone.dataset);
+            
+            // Check if the dropzone is not the story-list
+            if (!dropzone.classList.contains('story-list')) {
+                // Send the AJAX request only if it's a regular dropzone and not the story-list
+                sendUpdateRequest(story.dataset.storyId, dropzone.dataset);
+            }
         }
     });
 });
@@ -496,6 +505,47 @@ function sendUpdateRequest(storyId, data) {
     })
     .catch(error => console.error('Error updating story location:', error));
 }
+
+
+document.getElementById('story-list').addEventListener('drop', function(e) {
+    e.preventDefault();  // Necessary to allow a drop
+    const storyId = e.dataTransfer.getData('text/plain');  // Retrieve the story ID transferred
+    const story = document.querySelector(`[data-story-id="${storyId}"]`);  // Find the story element
+
+    if (story) {
+        this.appendChild(story);  // Append the story back to the story list
+        resetStoryData(story);  // Reset any specific data or attributes if necessary
+        // Optionally send an AJAX request to update the server
+        updateServerForRemovedStory(storyId);
+    }
+});
+
+function resetStoryData(story) {
+    // Reset or clear any data attributes that are not needed when the story is in the list
+    // Example: story.removeAttribute('data-release-id');
+}
+
+function updateServerForRemovedStory(storyId) {
+    // Here, send an AJAX request to update the backend about the story being moved back to the list
+    fetch("{% url 'ajax_story_back_to_list' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',  // Assuming Django backend
+        },
+        body: JSON.stringify({
+            story_id: storyId,
+            // Add any other data needed for the server-side update
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Story removed from drop zone:', data);
+    })
+    .catch(error => console.error('Error removing story:', error));
+}
+
+
 
 }
 

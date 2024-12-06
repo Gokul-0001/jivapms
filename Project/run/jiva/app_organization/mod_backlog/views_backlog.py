@@ -1028,3 +1028,22 @@ def ajax_recieve_story_mapped_details(request):
         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
     except KeyError:
         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
+    
+   
+@login_required
+def ajax_story_back_to_list(request):
+    try:
+        data = json.loads(request.body)  # Correctly parsing JSON data from the request body
+        story_id = data['story_id']
+       
+        print(f">>> === Back to List: Story ID: {story_id} === <<<")
+       
+        
+        # Further processing and validation can go here
+
+        return JsonResponse({"status": "success", "message": "Story Mapped successfully."})
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+    except KeyError:
+        return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
+    
