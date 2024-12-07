@@ -938,6 +938,18 @@ def story_mapping_backlog(request, pro_id, parent_id):
         serialized_nodes = get_serialized_subtree_from_node(request, parent_id)
     
     
+    releases_json = [
+        {
+            "id": release.id,
+            "name": release.name,
+            "iterations": [
+                {"id": iteration.id, "name": iteration.name}
+                for iteration in release.org_release_org_iterations.filter(active=True)
+            ]
+        }
+        for release in releases
+    ]
+    
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
@@ -945,6 +957,7 @@ def story_mapping_backlog(request, pro_id, parent_id):
         'user': user,
         'ancestors': ancestors,
         'releases': releases,
+        'list_releases':  json.dumps(releases_json),
         'wslist': wslist,
         'treedb': treedb,
         'root': root,

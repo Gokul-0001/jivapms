@@ -78,7 +78,7 @@ org_id
                                     {% endif %}
                                     <select name="selected_id">
                                         {% for ctype in parent.type.get_children %}
-                                            <option value="{{ ctype.id }}">{{ ctype.name }}</option>
+                                            <option value="{{ ctype.id }}">{{ ctype.name }} -- {{ctype.id}}</option>
                                         {% endfor %}
                                     </select>
                                 </form>
