@@ -1022,7 +1022,6 @@ def ajax_recieve_story_mapped_details(request):
         persona_id = data['persona_id']
         
         
-        
         print(f">>> === Project ID: {project_id} === <<<")
         print(f">>> === Story ID: {story_id} === <<<")
         print(f">>> === Release ID: {release_id} === <<<")
@@ -1069,7 +1068,15 @@ def ajax_story_back_to_list(request):
         story_id = data['story_id']
        
         print(f">>> === Back to List: Story ID: {story_id} === <<<")
-       
+        # Perform a soft delete by setting `active` to False
+        updated_count = StoryMapping.objects.filter(
+            Q(story_id=story_id) & Q(active=True)
+        ).update(active=False)
+
+        if updated_count > 0:
+            message = "Story mapping cleared successfully."
+        else:
+            message = "No active mapping found for the given story."
         
         # Further processing and validation can go here
 
