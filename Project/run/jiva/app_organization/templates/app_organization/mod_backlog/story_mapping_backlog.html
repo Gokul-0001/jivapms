@@ -47,7 +47,7 @@
             height: 100vh;
             padding: 15px;
             overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: auto;
         }
 
         .story-item {
@@ -121,12 +121,9 @@
 .table {
     width: 100%;
     text-align: center;
+    table-layout: auto;
 }
 
-.table-responsive {
-    overflow-x: auto; /* Horizontal scroll for wide tables if needed */
-    overflow-y: visible; /* Ensure the table isn't clipped vertically */
-}
 </style>
 {% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
 <div class="content-wrapper">
