@@ -18,8 +18,8 @@ class Command(BaseCommand):
 
         # Create a Persona
         persona = Persona.objects.create(
-            name="John Doe / Project Manager Persona",
-            description="John is a project manager responsible for overseeing software development projects.",
+            name="Sarah Smith / Product Manager Persona",
+            description="Sarah is a product manager responsible for overseeing product's success.",
             organization_id=1,
         )
         self.stdout.write(f"Created Persona: {persona.name}")

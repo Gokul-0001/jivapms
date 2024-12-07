@@ -7,6 +7,9 @@
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 <style>
+    body {
+        font-size: 14px;
+    }
     #mpttTable {
     counter-reset: level1;  /* Initial counter reset for the first level */
     }
@@ -36,10 +39,11 @@
             height: 100vh;
             overflow-y: auto;
             border-right: 2px solid #ddd;
-            padding: 15px;
+            padding: 10px;
             background-color: #f8f9fa;
             overflow-y: hidden; 
             flex-shrink: 0;
+            font-size: 12px;
         }
 
         .right-pane {
@@ -48,6 +52,7 @@
             padding: 15px;
             overflow-x: auto;
             overflow-y: auto;
+            font-size: 12px;
         }
 
         .story-item {
@@ -162,9 +167,7 @@
                     <h4>User Stories</h4>
                     <ul id="story-list" class="list-group dropzone story-list">
                         {% for node, serial, parent_id in serialized_nodes %}
-
-                        {% if node.type.name == 'User Story' and node.id not in mapped_story_ids %}
-
+                            {% if node.type.name == 'User Story' and node.id not in mapped_story_ids %}
                             <li class="list-group-item story-item" draggable="true" data-story-id="{{ node.id }}">
                                 {{ node.name }}
                             </li>
