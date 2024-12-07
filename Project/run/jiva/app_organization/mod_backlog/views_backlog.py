@@ -878,6 +878,7 @@ def story_mapping_backlog(request, pro_id, parent_id):
     
     # Mapped story ids 
     mappings = StoryMapping.objects.filter(active=True)
+    print(f">>> === Mappings: {mappings} === <<<")
     mapped_story_ids = mappings.values_list('story_id', flat=True)
     # connect with connect id
     pro = get_object_or_404(Project, pk=pro_id)
@@ -1020,7 +1021,7 @@ def ajax_recieve_story_mapped_details(request):
         step_id = data['step_id']
         persona_id = data['persona_id']
         
-        story_details = Backlog.objects.get(id=story_id)
+        
         
         print(f">>> === Project ID: {project_id} === <<<")
         print(f">>> === Story ID: {story_id} === <<<")
@@ -1029,34 +1030,26 @@ def ajax_recieve_story_mapped_details(request):
         print(f">>> === Activity ID: {activity_id} === <<<")
         print(f">>> === Step ID: {step_id} === <<<")
         print(f">>> === Persona ID: {persona_id} === <<<")
-        
-        # Check for existing mapping
-        existing_mapping = StoryMapping.objects.filter(
-            story_id=story_id,
-            release_id=release_id,
-            iteration_id=iteration_id,
-            activity_id=activity_id,
-            step_id=step_id,
-            persona_id=persona_id,
-        ).first()
-
-        if existing_mapping:
-            return JsonResponse({"status": "error", "message": "Story is already mapped in this iteration and step."})
-
-        
-        # Save or update the story mapping
-        mapping, created = StoryMapping.objects.update_or_create(
-            pro_id = project_id,
-            story_name = story_details.name,
-            story_id=story_id,
-            release_id=release_id,
-            iteration_id=iteration_id,
-            activity_id=activity_id,
-            step_id=step_id,
-            persona_id=persona_id,
-            defaults={'mapped_at': timezone.now()}
-        )
-        
+        #StoryMapping.objects.all().delete()
+        with transaction.atomic():  # Ensure atomicity
+            StoryMapping.objects.filter(story_id=story_id, active=False)
+            # Save or update the story mapping
+            story_details = Backlog.objects.get(id=story_id)
+            mapping, created = StoryMapping.objects.update_or_create(
+                story_id=story_id,
+                defaults={
+                    'pro_id': project_id,
+                    'persona_id': persona_id,
+                    'mapped_at': timezone.now(),
+                    'active': True,
+                    'story_name': story_details.name,
+                    'release_id': release_id,
+                    'iteration_id': iteration_id,
+                    'activity_id': activity_id,
+                    'step_id': step_id,
+                }
+            )
+        #StoryMapping.objects.all().delete()
         if created:
             message = "Story mapped successfully."
         else:

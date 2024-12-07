@@ -163,7 +163,7 @@
                     <ul id="story-list" class="list-group dropzone story-list">
                         {% for node, serial, parent_id in serialized_nodes %}
 
-                            {% if node.type.name == 'User Story' %}
+                        {% if node.type.name == 'User Story' and node.id not in mapped_story_ids %}
 
                             <li class="list-group-item story-item" draggable="true" data-story-id="{{ node.id }}">
                                 {{ node.name }}
@@ -436,47 +436,49 @@
     function updateActivitiesAndSteps(activities) {
     const tableBody = document.querySelector('.table tbody');
     tableBody.innerHTML = ''; // Clear existing rows
-
     {% for release in releases %}
-        {% for iteration in release.org_release_org_iterations.all|filter_active %}
-            row = document.createElement('tr');
-            row.innerHTML = `<td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>`;
-            
-            activities.forEach(activity => {
-                activity.steps.forEach(step => {
+    {% for iteration in release.org_release_org_iterations.all|filter_active %}
+        row = document.createElement('tr');
+        row.innerHTML = `<td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>`;
+        
+        activities.forEach(activity => {
+            activity.steps.forEach(step => {
+                // Get all stories mapped to this activity and step
+                const mappedStories = storyMappings.filter(mapping =>
+                    mapping.activityId == activity.id &&
+                    mapping.stepId == step.id &&
+                    mapping.releaseId == {{ release.id }} &&
+                    mapping.iterationId == {{ iteration.id }}
+                );
 
-                    const mappedStory = storyMappings.find(mapping =>
-                        mapping.activityId == activity.id &&
-                        mapping.stepId == step.id &&
-                        mapping.releaseId == {{release.id}} &&
-                        mapping.iterationId == {{iteration.id}}
-                    );
-
-                    let storyHtml = '';
-                    if (mappedStory) {
-                        const storyName = mappedStory.storyName;
-                        storyHtml = `
-                            <div class="story-item" data-story-id="${mappedStory.storyId}">
-                                ${storyName}
-                            </div>`;
-                    }
-
-                    row.innerHTML += `
-                        <td>
-                            <div class="dropzone" 
-                                data-release-id="{{ release.id }}" 
-                                data-iteration-id="{{ iteration.id }}"
-                                data-activity-id="${activity.id}"
-                                data-step-id="${step.id}">
-                                ${storyHtml}
-                                </div>
-                        </td>`;
+                let storyHtml = '';
+                // Loop through all mapped stories and build the HTML
+                mappedStories.forEach(mappedStory => {
+                    const storyName = mappedStory.storyName;
+                    storyHtml += `
+                        <div class="story-item" draggable="true" data-story-id="${mappedStory.storyId}">
+                            ${storyName}
+                        </div>`;
                 });
-            });
 
-            tableBody.appendChild(row);
-        {% endfor %}
+                // Render the dropzone with all stories
+                row.innerHTML += `
+                    <td>
+                        <div class="dropzone" 
+                            data-release-id="{{ release.id }}" 
+                            data-iteration-id="{{ iteration.id }}"
+                            data-activity-id="${activity.id}"
+                            data-step-id="${step.id}">
+                            ${storyHtml}
+                        </div>
+                    </td>`;
+            });
+        });
+
+        tableBody.appendChild(row);
     {% endfor %}
+{% endfor %}
+
 
     bindDragAndDrop();  // Rebind drag and drop events to new elements
 }
@@ -499,8 +501,16 @@ function bindDragAndDrop() {
         e.preventDefault();
         const storyId = e.dataTransfer.getData('text/plain');  // Retrieve the story ID transferred
         const story = document.querySelector(`[data-story-id="${storyId}"]`);  // Find the story element
-
+        // Prevent duplication in the same dropzone
+        if (this.contains(story)) {
+            console.log('Story already exists in this dropzone.');
+            return;
+        }
         if (story) {
+            // Remove the story from its current parent
+            if (story.parentNode) {
+                story.parentNode.removeChild(story);
+            }
             dropzone.appendChild(story);  // Append the story to the dropzone
             // Send the AJAX request
             
@@ -548,7 +558,10 @@ document.getElementById('story-list').addEventListener('drop', function(e) {
     e.preventDefault();  // Necessary to allow a drop
     const storyId = e.dataTransfer.getData('text/plain');  // Retrieve the story ID transferred
     const story = document.querySelector(`[data-story-id="${storyId}"]`);  // Find the story element
-
+    // Remove the story from its current location
+    if (story.parentNode) {
+        story.parentNode.removeChild(story);
+    }
     if (story) {
         this.appendChild(story);  // Append the story back to the story list
         resetStoryData(story);  // Reset any specific data or attributes if necessary
@@ -585,6 +598,9 @@ function updateServerForRemovedStory(storyId) {
 
 
 }
+document.addEventListener("DOMContentLoaded", function() {
+    bindDragAndDrop();
+});
 
 
     </script>

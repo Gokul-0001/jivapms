@@ -104,7 +104,7 @@ class StoryMapping(BaseModelTrackDateImpl):
     mapped_at = models.DateTimeField(auto_now_add=True)  # Timestamp of the mapping
 
     class Meta:
-        unique_together = ( 'release_id', 'iteration_id', 'activity_id', 'step_id', 'persona_id')
+        unique_together = ( 'story_id',)
         verbose_name = 'Story Mapping'
         verbose_name_plural = 'Story Mappings'
 
