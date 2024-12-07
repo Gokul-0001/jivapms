@@ -878,7 +878,7 @@ def story_mapping_backlog(request, pro_id, parent_id):
     
     # Mapped story ids 
     mappings = StoryMapping.objects.filter(active=True)
-    
+    mapped_story_ids = mappings.values_list('story_id', flat=True)
     # connect with connect id
     pro = get_object_or_404(Project, pk=pro_id)
     organization = pro.org
@@ -956,6 +956,7 @@ def story_mapping_backlog(request, pro_id, parent_id):
         'personae': personae,
         'ref_parent_id': ref_parent_id,
         'mappings': mappings,
+        'mapped_story_ids': mapped_story_ids,
         'parent_id': parent_id,
         'serialized_nodes': serialized_nodes,
         'form': form,
@@ -1029,6 +1030,20 @@ def ajax_recieve_story_mapped_details(request):
         print(f">>> === Step ID: {step_id} === <<<")
         print(f">>> === Persona ID: {persona_id} === <<<")
         
+        # Check for existing mapping
+        existing_mapping = StoryMapping.objects.filter(
+            story_id=story_id,
+            release_id=release_id,
+            iteration_id=iteration_id,
+            activity_id=activity_id,
+            step_id=step_id,
+            persona_id=persona_id,
+        ).first()
+
+        if existing_mapping:
+            return JsonResponse({"status": "error", "message": "Story is already mapped in this iteration and step."})
+
+        
         # Save or update the story mapping
         mapping, created = StoryMapping.objects.update_or_create(
             pro_id = project_id,
@@ -1041,7 +1056,7 @@ def ajax_recieve_story_mapped_details(request):
             persona_id=persona_id,
             defaults={'mapped_at': timezone.now()}
         )
-
+        
         if created:
             message = "Story mapped successfully."
         else:
