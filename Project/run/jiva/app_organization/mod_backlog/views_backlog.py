@@ -875,7 +875,10 @@ def story_mapping_backlog(request, pro_id, parent_id):
     form = None
     form = BacklogForm()
     parent_id = None if parent_id == 0 else parent_id
-   
+    
+    # Mapped story ids 
+    mappings = StoryMapping.objects.filter(active=True)
+    
     # connect with connect id
     pro = get_object_or_404(Project, pk=pro_id)
     organization = pro.org
@@ -952,7 +955,8 @@ def story_mapping_backlog(request, pro_id, parent_id):
         'org_id': pro.org_id,
         'personae': personae,
         'ref_parent_id': ref_parent_id,
-        'parend_id': parent_id,
+        'mappings': mappings,
+        'parent_id': parent_id,
         'serialized_nodes': serialized_nodes,
         'form': form,
         'page_obj': page_obj,
@@ -1007,6 +1011,7 @@ def ajax_fetch_persona_activities(request):
 def ajax_recieve_story_mapped_details(request):
     try:
         data = json.loads(request.body)  # Correctly parsing JSON data from the request body
+        project_id = data['project_id']
         story_id = data['story_id']
         release_id = data['release_id']
         iteration_id = data['iteration_id']
@@ -1014,6 +1019,9 @@ def ajax_recieve_story_mapped_details(request):
         step_id = data['step_id']
         persona_id = data['persona_id']
         
+        story_details = Backlog.objects.get(id=story_id)
+        
+        print(f">>> === Project ID: {project_id} === <<<")
         print(f">>> === Story ID: {story_id} === <<<")
         print(f">>> === Release ID: {release_id} === <<<")
         print(f">>> === Iteration ID: {iteration_id} === <<<")
@@ -1021,9 +1029,25 @@ def ajax_recieve_story_mapped_details(request):
         print(f">>> === Step ID: {step_id} === <<<")
         print(f">>> === Persona ID: {persona_id} === <<<")
         
-        # Further processing and validation can go here
+        # Save or update the story mapping
+        mapping, created = StoryMapping.objects.update_or_create(
+            pro_id = project_id,
+            story_name = story_details.name,
+            story_id=story_id,
+            release_id=release_id,
+            iteration_id=iteration_id,
+            activity_id=activity_id,
+            step_id=step_id,
+            persona_id=persona_id,
+            defaults={'mapped_at': timezone.now()}
+        )
 
-        return JsonResponse({"status": "success", "message": "Story Mapped successfully."})
+        if created:
+            message = "Story mapped successfully."
+        else:
+            message = "Story mapping updated successfully."
+
+        return JsonResponse({"status": "success", "message": message})
     except json.JSONDecodeError:
         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
     except KeyError:

@@ -236,6 +236,24 @@
 </div>
 </div>
 </form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
     function updateDoneState(wslistId, isType) {
     $.ajax({
@@ -404,7 +422,26 @@
     });
 }
 
+</script>
 
+
+<script>
+    const storyMappings = [
+        {% for mapping in mappings %}
+        {
+            storyName: "{{mapping.story_name}}",
+            storyId: {{ mapping.story_id }},
+            releaseId: {{ mapping.release_id }},
+            iterationId: {{ mapping.iteration_id }},
+            activityId: {{ mapping.activity_id }},
+            stepId: {{ mapping.step_id }},
+            personaId: {{ mapping.persona_id }}
+        },
+        {% endfor %}
+    ];
+</script>
+
+<script>
     
     // Ensure the body is initialized only once and not disturbed by header updates
     if (!window.bodyInitialized) {
@@ -424,13 +461,32 @@
             
             activities.forEach(activity => {
                 activity.steps.forEach(step => {
+
+                    const mappedStory = storyMappings.find(mapping =>
+                        mapping.activityId == activity.id &&
+                        mapping.stepId == step.id &&
+                        mapping.releaseId == {{release.id}} &&
+                        mapping.iterationId == {{iteration.id}}
+                    );
+
+                    let storyHtml = '';
+                    if (mappedStory) {
+                        const storyName = mappedStory.storyName;
+                        storyHtml = `
+                            <div class="story-item" data-story-id="${mappedStory.storyId}">
+                                ${storyName}
+                            </div>`;
+                    }
+
                     row.innerHTML += `
                         <td>
                             <div class="dropzone" 
                                 data-release-id="{{ release.id }}" 
                                 data-iteration-id="{{ iteration.id }}"
                                 data-activity-id="${activity.id}"
-                                data-step-id="${step.id}"></div>
+                                data-step-id="${step.id}">
+                                ${storyHtml}
+                                </div>
                         </td>`;
                 });
             });
@@ -479,6 +535,7 @@ function sendUpdateRequest(storyId, data) {
     console.log('StoryID:', storyId);
     console.log('Sending update request:', storyId, data);
     const payload = {
+        project_id: {{ project.id }},
         story_id: storyId,
         release_id: data.releaseId,
         iteration_id: data.iterationId,

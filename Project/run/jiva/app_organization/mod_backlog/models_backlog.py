@@ -84,3 +84,29 @@ class Backlog(MPTTModel, BaseModelImpl):
     
     def get_active_children(self):
         return self.get_children().filter(active=True)
+
+
+# 07122024
+# StoryMappingModel
+
+class StoryMapping(BaseModelTrackDateImpl):
+    pro = models.ForeignKey("app_organization.Project", 
+                                       on_delete=models.SET_NULL, 
+                                              null=True, blank=True, 
+                                              related_name='project_story_mappings')
+    story_name = models.CharField(max_length=256, null=True, blank=True)
+    story_id = models.PositiveIntegerField()  # ID of the story being mapped
+    release_id = models.PositiveIntegerField()  # ID of the release
+    iteration_id = models.PositiveIntegerField()  # ID of the iteration
+    activity_id = models.PositiveIntegerField()  # ID of the activity
+    step_id = models.PositiveIntegerField()  # ID of the step
+    persona_id = models.PositiveIntegerField()  # ID of the persona
+    mapped_at = models.DateTimeField(auto_now_add=True)  # Timestamp of the mapping
+
+    class Meta:
+        unique_together = ('story_id', 'release_id', 'iteration_id', 'activity_id', 'step_id', 'persona_id')
+        verbose_name = 'Story Mapping'
+        verbose_name_plural = 'Story Mappings'
+
+    def __str__(self):
+        return f"Story {self.story_id} mapped to Release {self.release_id}, Iteration {self.iteration_id}, Activity {self.activity_id}, Step {self.step_id}, Persona {self.persona_id}"
