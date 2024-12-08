@@ -1,0 +1,123 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!-- required from the view -->
+<style>
+    #persona, #activities, #steps, #details, #release {
+      border: 1px solid #ccc;
+      padding: 1px;
+      min-height: 10px; /* Minimum height to ensure it looks like a text box */
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      color: #333;
+      background-color: #fff;
+      outline: none; /* Remove the default focus outline */
+    }
+  
+    #persona:empty:before, #activities:empty:before, #steps:empty:before, #details:empty:before, #release:empty:before {
+      content: attr(placeholder);
+      color: #aaa; /* Light grey color for the placeholder text */
+    }
+  
+    #persona:focus, #activities:focus, #steps:focus, #details:focus, #release:focus {
+      border-color: #0066cc; /* Change border color when focused */
+    }
+</style>
+<div class="content-wrapper">
+
+    
+    <div class="contentbar mb-5" id="contentbar">
+        <!-- LEFT PANE -->
+        <div id="left_pane">
+            <div class="container-fluid">   
+                <!-- Start -->
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Story Mapping</b>
+                    </div>
+                    <div class="col col-md-6">
+    
+                    </div>
+                    <div class="col col-md-12">
+                        
+                    </div>
+                </div>
+    
+                <!-- Input and Mapping -->
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Persona</b>
+                        <div id="persona" contenteditable="true" placeholder="Persona"></div>
+                    </div>           
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Activities</b>
+                        <div id="activities" contenteditable="true" placeholder="Activities"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Steps</b>
+                        <!-- Steps input-->
+                        <div id="steps" contenteditable="true" placeholder="Steps"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Details</b>
+                        <div id="details" contenteditable="true" placeholder="Details"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Release</b>
+                        <div id="release" contenteditable="true" placeholder="Release"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANE -->
+        <div id="right_pane">
+            <!-- Mapping Display -->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Persona</b>
+                        <div id="persona_display"></div>
+                    </div>   
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Activities</b>
+                        <div id="activities_display"></div>
+                    </div>   
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Steps</b>
+                        <div id="steps_display"></div>
+                    </div>   
+                </div>
+                <div class="row">
+                    <div class="col col-md-12">
+                        <b>Details</b>
+                        <div id="details_display"></div>
+                    </div>   
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+{% endblock content %}

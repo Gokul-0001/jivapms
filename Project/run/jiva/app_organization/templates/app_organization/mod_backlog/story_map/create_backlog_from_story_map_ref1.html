@@ -1,0 +1,243 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<style>
+    #left_pane {
+      float: left;
+      width: 20%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+      border-right: 1px solid #ccc;
+    }
+    
+    #right_pane {
+      float: left;
+      width: 80%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      resize: none;
+    }
+
+    input[type="text"] {
+      height: 30px;
+    }
+
+    textarea {
+      height: 80px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .content-header1 {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+
+    .display-container-persona {
+        margin-top: 10px;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+
+
+    .content-area {
+        display: flex;
+        align-items: center; /* Align content vertically in the middle */
+        margin-bottom: 10px;
+    }
+
+    .content-header {
+        font-weight: bold;
+        width: 20px;
+        margin-right: 10px;
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /** testing - start */
+    .display-container-activity {
+
+        margin-top: 10px;
+        padding: 10px;
+        display: flex; /* Use flexbox to manage layout */
+        flex-wrap: nowrap; /* Prevent wrapping to the next line */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        overflow-y: hidden; /* Disable vertical scrolling */
+        align-items: center; /* Vertically align items in the middle */
+        background-color: #f4f4f4;
+        max-height: 150px;
+    }
+
+    .display-container-steps {
+        margin-top: 10px;
+        padding: 10px;
+        display: flex; /* Use flexbox to manage layout */
+        flex-wrap: nowrap; /* Prevent wrapping to the next line */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        overflow-y: hidden; /* Disable vertical scrolling */
+        align-items: center; /* Vertically align items in the middle */
+        background-color: #f4f4f4;
+        min-width: 40px;
+        max-height: 150px;
+    }
+
+    .display-container-details {
+        margin-top: 10px;
+        padding: 10px;
+        display: flex; /* Use flexbox to manage layout */
+        flex-wrap: nowrap; /* Prevent wrapping to the next line */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        overflow-y: hidden; /* Disable vertical scrolling */
+        align-items: center; /* Vertically align items in the middle */
+        background-color: #f4f4f4;
+        max-height: 150px;
+    }
+
+    .display-container {
+        flex-grow: 1;
+        margin-top: 10px;
+        padding: 10px;
+        display: flex; /* Use flexbox to manage layout */
+        flex-wrap: nowrap; /* Prevent wrapping to the next line */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        overflow-y: hidden; /* Disable vertical scrolling */
+        align-items: center; /* Vertically align items in the middle */
+        background-color: #f4f4f4;
+        max-height: 150px;
+    }
+    .step-item {
+        display: inline-block;
+        background: #eef;
+        border: 1px solid #bbb;
+        padding: 5px;
+        margin-right: 10px; /* Ensure margin is accounted for in JS calculation */
+        font-size: 0.7rem;
+        white-space: nowrap; /* Prevent wrapping at white spaces */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: top;
+        box-sizing: border-box; /* Include padding and borders in width calculation */
+    }
+
+
+    .step-item:last-child {
+        margin-right: 0; /* Remove margin for the last item to use the space effectively */
+    }
+</style>
+
+
+</style>
+<div class="content-wrapper">
+    <div class="contentbar mb-5" id="contentbar">
+        <!-- LEFT PANE -->
+        <div id="left_pane">
+            <div class="container-fluid-width">   
+                <!-- Input Fields -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Persona</div>
+                        <input type="text" id="persona" placeholder="Enter Persona" oninput="updatePersonaDisplay()">
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Activities</div>
+                        <textarea id="activities" placeholder="Enter Activities, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Steps</div>
+                        <textarea id="steps" placeholder="Enter Steps, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Details</div>
+                        <textarea id="details" placeholder="Enter Details, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Release</div>
+                        <textarea id="release" placeholder="Enter Release Details, each on a new line"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANE -->
+        <div id="right_pane">
+            <div class="container-fluid">
+                <!-- Display Areas -->
+                <div class="content-area">
+                    
+                    <div class="display-container-persona" id="persona_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Activities</div>
+                    <div class="display-container-activity" id="activities_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Steps</div>
+                    <div class="display-container-steps" id="steps_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Details</div>
+                    <div class="display-container-details" id="details_display"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', updateDisplay);
+    });
+
+    function updateDisplay(event) {
+        const targetId = event.target.id;
+        const display = document.getElementById(`${targetId}_display`);
+        const lines = event.target.value.split('\n');
+        display.innerHTML = ''; // Clear previous content
+
+        const numItems = lines.filter(line => line.trim() !== '').length;
+        const paddingAndBorders = 15; // Adjust this based on actual padding and borders used
+        const itemWidth = (display.offsetWidth - numItems * paddingAndBorders) / numItems; // Adjust for margins
+
+        lines.forEach(line => {
+            if (line.trim() !== '') {
+                const div = document.createElement('div');
+                div.className = 'step-item';
+                div.style.width = `${itemWidth}px`; // Apply calculated width
+                div.textContent = line.trim();
+                display.appendChild(div);
+            }
+        });
+    }
+
+    function updatePersonaDisplay() {
+        const personaInput = document.getElementById('persona');
+        const personaDisplay = document.getElementById('persona_display');
+        personaDisplay.textContent = personaInput.value;
+    }
+</script>
+
+{% endblock content %}

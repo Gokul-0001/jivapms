@@ -1,0 +1,161 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<style>
+    #left_pane {
+      float: left;
+      width: 20%;
+      height: 100vh; /* Full height */
+      overflow-y: auto; /* Enable vertical scrolling */
+      padding: 10px;
+      border-right: 1px solid #ccc;
+    }
+    
+    #right_pane {
+      float: left;
+      width: 80%;
+      height: 100vh; /* Full height */
+      overflow-y: auto; /* Enable vertical scrolling */
+      padding: 10px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      resize: none; /* Disable resizing for textarea */
+    }
+
+    input[type="text"] {
+      height: 30px; /* Fixed height for input */
+    }
+
+    textarea {
+      height: 80px; /* Initial height */
+      max-height: 120px; /* Maximum height before scrolling */
+      overflow-y: auto; /* Enable vertical scrolling */
+    }
+
+    .content-header {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .display-container {
+        margin-top: 10px;
+        padding: 1px;
+        min-height: 30px; /* Ensure minimum visibility */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        white-space: nowrap; /* Keep everything in a single line */
+    }
+
+    .step-item {
+        display: inline-block; /* Display items inline */
+        min-width: 50px; /* Minimum width to 50px */
+        max-width: 200px; /* Maximum width to 200px */
+        background: #eef;
+        border: 1px solid #bbb;
+        padding: 5px;
+        margin-right: 10px;
+        font-size: 0.7rem; /* Start with a small font size */
+        white-space: normal; /* Allow text to wrap within the item */
+        vertical-align: top; /* Align top for inline-block */
+        box-sizing: border-box;
+    }
+</style>
+<div class="content-wrapper">
+    <div class="contentbar mb-5" id="contentbar">
+        <!-- LEFT PANE -->
+        <div id="left_pane">
+            <div class="container-fluid">   
+                <!-- Input Fields -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header">Persona</div>
+                        <input type="text" id="persona" placeholder="Enter Persona" oninput="updatePersonaDisplay()">
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header">Activities</div>
+                        <textarea id="activities" placeholder="Enter Activities, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header">Steps</div>
+                        <textarea id="steps" placeholder="Enter Steps, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header">Details</div>
+                        <textarea id="details" placeholder="Enter Details, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header">Release</div>
+                        <textarea id="release" placeholder="Enter Release Details, each on a new line"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANE -->
+        <div id="right_pane">
+            <div class="container-fluid">
+                <!-- Display Areas -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header">Persona</div>
+                        <div class="display-container" id="persona_display"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header">Activities</div>
+                        <div class="display-container" id="activities_display"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header">Steps</div>
+                        <div class="display-container" id="steps_display"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header">Details</div>
+                        <div class="display-container" id="details_display"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', updateDisplay);
+    });
+
+    function updateDisplay(event) {
+        const targetId = event.target.id; // e.g., 'activities'
+        const display = document.getElementById(`${targetId}_display`); // e.g., 'activities_display'
+        const lines = event.target.value.split('\n');
+        display.innerHTML = ''; // Clear previous content
+        lines.forEach(line => {
+            if (line.trim() !== '') {
+                const div = document.createElement('div');
+                div.className = 'step-item'; // Apply horizontal item styling for steps
+                div.textContent = line.trim();
+                display.appendChild(div);
+            }
+        });
+    }
+
+    function updatePersonaDisplay() {
+        const personaInput = document.getElementById('persona');
+        const personaDisplay = document.getElementById('persona_display');
+        personaDisplay.textContent = personaInput.value; // Display persona as soon as it is entered
+    }
+</script>
+
+{% endblock content %}

@@ -1,0 +1,187 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<style>
+    #left_pane {
+      float: left;
+      width: 20%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+      border-right: 1px solid #ccc;
+    }
+    
+    #right_pane {
+      float: left;
+      width: 80%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      resize: none;
+    }
+
+    input[type="text"] {
+      height: 30px;
+    }
+
+    textarea {
+      height: 80px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .content-header1 {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .content-header {
+        margin-top: 50px;
+        font-weight: bold;
+        margin-bottom: 1px;
+        transform: rotate(-90deg);
+        transform-origin: left bottom;
+        white-space: nowrap;
+    }
+
+    .display-container {
+      margin-top: 10px;
+      padding: 10px;
+      height: 120px; /* Set a specific height for the display containers */
+      overflow-y: auto; /* Allow vertical scrolling */
+      overflow-x: auto; /* Allow horizontal scrolling */
+      position: relative; /* Needed for positioning the header */
+    }
+
+
+    .step-item {
+        display: inline-block;
+        min-width: 50px;
+        max-width: 120px;
+        background: #eef;
+        border: 1px solid #bbb;
+        padding: 5px;
+        margin-right: 10px;
+        font-size: 0.7rem;
+        white-space: normal; /* Allow text to wrap within the item */
+        overflow: hidden; /* Prevent text from spilling out */
+        text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+        vertical-align: top;
+        box-sizing: border-box;
+        word-wrap: break-word; /* Break long words onto the next line */
+    }
+
+
+</style>
+<div class="content-wrapper">
+    <div class="contentbar mb-5" id="contentbar">
+        <!-- LEFT PANE -->
+        <div id="left_pane">
+            <div class="container-fluid">   
+                <!-- Input Fields -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Persona</div>
+                        <input type="text" id="persona" placeholder="Enter Persona" oninput="updatePersonaDisplay()">
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Activities</div>
+                        <textarea id="activities" placeholder="Enter Activities, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Steps</div>
+                        <textarea id="steps" placeholder="Enter Steps, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Details</div>
+                        <textarea id="details" placeholder="Enter Details, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Release</div>
+                        <textarea id="release" placeholder="Enter Release Details, each on a new line"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANE -->
+        <div id="right_pane">
+            <div class="container-fluid">
+                <!-- Display Areas -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Persona</div>
+                        <div class="display-container" id="persona_display"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header">Activities</div>
+                        <div class="display-container" id="activities_display"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header">Steps</div>
+                        <div class="display-container" id="steps_display"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header">Details</div>
+                        <div class="display-container" id="details_display"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', updateDisplay);
+    });
+
+    function updateDisplay(event) {
+        const targetId = event.target.id;
+        const display = document.getElementById(`${targetId}_display`);
+        const lines = event.target.value.split('\n');
+        const numItems = lines.filter(line => line.trim() !== '').length;
+        const maxItemWidth = Math.max(50, Math.min(200, display.offsetWidth / numItems - 10));
+        display.innerHTML = '';
+        lines.forEach(line => {
+            if (line.trim() !== '') {
+                const div = document.createElement('div');
+                div.className = 'step-item';
+                div.style.width = `${maxItemWidth}px`;
+                div.textContent = line.trim();
+                display.appendChild(div);
+            }
+        });
+    }
+
+    function updatePersonaDisplay() {
+        const personaInput = document.getElementById('persona');
+        const personaDisplay = document.getElementById('persona_display');
+        personaDisplay.textContent = personaInput.value;
+    }
+</script>
+
+{% endblock content %}

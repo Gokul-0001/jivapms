@@ -1,0 +1,92 @@
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+    body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden; /* Prevent body from scrolling */
+}
+
+    .navbar {
+        z-index: 1001; /* Ensure it stays above the sidebar */
+    }
+
+    /* Breadcrumb styling with padding */
+    .breadcrumb {
+        background-color: transparent; /* Transparent background */
+        padding: 10px 20px; /* Padding around the entire breadcrumb area */
+        margin-bottom: 0; /* No bottom margin to keep it close to the content */
+        font-size: 12px; /* Adjust font size for breadcrumbs */
+    }
+
+    .breadcrumb .breadcrumb-item {
+        padding: 0 10px; /* Padding between individual breadcrumb items */
+    }
+
+    .breadcrumb a {
+        color: #007bff; /* Link color */
+        text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+        color: #6c757d; /* Color for active breadcrumb */
+    }
+
+    .small_font {
+        font-size: 0.8em; /* Smaller font size */
+    }
+
+
+
+/* Content area */
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.contentbar {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto; /* Make the contentbar scrollable */
+    height: calc(100vh - 56px); /* Full height minus navbar height */
+}
+
+/* Adjustments for small screens */
+@media (max-width: 768px) {
+   
+    .content-wrapper {
+        margin-left: 0;
+    }
+
+    .contentbar {
+        margin-left: 0;
+        height: calc(100vh - 56px); /* Full height minus navbar height */
+    }
+}
+
+.nav-link.active {
+    font-weight: bold; /* Makes the text bolder */
+    color: #007bff !important; /* Changes the text color to a bright blue */
+    background-color: #f8f9fa; /* Adds a subtle background color for more emphasis */
+}
+
+</style>
+
+<style>
+    .trash-icon {
+      position: fixed;
+      left: 90px;
+      right: 10px;
+      bottom: 10px;
+      font-size: 24px;  /* Size of the icon */
+      cursor: pointer;
+      color: #707070;  /* Color of the icon */
+    }
+</style>
+
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+</script>
+
+{% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
