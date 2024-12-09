@@ -485,9 +485,11 @@
 }
 
 
-    function redrawLines() {
+function redrawLines() {
     const rightPane = document.getElementById('right_pane');
     rightPane.querySelectorAll('.vertical-line').forEach(line => line.remove());  // Clear existing lines
+
+    let updatedLineDetails = [];  // Create a new array to store updated line details
 
     lineDetails.forEach(detail => {
         const stepElement = document.querySelector(`.${detail.associatedStep}`);
@@ -497,15 +499,21 @@
 
             const line = document.createElement('div');
             line.className = 'vertical-line ' + detail.class;  // Maintain original class to keep styling and identification
-            console.log(">>> === IMPORTANT: ", detail.class, " === <<<");
             line.style.left = `${newLinePosition}px`;
             line.style.height = `${rightPane.offsetHeight}px`;  // Assuming full height is desired
             rightPane.appendChild(line);
 
-            // Update detail to reflect new position if necessary
-            detail.position = newLinePosition;
+            // Update detail to reflect new position and the line element
+            updatedLineDetails.push({
+                ...detail,
+                position: newLinePosition,
+                lineElement: line  // Store the new line element
+            });
         }
     });
+
+    // Update global lineDetails with the new, correct details
+    lineDetails = updatedLineDetails;
 }
 
 
