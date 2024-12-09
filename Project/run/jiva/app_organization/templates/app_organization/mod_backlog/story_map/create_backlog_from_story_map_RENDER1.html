@@ -160,23 +160,26 @@
         background-color: #f5f5f5;
     }
 
+
     #activities_display {
         display: flex;         /* Enable flexbox */
         flex-wrap: wrap;       /* Allow wrapping */
-        justify-content: space-between; /* Distribute space between items */
-        font-size: 0.8rem;     /* Adjust font size for better visibility */
-
+        align-items: flex-start; /* Align items to the start of the flex line */
+        justify-content: flex-start; /* Align items to the start of the main axis */
     }
 
     .activity-interval {
         background: lightyellow;
-        padding: 10px;
-        margin: 5px;
-        flex: 1 1 auto;        /* Flexibility in growing and shrinking */
-        max-width: 100px;      /* Minimum width for each div */
+        padding: 5px;          /* Reduced padding */
+        margin-right: 10px;    /* Space between items */
+        margin-bottom: 5px;    /* Space between rows */
+        flex: 0 1 auto;        /* Do not grow, allow shrink, basis is auto */
+        min-width: 100px;      /* Minimum width for each div */
+        max-width: calc(50% - 10px); /* Max-width to fit within the layout, considering margins */
         box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: Adds shadow for better visibility */
     }
 </style>
+
 
 <div class="content-wrapper">
     <div class="contentbar mb-5" id="contentbar">
@@ -444,20 +447,17 @@
 }
 function renderActivityIntervals() {
     const activitiesDisplay = document.getElementById('activities_display');
-    activitiesDisplay.innerHTML = ''; // Clear previous intervals
+    activitiesDisplay.innerHTML = ''; // Clear existing contents
 
     window.intervalSteps.forEach(interval => {
         const intervalDiv = document.createElement('div');
-        intervalDiv.className = 'activity-interval';
-        intervalDiv.style.width = `${interval.width}px`; // Set the width of the div to the interval width
-        intervalDiv.style.position = 'absolute'; // Position absolutely within the parent
-        intervalDiv.style.left = `${interval.startLine}px`; // Align the left edge with the start line
-        intervalDiv.style.textAlign = 'center'; // Center text inside the div
-        intervalDiv.textContent = `Steps: ${interval.steps.join(', ')}`;
+        intervalDiv.className = 'activity-interval';  // Apply class for styling
+        intervalDiv.textContent = `Steps between line ${interval.startLine} and ${interval.endLine}: ${interval.steps.join(', ')}`;
         activitiesDisplay.appendChild(intervalDiv);
     });
 }
 
+    
     function deleteLine() {
     if (!window.selectedStepItem) {
         console.error("No step item selected, cannot delete line.");
@@ -602,7 +602,7 @@ function redrawLines() {
 
         console.log(lineDetails);
     }
-    function calculateIntervals1() {
+    function calculateIntervals() {
     // Sort lines based on their position to handle intervals correctly
     lineDetails.sort((a, b) => a.position - b.position);
 
@@ -636,36 +636,6 @@ function redrawLines() {
 
     // Save to a global or reusable data structure
     window.intervalSteps = intervalDetails;
-    console.log("All intervals calculated:", intervalDetails);
-}
-function calculateIntervals() {
-    lineDetails.sort((a, b) => a.position - b.position); // Sort based on position
-
-    const intervalDetails = [];
-
-    for (let i = 0; i < lineDetails.length - 1; i++) {
-        const startLine = lineDetails[i];
-        const endLine = lineDetails[i + 1];
-        const intervalId = `interval-${startLine.class.split('line')[1]}-${endLine.class.split('line')[1]}`;
-
-        const intervalWidth = endLine.position - startLine.position; // Width between lines
-
-        const steps = collectSteps(startLine.position, endLine.position); // Collect steps in this interval
-
-        if (steps.length > 0) {
-            intervalDetails.push({
-                intervalId: intervalId,
-                startLine: startLine.position,
-                endLine: endLine.position,
-                startLineNo: startLine.class.split('line')[1],
-                endLineNo: endLine.class.split('line')[1],
-                steps: steps,
-                width: intervalWidth
-            });
-        }
-    }
-
-    window.intervalSteps = intervalDetails; // Store intervals globally
     console.log("All intervals calculated:", intervalDetails);
 }
 
