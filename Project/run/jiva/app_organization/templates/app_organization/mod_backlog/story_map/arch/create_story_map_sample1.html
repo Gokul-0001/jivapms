@@ -1,0 +1,103 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<!--
+required from the view
+project
+org
+org_id
+-->
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <h3>Create Story Map</h3>
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+                <table class="table table-bordered text-center" style="width: 50%;">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="col col-md-12 text-start">
+                                            <b class="">
+                                                Story Mapping is a technique to visualize the stories and their relationships in a project.
+                                            </b>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col col-md-6 text-start">
+                                            <ul class="text-start">
+                                                <li>Choose a Project</li>
+                                                <li>Choose to Create Backlog from Story Map</li>
+                                                <li>Or Map your existing stories to Story Map</li>
+                                                <li>Choose a Persona</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <form method="post" action="">
+                                {% csrf_token %}
+                                <td>
+                                
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <div class="col-col-md-12 text-start">
+                                                <b class="">
+                                                    Choose a Project:
+                                                </b>
+                                                <br>
+                                                
+                                                <select name="project" id="project_id">
+                                                    <option value="">-- Select the Project --</option>
+                                                    {% for project in projects %}
+                                                        <option value="{{ project.id }}">{{ project.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                &nbsp;&nbsp;
+                                                <br><br>
+                                                <b>Choose the Mapping Option:</b>
+                                                <br>
+                          
+                                                <select name="story_mapping_option_name" id="story_mapping_option">
+                                                    <option value="">-- Select the Option --</option>
+                                                    <option value="1">Create Backlog from Story Map</option>
+                                                    <option value="2">Map existing stories to Backlog</option>
+                                                </select>
+                                                &nbsp;&nbsp;
+                                                <br><br>
+                                                <b>Choose a Persona:</b>
+                                                <br>
+                                             
+                                                
+                                                <input type="text" name="persona_name" value="" id="persona_name">
+                                                &nbsp;&nbsp;
+                                                <button type="submit" class="btn btn-sm btn-primary">Go</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                            
+                                </td>
+                            </form>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

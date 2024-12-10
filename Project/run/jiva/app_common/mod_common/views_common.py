@@ -110,6 +110,7 @@ def ajax_save_element_text(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 
+
 @login_required
 def ajax_save_related_model(request):
     if request.method == 'POST':
@@ -149,7 +150,7 @@ def ajax_save_related_model(request):
                 setattr(child_obj, field_name, text_data)
                 child_obj.save()
                 print(f"{field_name} updated for {child_model_name} object.")
-                return JsonResponse({'status': 'success', 'created': created, 'updated_records': 1})
+                return JsonResponse({'status': 'success', 'created': created, 'created_id': child_obj.id, 'updated_records': 1})
             else:
                 return JsonResponse({'status': 'error', 'message': f"Field '{field_name}' not found in model '{child_model_name}'."})
 
@@ -169,6 +170,60 @@ def ajax_save_related_model(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 
+@login_required
+def ajax_create_child_element(request):
+    if request.method == 'POST':
+        text_data = request.POST.get('text')  # New text data to be saved
+        parent_object_id = request.POST.get('parent_id')  # ID of the parent object (e.g., Organization)
+        parent_model_name = request.POST.get('parent_model')  # Model name of the parent object (e.g., Organization)
+        parent_model_key = request.POST.get('parent_model_key')  # Field name to link the parent object (e.g., 'organization')
+        child_model_name = request.POST.get('child_model')  # Model name of the child object (e.g., OrganizationDetail)
+        field_name = request.POST.get('field_name')  # Field name to update
+        app_name = request.POST.get('app_name')  # App name
+
+        try:
+            # Step 1: Get the parent model class dynamically
+            parent_model_class = apps.get_model(app_name, parent_model_name)
+            print(f"Parent model class found: {parent_model_class}")
+
+            # Step 2: Fetch the parent object (e.g., Organization)
+            parent_obj = parent_model_class.objects.get(id=parent_object_id)
+            print(f"Parent object found: {parent_obj}")
+
+            # Step 3: Get the child model class dynamically
+            child_model_class = apps.get_model(app_name, child_model_name)
+            print(f"Child model class found: {child_model_class}")
+
+            # Step 4: Directly create a new child object
+            # Use kwargs to dynamically assign the ForeignKey based on input
+            kwargs = {parent_model_key: parent_obj, 'name': text_data}
+
+            # Directly create a new child object using kwargs
+            child_obj = child_model_class.objects.create(**kwargs)
+            print(f">>> === Child object created: {child_obj} === <<<")
+            return JsonResponse({
+                'status': 'success',
+                'created_id': child_obj.id,
+                'message': f"New {child_model_name} created with ID {child_obj.id}",
+                'id': child_obj.id
+            })
+
+           
+
+        except parent_model_class.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': f'{parent_model_name} not found.'})
+        except child_model_class.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': f'{child_model_name} not found.'})
+        except LookupError:
+            return JsonResponse({'status': 'error', 'message': 'Model not found.'})
+        except IntegrityError as e:
+            print(f"IntegrityError: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': str(e)})
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 
 @login_required

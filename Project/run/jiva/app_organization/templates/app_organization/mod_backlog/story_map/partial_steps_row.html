@@ -1,0 +1,27 @@
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+<!-- partials/steps_row.html -->
+<td>
+    <div class="content-header">Steps</div>
+</td>
+{% for activity in activities %}
+    {% for step in activity.activity_steps.all|filter_active %}
+        <td>
+            <div class="step-item" draggable="true" id="step-{{ step.id }}" contenteditable="true"
+            ondblclick="makeEditable(this);" 
+            onblur="save_element_text(this, '{{step.id}}',  'app_organization', 'Step', 'name')"          
+                
+            >
+                {{ step.name }}
+            </div>
+        </td>
+    {% endfor %}
+<!-- Add Step Button -->
+<td>
+    <button class="add-step-button" data-activity-id="{{ activity.id }}" title="Add Step">+</button>
+</td>
+{% endfor %}

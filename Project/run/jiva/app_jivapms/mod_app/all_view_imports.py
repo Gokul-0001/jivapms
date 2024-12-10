@@ -49,6 +49,7 @@ from django.core.files.base import ContentFile
 from imagekit.models import ImageSpecField
 from imagekit.processors import *
 from imagekit.models import ProcessedImageField
+from django.template.loader import render_to_string
 import base64
 import os
 import platform

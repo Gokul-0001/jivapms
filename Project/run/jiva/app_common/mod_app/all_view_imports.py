@@ -47,6 +47,7 @@ from django.db import IntegrityError
 from django.core.exceptions import PermissionDenied
 from PIL import Image 
 from lxml import etree
+from django.template.loader import render_to_string
 import base64
 import os
 import platform

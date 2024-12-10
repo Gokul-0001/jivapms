@@ -1,0 +1,957 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css_wo_sidebar.html' %}
+
+<style>
+    #left_pane {
+      float: left;
+      width: 15%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+      border-right: 1px solid #ccc;
+    }
+    
+    #right_pane {
+      float: left;
+      width: 85%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      resize: none;
+    }
+
+    input[type="text"] {
+      height: 30px;
+    }
+
+    textarea {
+      height: 80px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .content-header1 {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+
+    .display-container-persona {
+        margin-top: 10px;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+
+
+    .content-area {
+        display: flex;
+        align-items: center; /* Align content vertically in the middle */
+        margin-bottom: 10px;
+    }
+
+    .content-header {
+        margin-top: 10px;
+        font-weight: bold;
+        width: 20px;
+        margin-right: 10px;
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .display-container {
+        flex-grow: 1;
+        margin-top: 10px;
+        padding: 10px;
+        overflow-y: auto;
+        background-color: #f4f4f4;
+        max-height: 150px; /* Set minimum height */
+    }
+
+    .display-container1 {
+        flex-grow: 1;
+        margin-top: 10px;
+        padding: 10px;
+        overflow-y: auto;
+
+        max-height: 150px; /* Set minimum height */
+    }
+    
+    .details-container {
+        min-height: 300px;
+    }
+    .release-container {
+        min-height: 200px;
+    }
+
+    #persona_display {
+        width: 100%;
+        border: 1px solid #ccc;
+        background-color: yellow;
+        z-index: 1;
+    }
+
+    /** testing - start */
+
+    .step-item {
+        display: inline-block;
+        min-width: 50px;
+        max-width: 120px;
+        background: #eef;
+        border: 1px solid #bbb;
+        padding: 5px;
+        margin-right: 10px;
+        font-size: 0.7rem;
+        white-space: normal; /* Allow text to wrap within the item */
+        overflow: hidden; /* Prevent text from spilling out */
+        text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+        vertical-align: top;
+        box-sizing: border-box;
+        word-wrap: break-word; /* Break long words onto the next line */
+    }
+    .step-item:last-child {
+        margin-right: 0; /* Remove margin for the last item to use the space effectively */
+    }
+
+
+    .vertical-line {
+        position: absolute; /* Positioned absolutely relative to a positioned ancestor */
+        border-left: 2px dashed lightgray; /* Solid black line of 2px */
+        height: calc(100% - 140px); /* Adjust if there's any offset needed */
+        top: 140px; /* Offset from the top if needed */
+        pointer-events: none; /* Prevent the line from capturing clicks */
+    }
+    
+
+</style>
+
+
+<style>
+    .custom-context-menu {
+        position: absolute;
+        z-index: 1000;
+        width: 150px;
+        background: white;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 5px #888888;
+        display: none; /* Initially hidden */
+    }
+
+    .custom-context-menu ul {
+        list-style: none;
+        padding: 5px 0;
+        margin: 0;
+    }
+
+    .custom-context-menu li {
+        padding: 8px 10px;
+        cursor: pointer;
+    }
+
+    .custom-context-menu li:hover {
+        background-color: #f5f5f5;
+    }
+
+    #activities_display {
+        display: flex;         /* Enable flexbox */
+        flex-wrap: wrap;       /* Allow wrapping */
+        justify-content: space-between; /* Distribute space between items */
+        font-size: 0.8rem;     /* Adjust font size for better visibility */
+
+    }
+
+    .activity-interval {
+    background: lightyellow;
+    padding: 10px;
+    margin: 5px;
+    flex: 1 1 auto;        /* Flexibility in growing and shrinking */
+    max-width: 100px;      /* Maximum width for each div */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: Adds shadow for better visibility */
+    transform: translateY(-50px); /* Moves the div 50px up */
+}
+
+
+.release-area {
+    position: relative; /* Establish a stacking context */
+    min-height: 200px; /* Adjust based on content */
+    width: 100%; /* Ensure full width */
+}
+
+.drop-zone {
+    position: absolute;
+    height: 100px; /* Consistent height for all drop zones */
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Prevents content overflow */
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Define background colors dynamically based on nth-child for better visibility */
+.drop-zone:nth-child(odd) { background-color: #d1e8ff; }
+.drop-zone:nth-child(even) { background-color: #ffe4e1; }
+
+.step-item {
+    z-index: 30; /* Higher z-index for drag visibility */
+    cursor: pointer; /* Indicates draggable */
+    background-color: #fff; /* Visible against the drop zone background */
+    border: 1px solid #666;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Shadow for better depth perception */
+}
+
+
+</style>
+
+<div class="content-wrapper">
+    <div class="contentbar mb-5" id="contentbar">
+        <!-- LEFT PANE -->
+        <div id="left_pane">
+            <div class="container-fluid">   
+                <!-- Input Fields -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Persona</div>
+                        <input type="text" id="persona" placeholder="Enter Persona" oninput="updatePersonaDisplay()">
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Activities</div>
+                        <textarea id="activities" placeholder="Enter Activities, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Steps</div>
+                        <textarea id="steps" placeholder="Enter Steps, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Details</div>
+                        <textarea id="details" placeholder="Enter Details, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Release</div>
+                        <textarea id="release" placeholder="Enter Release Details, each on a new line"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANE -->
+        <div id="right_pane">
+            <div class="container-fluid">
+                <!-- Display Areas -->
+                <div class="content-area row">                    
+                    <div class="col col-md-10">
+                        <div class="display-container-persona" id="persona_display"></div>
+                    </div>
+
+                    <div class="col-md-2 text-end">
+                        <button onclick="clearAllLines()" class="btn btn-danger">Clear All Lines</button>
+                    </div>
+                <div class="content-area">
+                    <div class="content-header">Activities</div>
+                    <div class="display-container1" id="activities_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Steps</div>
+                    <div class="display-container" id="steps_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Immediate</div>
+                    <div class="display-container immediate-content" id="details_display"></div>
+                </div>
+                <div id="release-area" class="release-content">
+                   
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', function(event) {
+            if (event.target.id === 'release') {
+                updateReleaseDisplay(event.target);
+            } else {
+                updateDisplay(event);
+            }
+        });
+    });
+
+    function updateDisplay(event) {
+    const targetId = event.target.id;
+    const display = document.getElementById(`${targetId}_display`);
+    const lines = event.target.value.split('\n');
+    display.innerHTML = ''; // Clear previous content
+
+    const numItems = lines.filter(line => line.trim() !== '').length;
+    const paddingAndBorders = 15; // Adjust this based on actual padding and borders used
+    const itemWidth = (display.offsetWidth - numItems * paddingAndBorders) / numItems; // Adjust for margins
+
+    lines.forEach((line, index) => {
+        if (line.trim() !== '') {
+            const div = document.createElement('div');
+            div.className = 'step-item step-' + (index + 1);
+            div.setAttribute('draggable', 'true');
+            div.id = `${targetId}_item_${index}`; // Unique ID based on container and index
+            div.style.width = `${itemWidth}px`; // Apply calculated width
+            div.textContent = line.trim();
+            display.appendChild(div);
+            div.addEventListener('dragstart', function(event) {
+                event.dataTransfer.setData("text", event.target.id);
+            });
+        }
+    });
+}
+
+    function updateReleaseDisplay(textarea) {
+    const releaseDisplay = document.getElementById('release-area');
+    releaseDisplay.innerHTML = ''; // Clear existing display areas
+
+    const releases = textarea.value.split('\n').filter(line => line.trim() !== '');
+    releases.forEach(releaseName => {
+        const detailArea = document.createElement('div');
+        detailArea.className = 'content-area';
+        const header = document.createElement('div');
+        header.className = 'content-header';
+        header.textContent = releaseName;
+        const detailsContainer = document.createElement('div');
+        detailsContainer.className = 'display-container release-container';
+        detailsContainer.id = `details_for_${releaseName}`;
+
+        detailsContainer.addEventListener('drop', function(event) {
+            event.preventDefault();
+            event.stopPropagation();  // Prevent the event from bubbling up to other drop handlers
+
+            const data = event.dataTransfer.getData("text");
+            const draggableElement = document.getElementById(data);
+
+            if (!draggableElement) {
+                console.error("Failed to find draggable element with ID:", data);
+                return;
+            }
+
+            console.log("Dropping into container:", event.currentTarget.id);
+            console.log("Dropped element:", draggableElement);
+
+            let dropContainer = event.currentTarget;
+
+            // Check if the draggableElement is already inside the correct container
+            if (dropContainer !== draggableElement.parentNode) {
+                dropContainer.appendChild(draggableElement);
+            }
+
+            event.dataTransfer.clearData();
+        });
+
+        detailArea.appendChild(header);
+        detailArea.appendChild(detailsContainer);
+        releaseDisplay.appendChild(detailArea);
+    });
+}
+
+
+
+    function updatePersonaDisplay() {
+        const personaInput = document.getElementById('persona');
+        const personaDisplay = document.getElementById('persona_display');
+        personaDisplay.textContent = "Persona: " + personaInput.value;
+    }
+
+
+
+    
+</script>
+<script>
+    var lineDetails = [];
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const customMenu = document.createElement('div');
+        customMenu.className = 'custom-context-menu';
+        customMenu.innerHTML = `<ul>
+                                    <li onclick="drawLine()">Draw Line</li>
+                                    <li onclick="deleteLine()">Delete Line</li>
+                                </ul>`;
+        document.body.appendChild(customMenu);
+    
+        document.getElementById('steps_display').addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Prevent the default context menu
+            if (event.target.classList.contains('step-item')) {
+                customMenu.style.display = 'block';
+                customMenu.style.left = `${event.pageX}px`;
+                customMenu.style.top = `${event.pageY}px`;
+                window.selectedStepItem = event.target; // Save the clicked step item
+            } else {
+                customMenu.style.display = 'none';
+            }
+        });
+
+
+        document.addEventListener('click', function () {
+            customMenu.style.display = 'none'; // Hide the custom context menu
+        });
+    });
+    
+    function addMiddleLine(linePosition, stepIndex, lineElement) {
+    const stepClass = `step-${stepIndex}`;
+
+    // Check for duplicates or invalid entries
+    const existingLineIndex = lineDetails.findIndex(line => line.position === linePosition && line.associatedStep === stepClass);
+    if (existingLineIndex !== -1) {
+        console.error(`Duplicate line for step ${stepClass} at position ${linePosition}. Skipping.`);
+        return;
+    }
+
+    // Create a new line entry
+    const newLine = {
+        position: linePosition,
+        type: 'middle',
+        class: 'middle-line line' + (lineDetails.length + 1),
+        associatedStep: stepClass,
+        lineElement: lineElement, // Store the line element
+    };
+
+    // Check if there's an end line, and insert the new line appropriately
+    const endIndex = lineDetails.findIndex(line => line.type === 'end');
+    if (endIndex !== -1) {
+        // Insert the new middle line just before the end line
+        lineDetails.splice(endIndex, 0, newLine);
+    } else {
+        // If no end line, just push it normally
+        lineDetails.push(newLine);
+    }
+
+    console.log(">>> ADD MIDDLE LINE:", {
+        newLine,
+        lineDetailsUpdated: [...lineDetails],
+    });
+
+    // Update the classes for all middle lines
+    updateMiddleLineClasses();
+    calculateIntervals();
+}
+
+    function clearAllLines() {
+        // Remove all lines from the display
+        const lines = document.querySelectorAll('.vertical-line');
+        lines.forEach(line => line.remove());
+
+        // Clear the line details and intervals data structure
+        lineDetails = [];
+        if (window.intervalSteps) {
+            window.intervalSteps = {};
+        }
+
+        console.log("All lines and data cleared");
+    }
+
+    function updateMiddleLineClasses() {
+        let middleLineIndex = 1;
+        const elements = document.querySelectorAll('.vertical-line');
+
+        lineDetails.forEach((line, index) => {
+            if (line.type === 'middle' && index < elements.length) {  // Check if the element exists
+                line.class = 'middle-line line' + middleLineIndex++;  // Update class in lineDetails
+                elements[index].className = 'vertical-line ' + line.class;  // Safely update the class name
+            }
+        });
+    }
+
+    function drawLine() {
+    if (!window.selectedStepItem) {
+        console.error("No step item selected, cannot draw line.");
+        return;
+    }
+
+    // Ensure that selectedStepItem has a class name that matches the expected format
+    const stepMatch = window.selectedStepItem.className.match(/step-(\d+)/);
+    if (!stepMatch) {
+        console.error("Selected step item does not have the expected 'step-X' class.");
+        return;
+    }
+
+    const stepIndex = stepMatch[1];
+    const rightPane = document.getElementById('right_pane');
+    const selectedRect = window.selectedStepItem.getBoundingClientRect();
+    const linePosition = selectedRect.right + 3; // Offset for visual alignment
+
+    // Create the line element
+    const line = document.createElement('div');
+    line.className = 'vertical-line middle-line';
+    line.style.left = `${linePosition}px`; // Position the line
+    line.style.height = `${rightPane.offsetHeight}px`; // Full height of the right pane
+    line.classList.add('line' + (lineDetails.length + 1)); // Add a unique class
+
+    // Append the line to the right pane
+    rightPane.appendChild(line);
+
+    console.log(">>> DRAW LINE DEBUG:", {
+        lineElement: line,
+        stepIndex,
+        lineDetailsBefore: [...lineDetails],
+    });
+
+    // Add the line to lineDetails
+    addMiddleLine(linePosition, stepIndex, line);
+
+    console.log(">>> DRAW LINE COMPLETED:", {
+        lineDetailsAfter: [...lineDetails],
+    });
+    calculateIntervals();
+    renderActivityIntervals();
+    // Hide the context menu
+    document.querySelector('.custom-context-menu').style.display = 'none';
+}
+function renderActivityIntervalswostorage() {
+    const activitiesDisplay = document.getElementById('activities_display');
+    activitiesDisplay.innerHTML = ''; // Clear previous intervals
+
+    window.intervalSteps.forEach(interval => {
+        const intervalDiv = document.createElement('div');
+        intervalDiv.className = 'activity-interval';
+        intervalDiv.style.width = `${interval.width}px`; // Set the width of the div to the interval width
+        intervalDiv.style.position = 'absolute'; // Position absolutely within the parent
+        intervalDiv.style.left = `${interval.startLine}px`; // Align the left edge with the start line
+        intervalDiv.style.textAlign = 'center'; // Center text inside the div
+        //intervalDiv.textContent = `Steps: ${interval.steps.join(', ')}`;
+        intervalDiv.setAttribute('data-steps-text', `${interval.steps.map(step => step.text).join('|')}`);
+        //intervalDiv.textContent='test';
+        intervalDiv.contentEditable  = true;
+        activitiesDisplay.appendChild(intervalDiv);
+    });
+}
+
+
+var intervalContents = {};
+function renderActivityIntervals() {
+    const activitiesDisplay = document.getElementById('activities_display');
+    activitiesDisplay.innerHTML = ''; // Clear previous intervals
+
+    window.intervalSteps.forEach(interval => {
+        const intervalDiv = document.createElement('div');
+        intervalDiv.className = 'activity-interval';
+        intervalDiv.style.width = `${interval.width}px`;
+        intervalDiv.style.position = 'absolute';
+        intervalDiv.style.left = `${interval.startLine}px`;
+        intervalDiv.style.textAlign = 'center';
+        intervalDiv.style.minHeight = '20px'; // Ensure there's a minimum height for usability
+        intervalDiv.style.padding = '5px'; // Padding for text alignment and visibility
+        intervalDiv.style.border = '1px solid lightgray'; // Light border to indicate editable area
+
+        // Define a unique identifier for each interval based on its start line
+        const intervalId = `interval-${interval.startLine}`;
+        intervalDiv.id = intervalId;
+
+        // Check if there's saved content for this interval in the global variable
+        if (intervalContents[intervalId]) {
+            intervalDiv.textContent = intervalContents[intervalId];
+        } else {
+            // Display default text if no saved content and no steps are present
+            if (interval.steps.length === 0) {
+                intervalDiv.textContent = 'Click to add steps...'; // Placeholder-like text
+            } 
+        }
+
+        intervalDiv.contentEditable = true;
+
+        // Handle empty states interactively
+        intervalDiv.addEventListener('focus', function() {
+            if (intervalDiv.textContent === 'Click to add steps...') {
+                intervalDiv.textContent = ''; // Clear placeholder text on focus
+            }
+        });
+
+        intervalDiv.addEventListener('blur', function() {
+            if (intervalDiv.textContent.trim() === '') {
+                intervalDiv.textContent = 'Click to add steps...'; // Reset to placeholder text if left empty
+            }
+        });
+
+        // Save changes to the global variable
+        intervalDiv.addEventListener('input', function() {
+            intervalContents[intervalId] = intervalDiv.textContent.trim();
+        });
+
+        activitiesDisplay.appendChild(intervalDiv);
+    });
+}
+
+
+
+    function deleteLine() {
+    if (!window.selectedStepItem) {
+        console.error("No step item selected, cannot delete line.");
+        return;
+    }
+
+    // Get the step index from the selected step item
+    const stepIndexMatch = window.selectedStepItem.className.match(/step-(\d+)/);
+    if (!stepIndexMatch) {
+        console.error("Selected step item does not have a valid 'step-X' class.");
+        return;
+    }
+
+    const stepIndex = stepIndexMatch[1];
+    const associatedStepClass = `step-${stepIndex}`;
+
+    // Find the line associated with the selected step
+    let lineIndex = lineDetails.findIndex(line => line.associatedStep === associatedStepClass);
+
+    // Debug output
+    console.log(`> === Attempting to delete line:`, {
+        stepIndex,
+        associatedStepClass,
+        lineIndex,
+        lineDetails
+    });
+
+    if (lineIndex === -1) {
+        console.log(`No line directly associated with ${associatedStepClass}. Searching for the nearest line.`);
+        lineIndex = lineDetails.findIndex(line => {
+            const stepRect = window.selectedStepItem.getBoundingClientRect();
+            return line.position > stepRect.right;
+        });
+    }
+    console.log(`>>> === Found line index: ${lineIndex}`);
+    // If a valid line is found, delete it
+    if (lineIndex > -1) {
+        const lineToDelete = lineDetails[lineIndex].lineElement;
+        if (lineToDelete && lineToDelete.parentNode) {
+            lineToDelete.parentNode.removeChild(lineToDelete); // Remove the line from DOM
+            lineDetails.splice(lineIndex, 1); // Remove the line's details
+            console.log(`Line associated with ${associatedStepClass} deleted.`, { lineIndex, lineDetails });
+        } else {
+            console.error("Line element not found or already removed.");
+        }
+    } else {
+        console.log("No line found for deletion.");
+    }
+    console.log(">>> === Remaining line details:", lineDetails, " === <<<");
+
+    // Update remaining lines and intervals
+    updateMiddleLineClasses();
+    calculateIntervals();
+
+    // Hide the context menu after the operation
+    document.querySelector('.custom-context-menu').style.display = 'none';
+}
+
+
+function redrawLines() {
+    const rightPane = document.getElementById('right_pane');
+    rightPane.querySelectorAll('.vertical-line').forEach(line => line.remove());  // Clear existing lines
+
+    let updatedLineDetails = [];  // Create a new array to store updated line details
+
+    lineDetails.forEach(detail => {
+        const stepElement = document.querySelector(`.${detail.associatedStep}`);
+        if (stepElement) {
+            const rect = stepElement.getBoundingClientRect();
+            const newLinePosition = rect.right + 3;  // Assuming lines are drawn to the right of the step
+
+            const line = document.createElement('div');
+            line.className = 'vertical-line ' + detail.class;  // Maintain original class to keep styling and identification
+            line.style.left = `${newLinePosition}px`;
+            line.style.height = `${rightPane.offsetHeight}px`;  // Assuming full height is desired
+            rightPane.appendChild(line);
+
+            // Update detail to reflect new position and the line element
+            updatedLineDetails.push({
+                ...detail,
+                position: newLinePosition,
+                lineElement: line  // Store the new line element
+            });
+        }
+    });
+
+    // Update global lineDetails with the new, correct details
+    lineDetails = updatedLineDetails;
+}
+
+
+
+
+
+    window.addEventListener('resize', () => {
+        setTimeout(redrawLines, 100); // Delay allows the layout to stabilize
+    });
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        drawBoundaryLines();
+        window.addEventListener('resize', drawBoundaryLines); // Redraw lines on window resize
+    });
+
+    function drawBoundaryLines() {
+        const stepsDisplay = document.getElementById('steps_display');
+        const stepsRect = stepsDisplay.getBoundingClientRect();
+
+        // Remove existing lines if any
+        const existingLines = document.querySelectorAll('.boundary-line');
+        existingLines.forEach(line => line.remove());
+
+        // Start line
+        createBoundaryLine(stepsRect.left, 'start-line');
+        
+        // End line
+        createBoundaryLine(stepsRect.right, 'end-line');
+        
+
+        
+    }
+
+    function createBoundaryLine(positionX, className) {
+        const rightPane = document.getElementById('right_pane');
+        const line = document.createElement('div');
+        line.className = `vertical-line boundary-line ${className}`;
+        line.style.position = 'absolute';
+        line.style.left = `${positionX}px`;
+        line.style.height = `${rightPane.offsetHeight}px`;
+        line.style.borderLeft = '2px solid lightgrey';
+        line.style.pointerEvents = 'none'; // Make sure the line does not interfere with clicks
+        rightPane.appendChild(line);
+        if (className === 'start-line') {
+            lineDetails.push({ position: positionX, type: 'start', class: 'start-line line0' });
+        }
+        if (className === 'end-line') {
+            lineDetails.push({ position: positionX, type: 'end', class: 'end-line line1000'  });
+        }
+        
+        
+
+        console.log(lineDetails);
+    }
+ 
+
+function collectSteps(startPos, endPos) {
+    // Assuming step items have position data, this function collects steps that fall between the two line positions
+    const stepsDisplay = document.getElementById('steps_display');
+    const stepItems = stepsDisplay.getElementsByClassName('step-item');
+    const steps = [];
+
+    for (let item of stepItems) {
+        const rect = item.getBoundingClientRect();
+        if (rect.left >= startPos && rect.right <= endPos) {
+            steps.push(item.innerText.trim()); // Add trimmed text of the step
+        }
+    }
+    return steps;
+}
+function collectStepsNew(startPos, endPos) {
+    // Assuming step items have position data, this function collects steps that fall between the two line positions
+    const stepsDisplay = document.getElementById('steps_display');
+    const stepItems = stepsDisplay.getElementsByClassName('step-item');
+    const steps = [];
+
+    for (let item of stepItems) {
+        const rect = item.getBoundingClientRect();
+        if (rect.left >= startPos && rect.right <= endPos) {
+            // Assuming each item has an ID in the format "step-X"
+            let stepId = item.id; // Retrieve the ID of the step item
+            let stepText = item.innerText.trim(); // Retrieve the text of the step
+            steps.push({ id: stepId, text: stepText }); // Push both ID and text as an object into the array
+        }
+    }
+    return steps;
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    enableDragAndDrop();
+});
+
+function enableDragAndDrop() {
+    const containers = [document.getElementById('details_display'), document.getElementById('release-area')];
+    containers.forEach(container => {
+        if (!container) {
+            console.error("Container not found for drag and drop setup.");
+            return;
+        }
+        makeItemsDraggable(container);
+        setupDropHandling(container);
+    });
+}
+
+function makeItemsDraggable(container) {
+    container.querySelectorAll('.step-item').forEach(item => {
+        item.setAttribute('draggable', 'true');
+        item.addEventListener('dragstart', handleDragStart);
+    });
+}
+
+function handleDragStart(event) {
+    event.dataTransfer.setData("text", event.target.id);
+    console.log("Dragging element with ID:", event.target.id);
+}
+
+function setupDropHandling(container) {
+    container.addEventListener('dragover', handleDragOver);
+    container.addEventListener('drop', handleDrop.bind(null, container));
+}
+
+function handleDragOver(event) {
+    event.preventDefault(); // Necessary to allow dropping
+    event.dataTransfer.dropEffect = 'move'; // Visual feedback for drag
+}
+
+
+function addNewDetailItem(container, text) {
+    const uniqueId = `detail-${new Date().getTime()}`; // Unique ID based on timestamp
+    const newDetail = createDetailItem(uniqueId, text);
+    container.appendChild(newDetail);
+}
+
+function createDetailItem(id, text) {
+    const detail = document.createElement('div');
+    detail.className = 'step-item';
+    detail.id = id;
+    detail.textContent = text;
+    detail.setAttribute('draggable', 'true');
+    detail.addEventListener('dragstart', handleDragStart);
+    return detail;
+}
+
+
+  
+function calculateIntervals1() {
+    lineDetails.sort((a, b) => a.position - b.position); // Sort based on position
+
+    const intervalDetails = [];
+
+    for (let i = 0; i < lineDetails.length - 1; i++) {
+        const startLine = lineDetails[i];
+        const endLine = lineDetails[i + 1];
+        const intervalId = `interval-${startLine.class.split('line')[1]}-${endLine.class.split('line')[1]}`;
+
+        const intervalWidth = endLine.position - startLine.position; // Width between lines
+
+        const steps = collectSteps(startLine.position, endLine.position); // Collect steps in this interval
+
+        if (steps.length > 0) {
+            intervalDetails.push({
+                intervalId: intervalId,
+                startLine: startLine.position,
+                endLine: endLine.position,
+                startLineNo: startLine.class.split('line')[1],
+                endLineNo: endLine.class.split('line')[1],
+                steps: steps,
+                width: intervalWidth
+            });
+        }
+    }
+
+    window.intervalSteps = intervalDetails; // Store intervals globally
+    console.log("All intervals calculated:", intervalDetails);
+}
+
+
+
+function calculateIntervals() {
+    lineDetails.sort((a, b) => a.position - b.position); // Sort based on position
+
+    const intervalDetails = [];
+
+    for (let i = 0; i < lineDetails.length - 1; i++) {
+        const startLine = lineDetails[i];
+        const endLine = lineDetails[i + 1];
+        const intervalWidth = endLine.position - startLine.position; // Width between lines
+
+        const steps = collectStepsNew(startLine.position, endLine.position); // Collect steps in this interval
+
+        if (steps.length > 0) {
+            intervalDetails.push({
+                startLine: startLine.position,
+                endLine: endLine.position,
+                startLineNo: startLine.class.split('line')[1],
+                endLineNo: endLine.class.split('line')[1],
+                steps: steps,
+                width: intervalWidth
+            });
+        }
+    }
+
+    window.intervalSteps = intervalDetails; // Store intervals globally
+    renderDropZones(); // Call function to render drop zones based on intervals
+}
+
+function renderDropZones() {
+    // Get all release containers dynamically from the release-area
+    const releaseContainers = document.querySelectorAll('.release-container');
+
+    releaseContainers.forEach(container => {
+        const releaseId = container.id; // Unique identifier for each release area
+        container.innerHTML = ''; // Optionally clear existing zones for fresh setup
+
+        if (lineDetails.length > 1) {
+            lineDetails.sort((a, b) => a.position - b.position); // Ensure lines are sorted by position
+
+            for (let i = 0; i < lineDetails.length - 1; i++) {
+                const startLine = lineDetails[i];
+                const endLine = lineDetails[i + 1];
+                const intervalWidth = endLine.position - startLine.position;
+
+                const dropZone = document.createElement('div');
+                dropZone.className = 'drop-zone';
+                dropZone.style.width = `${intervalWidth}px`;
+                dropZone.style.left = `${startLine.position}px`; // Set left position based on start line
+                dropZone.textContent = `Drop items for interval ${i + 1} in ${releaseId}`;
+                dropZone.id = `drop-zone-${releaseId}-${i}`; // Unique ID for each zone within each release
+                container.appendChild(dropZone);
+            }
+        }
+
+        setupDropZones(container); // Setup drop handling after zones are created within this container
+    });
+}
+
+function setupDropZones(container) {
+    const dropZones = container.querySelectorAll('.drop-zone');
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', event => {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+        });
+
+        zone.addEventListener('drop', event => {
+            event.preventDefault();
+            const data = event.dataTransfer.getData("text");
+            const draggableElement = document.getElementById(data);
+            if (draggableElement) {
+                zone.appendChild(draggableElement);
+                draggableElement.style.position = 'static'; // Reset positioning within the drop zone
+            }
+        });
+    });
+}
+
+
+function handleDragOver(event) {
+    event.preventDefault(); // Necessary to allow dropping
+    event.dataTransfer.dropEffect = 'move'; // Visual feedback for drag
+}
+
+</script>
+    
+
+{% endblock content %}

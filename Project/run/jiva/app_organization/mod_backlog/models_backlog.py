@@ -11,7 +11,8 @@ from app_organization.mod_backlog_type.models_backlog_type import *
 
 # Core Hierarchical System Database
 class Backlog(MPTTModel, BaseModelImpl):
-  
+    persona = models.ForeignKey('app_organization.Persona', on_delete=models.CASCADE,
+                                related_name="persona_backlogs", null=True, blank=True)
     
     pro = models.ForeignKey("app_organization.Project", 
                                        on_delete=models.SET_NULL, 
@@ -97,7 +98,7 @@ class StoryMapping(BaseModelTrackDateImpl):
     story_name = models.CharField(max_length=256, null=True, blank=True)
     story_id = models.PositiveIntegerField()  # ID of the story being mapped
     release_id = models.PositiveIntegerField()  # ID of the release
-    iteration_id = models.PositiveIntegerField()  # ID of the iteration
+    iteration_id = models.PositiveIntegerField(null=True, blank=True)  # ID of the iteration
     activity_id = models.PositiveIntegerField()  # ID of the activity
     step_id = models.PositiveIntegerField()  # ID of the step
     persona_id = models.PositiveIntegerField()  # ID of the persona
@@ -109,4 +110,4 @@ class StoryMapping(BaseModelTrackDateImpl):
         verbose_name_plural = 'Story Mappings'
 
     def __str__(self):
-        return f"Story {self.story_id} mapped to Release {self.release_id}, Iteration {self.iteration_id}, Activity {self.activity_id}, Step {self.step_id}, Persona {self.persona_id}"
+        return f"Story {self.story_id} mapped to Release {self.release_id}, Activity {self.activity_id}, Step {self.step_id}, Persona {self.persona_id}"

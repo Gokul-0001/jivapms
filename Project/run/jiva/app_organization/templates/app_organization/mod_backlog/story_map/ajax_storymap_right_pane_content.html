@@ -1,0 +1,74 @@
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+
+<table class="table table-bordered">
+    <!-- Activities Row -->
+    <tr>
+        <td>
+            <div class="content-header">Activities</div>
+        </td>
+        {% for activity in activities %}
+            <td colspan="25">
+                <div class="step-item" draggable="true" id="activity-{{ activity.id }}"
+                     {% if activity.name == 'Default Activity' %}data-default-activity-id="{{ activity.id }}"{% endif %}>
+                    {{ activity.id }}: {{ activity.name }}
+                </div>
+            </td>
+        {% endfor %}
+    </tr>
+
+    <!-- Steps Row -->
+    <tr>
+        <td>
+            <div class="content-header">Steps</div>
+        </td>
+        {% for activity in activities %}
+            {% for step in activity.activity_steps.all|filter_active %}
+                <td>
+                    <div class="step-item" draggable="true" id="step-{{ step.id }}">
+                        {{ step.id }}: {{ step.name }}
+                    </div>
+                </td>
+            {% endfor %}
+        {% endfor %}
+    </tr>
+
+    <!-- Backlog Row -->
+    <tr>
+        <td>
+            <div class="content-header">Backlog</div>
+        </td>
+        <td colspan="100">
+            {% for backlog_item in backlog %}
+                <div class="step-item draggable-backlog" draggable="true" id="backlog-{{ backlog_item.id }}">
+                    {{ backlog_item.id }}: {{ backlog_item.name }}
+                </div>
+            {% endfor %}
+        </td>
+    </tr>
+
+    <!-- Releases Rows -->
+    {% for release in releases %}
+    <tr>
+        <td>
+            <div class="content-header">{{ release.name }}</div>
+        </td>
+        {% for activity in activities %}
+            {% for step in activity.activity_steps.all|filter_active %}
+                <td class="release-drop-zone"
+                    data-release-id="{{ release.id }}"
+                    data-activity-id="{{ activity.id }}"
+                    data-step-id="{{ step.id }}"
+                    ondragover="allowDrop(event)"
+                    ondrop="drop(event)">
+                    <!-- Drop zone for backlog items -->
+                </td>
+            {% endfor %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>

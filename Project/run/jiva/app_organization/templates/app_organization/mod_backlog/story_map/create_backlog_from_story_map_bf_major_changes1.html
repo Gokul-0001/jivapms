@@ -21,7 +21,7 @@
     
     #right_pane {
       float: left;
-      width: 100%;
+      width: 85%;
       height: 100vh;
       overflow-y: auto;
       padding: 10px;
@@ -160,244 +160,90 @@
         background-color: #e6ffed;
     }
     </style>
-
-<style>
-    /* Add Step Button Styles */
-.add-step-button {
-    background-color: #f9f9f9; /* Very light color */
-    border: 1px solid #ccc;
-    color: #555; /* Darker gray for the "+" symbol */
-    padding: 3px 6px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin-top: 5px;
-    border-radius: 20%;
-    cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
-}
-
-.add-step-button:hover {
-    background-color: #e6e6e6; /* Slightly darker on hover */
-    border-color: #999;
-}
-
-/* Optional: Step Item Styles */
-.step-item {
-    padding: 5px;
-    margin: 2px 0;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: grab;
-}
-
-.step-item:active {
-    cursor: grabbing;
-}
-</style>
 <div class="content-wrapper">
    
     <!-- PAGE BEGIN -->
    
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid-width">
-           
-
-            <!-- LEFT PANE -->
-       
-<!-- RIGHT PANE -->
-<div id="right_pane">
-    
-<table class="table table-borderless">
-    <tr>
-        <td colspan="100">
-            <div class="persona_display">
-                <b class="h4">Persona: </b>
-                <span id="persona_name" ondblclick="makeEditable(this)"
-                onblur="save_element_text(this, '{{persona.id}}',  'app_organization', 'Persona', 'name')"                    
-                >{% if persona.name != '' %}{{persona.name}}{% else %}Enter Persona name here ...{% endif %}</span>
-            </div>
-            <td width="20%">
-                <div class="text-end">
+            <div class="row">
+                <div class="col col-md-10 persona_display">
+                    <b class="h4">Persona: </b>
+                    <span id="persona_name" ondblclick="makeEditable(this)"
+                    onblur="save_element_text(this, '{{persona.id}}',  'app_organization', 'Persona', 'name')"                    
+                    >{% if persona.name != '' %}{{persona.name}}{% else %}Enter Persona name here ...{% endif %}</span>
+                </div>
+                <div class="col col-md-2 text-end">
                     <a href="{% url 'edit_persona' org_id persona.id %}" class="btn btn-sm btn-primary">Persona</a>
                     &nbsp;&nbsp;
                     <a href="{% url 'list_personae' org_id %}" class="btn btn-sm btn-primary">List Personae</a>
                 </div>
-            </td>
-        </td>
-    </tr>
-    <!-- Activities Row -->
-    <tr>
-        <td width="3%">
-            <div class="content-header">Activities</div>
-        </td>
-        {% for activity in activities %}
-            <td colspan="100">
-                <div class="step-item" draggable="true" id="activity-{{ activity.id }}"
-                     {% if activity.name == 'Default Activity' %}data-default-activity-id="{{ activity.id }}"{% endif %}>
-                    {{ activity.id }}: {{ activity.name }}
+            </div>
+
+            <!-- LEFT PANE -->
+        <div id="left_pane">
+            <div class="container-fluid">   
+                <!-- Input Fields -->
+                <form action="" method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Activities: 
+                            <input type="text" size="20" name="activity" id="activity">
+                            <input type="hidden" name="persona_id" value="{{persona.id}}">
+                            <input type="hidden" name="project_id" value="{{pro_id}}">
+                            &nbsp;&nbsp;
+                            <input type="submit" name="submit_activity" id="submit_activity" value="Add Activity">
+                        </div>
+                      
+                    </div>
                 </div>
-            </td>
-        {% endfor %}
-    </tr>
-
-    <!-- Steps Row -->
-    <tr id="steps-row">
-        {% include 'app_organization/mod_backlog/story_map/partial_steps_row.html' %}
-    </tr>
-
-    <!-- Backlog Row -->
-    <tr>
-        <td width="3%">
-            <div class="content-header">Backlog</div>
-        </td>
-        <td colspan="100">
-            {% for backlog_item in backlog %}
-                <div class="step-item draggable-backlog" draggable="true" id="backlog-{{ backlog_item.id }}">
-                    {{ backlog_item.id }}: {{ backlog_item.name }}
+                </form>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Steps</div>
+                        <textarea id="steps" placeholder="Enter Steps, each on a new line"></textarea>
+                    </div>
                 </div>
-            {% endfor %}
-        </td>
-        <td>
+                <form action="" method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Details: 
+                        <input type="text" size="20" name="detail" id="detail">
+                        <input type="hidden" name="persona_id" value="{{persona.id}}">
+                        <input type="hidden" name="project_id" value="{{pro_id}}">
+                        &nbsp;&nbsp;
+                        <input type="submit" name="submit_detail" id="submit_detail" value="Add Detail">
+                        </div>  
+                    </div>
+                </div>
+                </form>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Release</div>
+                        {% for release in releases %}
+                            <li>{{release.name}}</li>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANE -->
+        <div id="right_pane">
+           {% include 'app_organization/mod_backlog/story_map/ajax_storymap_right_pane_content.html' %}
+        </div>
 
-        </td>
-        <td>
 
-        </td>
-    </tr>
 
-    <!-- Releases Rows -->
-    {% for release in releases %}
-    <tr>
-        <td width="3%">
-            <div class="content-header">{{ release.name }}</div>
-        </td>
-        {% for activity in activities %}
-            {% for step in activity.activity_steps.all|filter_active %}
-                <td class="release-drop-zone"
-                    data-release-id="{{ release.id }}"
-                    data-activity-id="{{ activity.id }}"
-                    data-step-id="{{ step.id }}"
-                    ondragover="allowDrop(event)"
-                    ondrop="drop(event)">
-                    <!-- Drop zone for backlog items -->
-                </td>
-            {% endfor %}
-        {% endfor %}
-        <td>
-
-        </td>
-        <td>
-            
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-</div>
-
+        </div>
+    </div>
+    <!-- PAGE ENDS-->
+    
 
 
 </div>
-</div>
-<!-- PAGE ENDS-->
-</div>
-
-<script>
-// vars
-var parentIDfromDefaultActivity;
-// Attach event listeners to all existing add-step buttons
-document.querySelectorAll('.add-step-button').forEach(function(button) {
-    button.addEventListener('click', handleAddStep);
-});
-// Function to handle adding a new step
-function handleAddStep(event) {
-    const button = event.target;
-    const stepsContainer = button.parentElement;
-    const activityId = stepsContainer.getAttribute('data-activity-id');
-    var defaultActivityElement = document.querySelector('[data-default-activity-id]');
-    if (defaultActivityElement) {
-        parentIDfromDefaultActivity = defaultActivityElement.getAttribute('data-default-activity-id');
-    } else {
-        console.error("No default activity found.");
-        return; // Skip this iteration if no parent ID is found
-    }
-
-    // AJAX call to save each step
-    $.ajax({
-        url: '/common/common_ajax/ajax_create_child_element/',
-        type: 'POST',
-        data: {
-            'csrfmiddlewaretoken': "{{ csrf_token }}",
-            'app_name': 'app_organization',
-            'parent_model': 'Activity',
-            'parent_id': parentIDfromDefaultActivity,
-            'parent_model_key': 'activity',
-            'child_model': 'Step',
-            'field_name': 'name',
-            'text': '',
-        },
-        dataType: 'json',
-        success: function(data) {
-            if (data.status === 'success') {               
-                console.log('Success:', data);
-                refreshStepsRow();
-            } else {
-                console.error('Error:', data.message);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX Error:', status, error);
-        }
-    });
-
-
-} // end handleAddStep
-
-
- // Function to refresh the steps row
- function refreshStepsRow() {
-    $.ajax({
-        url: "{% url 'ajax_storymap_refresh_steps_row' %}",
-        type: 'POST',
-        data: {
-            'csrfmiddlewaretoken': "{{ csrf_token }}",
-            'pro_id': {{ pro_id }},
-            'persona_id': {{ persona.id }},
-
-        },
-        dataType: 'json',
-        success: function (data) {
-            if (data.status === 'success') {
-                const stepsRow = document.getElementById('steps-row');
-                stepsRow.innerHTML = data.html;
-
-                // Reattach event listeners for the "+" buttons
-                document.querySelectorAll('.add-step-button').forEach(function (button) {
-                    button.addEventListener('click', handleAddStep);
-                });
-
-                console.log("Steps row refreshed successfully.");
-            } else {
-                console.error("Error refreshing steps row:", data.message);
-                alert("Failed to refresh steps row: " + data.message);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error("AJAX Error:", status, error);
-            alert("An error occurred while refreshing the steps row.");
-        }
-    });
-} // end refreshStepsRow
-
-</script>
-
-
-
-
-
-
 <script>
     // Allow drop by preventing default behavior
     function allowDrop(event) {
@@ -483,6 +329,114 @@ function drop(event) {
     });
 
 }
+    
+</script>
+    
+
+    
+<script>
+var parentIDfromDefaultActivity;
+document.querySelectorAll('textarea').forEach(textarea => {
+    textarea.addEventListener('input', function(event) {
+        if (event.target.id === 'steps') {
+            updateDisplay(event);
+        } 
+    });
+});
+function updateDisplay(event) {
+    // Check if the Enter key was pressed
+    if (event.key === "Enter") {
+        event.preventDefault(); // Prevent the default action (i.e., avoid entering a newline)
+
+        const targetId = event.target.id;
+        const display = document.getElementById(`${targetId}_display`);
+        const lines = event.target.value.split('\n');
+        //display.innerHTML = ''; // Clear previous content
+
+        lines.forEach((line, index) => {
+            if (line.trim() !== '') {
+                const div = document.createElement('div');
+                div.className = 'step-item step-' + (index + 1);
+                div.setAttribute('draggable', 'true');
+                div.textContent = line.trim();
+
+                
+                var defaultActivityElement = document.querySelector('[data-default-activity-id]');
+                if (defaultActivityElement) {
+                    parentIDfromDefaultActivity = defaultActivityElement.getAttribute('data-default-activity-id');
+                } else {
+                    console.error("No default activity found.");
+                    return; // Skip this iteration if no parent ID is found
+                }
+
+                div.addEventListener('dragstart', function(event) {
+                    event.dataTransfer.setData("text", event.target.id);
+                });
+
+                // AJAX call to save each step
+                $.ajax({
+                    url: '/common/common_ajax/ajax_create_child_element/',
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': "{{ csrf_token }}",
+                        'app_name': 'app_organization',
+                        'parent_model': 'Activity',
+                        'parent_id': parentIDfromDefaultActivity,
+                        'parent_model_key': 'activity',
+                        'child_model': 'Step',
+                        'field_name': 'name',
+                        'text': line.trim(),
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.status === 'success') {
+                            console.log('Success:', data);
+                            div.id = `${targetId}_item_${index}_${data.created_id}`;
+                            div.textContent += ' ID: ' + data.created_id;
+                            //display.appendChild(div);
+
+                            // Fetch the updated right pane
+                            refreshRightPane();
+                        } else {
+                            console.error('Error:', data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', status, error);
+                    }
+                });
+            }
+        });
+        // Optionally clear the input after processing
+        event.target.value = '';
+    }
+}
+
+// Attach this function to the keydown event of the textarea
+document.getElementById('steps').addEventListener('keydown', updateDisplay);
+// Function to refresh the right pane
+function refreshRightPane() {
+    $.ajax({
+        url: '/org/backlog/ajax_storymap_right_pane_content/',
+        type: 'POST',
+        data : {
+        'csrfmiddlewaretoken': "{{ csrf_token }}",
+        'pro_id': {{pro_id}},
+        'persona_id': {{persona.id}},
+        'default_activity_id': parentIDfromDefaultActivity,
+        },
+        dataType: 'json',
+        success: function(response) {
+            // Replace the right pane content with the updated HTML
+            console.log(response);
+            $('#right_pane').html(response.html);
+        },
+        error: function(xhr, status, error) {
+            console.error('Failed to refresh right pane:', status, error);
+        }
+    });
+}
+
 </script>
 <script>
     function makeEditable(element) {

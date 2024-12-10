@@ -1,0 +1,368 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css_wo_sidebar.html' %}
+
+<style>
+    #left_pane {
+      float: left;
+      width: 15%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+      border-right: 1px solid #ccc;
+    }
+    
+    #right_pane {
+      float: left;
+      width: 85%;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      resize: none;
+    }
+
+    input[type="text"] {
+      height: 30px;
+    }
+
+    textarea {
+      height: 80px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .content-header1 {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+
+    .display-container-persona {
+        margin-top: 10px;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+
+
+    .content-area {
+        display: flex;
+        align-items: center; /* Align content vertically in the middle */
+        margin-bottom: 10px;
+    }
+
+    .content-header {
+        font-weight: bold;
+        width: 20px;
+        margin-right: 10px;
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .display-container {
+        flex-grow: 1;
+        margin-top: 10px;
+        padding: 10px;
+        overflow-y: auto;
+        background-color: #f4f4f4;
+        max-height: 150px; /* Set minimum height */
+    }
+    
+    .details-container {
+        min-height: 300px;
+    }
+    .release-container {
+        min-height: 200px;
+    }
+
+    #persona {
+        z-index: 1;
+    }
+
+    /** testing - start */
+
+    .step-item {
+        display: inline-block;
+        min-width: 50px;
+        max-width: 120px;
+        background: #eef;
+        border: 1px solid #bbb;
+        padding: 5px;
+        margin-right: 10px;
+        font-size: 0.7rem;
+        white-space: normal; /* Allow text to wrap within the item */
+        overflow: hidden; /* Prevent text from spilling out */
+        text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+        vertical-align: top;
+        box-sizing: border-box;
+        word-wrap: break-word; /* Break long words onto the next line */
+    }
+    .step-item:last-child {
+        margin-right: 0; /* Remove margin for the last item to use the space effectively */
+    }
+
+
+    .vertical-line {
+        position: absolute; /* Positioned absolutely relative to a positioned ancestor */
+        border-left: 2px solid black; /* Solid black line of 2px */
+        height: calc(100% - 130px); /* Adjust if there's any offset needed */
+        top: 130px; /* Offset from the top if needed */
+        pointer-events: none; /* Prevent the line from capturing clicks */
+    }
+</style>
+
+
+<style>
+    .custom-context-menu {
+        position: absolute;
+        z-index: 1000;
+        width: 150px;
+        background: white;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 5px #888888;
+        display: none; /* Initially hidden */
+    }
+
+    .custom-context-menu ul {
+        list-style: none;
+        padding: 5px 0;
+        margin: 0;
+    }
+
+    .custom-context-menu li {
+        padding: 8px 10px;
+        cursor: pointer;
+    }
+
+    .custom-context-menu li:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="contentbar mb-5" id="contentbar">
+        <!-- LEFT PANE -->
+        <div id="left_pane">
+            <div class="container-fluid">   
+                <!-- Input Fields -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content-header1">Persona</div>
+                        <input type="text" id="persona" placeholder="Enter Persona" oninput="updatePersonaDisplay()">
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Activities</div>
+                        <textarea id="activities" placeholder="Enter Activities, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Steps</div>
+                        <textarea id="steps" placeholder="Enter Steps, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Details</div>
+                        <textarea id="details" placeholder="Enter Details, each on a new line"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="content-header1">Release</div>
+                        <textarea id="release" placeholder="Enter Release Details, each on a new line"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANE -->
+        <div id="right_pane">
+            <div class="container-fluid">
+                <!-- Display Areas -->
+                <div class="content-area">
+                    
+                    <div class="display-container-persona" id="persona_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Activities</div>
+                    <div class="display-container" id="activities_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Steps</div>
+                    <div class="display-container" id="steps_display"></div>
+                </div>
+                <div class="content-area">
+                    <div class="content-header">Immediate</div>
+                    <div class="display-container" id="details_display"></div>
+                </div>
+                <div id="release-area">
+                   
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', function(event) {
+            if (event.target.id === 'release') {
+                updateReleaseDisplay(event.target);
+            } else {
+                updateDisplay(event);
+            }
+        });
+    });
+
+    function updateDisplay(event) {
+        const targetId = event.target.id;
+        const display = document.getElementById(`${targetId}_display`);
+        const lines = event.target.value.split('\n');
+        display.innerHTML = ''; // Clear previous content
+
+        const numItems = lines.filter(line => line.trim() !== '').length;
+        const paddingAndBorders = 15; // Adjust this based on actual padding and borders used
+        const itemWidth = (display.offsetWidth - numItems * paddingAndBorders) / numItems; // Adjust for margins
+
+        lines.forEach(line => {
+            if (line.trim() !== '') {
+                const div = document.createElement('div');
+                div.className = 'step-item';
+                div.style.width = `${itemWidth}px`; // Apply calculated width
+                div.textContent = line.trim();
+                display.appendChild(div);
+            }
+        });
+    }
+    function updatePersonaDisplay() {
+        const personaInput = document.getElementById('persona');
+        const personaDisplay = document.getElementById('persona_display');
+        personaDisplay.textContent = "Persona: " + personaInput.value;
+    }
+
+
+
+    function updateReleaseDisplay(textarea) {
+        const releaseDisplay = document.getElementById('release-area');
+        releaseDisplay.innerHTML = ''; // Clear existing display areas
+
+        const releases = textarea.value.split('\n').filter(line => line.trim() !== '');
+        releases.forEach(releaseName => {
+            const detailArea = document.createElement('div');
+            detailArea.className = 'content-area';
+            const header = document.createElement('div');
+            header.className = 'content-header';
+            header.textContent = releaseName;
+            const detailsContainer = document.createElement('div');
+            detailsContainer.className = 'display-container release-container';
+            detailsContainer.id = `details_for_${releaseName}`;
+            detailArea.appendChild(header);
+            detailArea.appendChild(detailsContainer);
+            releaseDisplay.appendChild(detailArea);
+        });
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const customMenu = document.createElement('div');
+        customMenu.className = 'custom-context-menu';
+        customMenu.innerHTML = `<ul>
+                                    <li onclick="drawLine()">Draw Line</li>
+                                    <li onclick="deleteLine()">Delete Line</li>
+                                </ul>`;
+        document.body.appendChild(customMenu);
+    
+        document.getElementById('steps_display').addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Prevent the default context menu
+            if (event.target.classList.contains('step-item')) {
+                customMenu.style.display = 'block';
+                customMenu.style.left = `${event.pageX}px`;
+                customMenu.style.top = `${event.pageY}px`;
+                window.selectedStepItem = event.target; // Save the clicked step item
+            } else {
+                customMenu.style.display = 'none';
+            }
+        });
+    
+        document.addEventListener('click', function () {
+            customMenu.style.display = 'none'; // Hide the custom context menu
+        });
+    });
+    
+    function drawLine() {
+        const rightPane = document.getElementById('right_pane');
+        const selectedRect = window.selectedStepItem.getBoundingClientRect();
+        const rightPaneRect = rightPane.getBoundingClientRect();
+        // Calculate the correct position considering the left pane offset and the right pane's own position
+        const linePosition = selectedRect.right + 3; // +3 pixels for visual offset from the step-item
+    
+        const line = document.createElement('div');
+        line.className = 'vertical-line';
+        line.style.left = `${linePosition}px`; // Set the left style to position the line correctly
+        line.style.height = `${rightPane.offsetHeight}px`; // Full height of the right pane
+        rightPane.appendChild(line);
+    
+        document.querySelector('.custom-context-menu').style.display = 'none'; // Hide the menu after drawing the line
+    }
+    
+    function deleteLine() {
+        const lines = document.querySelectorAll('.vertical-line');
+        if (lines.length > 0) {
+            lines[lines.length - 1].remove(); // Remove the last line added
+        }
+        document.querySelector('.custom-context-menu').style.display = 'none'; // Hide the menu after deleting the line
+    }
+
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        drawBoundaryLines();
+        window.addEventListener('resize', drawBoundaryLines); // Redraw lines on window resize
+    });
+
+    function drawBoundaryLines() {
+        const stepsDisplay = document.getElementById('steps_display');
+        const stepsRect = stepsDisplay.getBoundingClientRect();
+
+        // Remove existing lines if any
+        const existingLines = document.querySelectorAll('.boundary-line');
+        existingLines.forEach(line => line.remove());
+
+        // Start line
+        createBoundaryLine(stepsRect.left, 'start-line');
+        // End line
+        createBoundaryLine(stepsRect.right, 'end-line');
+    }
+
+    function createBoundaryLine(positionX, className) {
+        const rightPane = document.getElementById('right_pane');
+        const line = document.createElement('div');
+        line.className = `vertical-line boundary-line ${className}`;
+        line.style.position = 'absolute';
+        line.style.left = `${positionX}px`;
+        line.style.height = `${rightPane.offsetHeight}px`;
+        line.style.borderLeft = '2px solid lightgrey';
+        line.style.pointerEvents = 'none'; // Make sure the line does not interfere with clicks
+        rightPane.appendChild(line);
+    }
+
+</script>
+    
+
+{% endblock content %}

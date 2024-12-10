@@ -1034,6 +1034,8 @@ def ajax_recieve_story_mapped_details(request):
         step_id = data['step_id']
         persona_id = data['persona_id']
         
+        if iteration_id == '-1':
+            iteration_id = None
         
         print(f">>> === Project ID: {project_id} === <<<")
         print(f">>> === Story ID: {story_id} === <<<")
@@ -1062,15 +1064,19 @@ def ajax_recieve_story_mapped_details(request):
                 }
             )
         #StoryMapping.objects.all().delete()
+        all_stories = StoryMapping.objects.filter(active=True)
+        logger.debug(f">>> === Story Mapping: {all_stories} === <<<")
         if created:
             message = "Story mapped successfully."
         else:
             message = "Story mapping updated successfully."
-
+        logger.debug(f">>> === Story Mapping: {message} === <<<")
         return JsonResponse({"status": "success", "message": message})
     except json.JSONDecodeError:
+        logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
     except KeyError:
+        logger.debug(f">>> === Story Mapping: Missing required parameters === <<<")
         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
     
    

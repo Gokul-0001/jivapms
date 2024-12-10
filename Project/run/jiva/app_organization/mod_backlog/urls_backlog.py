@@ -27,9 +27,12 @@ urlpatterns = [
     path('ajax_recieve_story_mapped_details/', views_backlog.ajax_recieve_story_mapped_details, name='ajax_recieve_story_mapped_details'),
     path('ajax_story_back_to_list/', views_backlog.ajax_story_back_to_list, name='ajax_story_back_to_list'),
     
+    
     # new feature
     path('create_story_map/<int:org_id>/', views_story_map.create_story_map, name='create_story_map'),
     path('create_story_map_from_backlog/<int:pro_id>/', views_story_map.create_story_map_from_backlog, name='create_story_map_from_backlog'),
-    path('create_backlog_from_story_map/<int:pro_id>/', views_story_map.create_backlog_from_story_map, name='create_backlog_from_story_map'),
+    path('create_backlog_from_story_map/<int:pro_id>/<int:persona_id>/', views_story_map.create_backlog_from_story_map, name='create_backlog_from_story_map'),
+    path('ajax_storymap_right_pane_content/', views_story_map.ajax_storymap_right_pane_content, name='ajax_storymap_right_pane_content'),
+    path('ajax_storymap_refresh_steps_row/', views_story_map.ajax_storymap_refresh_steps_row, name='ajax_storymap_refresh_steps_row'),
     
 ]

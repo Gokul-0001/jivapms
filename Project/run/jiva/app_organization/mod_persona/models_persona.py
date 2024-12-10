@@ -7,6 +7,9 @@ class Persona(BaseModelImpl):
     organization = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="organization_personae", null=True, blank=True)
     
+    project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE,
+                            related_name="project_personae", null=True, blank=True)
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_personae")
    
