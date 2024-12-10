@@ -169,6 +169,56 @@ def ajax_save_related_model(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
+#
+#
+# Purpose is to create new record with foreign keys 
+# e.g., backlog, with name '' and pro_id, persona_id as kwargs from the request POST
+@login_required
+def ajax_create_record(request):
+    if request.method == 'POST':
+        try:
+            # Extract data from POST request
+            app_name = request.POST.get('app_name')  # App name
+            model_name = request.POST.get('model_name')  # Model name (e.g., 'Backlog')
+            field_name = request.POST.get('field_name', 'name')  # Field to set (default to 'name')
+            additional_fields = request.POST.dict()  # All other fields passed as kwargs
+            
+            # Remove reserved keys that aren't part of the kwargs for object creation
+            reserved_keys = ['csrfmiddlewaretoken', 'app_name', 'model_name', 'field_name']
+            kwargs = {key: value for key, value in additional_fields.items() if key not in reserved_keys}
+            
+            # Ensure required keys are present
+            if not app_name or not model_name:
+                return JsonResponse({'status': 'error', 'message': 'Missing app_name or model_name.'}, status=400)
+
+            # Dynamically get the model class
+            model_class = apps.get_model(app_name, model_name)
+            if not model_class:
+                return JsonResponse({'status': 'error', 'message': 'Model not found.'}, status=400)
+
+            # Add default field (e.g., 'name') to kwargs if not provided
+            if field_name not in kwargs:
+                kwargs[field_name] = ''
+
+            # Create the object in a transaction to ensure data integrity
+            with transaction.atomic():
+                new_obj = model_class.objects.create(**kwargs)
+
+            return JsonResponse({
+                'status': 'success',
+                'created_id': new_obj.id,
+                'message': f'New {model_name} created successfully.',
+                'id': new_obj.id
+            })
+
+        except LookupError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid model specified.'}, status=400)
+        except IntegrityError as e:
+            return JsonResponse({'status': 'error', 'message': f'Database error: {str(e)}'}, status=500)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f'Unexpected error: {str(e)}'}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
 
 @login_required
 def ajax_create_child_element(request):

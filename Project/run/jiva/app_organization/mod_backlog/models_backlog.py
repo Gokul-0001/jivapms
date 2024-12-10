@@ -47,7 +47,10 @@ class Backlog(MPTTModel, BaseModelImpl):
         order_insertion_by = ['position']
 
     def __str__(self):
-        return self.name
+        if self.name:
+            return self.name
+        else:
+            return '' + str(self.pk)
 
     def get_completion_stats(self):
         total_count = self.get_descendants().filter(done=True, active=True).count() + self.get_descendants().filter(done=False, active=True).count()

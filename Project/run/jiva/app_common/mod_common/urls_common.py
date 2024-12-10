@@ -11,6 +11,7 @@ urlpatterns = [
     path('ajax_update_task_done_state/', views_common.ajax_update_task_done_state, name='ajax_update_task_done_state'),
     path('ajax_save_related_model/', views_common.ajax_save_related_model, name='ajax_save_related_model'),
     path('ajax_create_child_element/', views_common.ajax_create_child_element, name='ajax_create_child_element'),
+    path('ajax_create_record/', views_common.ajax_create_record, name='ajax_create_record'),
     
     
 ]

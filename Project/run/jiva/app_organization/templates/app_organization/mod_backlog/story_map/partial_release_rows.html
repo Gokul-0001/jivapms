@@ -1,0 +1,39 @@
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+<!-- partials/release_row.html -->
+{% for release in releases %}
+<tr>
+    <td width="3%">
+        <div class="content-header">{{ release.name }}</div>
+    </td>
+    {% for activity in activities %}
+        {% for step in activity.activity_steps.all|filter_active %}
+            <td class="release-drop-zone"
+                data-release-id="{{ release.id }}"
+                data-activity-id="{{ activity.id }}"
+                data-step-id="{{ step.id }}"
+                ondragover="allowDrop(event)"
+                ondrop="drop(event)">
+
+                {% for story_map in story_maps %}
+                    {%  if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id %}
+                    <div class="step-item draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
+                    ondblclick="makeEditable(this);" 
+                    onblur="save_element_text(this, '{{story_map.story_id}}',  'app_organization', 'Backlog', 'name')"    
+                    
+                    >
+                    {{ story_map.story_name }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </td>
+        {% endfor %}
+    {% endfor %}
+    <td></td>
+    <td></td>
+</tr>
+{% endfor %}

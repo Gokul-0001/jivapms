@@ -412,7 +412,7 @@ function handleAddDetails(event) {
             if (data.status === 'success') {
                 const detailsRow = document.getElementById('details-row');
                 detailsRow.innerHTML = data.html;
-                //console.log(data.html);
+                console.log(data.html);
                 // Reattach event listeners for the "+" buttons
                 document.querySelectorAll('.add-details-button').forEach(function (button) {
                     button.addEventListener('click', handleAddDetails);
@@ -449,12 +449,13 @@ function handleAddDetails(event) {
         });
     });
     
-    function drop(event) {
+    // Handle the drop event
+function drop(event) {
     event.preventDefault();
 
     // Get the dragged element's ID
-    const draggedId = event.dataTransfer.getData("text/plain");
-    const draggedElement = document.getElementById(draggedId);
+    var draggedId = event.dataTransfer.getData("text/plain");
+    var draggedElement = document.getElementById(draggedId);
 
     if (!draggedElement) {
         console.error('Dragged element not found.');
@@ -462,65 +463,64 @@ function handleAddDetails(event) {
     }
 
     // Extract the backlog ID
-    const backlogId = draggedId.split('-')[1];
+    var backlogId = draggedId.split('-')[1];
 
     // Get the drop zone's data attributes
-    const dropZone = event.target.closest('.release-drop-zone');
-    const releaseId = dropZone.getAttribute('data-release-id');
-    const activityId = dropZone.getAttribute('data-activity-id');
-    const stepId = dropZone.getAttribute('data-step-id');
+    var releaseId = event.currentTarget.getAttribute('data-release-id');
+    var activityId = event.currentTarget.getAttribute('data-activity-id');
+    var stepId = event.currentTarget.getAttribute('data-step-id');
 
     // Optional: Visual feedback for successful drop
-    dropZone.classList.add('dropped');
+    event.currentTarget.classList.add('dropped');
 
-    // Prepare the AJAX payload
-    const payload = {
+    // Set iterationId to '-1' to skip
+    var iterationId = '-1';
+
+    // Define the URL for the AJAX request
+    var url = "{% url 'ajax_recieve_story_mapped_details' %}";  // Ensure this URL is correctly defined in your urls.py
+
+    // Prepare the payload
+    var payload = {
         project_id: {{ pro_id }},
         story_id: backlogId,
         release_id: releaseId,
-        iteration_id: '-1', // To skip iteration
+        iteration_id: iterationId,
         activity_id: activityId,
         step_id: stepId,
         persona_id: {{ persona.id }},
     };
 
-    // Send the AJAX request to the backend
-    fetch("{% url 'ajax_recieve_story_mapped_details' %}", {
+    // Send the AJAX request using Fetch API
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}',
+            'X-CSRFToken': '{{ csrf_token }}'  // Ensure CSRF token is correctly rendered
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((err) => {
-                    throw new Error(err.message || 'Server Error');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data.status === 'success') {
-                // Move the dragged element to the drop zone
-                dropZone.appendChild(draggedElement);
+    .then(response => {
+        if (!response.ok) {
+            // If the response is not OK, throw an error to be caught in the catch block
+            return response.json().then(errData => {
+                throw new Error(errData.message || 'Server Error');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Successfully mapped the story
+        event.currentTarget.appendChild(draggedElement);
+        //alert('Backlog item successfully assigned to the release.');
+        
+    })
+    .catch(error => { 
+        console.error('Error updating story location:', error);
+        //alert('Failed to assign backlog item: ' + error.message);
+        event.currentTarget.classList.remove('dropped');
+    });
 
-                // Optionally, remove the element from the source container
-                draggedElement.remove();
-
-                console.log('Backlog item successfully assigned to the release.');
-            } else {
-                throw new Error(data.message);
-            }
-        })
-        .catch((error) => {
-            console.error('Error updating story location:', error.message);
-            dropZone.classList.remove('dropped');
-            alert('Failed to assign backlog item: ' + error.message);
-        });
 }
-
 </script>
 <script>
     function makeEditable(element) {

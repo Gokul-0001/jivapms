@@ -100,6 +100,7 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
     releases = OrgRelease.objects.filter(org_id=pro.org_id, active=True)
     activities = Activity.objects.filter(persona_id=persona_id, active=True)
     backlog = Backlog.objects.filter(pro_id=pro_id, persona_id=persona_id, active=True)
+    story_maps = StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id)
     #StoryMapping.objects.all().delete()
     if request.method == 'POST':
         selected_project_id = request.POST.get('project_id')
@@ -140,6 +141,7 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
         'persona': persona,
         'activities': activities,
         'default_activity_id': default_activity_id,
+        'story_maps': story_maps,
         'backlog': backlog,
         'releases': releases,
         'org': organization,
@@ -233,6 +235,36 @@ def ajax_storymap_refresh_steps_row(request):
         }
         # Render the partial HTML
         template_file = f"{app_name}/{module_path}/story_map/partial_steps_row.html"
+        steps_html = render_to_string(template_file, context)
+    
+        return JsonResponse({"status": "success", "html": steps_html})
+    return JsonResponse({"status": "error", "message": "Invalid request method."}, status=400)
+
+@login_required
+def ajax_storymap_refresh_details_row(request):
+    if request.method == 'POST':
+        user = request.user
+        pro_id = request.POST.get('pro_id')
+        pro = Project.objects.get(pk=pro_id)
+        persona_id = request.POST.get('persona_id')
+        persona = Persona.objects.get(pk=persona_id)
+        organization = pro.org
+        # Fetch the required data
+        activities = Activity.objects.filter(active=True, persona_id=persona_id).prefetch_related('activity_steps')
+        backlog = Backlog.objects.filter(active=True, pro_id=pro_id, persona_id=persona_id) 
+        # context
+        context = {
+            'activities': activities,
+            'backlog': backlog,
+            'persona': persona,
+            'pro': pro,
+            'organization': organization,
+            'org_id': organization.id,
+            'pro_id': pro_id,
+            'persona_id': persona_id,
+        }
+        # Render the partial HTML
+        template_file = f"{app_name}/{module_path}/story_map/partial_details_row.html"
         steps_html = render_to_string(template_file, context)
     
         return JsonResponse({"status": "success", "html": steps_html})
