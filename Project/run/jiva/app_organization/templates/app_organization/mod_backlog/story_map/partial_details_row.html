@@ -10,6 +10,7 @@
 </td>
 <td colspan="10">
 {% for backlog_item in backlog %}
+{% if backlog_item.release_id == None  %}
 <div class="step-item draggable-backlog" draggable="true" id="backlog-{{ backlog_item.id }}"
 ondblclick="makeEditable(this);" 
 onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Backlog', 'name')"    
@@ -17,6 +18,7 @@ onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Bac
 >
     {{ backlog_item.name }}  
 </div>
+{% endif %}
 {% endfor %}
 </td>
 

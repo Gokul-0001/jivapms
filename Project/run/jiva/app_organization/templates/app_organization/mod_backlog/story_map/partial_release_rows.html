@@ -6,7 +6,7 @@
 {% load mptt_tags %}
 <!-- partials/release_row.html -->
 {% for release in releases %}
-<tr>
+<tr id="release-row-{{release.id}}">
     <td width="3%">
         <div class="content-header">{{ release.name }}</div>
     </td>

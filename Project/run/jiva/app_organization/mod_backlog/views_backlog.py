@@ -1049,6 +1049,8 @@ def ajax_recieve_story_mapped_details(request):
             StoryMapping.objects.filter(story_id=story_id, active=False)
             # Save or update the story mapping
             story_details = Backlog.objects.get(id=story_id)
+            
+            # Save or update the story mapping            
             mapping, created = StoryMapping.objects.update_or_create(
                 story_id=story_id,
                 defaults={
@@ -1071,6 +1073,11 @@ def ajax_recieve_story_mapped_details(request):
         else:
             message = "Story mapping updated successfully."
         logger.debug(f">>> === Story Mapping: {message} === <<<")
+        
+        # Update backlog item with release
+        story_details.release_id = release_id
+        story_details.save()
+        
         return JsonResponse({"status": "success", "message": message})
     except json.JSONDecodeError:
         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")

@@ -7,6 +7,7 @@ from app_organization.mod_org_release.models_org_release import *
 from app_organization.mod_persona.models_persona import *
 from app_organization.mod_activity.models_activity import *
 from app_organization.mod_step.models_step import *
+
 from app_jivapms.mod_app.all_view_imports import *
 
 app_name = 'app_organization'
@@ -269,3 +270,72 @@ def ajax_storymap_refresh_details_row(request):
     
         return JsonResponse({"status": "success", "html": steps_html})
     return JsonResponse({"status": "error", "message": "Invalid request method."}, status=400)
+
+@login_required
+def ajax_refresh_release_rows(request):
+    if request.method == "POST":
+        try:
+            # Get specific release ID if provided
+            release_id = request.POST.get('release_id', None)
+            pro_id = request.POST.get('pro_id')
+            persona_id = request.POST.get('persona_id')
+
+            releases = OrgRelease.objects.filter(active=True, org_id=request.user.org_id)
+            activities = Activity.objects.prefetch_related('activity_steps').filter(active=True)
+            story_maps = StoryMapping.objects.filter(active=True, pro_id=pro_id, persona_id=persona_id)
+
+            if release_id:
+                releases = releases.filter(id=release_id)
+
+            # Render the partial HTML
+            context = {
+                'releases': releases,
+                'activities': activities,
+                'story_maps': story_maps
+            }
+            template_file = f"{app_name}/{module_path}/story_map/partial_release_rows.html"
+            release_rows_html = render_to_string(
+                template_file,context
+            )
+            return JsonResponse({"status": "success", "html": release_rows_html})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)
+
+
+@login_required
+def ajax_refresh_release_rows(request):
+    if request.method == "POST":
+        try:
+            release_ids = request.POST.getlist('release_ids', [])  # Get list of specific release IDs
+            pro_id = request.POST.get('pro_id')
+            persona_id = request.POST.get('persona_id')
+            project = Project.objects.get(pk=pro_id)
+            organization = project.org
+            releases = OrgRelease.objects.filter(active=True, org_id=project.org.id)
+            if release_ids:
+                releases = releases.filter(id__in=release_ids)
+
+            activities = Activity.objects.prefetch_related('activity_steps').filter(active=True)
+            story_maps = StoryMapping.objects.filter(active=True, pro_id=pro_id, persona_id=persona_id)
+
+            # Render the partial HTML
+            context = {
+                'releases': releases,
+                'activities': activities,
+                'story_maps': story_maps
+            }
+            template_file = f"{app_name}/{module_path}/story_map/partial_release_rows.html"
+            release_rows_html = {
+                str(release.id): render_to_string(
+                    template_file,
+                    context,
+                    request=request,
+                )
+                for release in releases
+            }
+            return JsonResponse({"status": "success", "html": release_rows_html})
+        except Exception as e:
+            print(f">>> === {e} === <<<")
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)

@@ -254,6 +254,7 @@
     </tr>
 
     <!-- Releases Rows -->
+    
     {% include 'app_organization/mod_backlog/story_map/partial_release_rows.html' %}
 </table>
 </div>
@@ -268,10 +269,27 @@
 <script>
 // vars
 var parentIDfromDefaultActivity;
-// Attach event listeners to all existing add-step buttons
-document.querySelectorAll('.add-step-button').forEach(function(button) {
-    button.addEventListener('click', handleAddStep);
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach dragstart listeners to existing draggable-backlog elements
+    document.querySelectorAll('.draggable-backlog').forEach(function(item) {
+        item.addEventListener('dragstart', function(event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+        });
+    });
+
+    // Attach event listeners to existing add-step and add-details buttons
+    document.querySelectorAll('.add-step-button').forEach(function(button) {
+        button.addEventListener('click', handleAddStep);
+    });
+
+    document.querySelectorAll('.add-details-button').forEach(function(button) {
+        button.addEventListener('click', handleAddDetails);
+    });
 });
+
+
 // Function to handle adding a new step
 function handleAddStep(event) {
     const button = event.target;
@@ -338,7 +356,12 @@ function handleAddStep(event) {
                 document.querySelectorAll('.add-step-button').forEach(function (button) {
                     button.addEventListener('click', handleAddStep);
                 });
-
+                // **Reattach dragstart listeners to new draggable-backlog elements within stepsRow**
+                stepsRow.querySelectorAll('.draggable-backlog').forEach(function(item) {
+                item.addEventListener('dragstart', function(event) {
+                        event.dataTransfer.setData("text/plain", event.target.id);
+                    });
+                });
                 console.log("Steps row refreshed successfully.");
             } else {
                 console.error("Error refreshing steps row:", data.message);
@@ -417,7 +440,12 @@ function handleAddDetails(event) {
                 document.querySelectorAll('.add-details-button').forEach(function (button) {
                     button.addEventListener('click', handleAddDetails);
                 });
-
+                // **Reattach dragstart listeners to new draggable-backlog elements within detailsRow**
+                detailsRow.querySelectorAll('.draggable-backlog').forEach(function(item) {
+                item.addEventListener('dragstart', function(event) {
+                        event.dataTransfer.setData("text/plain", event.target.id);
+                    });
+                });
                 console.log("Details row refreshed successfully.");
             } else {
                 console.error("Error refreshing Details row:", data.message);
@@ -508,6 +536,8 @@ function handleAddDetails(event) {
 
                 // Optionally, remove the element from the source container
                 draggedElement.remove();
+                // Refresh the specific release row
+                refreshReleaseRows([releaseId]);
 
                 console.log('Backlog item successfully assigned to the release.');
             } else {
@@ -520,6 +550,72 @@ function handleAddDetails(event) {
             alert('Failed to assign backlog item: ' + error.message);
         });
 }
+
+function refreshReleaseRows(releaseIds) {
+    const payload = {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        pro_id: {{ pro_id }},
+        persona_id: {{ persona.id }},
+        release_ids: releaseIds, // Array of release IDs to refresh
+    };
+
+    $.ajax({
+        url: "{% url 'ajax_refresh_release_rows' %}",
+        type: 'POST',
+        data: payload,
+        success: function (data) {
+            if (data.status === 'success') {
+                Object.keys(data.html).forEach((releaseId) => {
+                const releaseRow = document.getElementById(`release-row-${releaseId}`);
+                if (releaseRow) {
+                    // Parse the HTML for the release row
+                    const tempContainer = document.createElement('div');
+                    tempContainer.innerHTML = data.html[releaseId]; // Add new HTML temporarily
+
+                    // Iterate over new HTML `<td>` elements and update only the matching ones
+                    tempContainer.querySelectorAll('td.release-drop-zone').forEach((newTd) => {
+                        const activityId = newTd.getAttribute('data-activity-id');
+                        const stepId = newTd.getAttribute('data-step-id');
+
+                        // Find the corresponding existing `<td>` in the current release row
+                        const existingTd = releaseRow.querySelector(
+                            `td.release-drop-zone[data-activity-id="${activityId}"][data-step-id="${stepId}"]`
+                        );
+
+                        if (existingTd) {
+                            // Replace the inner content of the specific `<td>`
+                            existingTd.innerHTML = newTd.innerHTML;
+                        }
+                    });
+                }
+            });
+
+
+                // Reattach drag-and-drop event listeners
+                attachDragAndDropHandlers();
+
+                console.log("Specific release rows refreshed successfully.");
+            } else {
+                console.error("Error refreshing release rows:", data.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("AJAX Error:", status, error);
+        },
+    });
+}
+
+function refreshAllReleaseRows() {
+    const releaseIds = Array.from(document.querySelectorAll('[id^="release-row-"]')).map(
+        (row) => row.id.split('-')[2]
+    );
+
+    refreshReleaseRows(releaseIds);
+}
+
+
+
+
 
 </script>
 <script>
