@@ -129,7 +129,7 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
                     active=True
                 )
                 print(f">>> === DETAIL {detail} === <<<")
-            return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=selected_persona_id)
+                return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=selected_persona_id)
     
     # Context for GET request
     context = {
@@ -337,5 +337,33 @@ def ajax_refresh_release_rows(request):
             return JsonResponse({"status": "success", "html": release_rows_html})
         except Exception as e:
             print(f">>> === {e} === <<<")
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)
+
+
+
+@login_required
+def ajax_update_backlog_release(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            backlog_id = data.get('backlog_id')
+            release_id = data.get('release_id')
+
+            if not backlog_id:
+                return JsonResponse({"status": "error", "message": "Backlog ID is required."}, status=400)
+
+            # Update the backlog item
+            backlog_item = Backlog.objects.get(id=backlog_id)
+            backlog_item.release_id = None
+            backlog_item.save()
+            
+            # update the mapping
+            story_map = StoryMapping.objects.filter(story_id=backlog_id).update(active=False)
+           
+            return JsonResponse({"status": "success", "message": "Backlog item updated successfully."})
+        except Backlog.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Backlog item not found."}, status=404)
+        except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
     return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)

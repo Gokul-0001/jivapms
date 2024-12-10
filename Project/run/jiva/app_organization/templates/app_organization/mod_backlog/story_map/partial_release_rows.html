@@ -5,6 +5,7 @@
 {% load markdown_extras %}
 {% load mptt_tags %}
 <!-- partials/release_row.html -->
+ 
 {% for release in releases %}
 <tr id="release-row-{{release.id}}">
     <td width="3%">
@@ -20,7 +21,7 @@
                 ondrop="drop(event)">
 
                 {% for story_map in story_maps %}
-                    {%  if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id %}
+                    {%  if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id  and story_map.active == True %}
                     <div class="step-item draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
                     ondblclick="makeEditable(this);" 
                     onblur="save_element_text(this, '{{story_map.story_id}}',  'app_organization', 'Backlog', 'name')"    

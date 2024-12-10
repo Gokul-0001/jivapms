@@ -16,7 +16,7 @@ ondrop="dropToBacklog(event)">
 <input type="hidden" name="project_id" value="{{ pro_id }}">
 <input type="hidden" name="persona_id" value="{{ persona.id }}">
 <input type="hidden" name="submit_detail" value="submit_detail">
-    <input type="text" name="detail" id="detail" >
+    <input type="text" name="detail" id="detail" size="20" maxlength="20">
 </form>
 
 {% for backlog_item in backlog|filter_active %}
@@ -38,15 +38,12 @@ onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Bac
             data-project-id="{{ pro_id }}" 
             data-persona-id="{{ persona.id }}"
             data-org-id="{{ org_id }}"
-            title="Add Detail">+</button> 
-
+            title="Add Detail">+</button>
 </td>
 
 <script>
 
     document.getElementById("detail").focus();
-   
-
 
     var steps_row = document.getElementById("steps-row");
     var steps_row_tds = steps_row.getElementsByTagName("td");

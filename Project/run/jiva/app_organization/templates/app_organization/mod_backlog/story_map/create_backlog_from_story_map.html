@@ -153,6 +153,7 @@
         border: 2px dashed #ccc;
         min-height: 50px;
         position: relative;
+        z-index: 1;
     }
     
     .release-drop-zone.dropped {
@@ -191,11 +192,34 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     cursor: grab;
+    z-index: 2;
 }
 
 .step-item:active {
     cursor: grabbing;
 }
+
+.add-steps-wrapper {
+    position: absolute;
+    right: 10%; /* Distance from the right side of the page */
+    top: 25%;
+
+}
+
+.steps-row-start {
+    position: relative; /* Ensure the button stays within the row */
+}
+
+.add-detail-wrapper {
+    position: absolute;
+    right: -28%; /* Distance from the right side of the page */
+    top: 0; /* Align it with the top of the row */
+}
+
+.backlog-drop-zone {
+    position: relative; /* Ensure the button stays within the row */
+}
+
 </style>
 <div class="content-wrapper">
    
@@ -209,7 +233,7 @@
        
 <!-- RIGHT PANE -->
 <div id="right_pane">
-    
+<div class="table-responsive">
 <table class="table table-borderless">
     <tr>
         <td colspan="100">
@@ -257,6 +281,7 @@
     
     {% include 'app_organization/mod_backlog/story_map/partial_release_rows.html' %}
 </table>
+</div>
 </div>
 
 
@@ -322,6 +347,7 @@ function handleAddStep(event) {
             if (data.status === 'success') {               
                 console.log('Success:', data);
                 refreshStepsRow();
+                refreshAllReleaseRows();
             } else {
                 console.error('Error:', data.message);
             }
@@ -365,12 +391,12 @@ function handleAddStep(event) {
                 console.log("Steps row refreshed successfully.");
             } else {
                 console.error("Error refreshing steps row:", data.message);
-                alert("Failed to refresh steps row: " + data.message);
+                //alert("Failed to refresh steps row: " + data.message);
             }
         },
         error: function (xhr, status, error) {
             console.error("AJAX Error:", status, error);
-            alert("An error occurred while refreshing the steps row.");
+            //alert("An error occurred while refreshing the steps row.");
         }
     });
 } // end refreshStepsRow
@@ -385,6 +411,10 @@ document.querySelectorAll('.add-details-button').forEach(function(button) {
 });
 // Function to handle adding a new step
 function handleAddDetails(event) {
+  
+
+
+
     const button = event.target;    
     const payload = {
         app_name: 'app_organization', // Replace with the actual app name
@@ -407,12 +437,13 @@ function handleAddDetails(event) {
                 // Optionally refresh the page or update the UI dynamically
                 refreshDetailsRow();
             } else {
-                alert('Error: ' + response.message);
+                //alert('Error: ' + response.message);
+                console.log('Error creating the backlog:', response.message);
             }
         },
         error: function (xhr, status, error) {
             console.error('AJAX Error:', status, error);
-            alert('An error occurred while creating the backlog.');
+            //alert('An error occurred while creating the backlog.');
         }
     });
 
@@ -449,12 +480,12 @@ function handleAddDetails(event) {
                 console.log("Details row refreshed successfully.");
             } else {
                 console.error("Error refreshing Details row:", data.message);
-                alert("Failed to refresh Details row: " + data.message);
+                //alert("Failed to refresh Details row: " + data.message);
             }
         },
         error: function (xhr, status, error) {
             console.error("AJAX Error:", status, error);
-            alert("An error occurred while refreshing the Details row.");
+            //alert("An error occurred while refreshing the Details row.");
         }
     });
 } // end refreshDetailsRow
@@ -532,8 +563,9 @@ function handleAddDetails(event) {
         .then((data) => {
             if (data.status === 'success') {
                 // Move the dragged element to the drop zone
-                dropZone.appendChild(draggedElement);
-
+                const clonedElement = draggedElement.cloneNode(true);
+                dropZone.appendChild(clonedElement);
+                
                 // Optionally, remove the element from the source container
                 draggedElement.remove();
                 // Refresh the specific release row
@@ -547,7 +579,7 @@ function handleAddDetails(event) {
         .catch((error) => {
             console.error('Error updating story location:', error.message);
             dropZone.classList.remove('dropped');
-            alert('Failed to assign backlog item: ' + error.message);
+            //alert('Failed to assign backlog item: ' + error.message);
         });
 }
 
@@ -604,6 +636,18 @@ function refreshReleaseRows(releaseIds) {
         },
     });
 }
+function attachDragAndDropHandlers() {
+    document.querySelectorAll('.release-drop-zone').forEach(function (dropZone) {
+        dropZone.addEventListener('dragover', allowDrop);
+        dropZone.addEventListener('drop', drop);
+    });
+
+    document.querySelectorAll('.draggable-backlog').forEach(function (draggable) {
+        draggable.addEventListener('dragstart', function (event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+        });
+    });
+}
 
 function refreshAllReleaseRows() {
     const releaseIds = Array.from(document.querySelectorAll('[id^="release-row-"]')).map(
@@ -611,8 +655,68 @@ function refreshAllReleaseRows() {
     );
 
     refreshReleaseRows(releaseIds);
+    window.location.reload();
 }
 
+function dropToBacklog(event) {
+    event.preventDefault();
+
+    // Get the dragged element's ID
+    const draggedId = event.dataTransfer.getData("text/plain");
+    const draggedElement = document.getElementById(draggedId);
+
+    if (!draggedElement) {
+        console.error('Dragged element not found.');
+        return;
+    }
+
+    // Extract the backlog ID
+    const backlogId = draggedId.split('-')[1];
+
+    // Define the AJAX payload
+    const payload = {
+        project_id: {{ pro_id }},
+        backlog_id: backlogId,
+        persona_id: {{ persona.id }},
+        release_id: null, // Remove release association
+    };
+
+    // Send the AJAX request to the backend
+    fetch("{% url 'ajax_update_backlog_release' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify(payload),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((err) => {
+                    throw new Error(err.message || 'Server Error');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.status === 'success') {
+                // Append the dragged element back to the backlog drop zone
+                const backlogDropZone = document.querySelector('.backlog-drop-zone');
+                clonedElement = draggedElement.cloneNode(true);
+                backlogDropZone.appendChild(clonedElement);
+
+                // Optional: Remove the dropped element from its previous release zone
+                draggedElement.remove();
+
+                console.log('Backlog item successfully moved back.');
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error moving backlog item back:', error.message);
+        });
+}
 
 
 
