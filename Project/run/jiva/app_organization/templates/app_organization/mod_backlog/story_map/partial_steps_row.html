@@ -11,18 +11,33 @@
 {% for activity in activities %}
     {% for step in activity.activity_steps.all|filter_active %}
         <td>
-            <div class="step-item" draggable="true" id="step-{{ step.id }}" contenteditable="true"
+            <div class="step-item" draggable="true" id="step-{{ step.id }}" 
             ondblclick="makeEditable(this);" 
             onblur="save_element_text(this, '{{step.id}}',  'app_organization', 'Step', 'name')"          
-                
+            onclick="toggleSelection(this, '{{ step.id }}')"
             >
-                {{ step.name }}
+                {{ step.name }} {{step.activity}}
             </div>
+             <!-- Group Button -->
+    <button id="group-steps-button" style="display: none;" onclick="openGroupModal()">Group Selected Steps</button>
         </td>
     {% endfor %}
 {% endfor %}
 <!-- Add Step Button -->
 <td>
     <button class="add-step-button" data-activity-id="{{ activity.id }}" title="Add Step">+</button>
+    <button class="group-step-button" data-activity-id="{{ activity.id }}" title="Group">:</button>
 </td>
 
+<!-- Modal for Grouping -->
+<div id="group-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeGroupModal()">&times;</span>
+        <h2>Group Selected Steps</h2>
+        <form id="group-form">
+            <label for="activity-name">Activity Name:</label>
+            <input type="text" id="activity-name" name="activity-name" required>
+            <button type="button" onclick="submitGroup()">Group</button>
+        </form>
+    </div>
+</div>

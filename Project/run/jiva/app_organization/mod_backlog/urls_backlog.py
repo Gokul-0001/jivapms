@@ -36,7 +36,8 @@ urlpatterns = [
     path('ajax_storymap_refresh_steps_row/', views_story_map.ajax_storymap_refresh_steps_row, name='ajax_storymap_refresh_steps_row'),
     path('ajax_storymap_refresh_details_row/', views_story_map.ajax_storymap_refresh_details_row, name='ajax_storymap_refresh_details_row'),
     path('ajax_refresh_release_rows/', views_story_map.ajax_refresh_release_rows, name='ajax_refresh_release_rows'),
-    path('ajax_update_backlog_release/', views_story_map.ajax_update_backlog_release, name='ajax_update_backlog_release'),
-    
+    path('ajax_update_backlog_release/', views_story_map.ajax_update_backlog_release, name='ajax_update_backlog_release'),    
+    path('ajax_storymap_group_steps/', views_story_map.ajax_storymap_group_steps, name='ajax_storymap_group_steps'),
+
     
 ]

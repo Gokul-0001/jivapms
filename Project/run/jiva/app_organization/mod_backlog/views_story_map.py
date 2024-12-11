@@ -367,3 +367,28 @@ def ajax_update_backlog_release(request):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
     return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)
+
+
+@login_required
+def ajax_storymap_group_steps(request):
+    if request.method == 'POST':
+        project_id = request.POST.get('project_id')
+        persona_id = request.POST.get('persona_id')
+        activity_name = request.POST.get('activity_name')
+        step_ids = request.POST.getlist('step_ids[]')
+
+        if not activity_name or not step_ids:
+            return JsonResponse({'status': 'error', 'message': 'Activity name or steps missing.'})
+
+        try:
+            # Create the new activity
+            activity = Activity.objects.create(name=activity_name, persona_id=persona_id)
+
+            # Associate steps with the new activity
+            Step.objects.filter(id__in=step_ids).update(activity=activity)
+
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})

@@ -160,9 +160,42 @@
         border-color: #28a745;
         background-color: #e6ffed;
     }
-    </style>
+    .step-item.selected {
+    background-color: #cce5ff; /* Highlight selected steps */
+    border-color: #007bff;
+}
 
-<style>
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    text-align: center;
+}
+
+.modal .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+
 /* Add Step Button Styles */
 .add-step-button, .add-details-button {
     background-color: #f9f9f9; /* Very light color */
@@ -258,12 +291,16 @@
             <div class="content-header">Activities</div>
         </td>
         {% for activity in activities %}
-            <td colspan="100">
-                <div class="step-item" draggable="true" id="activity-{{ activity.id }}"
-                     {% if activity.name == 'Default Activity' %}data-default-activity-id="{{ activity.id }}"{% endif %}>
+        {% if activity.name != 'Default Activity' %}
+            <td colspan="">
+                <div class="step-item" draggable="true" id="activity-{{ activity.id }}">
+                     
                     {{ activity.id }}: {{ activity.name }}
                 </div>
             </td>
+        {% else %}
+            <input type="hidden" {% if activity.name == 'Default Activity' %}data-default-activity-id="{{ activity.id }}"{% endif %}> 
+        {% endif %} 
         {% endfor %}
     </tr>
 
@@ -492,7 +529,69 @@ function handleAddDetails(event) {
 
 </script>
 
+<script>
+    let selectedSteps = new Set();
 
+function toggleSelection(stepElement, stepId) {
+    if (stepElement.classList.contains('selected')) {
+        stepElement.classList.remove('selected');
+        selectedSteps.delete(stepId);
+    } else {
+        stepElement.classList.add('selected');
+        selectedSteps.add(stepId);
+    }
+
+    // Show or hide the "Group Steps" button
+    document.getElementById('group-steps-button').style.display = selectedSteps.size > 0 ? 'block' : 'none';
+}
+
+function openGroupModal() {
+    const modal = document.getElementById('group-modal');
+    modal.style.display = 'block';
+}
+
+function closeGroupModal() {
+    const modal = document.getElementById('group-modal');
+    modal.style.display = 'none';
+}
+
+function submitGroup() {
+    const activityName = document.getElementById('activity-name').value;
+
+    if (!activityName) {
+        alert('Activity name is required!');
+        return;
+    }
+
+    // Submit the selected steps to the backend
+    $.ajax({
+        url: "{% url 'ajax_storymap_group_steps' %}",
+        type: 'POST',
+        data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+            'project_id': {{ pro_id }},
+            'persona_id': {{ persona.id }},
+            'activity_name': activityName,
+            'step_ids': Array.from(selectedSteps), // Convert Set to Array
+        },
+        success: function (response) {
+            if (response.status === 'success') {
+                alert('Steps grouped successfully!');
+                closeGroupModal();
+                // Optionally, refresh the page or specific sections
+                location.reload();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+            alert('Failed to group steps.');
+        },
+    });
+}
+
+</script>
 
 
 <script>
