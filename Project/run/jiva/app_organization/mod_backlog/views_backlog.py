@@ -1165,7 +1165,7 @@ def ajax_recieve_story_mapped_details(request):
                 logger.info(f"Story Mapping: {message}")
 
                 # Update the backlog item's release
-                story_details.release_id = release_id
+                story_details.release = release 
                 story_details.save()
                 logger.debug(f"Updated Backlog Release ID: {story_details.release_id}")
 
