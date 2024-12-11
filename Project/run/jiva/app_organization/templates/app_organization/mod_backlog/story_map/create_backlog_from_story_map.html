@@ -482,15 +482,17 @@
                 
                     <!-- Releases Rows -->
                     {% for release in releases %}
+                        {% for iteration in release.org_release_org_iterations.all|filter_active %}
                         <tr id="release-row-{{ release.id }}">
                             <td width="3%">
-                                <div class="content-header">{{ release.name }}</div>
+                                <div class="content-header">{{ release.name }} / {{iteration.name}}</div>
                             </td>
                             {% for activity in activities %}
                                 {% with activity.activity_steps.all|filter_active as steps %}
                                     {% for step in steps %}
                                         <td class="release-drop-zone"
                                             data-release-id="{{ release.id }}"
+                                            data-iteration-id="{{ iteration.id }}"
                                             data-activity-id="{{ activity.id }}"
                                             data-step-id="{{ step.id }}"
                                             ondragover="allowDrop(event)"
@@ -498,7 +500,7 @@
                                             style="border-left: {% if forloop.first %}3px solid lightgrey;{% else %}none;{% endif %};">
                                             
                                             {% for story_map in story_maps %}
-                                                {% if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id and story_map.active %}
+                                                {% if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id and story_map.iteration_id == iteration.id and story_map.active %}
                                                     <div class="step-item post-it card draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
                                                          ondblclick="makeEditable(this);" 
                                                          onblur="save_element_text(this, '{{ story_map.story_id }}', 'app_organization', 'Backlog', 'name')">
@@ -513,6 +515,7 @@
                             <!-- Optional: Add extra empty cells if needed -->
                           
                         </tr>
+                        {% endfor %}
                     {% endfor %}
                 </table>
             </div>
@@ -626,6 +629,7 @@
     // Get the drop zone's data attributes
     const dropZone = event.target.closest('.release-drop-zone');
     const releaseId = dropZone.getAttribute('data-release-id');
+    const iterationId = dropZone.getAttribute('data-iteration-id');
     const activityId = dropZone.getAttribute('data-activity-id');
     const stepId = dropZone.getAttribute('data-step-id');
 
@@ -637,7 +641,8 @@
         project_id: {{ pro_id }},
         story_id: backlogId,
         release_id: releaseId,
-        iteration_id: '-1', // To skip iteration
+        //iteration_id: '-1', // To skip iteration
+        iteration_id: iterationId,
         activity_id: activityId,
         step_id: stepId,
         persona_id: {{ persona.id }},
