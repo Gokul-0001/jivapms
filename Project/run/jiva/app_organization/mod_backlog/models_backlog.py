@@ -24,10 +24,10 @@ class Backlog(MPTTModel, BaseModelImpl):
                           related_name='backlog_types', 
                           on_delete=models.CASCADE)
     
-    release = models.ForeignKey('app_organization.Release', on_delete=models.CASCADE, 
+    release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, 
                             related_name="backlog_releases", null=True, blank=True)
     
-    iteration = models.ForeignKey('app_organization.Iteration', on_delete=models.CASCADE, 
+    iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, 
                             related_name="backlog_iteration", null=True, blank=True)
      
     

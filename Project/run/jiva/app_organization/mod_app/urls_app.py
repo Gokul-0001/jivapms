@@ -2,7 +2,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('activity/', include('app_organization.mod_activity.urls_activity')),
-    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
+    
     path('backlog_super_type/', include('app_organization.mod_backlog_super_type.urls_backlog_super_type')),
     path('backlog_type/', include('app_organization.mod_backlog_type.urls_backlog_type')),
     path('blog/', include('app_organization.mod_blog.urls_blog')),
@@ -42,4 +42,5 @@ urlpatterns = [
     path('team/', include('app_organization.mod_team.urls_team')),
     path('teammember/', include('app_organization.mod_teammember.urls_teammember')),
     path('work_flow/', include('app_organization.mod_work_flow.urls_work_flow')),
+    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
 ]
