@@ -449,10 +449,7 @@
                             {% with activity.activity_steps.all|filter_active|length as step_count %}
                                 {% if step_count > 0 %}
                                     <td colspan="{{ step_count }}" class="activity-header" style="border-left: 3px solid lightgrey;">
-                                        <div class="step-item post-it activity-color"  id="activity-{{ activity.id }}"
-                                        ondblclick="makeEditable(this);"
-                                        onblur="save_element_text(this, '{{ activity.id }}', 'app_organization', 'Activity', 'name')"
-                                        >
+                                        <div class="step-item post-it activity-color" draggable="true" id="activity-{{ activity.id }}">
                                             {{ activity.name }} ({{ step_count }})
                                         </div>
                                     </td>
@@ -681,7 +678,8 @@
                 
                 // Optionally, remove the element from the source container
                 draggedElement.remove();
-                
+                // Refresh the specific release row
+                refreshReleaseRows([releaseId]);
 
                 console.log('Backlog item successfully assigned to the release.');
             } else {
