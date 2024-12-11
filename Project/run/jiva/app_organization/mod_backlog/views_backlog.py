@@ -1077,13 +1077,16 @@ def ajax_recieve_story_mapped_details(request):
         # Update backlog item with release
         story_details.release_id = release_id
         story_details.save()
-        
+        print(f">>> === Story Mapping: {story_details.release_id} === <<<")
+        print(f">>> === Story Mapping1: {message} === <<<")
         return JsonResponse({"status": "success", "message": message})
     except json.JSONDecodeError:
         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
+        print(f">>> === Story Mapping2: {message} === <<<")
         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
     except KeyError:
         logger.debug(f">>> === Story Mapping: Missing required parameters === <<<")
+        print(f">>> === Story Mapping2: {message} === <<<")
         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
     
    
