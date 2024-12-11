@@ -7,6 +7,9 @@ class Step(BaseModelImpl):
     activity = models.ForeignKey('app_organization.Activity', on_delete=models.CASCADE, 
                             related_name="activity_steps", null=True, blank=True)
     
+    persona = models.ForeignKey('app_organization.Persona', on_delete=models.CASCADE,
+                                related_name="persona_steps", null=True, blank=True)
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_steps")
    

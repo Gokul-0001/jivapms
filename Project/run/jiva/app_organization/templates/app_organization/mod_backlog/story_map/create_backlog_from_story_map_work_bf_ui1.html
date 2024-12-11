@@ -320,68 +320,6 @@
     display: block;
 }
 
-
-
-
-
-.persona-container {
-        padding: 10px 15px;
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-
-    .persona-section {
-        flex: 1 1 40%; /* Takes 20% of space */
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .persona-name {
-        background-color: #fff;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 5px 10px;
-        width: 40%;
-        
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        cursor: pointer;
-    }
-
-    .actions-section {
-        flex: 1 1 60%; /* Takes the remaining space */
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 15px;
-    }
-
-    .form-inline {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .activity_input_style {
-        max-width: 200px;
-    }
-    .form-inline .form-control {
-        max-width: 160px; /* Smaller width for compact inputs */
-        padding: 5px;
-        font-size: 0.9rem;
-    }
-
-    .btn-sm {
-        white-space: nowrap;
-        font-size: 0.85rem;
-    }
 </style>
 <div class="content-wrapper">
    
@@ -401,44 +339,25 @@
         <form action="" method="post">
         {% csrf_token %}
         <td colspan="100">
-      
-<div class="persona-container">
-    <!-- Persona Section -->
-    <div class="persona-section">
-        <strong>Persona:</strong>
-        <div id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
-            onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">
-            {% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}
-        </div>
-    </div>
-
-    <!-- Actions Section -->
-    <div class="actions-section">
-        <!-- Add Activity Form -->
-        <form action="" method="post" class="form-inline">
-            {% csrf_token %}
-            <input type="text" name="activity" id="activity" class="form-control activity_input_style" placeholder="Activity">
-            <input type="hidden" name="persona_id" value="{{ persona.id }}">
-            <input type="hidden" name="project_id" value="{{ pro_id }}">
-            <button type="submit" name="submit_activity" class="btn btn-primary btn-sm">Add</button>
-        </form>
-
-        <!-- Add Step Form -->
-        <form action="" method="post" class="form-inline">
-            {% csrf_token %}
-            <input type="text" name="step_input" id="step_input" class="form-control" placeholder="Step">
-            <input type="hidden" name="default_activity_id" value="{{ default_activity_id }}">
-            <input type="hidden" name="persona_id" value="{{ persona.id }}">
-            <input type="hidden" name="project_id" value="{{ pro_id }}">
-            <button type="submit" name="submit_step" class="btn btn-success btn-sm">Add  </button>
-        </form>
-
-        <!-- Links -->
-        <a href="{% url 'edit_persona' org_id persona.id %}" class="btn btn-primary btn-sm">Edit Persona</a>
-        <a href="{% url 'list_personae' org_id %}" class="btn btn-secondary btn-sm">List Personae</a>
-    </div>
-</div>
-            
+            <div class="persona_display">
+                <b class="h4">Persona: </b>
+                <div id="persona_name" ondblclick="makeEditable(this)"
+                onblur="save_element_text(this, '{{persona.id}}',  'app_organization', 'Persona', 'name')"                    
+                >{% if persona.name != '' %}{{persona.name}}{% else %}Enter Persona name here ...{% endif %}</div>
+                &nbsp;&nbsp;
+                <input type="text" name="activity" id="activity" size="20">
+                <input type="hidden" name="persona_id" value="{{persona.id}}">
+                <input type="hidden" name="project_id" value="{{pro_id}}">
+                &nbsp;&nbsp;
+                <input type="submit" name="submit_activity" id="submit_activity">
+            </div>
+            <td width="20%">
+                <div class="text-end">
+                    <a href="{% url 'edit_persona' org_id persona.id %}" class="btn btn-sm btn-primary">Persona</a>
+                    &nbsp;&nbsp;
+                    <a href="{% url 'list_personae' org_id %}" class="btn btn-sm btn-primary">List Personae</a>
+                </div>
+            </td>
         </td>
         </form>
     </tr>

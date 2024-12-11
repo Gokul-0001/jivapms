@@ -102,6 +102,10 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
     activities = Activity.objects.filter(persona_id=persona_id, active=True)
     backlog = Backlog.objects.filter(pro_id=pro_id, persona_id=persona_id, active=True)
     story_maps = StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id)
+    if default_activity_id is None:
+        default_activity = Activity.objects.get(name='Default Activity', persona_id=persona_id)
+        request.session['default_activity_id'] = default_activity.id
+        default_activity_id = default_activity.id
     #StoryMapping.objects.all().delete()
     if request.method == 'POST':
         selected_project_id = request.POST.get('project_id')
@@ -113,10 +117,23 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
                 activity = Activity.objects.create(
                     name=activity_input,
                     persona_id=selected_persona_id,
-                    project_id=selected_project_id,  # Ensure you link to the project if needed
                     active=True
                 )
                 print(f">>> === ACTIVITY {activity} === <<<")
+            return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=selected_persona_id)
+        
+        elif 'submit_step' in request.POST:
+            step_input = request.POST.get('step_input')
+            def_activity_id_input = request.POST.get('default_activity_id')
+            if step_input:
+                step_save = Step.objects.create(
+                    name=step_input,
+                    persona_id=selected_persona_id,
+                    activity_id=def_activity_id_input,
+                    active=True
+                )
+                step_save.save()
+                print(f">>> === STEP {step_save} for {default_activity_id} === <<<")
             return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=selected_persona_id)
         
         elif 'submit_detail' in request.POST:
@@ -172,6 +189,85 @@ def create_story_map_from_backlog(request, pro_id):
     }       
     template_file = f"{app_name}/{module_path}/story_map/create_story_map_from_backlog.html"
     return render(request, template_file, context)
+
+
+
+@login_required
+def storymap_group_steps(request, pro_id, persona_id):
+    pro = get_object_or_404(Project, pk=pro_id)
+    persona = get_object_or_404(Persona, pk=persona_id)
+    organization = pro.org
+
+    # Fetch all active activities and unmapped steps
+    activities = Activity.objects.filter(active=True, persona=persona)
+    # Fetch updated unmapped steps including 'Default Activity'
+    unmapped_steps = Step.objects.filter(
+        Q(activity__isnull=True) | Q(activity__name='Default Activity'),
+        persona_id=persona_id,
+        active=True
+    )
+
+
+       
+    # send outputs info, template,
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'storymap_group_steps',
+        'pro_id': pro_id,
+        'pro': pro,
+        'project': pro,
+        'org': pro.org,
+        'persona_id': persona_id,
+        'persona': persona,
+        'activities': activities,
+        'unmapped_steps': unmapped_steps,
+        'organization': pro.org,
+        'org_id': pro.org_id,
+        'page_title': f'Group Steps to Activities',
+    }       
+    template_file = f"{app_name}/{module_path}/story_map/storymap_group_steps.html"
+    return render(request, template_file, context)
+
+
+
+
+###################################################################################################
+@login_required
+def ajax_map_steps_to_activity(request):
+    if request.method == 'POST':
+        step_ids = request.POST.getlist('step_ids[]')
+        activity_id = request.POST.get('activity_id')
+        persona_id = request.POST.get('persona_id')
+
+        try:
+            activity = Activity.objects.get(id=activity_id)
+            Step.objects.filter(id__in=step_ids).update(activity=activity)
+            # Fetch updated unmapped steps
+            unmapped_steps = Step.objects.filter(activity__isnull=True, persona_id=persona_id, active=True)
+
+            return JsonResponse({'status': 'success', 'message': 'Step updated successfully.'})
+        except Step.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Step not found.'})
+        except Activity.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Activity not found.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+
+@login_required
+def ajax_unmap_steps_from_activity(request):
+    if request.method == 'POST':
+        step_ids = request.POST.getlist('step_ids[]')
+
+        try:
+            Step.objects.filter(id__in=step_ids).update(activity=None)
+            return JsonResponse({'status': 'success', 'message': 'Steps unassigned from activity.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request.'})
 
 
 # ajax

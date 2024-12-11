@@ -1,0 +1,159 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    .container {
+    margin-top: 20px;
+}
+
+.list-group {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 15px;
+}
+
+.activity-container {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.activity-steps {
+    list-style: none;
+    padding-left: 0;
+}
+
+</style>
+<div class="content-wrapper">
+    
+    
+    <div class="contentbar mb-5" id="contentbar">                
+        <div class="container mt-4">
+            <h2>{{ page_title }}</h2>
+            <div class="row">
+                <!-- Left Side: Unmapped Steps -->
+                <div class="col-md-5">
+                    <h4>Unmapped Steps</h4>
+                    <ul id="unmapped-steps" class="list-group">
+                        {% for step in unmapped_steps %}
+                        <li class="list-group-item">
+                            {{ step.name }} <input type="checkbox" class="step-checkbox" value="{{ step.id }}"> 
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+        
+                <!-- Right Side: Activities and Steps -->
+                <div class="col-md-7">
+                    {% for activity in activities %}
+                    <div class="activity-container mb-4" id="activity-{{ activity.id }}">
+                        <h5>{{ activity.name }}</h5>
+                        <button class="btn btn-primary" onclick="assignStepsToActivity({{ activity.id }})">>> Assign</button>
+                        <button class="btn btn-danger" onclick="unassignStepsFromActivity({{ activity.id }})"><< Unassign</button>
+                        <ul class="list-group mt-3">
+                            {% for step in activity.activity_steps.all|filter_active %}
+                            <li class="list-group-item">
+                                {{ step.name }} <input type="checkbox" class="step-checkbox" value="{{ step.id }}"> 
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+</div>
+<script>
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Get selected step IDs
+    function getSelectedSteps(container) {
+        return Array.from(container.querySelectorAll('.step-checkbox:checked')).map(
+            (checkbox) => checkbox.value
+        );
+    }
+
+    // Assign selected steps to an activity
+    window.assignStepsToActivity = function (activityId) {
+        const stepIds = getSelectedSteps(document.getElementById('unmapped-steps'));
+        if (stepIds.length === 0) {
+            alert('Please select at least one step to assign.');
+            return;
+        }
+
+        $.ajax({
+            url: "{% url 'ajax_map_steps_to_activity' %}",
+            type: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                step_ids: stepIds,
+                activity_id: activityId,
+                persona_id: '{{ persona_id }}',
+            },
+            success: function (response) {
+                if (response.status === 'success') {
+                    location.reload();
+                } else {
+                    console.log('Error FIRST ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error assigning steps:', error);
+            },
+        });
+    };
+
+    // Unassign selected steps from an activity
+    window.unassignStepsFromActivity = function (activityId) {
+        const activityContainer = document.getElementById(`activity-${activityId}`);
+        const stepIds = getSelectedSteps(activityContainer);
+        if (stepIds.length === 0) {
+            alert('Please select at least one step to unassign.');
+            return;
+        }
+
+        $.ajax({
+            url: "{% url 'ajax_unmap_steps_from_activity' %}",
+            type: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                step_ids: stepIds,
+            },
+            success: function (response) {
+                if (response.status === 'success') {
+                    location.reload();
+                } else {
+                    console.log('Error SECOND ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error unassigning steps:', error);
+            },
+        });
+    };
+});
+
+</script>
+
+
+{% endblock content %}
+
