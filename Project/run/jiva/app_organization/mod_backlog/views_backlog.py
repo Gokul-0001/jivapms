@@ -1065,22 +1065,22 @@ def ajax_recieve_story_mapped_details(request):
                     'step_id': step_id,
                 }
             )
-        #StoryMapping.objects.all().delete()
+            #StoryMapping.objects.all().delete()
+            
+            if created:
+                message = "Story mapped successfully."
+            else:
+                message = "Story mapping updated successfully."
+            logger.debug(f">>> === Story Mapping: {message} === <<<")
         
-        if created:
-            message = "Story mapped successfully."
-        else:
-            message = "Story mapping updated successfully."
-        logger.debug(f">>> === Story Mapping: {message} === <<<")
-        
-        # Update backlog item with release
-        story_details.release_id = release_id
-        story_details.save()
-        print(f">>> === Story Mapping: {story_details.release_id} === <<<")
-        print(f">>> === Story Mapping1: {message} === <<<")
-        response = {"status": "success", "message": message}
-        print(f">>> ===" + json.dumps(response) + " === <<<")  # Validate this
-        return JsonResponse(response)
+            # Update backlog item with release
+            story_details.release_id = release_id
+            story_details.save()
+            print(f">>> === Story Mapping: {story_details.release_id} === <<<")
+            print(f">>> === Story Mapping1: {message} === <<<")
+            response = {"status": "success", "message": message}
+            print(f">>> ===" + json.dumps(response) + " === <<<")  # Validate this
+            return JsonResponse(response)
         #return JsonResponse({"status": "success", "message": message})
     except json.JSONDecodeError:
         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
