@@ -1164,10 +1164,7 @@ def ajax_recieve_story_mapped_details(request):
                 message = "Story mapped successfully." if created else "Story mapping updated successfully."
                 logger.info(f"Story Mapping: {message}")
 
-                # Update the backlog item's release
-                org_releases  = OrgRelease.objects.get(pro_id=project_id)
-                print(f">>> === RELEASE CHECKING ----> {release} === <<<")
-                print(f">>> === RELEASE CHECKING ----> {org_releases} === <<<")
+                # Update the backlog item with the release
                 story_details.release = release 
                 story_details.save()
                 logger.debug(f"Updated Backlog Release ID: {story_details.release_id}")
