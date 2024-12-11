@@ -1046,10 +1046,10 @@ def ajax_recieve_story_mapped_details(request):
         print(f">>> === Persona ID: {persona_id} === <<<")
         #StoryMapping.objects.all().delete()
         with transaction.atomic():  # Ensure atomicity
-            StoryMapping.objects.filter(story_id=story_id, active=False)
+            print(f">>> === Story ID: {story_id} === <<<")
             # Save or update the story mapping
             story_details = Backlog.objects.get(id=story_id)
-            
+            print(f">>> === Story ID: {story_details} === <<<")
             # Save or update the story mapping            
             mapping, created = StoryMapping.objects.update_or_create(
                 story_id=story_id,
@@ -1066,8 +1066,7 @@ def ajax_recieve_story_mapped_details(request):
                 }
             )
         #StoryMapping.objects.all().delete()
-        all_stories = StoryMapping.objects.filter(active=True)
-        logger.debug(f">>> === Story Mapping: {all_stories} === <<<")
+        
         if created:
             message = "Story mapped successfully."
         else:
@@ -1079,7 +1078,10 @@ def ajax_recieve_story_mapped_details(request):
         story_details.save()
         print(f">>> === Story Mapping: {story_details.release_id} === <<<")
         print(f">>> === Story Mapping1: {message} === <<<")
-        return JsonResponse({"status": "success", "message": message})
+        response = {"status": "success", "message": message}
+        print(f">>> ===" + json.dumps(response) + " === <<<")  # Validate this
+        return JsonResponse(response)
+        #return JsonResponse({"status": "success", "message": message})
     except json.JSONDecodeError:
         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
         print(f">>> === Story Mapping2: {message} === <<<")
