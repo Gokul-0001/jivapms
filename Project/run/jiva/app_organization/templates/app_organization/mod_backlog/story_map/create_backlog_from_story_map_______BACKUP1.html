@@ -1,0 +1,976 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css_wo_sidebar.html' %}
+
+<style>
+   
+    .content-header1 {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+
+    .display-container-persona {
+        margin-top: 10px;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+
+
+    .content-area {
+        display: flex;
+        align-items: center; /* Align content vertically in the middle */
+        margin-bottom: 10px;
+    }
+
+    .content-header {
+        margin-top: 10px;
+        font-weight: bold;
+        width: 20px;
+        margin-right: 10px;
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .display-container {
+        flex-grow: 1;
+        margin-top: 10px;
+        padding: 10px;
+        overflow-y: auto;
+        background-color: #f4f4f4;
+        max-height: 150px; /* Set minimum height */
+    }
+
+    .display-container1 {
+        flex-grow: 1;
+        margin-top: 10px;
+        padding: 10px;
+        overflow-y: auto;
+
+        max-height: 150px; /* Set minimum height */
+    }
+    
+    .details-container {
+        min-height: 300px;
+    }
+    .release-container {
+        min-height: 200px;
+    }
+    
+    .release-area {
+        position: relative; /* Establish a stacking context */
+        min-height: 200px; /* Adjust based on content */
+        width: 100%; /* Ensure full width */
+    }
+    .persona_display {
+
+        border: 1px solid #ccc;
+        background-color: yellow;
+        z-index: 1;
+    }
+
+    /** testing - start */
+
+    .step-item {
+        display: inline-block;
+        min-width: 50px;
+        max-width: 120px;
+        background: #eef;
+        border: 1px solid #bbb;
+        padding: 5px;
+        margin-right: 10px;
+        font-size: 0.7rem;
+        white-space: normal; /* Allow text to wrap within the item */
+        overflow: hidden; /* Prevent text from spilling out */
+        text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+        vertical-align: top;
+        box-sizing: border-box;
+        word-wrap: break-word; /* Break long words onto the next line */
+    }
+    .step-item:last-child {
+        margin-right: 0; /* Remove margin for the last item to use the space effectively */
+    }
+
+
+    .vertical-line {
+        position: absolute; /* Positioned absolutely relative to a positioned ancestor */
+        border-left: 2px dashed lightgray; /* Solid black line of 2px */
+        height: calc(100% - 140px); /* Adjust if there's any offset needed */
+        top: 140px; /* Offset from the top if needed */
+        pointer-events: none; /* Prevent the line from capturing clicks */
+    }
+    
+
+   
+    /* Optional: Styling for drop zones when an item is dragged over */
+    .release-drop-zone {
+        border: 2px dashed #ccc;
+        min-height: 50px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .release-drop-zone.dropped {
+        background-color: #e6ffed;
+    }
+    .step-item.selected {
+    background-color: #cce5ff; /* Highlight selected steps */
+    border-color: #007bff;
+}
+
+
+
+/* Add Step Button Styles */
+.add-step-button, .add-details-button {
+    background-color: #f9f9f9; /* Very light color */
+    border: 1px solid #ccc;
+    color: #555; /* Darker gray for the "+" symbol */
+    padding: 3px 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-top: 5px;
+    border-radius: 20%;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.add-step-button:hover, .add-details-button:hover {
+    background-color: #e6e6e6; /* Slightly darker on hover */
+    border-color: #999;
+}
+
+/* Optional: Step Item Styles */
+.step-item {
+    padding: 5px;
+    margin: 2px 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: grab;
+    z-index: 2;
+}
+
+.step-item:active {
+    cursor: grabbing;
+}
+
+.add-steps-wrapper {
+    position: absolute;
+    right: 10%; /* Distance from the right side of the page */
+    top: 25%;
+
+}
+
+.steps-row-start {
+    position: relative; /* Ensure the button stays within the row */
+}
+
+.add-detail-wrapper {
+    position: absolute;
+    right: -28%; /* Distance from the right side of the page */
+    top: 0; /* Align it with the top of the row */
+}
+
+.backlog-drop-zone {
+    position: relative; /* Ensure the button stays within the row */
+}
+.step-item {
+    border: 1px solid #ddd;
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+    user-select: none; /* Prevent text selection */
+}
+
+.step-item.selected {
+    background-color: #cce5ff;
+    border-color: #007bff;
+}
+
+.selection-box {
+    position: absolute;
+    z-index: 1000;
+    border: 1px dashed #007bff;
+    background-color: rgba(0, 123, 255, 0.2);
+    pointer-events: none;
+}
+
+
+.context-menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.context-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.context-menu ul li {
+    padding: 5px 10px;
+    cursor: pointer;
+    position: relative;
+}
+
+.context-menu ul li:hover {
+    background-color: #f5f5f5;
+}
+
+.context-menu .submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.context-menu ul li:hover > .submenu {
+    display: block;
+}
+
+
+
+
+
+.persona-container {
+        padding: 10px 15px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .persona-section {
+        flex: 1 1 20%; /* Takes 20% of space */
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .persona-name {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      
+        width: 40%;
+        
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .actions-section {
+        flex: 1 1 ; /* Takes the remaining space */
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 15px;
+    }
+
+    .form-inline {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .activity_input_style {
+        max-width: 200px;
+    }
+    .form-inline .form-control {
+        max-width: 160px; /* Smaller width for compact inputs */
+        padding: 5px;
+        font-size: 0.9rem;
+    }
+
+    .btn-sm {
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+    .content-wrapper {
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            <table class="table table-bordereless" width="100%">
+                <tr>
+                    <td width="1%"><strong>Persona:</strong></td>
+                    <td width="8%" class="text-start"><div id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
+                        onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">{% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}</div></td>
+                    
+
+                    <td width="3%" class="text-end"><strong>Activity:</strong></td>
+                    <td width="3%">
+                        <!-- Add Activity Form -->
+                        <form action="" method="post" class="form-inline">
+                            {% csrf_token %}
+                            <input type="text" name="activity" id="activity" class="form-control activity_input_style" placeholder="Activity" width="100%">
+                            <input type="hidden" name="persona_id" value="{{ persona.id }}">
+                            <input type="hidden" name="project_id" value="{{ pro_id }}">
+                    </td>
+                    <td width="1%">
+                            <button type="submit" name="submit_activity" class="btn btn-primary btn-sm">Add</button>
+                        </form>
+                    </td>
+                    <td width="3%" class="text-end"><strong>Step:</strong></td>
+                    <td width="3%">
+                        <!-- Add Activity Form -->
+                        <form action="" method="post" class="form-inline">
+                            {% csrf_token %}
+                            <input type="text" name="step_input" id="step_input" class="form-control" placeholder="Step">
+                            <input type="hidden" name="default_activity_id" value="{{ default_activity_id }}">
+                            <input type="hidden" name="persona_id" value="{{ persona.id }}">
+                            <input type="hidden" name="project_id" value="{{ pro_id }}">
+                    </td>
+                    <td width="1%">
+                            <button type="submit" name="submit_step" class="btn btn-success btn-sm">Add  </button>
+                    </td>
+                    <td width="1%">
+                            <a href="{% url 'storymap_group_steps' pro_id persona_id %}" class="btn btn-sm btn-primary">Group</a>
+                        </form>
+                    </td>
+                    <td width="6%" class="text-end">
+                         <!-- Links -->
+                        <a href="{% url 'edit_persona' org_id persona.id %}" class="btn btn-primary btn-sm">Edit Persona</a>
+                        <a href="{% url 'list_personae' org_id %}" class="btn btn-secondary btn-sm">List Personae</a>
+                    </td>
+
+                </tr>
+            </table>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-md-2">
+            <table class="table bordered">
+                 <!-- Backlog Row -->
+                  
+    <tr id="details-row">
+        <td colspan="" class="backlog-drop-zone"
+        ondragover="allowDrop(event)"
+        ondrop="dropToBacklog(event)">
+        <strong>Backlog</strong>
+        <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="project_id" value="{{ pro_id }}">
+        <input type="hidden" name="persona_id" value="{{ persona.id }}">
+        <input type="hidden" name="submit_detail" value="submit_detail">
+            <input type="text" name="detail" id="detail" >
+        </form>
+        
+        {% for backlog_item in backlog|filter_active %}
+        {% if backlog_item.release_id == None  %}
+        <div class="step-item draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"
+        ondblclick="makeEditable(this);" 
+        onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Backlog', 'name')"    
+        
+        >
+            {{ backlog_item.name }}  
+        </div>
+        {% endif %}
+        {% endfor %}
+        </td>
+    </tr>
+
+            </table>
+        </div>
+        <div class="col col-md-10">
+            <table class="table table-borderless">
+                <!-- Activities Row -->
+                <tr>
+                    <td width="3%">
+                        <div class="content-header">Activities</div>
+                    </td>
+                    {% for activity in activities %}
+                        {% with activity.activity_steps.all|filter_active|length as step_count %}
+                            {% if step_count > 0 %}
+                                <td colspan="{{ step_count }}" class="activity-header" style="border-left: 3px solid #007bff;">
+                                    <div class="step-item" draggable="true" id="activity-{{ activity.id }}">
+                                        {{ activity.name }} ({{ step_count }})
+                                    </div>
+                                </td>
+                            {% else %}
+                                <input type="hidden" {% if activity.name == 'Default Activity' %}data-default-activity-id="{{ activity.id }}"{% endif %}>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+            
+                <!-- Steps Row -->
+                <tr id="steps-row">
+                    <td width="3%">
+                        <div class="content-header">Steps</div>
+                    </td>
+                    {% for activity in activities %}
+                        {% with activity.activity_steps.all|filter_active as steps %}
+                            {% for step in steps %}
+                                <td class="step-cell" style="border-left: {% if forloop.first %}3px solid #007bff;{% else %}none;{% endif %}">
+                                    <div class="step-item" draggable="true" id="step-{{ step.id }}"
+                                         ondblclick="makeEditable(this);"
+                                         onblur="save_element_text(this, '{{ step.id }}', 'app_organization', 'Step', 'name')">
+                                        {{ step.name }}
+                                    </div>
+                                </td>
+                            {% endfor %}
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+            
+                <!-- Releases Rows -->
+                {% for release in releases %}
+                    <tr id="release-row-{{ release.id }}">
+                        <td width="3%">
+                            <div class="content-header">{{ release.name }}</div>
+                        </td>
+                        {% for activity in activities %}
+                            {% with activity.activity_steps.all|filter_active as steps %}
+                                {% for step in steps %}
+                                    <td class="release-drop-zone"
+                                        data-release-id="{{ release.id }}"
+                                        data-activity-id="{{ activity.id }}"
+                                        data-step-id="{{ step.id }}"
+                                        ondragover="allowDrop(event)"
+                                        ondrop="drop(event)"
+                                        style="border-left: {% if forloop.first %}3px solid #007bff;{% else %}none;{% endif %};">
+                                        
+                                        {% for story_map in story_maps %}
+                                            {% if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id and story_map.active %}
+                                                <div class="step-item draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
+                                                     ondblclick="makeEditable(this);" 
+                                                     onblur="save_element_text(this, '{{ story_map.story_id }}', 'app_organization', 'Backlog', 'name')">
+                                                    {{ story_map.story_name }}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+                        <!-- Optional: Add extra empty cells if needed -->
+                        <td></td>
+                        <td></td>
+                    </tr>
+                {% endfor %}
+            </table>
+            
+            
+            
+
+</div>
+</div>
+</div>
+<script>
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 'a') {
+            // Focus on the activity input
+            event.preventDefault(); // Prevent default Ctrl+A behavior (select all)
+            document.getElementById('activity').focus();
+        } else if (event.ctrlKey && event.key === 's') {
+            // Focus on the step input
+            event.preventDefault(); // Prevent default Ctrl+S behavior (save)
+            document.getElementById('step_input').focus();
+        } else if (event.ctrlKey && event.key === 'b') {
+            // Focus on the detail input
+            event.preventDefault(); // Prevent default behavior
+            document.getElementById('detail').focus();
+        }
+    });
+</script>
+<script>
+// vars
+var parentIDfromDefaultActivity;
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach dragstart listeners to existing draggable-backlog elements
+    document.querySelectorAll('.draggable-backlog').forEach(function(item) {
+        item.addEventListener('dragstart', function(event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+        });
+    });
+
+    // Attach event listeners to existing add-step and add-details buttons
+    document.querySelectorAll('.add-step-button').forEach(function(button) {
+        button.addEventListener('click', handleAddStep);
+    });
+
+    document.querySelectorAll('.add-details-button').forEach(function(button) {
+        button.addEventListener('click', handleAddDetails);
+    });
+});
+
+
+// Function to handle adding a new step
+function handleAddStep(event) {
+    const button = event.target;
+    const stepsContainer = button.parentElement;
+    const activityId = stepsContainer.getAttribute('data-activity-id');
+    var defaultActivityElement = document.querySelector('[data-default-activity-id]');
+    if (defaultActivityElement) {
+        parentIDfromDefaultActivity = defaultActivityElement.getAttribute('data-default-activity-id');
+    } else {
+        console.error("No default activity found.");
+        return; // Skip this iteration if no parent ID is found
+    }
+  
+    // AJAX call to save each step
+    $.ajax({
+        url: '/common/common_ajax/ajax_create_record/',
+        type: 'POST',
+        data: {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'app_name': 'app_organization',
+            'model_name': 'Step',
+            'field_name': 'name',
+            'name': '',
+            'activity_id': parentIDfromDefaultActivity,
+            'persona_id': {{ persona.id }},
+        },
+        dataType: 'json',
+        success: function(data) {
+            if (data.status === 'success') {               
+                console.log('Success:', data);
+                refreshStepsRow();
+                refreshAllReleaseRows();
+            } else {
+                console.error('Error:', data.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+        }
+    });
+
+
+} // end handleAddStep
+
+
+ // Function to refresh the steps row
+ function refreshStepsRow() {
+    $.ajax({
+        url: "{% url 'ajax_storymap_refresh_steps_row' %}",
+        type: 'POST',
+        data: {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'pro_id': {{ pro_id }},
+            'persona_id': {{ persona.id }},
+
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (data.status === 'success') {
+                const stepsRow = document.getElementById('steps-row');
+                stepsRow.innerHTML = data.html;
+
+                // Reattach event listeners for the "+" buttons
+                document.querySelectorAll('.add-step-button').forEach(function (button) {
+                    button.addEventListener('click', handleAddStep);
+                });
+                // **Reattach dragstart listeners to new draggable-backlog elements within stepsRow**
+                stepsRow.querySelectorAll('.draggable-backlog').forEach(function(item) {
+                item.addEventListener('dragstart', function(event) {
+                        event.dataTransfer.setData("text/plain", event.target.id);
+                    });
+                });
+                console.log("Steps row refreshed successfully.");
+            } else {
+                console.error("Error refreshing steps row:", data.message);
+                //alert("Failed to refresh steps row: " + data.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("AJAX Error:", status, error);
+            //alert("An error occurred while refreshing the steps row.");
+        }
+    });
+} // end refreshStepsRow
+
+</script>
+
+
+<script>
+    // Attach event listeners to all existing add-step buttons
+document.querySelectorAll('.add-details-button').forEach(function(button) {
+    button.addEventListener('click', handleAddDetails);
+});
+// Function to handle adding a new step
+function handleAddDetails(event) {
+  
+
+
+
+    const button = event.target;    
+    const payload = {
+        app_name: 'app_organization', // Replace with the actual app name
+        model_name: 'Backlog', // Model name
+        field_name: 'name', // Field to set (default: 'name')
+        name: '', // Initial name of the backlog (can be empty)
+        pro_id: {{pro_id}}, // Example: Pass the project ID
+        persona_id: {{persona.id}}, // Example: Pass the persona ID
+
+        csrfmiddlewaretoken: '{{ csrf_token }}', // Include CSRF token
+    };
+
+    $.ajax({
+        url: '/common/common_ajax/ajax_create_record/', // Update with the correct endpoint URL
+        type: 'POST',
+        data: payload,
+        success: function (response) {
+            if (response.status === 'success') {
+                console.log('Created Backlog ID:', response.created_id);
+                // Optionally refresh the page or update the UI dynamically
+                refreshDetailsRow();
+            } else {
+                //alert('Error: ' + response.message);
+                console.log('Error creating the backlog:', response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+            //alert('An error occurred while creating the backlog.');
+        }
+    });
+
+} // end handleAddDetails
+
+
+ // Function to refresh the steps row
+ function refreshDetailsRow() {
+    $.ajax({
+        url: "{% url 'ajax_storymap_refresh_details_row' %}",
+        type: 'POST',
+        data: {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'pro_id': {{ pro_id }},
+            'persona_id': {{ persona.id }},
+
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (data.status === 'success') {
+                const detailsRow = document.getElementById('details-row');
+                detailsRow.innerHTML = data.html;
+                //console.log(data.html);
+                // Reattach event listeners for the "+" buttons
+                document.querySelectorAll('.add-details-button').forEach(function (button) {
+                    button.addEventListener('click', handleAddDetails);
+                });
+                // **Reattach dragstart listeners to new draggable-backlog elements within detailsRow**
+                detailsRow.querySelectorAll('.draggable-backlog').forEach(function(item) {
+                item.addEventListener('dragstart', function(event) {
+                        event.dataTransfer.setData("text/plain", event.target.id);
+                    });
+                });
+                console.log("Details row refreshed successfully.");
+            } else {
+                console.error("Error refreshing Details row:", data.message);
+                //alert("Failed to refresh Details row: " + data.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("AJAX Error:", status, error);
+            //alert("An error occurred while refreshing the Details row.");
+        }
+    });
+} // end refreshDetailsRow
+
+</script>
+
+
+
+<script>
+    // Allow drop by preventing default behavior
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+    
+    // Handle the drag start event
+    document.querySelectorAll('.draggable-backlog').forEach(item => {
+        item.addEventListener('dragstart', function(event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+        });
+    });
+    
+    function drop(event) {
+    event.preventDefault();
+
+    // Get the dragged element's ID
+    const draggedId = event.dataTransfer.getData("text/plain");
+    const draggedElement = document.getElementById(draggedId);
+
+    if (!draggedElement) {
+        console.error('Dragged element not found.');
+        return;
+    }
+
+    // Extract the backlog ID
+    const backlogId = draggedId.split('-')[1];
+
+    // Get the drop zone's data attributes
+    const dropZone = event.target.closest('.release-drop-zone');
+    const releaseId = dropZone.getAttribute('data-release-id');
+    const activityId = dropZone.getAttribute('data-activity-id');
+    const stepId = dropZone.getAttribute('data-step-id');
+
+    // Optional: Visual feedback for successful drop
+    dropZone.classList.add('dropped');
+
+    // Prepare the AJAX payload
+    const payload = {
+        project_id: {{ pro_id }},
+        story_id: backlogId,
+        release_id: releaseId,
+        iteration_id: '-1', // To skip iteration
+        activity_id: activityId,
+        step_id: stepId,
+        persona_id: {{ persona.id }},
+    };
+
+    // Send the AJAX request to the backend
+    fetch("{% url 'ajax_recieve_story_mapped_details' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify(payload),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((err) => {
+                    throw new Error(err.message || 'Server Error');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.status === 'success') {
+                // Move the dragged element to the drop zone
+                const clonedElement = draggedElement.cloneNode(true);
+                dropZone.appendChild(clonedElement);
+                
+                // Optionally, remove the element from the source container
+                draggedElement.remove();
+                // Refresh the specific release row
+                refreshReleaseRows([releaseId]);
+
+                console.log('Backlog item successfully assigned to the release.');
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error updating story location:', error.message);
+            dropZone.classList.remove('dropped');
+            //alert('Failed to assign backlog item: ' + error.message);
+        });
+}
+
+function refreshReleaseRows(releaseIds) {
+    const payload = {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        pro_id: {{ pro_id }},
+        persona_id: {{ persona.id }},
+        release_ids: releaseIds, // Array of release IDs to refresh
+    };
+
+    $.ajax({
+        url: "{% url 'ajax_refresh_release_rows' %}",
+        type: 'POST',
+        data: payload,
+        success: function (data) {
+            if (data.status === 'success') {
+                Object.keys(data.html).forEach((releaseId) => {
+                const releaseRow = document.getElementById(`release-row-${releaseId}`);
+                if (releaseRow) {
+                    // Parse the HTML for the release row
+                    const tempContainer = document.createElement('div');
+                    tempContainer.innerHTML = data.html[releaseId]; // Add new HTML temporarily
+
+                    // Iterate over new HTML `<td>` elements and update only the matching ones
+                    tempContainer.querySelectorAll('td.release-drop-zone').forEach((newTd) => {
+                        const activityId = newTd.getAttribute('data-activity-id');
+                        const stepId = newTd.getAttribute('data-step-id');
+
+                        // Find the corresponding existing `<td>` in the current release row
+                        const existingTd = releaseRow.querySelector(
+                            `td.release-drop-zone[data-activity-id="${activityId}"][data-step-id="${stepId}"]`
+                        );
+
+                        if (existingTd) {
+                            // Replace the inner content of the specific `<td>`
+                            existingTd.innerHTML = newTd.innerHTML;
+                        }
+                    });
+                }
+            });
+
+
+                // Reattach drag-and-drop event listeners
+                attachDragAndDropHandlers();
+
+                console.log("Specific release rows refreshed successfully.");
+            } else {
+                console.error("Error refreshing release rows:", data.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("AJAX Error:", status, error);
+        },
+    });
+}
+function attachDragAndDropHandlers() {
+    document.querySelectorAll('.release-drop-zone').forEach(function (dropZone) {
+        dropZone.addEventListener('dragover', allowDrop);
+        dropZone.addEventListener('drop', drop);
+    });
+
+    document.querySelectorAll('.draggable-backlog').forEach(function (draggable) {
+        draggable.addEventListener('dragstart', function (event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+        });
+    });
+}
+
+function refreshAllReleaseRows() {
+    const releaseIds = Array.from(document.querySelectorAll('[id^="release-row-"]')).map(
+        (row) => row.id.split('-')[2]
+    );
+
+    refreshReleaseRows(releaseIds);
+    window.location.reload();
+}
+
+function dropToBacklog(event) {
+    event.preventDefault();
+
+    // Get the dragged element's ID
+    const draggedId = event.dataTransfer.getData("text/plain");
+    const draggedElement = document.getElementById(draggedId);
+
+    if (!draggedElement) {
+        console.error('Dragged element not found.');
+        return;
+    }
+
+    // Extract the backlog ID
+    const backlogId = draggedId.split('-')[1];
+
+    // Define the AJAX payload
+    const payload = {
+        project_id: {{ pro_id }},
+        backlog_id: backlogId,
+        persona_id: {{ persona.id }},
+        release_id: null, // Remove release association
+    };
+
+    // Send the AJAX request to the backend
+    fetch("{% url 'ajax_update_backlog_release' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify(payload),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((err) => {
+                    throw new Error(err.message || 'Server Error');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.status === 'success') {
+                // Append the dragged element back to the backlog drop zone
+                const backlogDropZone = document.querySelector('.backlog-drop-zone');
+                clonedElement = draggedElement.cloneNode(true);
+                backlogDropZone.appendChild(clonedElement);
+
+                // Optional: Remove the dropped element from its previous release zone
+                draggedElement.remove();
+
+                console.log('Backlog item successfully moved back.');
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error moving backlog item back:', error.message);
+        });
+}
+
+
+
+
+</script>
+<script>
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
+    }
+
+    function save_element_text(element, id,  appName, modelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_element_text/',
+            type: 'POST',
+            data : {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'model_name': modelName,
+            'app_name': appName,
+            'field_name': fieldName,
+            'text': element.textContent, 
+            'id': id,
+            },
+            dataType: 'json',
+            success: function(data) {
+                console.log("Success:");
+                // console.log(data);
+            },
+            error: function(xhr, status, error) {
+                console.error('SAVE ELEMENT Error:', status, error);
+            }
+        })
+    }
+    
+</script>
+
+{% endblock content %}
