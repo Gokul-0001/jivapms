@@ -375,7 +375,7 @@
                                 <input type="text" name="detail" id="detail" >
                             </form>
                             <br>
-               
+                            <hr>
                             {% for backlog_item in backlog|filter_active %}
                             {% if backlog_item.release_id == None  %}
                             <div class="backlog-item post-it draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"
@@ -509,15 +509,6 @@
 </script>
 
 <script>
-
-     // Event Delegation for dragstart
-     document.addEventListener('dragstart', function(event) {
-        if (event.target.classList.contains('draggable-backlog')) {
-            event.dataTransfer.setData("text/plain", event.target.id);
-        }
-    });
-
-
     function makeEditable(element) {
         element.contentEditable = true;
         element.focus();
@@ -622,11 +613,6 @@
             if (data.status === 'success') {
                 // Move the dragged element to the drop zone
                 const clonedElement = draggedElement.cloneNode(true);
-                // Remove backlog-related classes
-                clonedElement.classList.remove('backlog-item');
-
-                // Add release-related classes
-                clonedElement.classList.add('step-item');
                 dropZone.appendChild(clonedElement);
                 
                 // Optionally, remove the element from the source container
@@ -695,11 +681,6 @@ function dropToBacklog(event) {
                 // Append the dragged element back to the backlog drop zone
                 const backlogDropZone = document.querySelector('.backlog-drop-zone');
                 clonedElement = draggedElement.cloneNode(true);
-                // Remove release-related classes
-                clonedElement.classList.remove('step-item');
-
-                // Add backlog-related classes
-                clonedElement.classList.add('backlog-item');
                 backlogDropZone.appendChild(clonedElement);
 
                 // Optional: Remove the dropped element from its previous release zone

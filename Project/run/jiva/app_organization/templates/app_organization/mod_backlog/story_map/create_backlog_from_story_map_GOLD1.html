@@ -138,40 +138,6 @@
         padding: 4px 8px;
     }
 }
-/* Post-it Note Styles */
-.post-it {
-    position: relative; /* Required for the folded corner */
-    min-width: 100px; /* Increased min-width for better appearance */
-    max-width: 200px; /* Increased max-width for better readability */
-    background-color: #fff9c4; /* Light Yellow Background */
-    border: 1px solid #f0e68c; /* Khaki Border */
-    padding: 10px;
-    margin: 10px;
-    font-size: 0.9rem;
-    white-space: normal; /* Allow text to wrap */
-    overflow: hidden; /* Prevent text overflow */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Soft Shadow */
-    border-radius: 5px; /* Slightly rounded corners */
-    box-sizing: border-box; /* Ensure padding and border are included in the width */
-    word-wrap: break-word; /* Break long words onto the next line */
-}
-
-/* Folded Corner */
-.post-it::after {
-    content: "";
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background-color: #fff9c4; /* Same as the background color */
-    border-left: 1px solid #f0e68c; /* Same as the border color */
-    border-top: 1px solid #f0e68c; /* Same as the border color */
-    top: -1px; /* Adjust to align with the border */
-    right: -1px; /* Adjust to align with the border */
-    transform: rotate(45deg);
-    box-shadow: -1px -1px 3px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
-}
-
 .step-item {
         display: inline-block;
         min-width: 50px;
@@ -220,39 +186,7 @@
         justify-content: center;
     }
 
-/* Different Background for Step Items */
-.step-item {
-    background-color: #e1f5fe; /* Light Blue Background */
-    border: 1px solid #81d4fa; /* Light Blue Border */
-}
 
-.step-item::after {
-    background-color: #e1f5fe; /* Match the step item's background */
-    border-left: 1px solid #81d4fa;
-    border-top: 1px solid #81d4fa;
-}
-
-/* Different Background for Backlog Items */
-.backlog-item {
-    background-color: #fff9c4; /* Light Yellow Background */
-    border: 1px solid #f0e68c; /* Khaki Border */
-}
-
-.backlog-item::after {
-    background-color: #fff9c4; /* Match the backlog item's background */
-    border-left: 1px solid #f0e68c;
-    border-top: 1px solid #f0e68c;
-}
-
-.activity-color {
-    background-color: lightyellow;
-    border: 1px solid lightcoral; /* Pink Border */
-}
-
-.step-color {
-    background-color: yellow; /* Light Green Background */
-    border: 1px solid #81c784; /* Green Border */
-}
 
 
 
@@ -375,10 +309,10 @@
                                 <input type="text" name="detail" id="detail" >
                             </form>
                             <br>
-               
+                            <hr>
                             {% for backlog_item in backlog|filter_active %}
                             {% if backlog_item.release_id == None  %}
-                            <div class="backlog-item post-it draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"
+                            <div class="backlog-item draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"
                             ondblclick="makeEditable(this);" 
                             onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Backlog', 'name')"    
                             
@@ -398,7 +332,7 @@
                 <strong>Story Mapping:</strong>&nbsp;&nbsp;{{persona}}
                 <div class="table-responsive">
                 <table class="table table-bordered">
-                    <!-- Activities Row --> 
+                    <!-- Activities Row -->
                     <tr>
                         <td width="3%">
                             <div class="content-header">Activities</div>
@@ -407,7 +341,7 @@
                             {% with activity.activity_steps.all|filter_active|length as step_count %}
                                 {% if step_count > 0 %}
                                     <td colspan="{{ step_count }}" class="activity-header" style="border-left: 3px solid lightgrey;">
-                                        <div class="step-item post-it activity-color" draggable="true" id="activity-{{ activity.id }}">
+                                        <div class="step-item" draggable="true" id="activity-{{ activity.id }}">
                                             {{ activity.name }} ({{ step_count }})
                                         </div>
                                     </td>
@@ -427,7 +361,7 @@
                             {% with activity.activity_steps.all|filter_active as steps %}
                                 {% for step in steps %}
                                     <td class="step-cell" style="border-left: {% if forloop.first %}3px solid lightgrey;{% else %}none;{% endif %}">
-                                        <div class="step-item post-it step-color" draggable="true" id="step-{{ step.id }}"
+                                        <div class="step-item" draggable="true" id="step-{{ step.id }}"
                                              ondblclick="makeEditable(this);"
                                              onblur="save_element_text(this, '{{ step.id }}', 'app_organization', 'Step', 'name')">
                                             {{ step.name }}
@@ -457,7 +391,7 @@
                                             
                                             {% for story_map in story_maps %}
                                                 {% if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id and story_map.active %}
-                                                    <div class="step-item post-it draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
+                                                    <div class="step-item draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
                                                          ondblclick="makeEditable(this);" 
                                                          onblur="save_element_text(this, '{{ story_map.story_id }}', 'app_organization', 'Backlog', 'name')">
                                                         {{ story_map.story_name }}
@@ -509,15 +443,6 @@
 </script>
 
 <script>
-
-     // Event Delegation for dragstart
-     document.addEventListener('dragstart', function(event) {
-        if (event.target.classList.contains('draggable-backlog')) {
-            event.dataTransfer.setData("text/plain", event.target.id);
-        }
-    });
-
-
     function makeEditable(element) {
         element.contentEditable = true;
         element.focus();
@@ -622,11 +547,6 @@
             if (data.status === 'success') {
                 // Move the dragged element to the drop zone
                 const clonedElement = draggedElement.cloneNode(true);
-                // Remove backlog-related classes
-                clonedElement.classList.remove('backlog-item');
-
-                // Add release-related classes
-                clonedElement.classList.add('step-item');
                 dropZone.appendChild(clonedElement);
                 
                 // Optionally, remove the element from the source container
@@ -695,11 +615,6 @@ function dropToBacklog(event) {
                 // Append the dragged element back to the backlog drop zone
                 const backlogDropZone = document.querySelector('.backlog-drop-zone');
                 clonedElement = draggedElement.cloneNode(true);
-                // Remove release-related classes
-                clonedElement.classList.remove('step-item');
-
-                // Add backlog-related classes
-                clonedElement.classList.add('backlog-item');
                 backlogDropZone.appendChild(clonedElement);
 
                 // Optional: Remove the dropped element from its previous release zone
