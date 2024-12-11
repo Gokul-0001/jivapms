@@ -1137,6 +1137,12 @@ def ajax_recieve_story_mapped_details(request):
                 # Fetch the story details
                 story_details = Backlog.objects.get(id=story_id)
                 logger.debug(f"Fetched Story Details: {story_details}")
+                # Validate release_id
+                try:
+                    release = OrgRelease.objects.get(id=release_id)  # Validate foreign key
+                except OrgRelease.DoesNotExist:
+                    logger.error(f"Invalid Release ID: {release_id}")
+                    return JsonResponse({"status": "error", "message": f"Release ID {release_id} does not exist"}, status=400)
 
                 # Save or update the story mapping
                 mapping, created = StoryMapping.objects.update_or_create(
