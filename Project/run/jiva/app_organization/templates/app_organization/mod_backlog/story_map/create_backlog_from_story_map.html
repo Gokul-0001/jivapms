@@ -297,6 +297,48 @@
 }
 
 
+.card {
+  position: relative;
+  background-color: #fffa65; /* Default Post-it yellow */
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15);
+  cursor: grab;
+  transition:  box-shadow 0.2s;
+  width: 250px; /* Fixed width for consistency */
+  word-wrap: break-word;
+}
+
+
+.card:hover {
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  transform: scale(1) rotate(0deg);
+}
+
+/* Optional: Add a small triangle to mimic the corner fold */
+.card::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-bottom: 15px solid #e0e0e0;
+}
+
+/* Text styling */
+.card p {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+
+
 </style>
 <div class="page-container">
     <!-- Custom Top Menu -->
@@ -457,7 +499,7 @@
                                             
                                             {% for story_map in story_maps %}
                                                 {% if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id and story_map.active %}
-                                                    <div class="step-item post-it draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
+                                                    <div class="step-item post-it card draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
                                                          ondblclick="makeEditable(this);" 
                                                          onblur="save_element_text(this, '{{ story_map.story_id }}', 'app_organization', 'Backlog', 'name')">
                                                         {{ story_map.story_name }}
@@ -626,7 +668,7 @@
                 clonedElement.classList.remove('backlog-item');
 
                 // Add release-related classes
-                clonedElement.classList.add('step-item');
+                clonedElement.classList.add('step-item', 'card');
                 dropZone.appendChild(clonedElement);
                 
                 // Optionally, remove the element from the source container
@@ -696,7 +738,7 @@ function dropToBacklog(event) {
                 const backlogDropZone = document.querySelector('.backlog-drop-zone');
                 clonedElement = draggedElement.cloneNode(true);
                 // Remove release-related classes
-                clonedElement.classList.remove('step-item');
+                clonedElement.classList.remove('step-item', 'card');
 
                 // Add backlog-related classes
                 clonedElement.classList.add('backlog-item');
