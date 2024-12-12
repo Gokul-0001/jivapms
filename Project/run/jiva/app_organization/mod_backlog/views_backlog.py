@@ -1020,6 +1020,79 @@ def ajax_fetch_persona_activities(request):
         return JsonResponse({'error': 'No persona selected'}, status=400)
 
 
+
+
+# @login_required
+# def ajax_recieve_story_mapped_details(request):
+#     try:
+#         data = json.loads(request.body)  # Correctly parsing JSON data from the request body
+#         project_id = data['project_id']
+#         story_id = data['story_id']
+#         release_id = data['release_id']
+#         iteration_id = data['iteration_id']
+#         activity_id = data['activity_id']
+#         step_id = data['step_id']
+#         persona_id = data['persona_id']
+        
+#         if iteration_id == '-1':
+#             iteration_id = None
+        
+#         print(f">>> === Project ID: {project_id} === <<<")
+#         print(f">>> === Story ID: {story_id} === <<<")
+#         print(f">>> === Release ID: {release_id} === <<<")
+#         print(f">>> === Iteration ID: {iteration_id} === <<<")
+#         print(f">>> === Activity ID: {activity_id} === <<<")
+#         print(f">>> === Step ID: {step_id} === <<<")
+#         print(f">>> === Persona ID: {persona_id} === <<<")
+#         #StoryMapping.objects.all().delete()
+#         with transaction.atomic():  # Ensure atomicity
+#             print(f">>> === Story ID: {story_id} === <<<")
+#             # Save or update the story mapping
+#             story_details = Backlog.objects.get(id=story_id)
+#             print(f">>> === Story ID: {story_details} === <<<")
+#             # Save or update the story mapping            
+#             mapping, created = StoryMapping.objects.update_or_create(
+#                 story_id=story_id,
+#                 defaults={
+#                     'pro_id': project_id,
+#                     'persona_id': persona_id,
+#                     'mapped_at': timezone.now(),
+#                     'active': True,
+#                     'story_name': story_details.name,
+#                     'release_id': release_id,
+#                     'iteration_id': iteration_id,
+#                     'activity_id': activity_id,
+#                     'step_id': step_id,
+#                 }
+#             )
+#             #StoryMapping.objects.all().delete()
+            
+#             if created:
+#                 message = "Story mapped successfully."
+#             else:
+#                 message = "Story mapping updated successfully."
+#             logger.debug(f">>> === Story Mapping: {message} === <<<")
+        
+#             # Update backlog item with release
+#             story_details.release_id = release_id
+#             story_details.save()
+#             print(f">>> === Story Mapping: {story_details.release_id} === <<<")
+#             print(f">>> === Story Mapping1: {message} === <<<")
+#             response = {"status": "success", "message": message}
+#             print(f">>> ===" + json.dumps(response) + " === <<<")  # Validate this
+#             return JsonResponse(response)
+#         #return JsonResponse({"status": "success", "message": message})
+#     except json.JSONDecodeError:
+#         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
+#         print(f">>> === Story Mapping2: {message} === <<<")
+#         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+#     except KeyError:
+#         logger.debug(f">>> === Story Mapping: Missing required parameters === <<<")
+#         print(f">>> === Story Mapping2: {message} === <<<")
+#         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
+
+
+
 @login_required
 def ajax_recieve_story_mapped_details(request):
     try:
@@ -1070,7 +1143,7 @@ def ajax_recieve_story_mapped_details(request):
                     defaults={
                         'pro_id': project_id,
                         'persona_id': persona_id,
-                        'mapped_at': now(),
+                        'mapped_at': timezone.now(),
                         'active': True,
                         'story_name': story_details.name,
                         'release_id': release_id,
@@ -1084,7 +1157,7 @@ def ajax_recieve_story_mapped_details(request):
                 message = "Story mapped successfully." if created else "Story mapping updated successfully."
                 logger.info(f"Story Mapping: {message}")
 
-                # Update the backlog item with the release
+                
                 story_details.release = release 
                 story_details.save()
                 logger.debug(f"Updated Backlog Release ID: {story_details.release_id}")

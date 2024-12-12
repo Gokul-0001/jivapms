@@ -346,10 +346,7 @@
         <div class="top-menu">
             <!-- Left-Aligned Section (40%) -->
             <div class="left-section">
-                <b>Persona:</b>
-                <b id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
-                onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">
-                {% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}</b>
+               <b>Story Mapping</b>
             </div>
 
             <!-- Right-Aligned Section (60%) -->
@@ -437,7 +434,10 @@
             <!-- Right Sidebar (Story Map) -->
             <div class="col col-md-10 text-start story-map-container">
                 <i class="bi bi-person-heart"></i> &nbsp;
-                <strong>Story Mapping:</strong>&nbsp;&nbsp;{{persona}}
+                <b>Persona:</b>
+                <b id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
+                onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">
+                {% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}</b>
                 <div class="table-responsive">
                 <table class="table table-bordered">
                     <!-- Activities Row --> 
