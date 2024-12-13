@@ -1128,6 +1128,8 @@ def ajax_recieve_story_mapped_details(request):
         with transaction.atomic():
             try:
                 # Fetch the story details
+                project = Project.objects.get(id=project_id)
+                persona = Persona.objects.get(id=persona_id)
                 story_details = Backlog.objects.get(id=story_id)
                 logger.debug(f"Fetched Story Details: {story_details}")
                 # Validate release_id
@@ -1157,7 +1159,23 @@ def ajax_recieve_story_mapped_details(request):
                 message = "Story mapped successfully." if created else "Story mapping updated successfully."
                 logger.info(f"Story Mapping: {message}")
 
-                
+
+                # current update the backlog as type user story
+                # 1. find the user story type for the org
+                # 2. update the story type to user story
+                # backlog_types = BacklogType.objects.filter(active=True)
+                # print(f">>> === Backlog Types: {backlog_types} === <<<")
+                backlog_type = None
+                if BacklogType.objects.filter(pro=project, name='User Story').exists():
+                    backlog_type = BacklogType.objects.get(pro=project, name='User Story')
+                    logger.debug(f">>> === Backlog Type: US {backlog_type} EXISTS for project: {project} {project.id}=== <<<")
+                else:
+                    backlog_type = BacklogType.objects.create(pro=project, name='User Story', active=True)
+                    logger.debug(f">>> === Backlog Type: US {backlog_type} created for project: {project} {project.id}=== <<<")
+                    
+                story_details.type = backlog_type                
+                story_details.project = project
+                story_details.persona = persona                
                 story_details.release = release 
                 story_details.save()
                 logger.debug(f"Updated Backlog Release ID: {story_details.release_id}")

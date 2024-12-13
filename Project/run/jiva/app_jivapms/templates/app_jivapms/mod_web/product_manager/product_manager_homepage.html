@@ -14,43 +14,9 @@
             <div id="content">
                 <!-- Welcome Super Admin dashboard -->
                 <div id="listSiteContent" style="display: none;">
-                    <h1>Welcome {{role}}: {{user.username}} </h1>
+                    <h1>Welcome Product Manager: {{user.username}}</h1>
                     <p>This is the main dashboard for this Jiva PMS site and installation, providing access to setup and configure the Organization.</p>
                     
-                    <div class="row">
-                        <div class="col col-md-6">
-                            {{user_roles_data}} <br>
-                            <hr>
-                            {{project_details}} 
-                            <br>
-                            <hr>
-                            {% for user_data in user_roles_data %}
-                            <h3>User: {{ user_data.username }}</h3>
-                            <ul>
-                                {% for role in user_data.roles %}
-                                    <li>
-                                        Role Name: {{ role.role_name }}<br>
-                                        Organization: {{ role.org_name }}<br>
-                                        Lowercase Role Name: {{ role.lc_role_name }}
-                                        
-                                       
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                            {% endfor %}                          
-                            
-                        </div>
-                        <div class="col col-md-6">
-                            {% for project_detail in project_details %}                            
-                                <b>{{project_detail.org.id}}:{{project_detail.org.name}}:{{project_detail.project_id}}:{{project_detail.project_name}}:{{project_detail.role}}         </b>              
-                                <br>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-
-
-
                     <div class="row">
                         <div class="col-md-4">
                             <b>Value Stream Mapping</b>

@@ -3,9 +3,9 @@ from app_organization.mod_app.all_model_imports import *
 from app_organization.mod_app.all_form_imports import *
 from app_organization.mod_backlog.models_backlog import *
 
-from app_organization.mod_release.models_release import *
-from app_organization.mod_iteration.models_iteration import *
-
+from app_organization.mod_org_release.models_org_release import *
+from app_organization.mod_org_iteration.models_org_iteration import *
+from app_organization.mod_persona.models_persona import *
 from app_organization.mod_backlog_type.models_backlog_type import *
 
 

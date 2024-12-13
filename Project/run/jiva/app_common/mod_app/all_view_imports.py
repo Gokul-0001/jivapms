@@ -50,6 +50,7 @@ from lxml import etree
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.db import transaction
+from django.utils.safestring import mark_safe
 import traceback
 
 import base64

@@ -87,8 +87,7 @@ def index(request):
 
     # Assign template based on role
     template_url = get_template_for_role(context)
-    context_json = context
-    context['context_json'] = context_json
+
     try:
         get_template(template_url)
         return render(request, template_url, context)
@@ -120,6 +119,38 @@ def get_template_for_role(context):
     else:
         return f"{app_name}/{module_dirname}/general_homepage/general_homepage.html"
 
+def role_homepage(request, role_name):
+    user = request.user
+    member = Member.objects.get(user=user, active=True)
+    roles = member.member_roles.filter(active=True)
+    org_id = None
+    if request.GET.get('org_id'):
+        org_id = request.GET.get('org_id')
+        org = Organization.objects.get(id=org_id)
+    context = {
+        'parent_page': 'home',
+        'page': 'role_homepage',
+        'page_title': 'Role Home Page',
+        
+        'user': user,
+        'roles': roles,
+        'member': member,
+        'org_id': org_id,
+        'org': org,
+    }
+    template_url = f"app_jivapms/mod_web/{role_name}/{role_name}_homepage.html"
+
+    try:
+        # Try to load the template, if it exists
+        get_template(template_url)
+        logger.debug(f"Template found: {template_url}")
+        return render(request, template_url, context)
+    except TemplateDoesNotExist:
+        logger.error(f"Template not found: {template_url}")
+        # Fall back to the default template
+        general_template_url = "app_jivapms/mod_web/general_homepage/general_homepage.html"
+        return render(request, general_template_url, context)
+
 def public_frameworks(request):
     organization = Organization.objects.filter(active=True)
     framework = Framework.objects.filter(active=True)
@@ -140,99 +171,6 @@ def public_frameworks(request):
     }
     template_url = f"app_organization/mod_framework/public_frameworks/public_frameworks.html"
     return render(request, template_url, context)   
-
-
-def role_homepage(request, role_name):
-    user = request.user
-    member = Member.objects.get(user=user, active=True)
-    roles = member.member_roles.filter(active=True)
-    
-    organizations = Organization.objects.filter(active=True)
-    role_id = None
-    org_id = None
-    org = None
-    role_org = None
-    lc_role_name = 'no_page'
-    context = {}
-    context = {
-        'parent_page': 'home',
-        'page': 'role_homepage',
-        'page_title': 'Role Home Page',
-        'user': user,
-        'roles': [],
-        'members': [],
-        'super_user': user.is_superuser,
-        'multiple_roles': False,
-        'no_of_roles': 0,
-        'user_roles_data': [],
-        'anonymous': not user.is_authenticated,
-        'role': COMMON_ROLE_CONFIG["NO_ROLE"]["name"],  # Default role
-        'project_details': [],
-        'organizations': organizations,
-        'check': 'check',
-    }
-    if request.GET.get('org_id'):
-        org_id = request.GET.get('org_id')
-        org = Organization.objects.get(id=org_id)
-    if request.GET.get('role_id'):
-        role_id = request.GET.get('role_id')
-        role_org = Role.objects.get(id=role_id)
-        lc_role_name = role_org.name.lower().replace(' ', '_') if role_org else 'no_page'
-        
-    # quick links for the role
-    # Fetch all active member instances for this user    
-    members = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').filter(user=user)
-    if members.exists():
-        for member in members:
-            roles = member.member_roles.filter(active=True)
-            user_data = {
-                'member_id': member.id,
-                'username': user.username,
-                'roles': []
-            }
-
-            for role in roles:
-                role_data = {
-                    'org_id': role.org.id if role.org else None,
-                    'role_id': role.role.id if role.role else None,
-                    'role_name': role.role.name if role.role else 'No Role',
-                    'org_name': role.org.name if role.org else 'No Org',
-                    'lc_role_name': role.role.name.lower().replace(' ', '_') if role.role else 'no_page',
-                }
-                user_data['roles'].append(role_data)
-                context['roles'].append(role)  # Aggregate all roles
-            # Fetch project memberships
-            project_memberships = Projectmembership.objects.filter(member=member)
-            project_info = [{'org': pm.project.org, 'project_id': pm.project.id ,'project_name': pm.project.name, 'role': pm.project_role.role_type} for pm in project_memberships]
-            user_data['projects'] = project_info
-            context['project_details'].extend(project_info)
-            context['user_roles_data'].append(user_data)
-            context['members'].append(member)
-        context['multiple_roles'] = len(context['roles']) > 1
-        context['no_of_roles'] = len(context['roles'])
-        context['role_full'] = context['roles'][0].role.name if context['roles'] else COMMON_ROLE_CONFIG["NO_ROLE"]["name"]
-
-    context_update = {
-        'role_id': role_id,
-        'org_id': org_id,
-        'org': org,
-        'role': role_org,
-        'lc_role_name': lc_role_name,
-        'test': 'test',
-    }
-    context.update(context_update)
-    template_url = f"app_jivapms/mod_web/{role_name}/{role_name}_homepage.html"
-
-    try:
-        # Try to load the template, if it exists
-        get_template(template_url)
-        logger.debug(f"Template found: {template_url}")
-        return render(request, template_url, context)
-    except TemplateDoesNotExist:
-        logger.error(f"Template not found: {template_url}")
-        # Fall back to the default template
-        general_template_url = "app_jivapms/mod_web/general_homepage/general_homepage.html"
-        return render(request, general_template_url, context)
 
 
 def ajax_display_public_framework(request, framework_id):

@@ -27,14 +27,14 @@
                 </li>
                
                 {% if role_id and  org_id %}
-                <li class="nav-item ms-2 me-2">
+                <li class="nav-item ms-4 me-4">
                     <a class="nav-link {% if page == 'index' %}active{% endif %} " 
                     href="{% url 'role_homepage' lc_role_name %}?org_id={{ role.org_id }}&role_id={{role.id}}">
                     Role: {{role}}</a>
                 </li>
                 {% endif %}
                 {% if org_id  and org.name != None %}
-                <li class="nav-item ms-2 me-2">
+                <li class="nav-item ms-4 me-4">
                     <a class="nav-link {% if page == 'index' %}active{% endif %} " href="{% url 'org_homepage' org_id %}">Org: {{org.name}}</a>
                 </li>
                 {% endif %}
