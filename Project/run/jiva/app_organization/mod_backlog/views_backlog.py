@@ -653,7 +653,7 @@ def build_serial_number_tree(node, current_path=[], serial_no=None):
 
     # Debug the current node and its parent
     parent_id = node.parent.id if node.parent else 0
-    print(f"Node ID: {node.id}, Name: {node.name}, Parent ID: {parent_id}")
+    #print(f"Node ID: {node.id}, Name: {node.name}, Parent ID: {parent_id}")
 
     node_serial = '.'.join(map(str, current_path + [serial_no[level]]))
     result = [(node, node_serial, parent_id)]  # Include parent ID
@@ -986,7 +986,7 @@ def story_mapping_backlog(request, pro_id, parent_id):
 
 
 @login_required
-def ajax_fetch_persona_activities(request):
+def ajax_fetch_persona_activities1(request):
     # Get persona_id from POST data
     persona_id = request.POST.get('persona_id')
     persona = Persona.objects.get(id=persona_id)
@@ -1020,77 +1020,42 @@ def ajax_fetch_persona_activities(request):
         return JsonResponse({'error': 'No persona selected'}, status=400)
 
 
+# views.py
 
 
-# @login_required
-# def ajax_recieve_story_mapped_details(request):
-#     try:
-#         data = json.loads(request.body)  # Correctly parsing JSON data from the request body
-#         project_id = data['project_id']
-#         story_id = data['story_id']
-#         release_id = data['release_id']
-#         iteration_id = data['iteration_id']
-#         activity_id = data['activity_id']
-#         step_id = data['step_id']
-#         persona_id = data['persona_id']
-        
-#         if iteration_id == '-1':
-#             iteration_id = None
-        
-#         print(f">>> === Project ID: {project_id} === <<<")
-#         print(f">>> === Story ID: {story_id} === <<<")
-#         print(f">>> === Release ID: {release_id} === <<<")
-#         print(f">>> === Iteration ID: {iteration_id} === <<<")
-#         print(f">>> === Activity ID: {activity_id} === <<<")
-#         print(f">>> === Step ID: {step_id} === <<<")
-#         print(f">>> === Persona ID: {persona_id} === <<<")
-#         #StoryMapping.objects.all().delete()
-#         with transaction.atomic():  # Ensure atomicity
-#             print(f">>> === Story ID: {story_id} === <<<")
-#             # Save or update the story mapping
-#             story_details = Backlog.objects.get(id=story_id)
-#             print(f">>> === Story ID: {story_details} === <<<")
-#             # Save or update the story mapping            
-#             mapping, created = StoryMapping.objects.update_or_create(
-#                 story_id=story_id,
-#                 defaults={
-#                     'pro_id': project_id,
-#                     'persona_id': persona_id,
-#                     'mapped_at': timezone.now(),
-#                     'active': True,
-#                     'story_name': story_details.name,
-#                     'release_id': release_id,
-#                     'iteration_id': iteration_id,
-#                     'activity_id': activity_id,
-#                     'step_id': step_id,
-#                 }
-#             )
-#             #StoryMapping.objects.all().delete()
-            
-#             if created:
-#                 message = "Story mapped successfully."
-#             else:
-#                 message = "Story mapping updated successfully."
-#             logger.debug(f">>> === Story Mapping: {message} === <<<")
-        
-#             # Update backlog item with release
-#             story_details.release_id = release_id
-#             story_details.save()
-#             print(f">>> === Story Mapping: {story_details.release_id} === <<<")
-#             print(f">>> === Story Mapping1: {message} === <<<")
-#             response = {"status": "success", "message": message}
-#             print(f">>> ===" + json.dumps(response) + " === <<<")  # Validate this
-#             return JsonResponse(response)
-#         #return JsonResponse({"status": "success", "message": message})
-#     except json.JSONDecodeError:
-#         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
-#         print(f">>> === Story Mapping2: {message} === <<<")
-#         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
-#     except KeyError:
-#         logger.debug(f">>> === Story Mapping: Missing required parameters === <<<")
-#         print(f">>> === Story Mapping2: {message} === <<<")
-#         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
+def ajax_fetch_persona_activities(request):
+    if request.method == 'POST':
+        persona_id = request.POST.get('persona_id')
+        activities = Activity.objects.filter(persona_id=persona_id, active=True).prefetch_related('activity_steps')
+        mappings = StoryMapping.objects.filter(persona_id=persona_id, active=True)
 
+        activities_data = []
+        for activity in activities:
+            steps = activity.activity_steps.filter(active=True)
+            steps_data = [{'id': step.id, 'name': step.name} for step in steps]
+            activities_data.append({
+                'id': activity.id,
+                'name': activity.name,
+                'steps': steps_data,
+            })
+
+        mappings_data = []
+        for mapping in mappings:
+            mappings_data.append({
+                'story_name': mapping.story_name,
+                'story_id': mapping.story_id,
+                'release_id': mapping.release_id if mapping.release_id else None,
+                'iteration_id': mapping.iteration_id if mapping.iteration_id else None,
+                'activity_id': mapping.activity_id if mapping.activity_id else None,
+                'step_id': mapping.step_id if mapping.step_id else None,
+                'persona_id': mapping.persona_id if mapping.persona_id else None,
+            })
+
+        return JsonResponse({
+            'activities': activities_data,
+            'mappings': mappings_data,
+        })
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @login_required
@@ -1225,3 +1190,75 @@ def ajax_story_back_to_list(request):
     except KeyError:
         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
     
+    
+
+
+
+# @login_required
+# def ajax_recieve_story_mapped_details(request):
+#     try:
+#         data = json.loads(request.body)  # Correctly parsing JSON data from the request body
+#         project_id = data['project_id']
+#         story_id = data['story_id']
+#         release_id = data['release_id']
+#         iteration_id = data['iteration_id']
+#         activity_id = data['activity_id']
+#         step_id = data['step_id']
+#         persona_id = data['persona_id']
+        
+#         if iteration_id == '-1':
+#             iteration_id = None
+        
+#         print(f">>> === Project ID: {project_id} === <<<")
+#         print(f">>> === Story ID: {story_id} === <<<")
+#         print(f">>> === Release ID: {release_id} === <<<")
+#         print(f">>> === Iteration ID: {iteration_id} === <<<")
+#         print(f">>> === Activity ID: {activity_id} === <<<")
+#         print(f">>> === Step ID: {step_id} === <<<")
+#         print(f">>> === Persona ID: {persona_id} === <<<")
+#         #StoryMapping.objects.all().delete()
+#         with transaction.atomic():  # Ensure atomicity
+#             print(f">>> === Story ID: {story_id} === <<<")
+#             # Save or update the story mapping
+#             story_details = Backlog.objects.get(id=story_id)
+#             print(f">>> === Story ID: {story_details} === <<<")
+#             # Save or update the story mapping            
+#             mapping, created = StoryMapping.objects.update_or_create(
+#                 story_id=story_id,
+#                 defaults={
+#                     'pro_id': project_id,
+#                     'persona_id': persona_id,
+#                     'mapped_at': timezone.now(),
+#                     'active': True,
+#                     'story_name': story_details.name,
+#                     'release_id': release_id,
+#                     'iteration_id': iteration_id,
+#                     'activity_id': activity_id,
+#                     'step_id': step_id,
+#                 }
+#             )
+#             #StoryMapping.objects.all().delete()
+            
+#             if created:
+#                 message = "Story mapped successfully."
+#             else:
+#                 message = "Story mapping updated successfully."
+#             logger.debug(f">>> === Story Mapping: {message} === <<<")
+        
+#             # Update backlog item with release
+#             story_details.release_id = release_id
+#             story_details.save()
+#             print(f">>> === Story Mapping: {story_details.release_id} === <<<")
+#             print(f">>> === Story Mapping1: {message} === <<<")
+#             response = {"status": "success", "message": message}
+#             print(f">>> ===" + json.dumps(response) + " === <<<")  # Validate this
+#             return JsonResponse(response)
+#         #return JsonResponse({"status": "success", "message": message})
+#     except json.JSONDecodeError:
+#         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
+#         print(f">>> === Story Mapping2: {message} === <<<")
+#         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+#     except KeyError:
+#         logger.debug(f">>> === Story Mapping: Missing required parameters === <<<")
+#         print(f">>> === Story Mapping2: {message} === <<<")
+#         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
