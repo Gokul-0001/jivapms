@@ -5,11 +5,11 @@
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 <!-- Start: Content -->
-<div class="container-fluid">
+<div class="container">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             
-<h1>Welcome, {{ user.username }}!</h1>
+<h1>Welcome, {{ user.username | title }}!</h1>
 
 <p>You have multiple roles across same/different organizations. Please select a dashboard:</p>
 
@@ -28,7 +28,7 @@
                 {% for role in user.roles %}
                 <tr>
                     <td>{{forloop.counter}}</td>
-                    <td>{{ role.org_name }}</td> <!-- Display organization -->
+                    <td><a href="{% url 'org_homepage' role.org_id %}"><b>{{ role.org_name }}</b></a></td> <!-- Display organization -->
                     <td>{{ role.role_name }}</td>              <!-- Display role name -->
                     <td>
                        
@@ -43,6 +43,30 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <table class="table table-bordered mt-5" width="80%" border="1" cellpadding="10" cellspacing="0" >     
+        <tr>
+            <th colspan="4" class="text-start"><h3>Your Project Access</h3></th>
+        </tr>  
+        <tr>
+            <th width="1%"  class="text-center">#</th>
+            <th>Org</th>
+            <th>Project</th>
+            <th>Role</th>
+        </tr>
+        {% for project_detail in project_details %}<tr>
+            <td width="1%" class="text-end">{{forloop.counter}}</td>
+            <td width="10%"><a href="{% url 'org_homepage' project_detail.org.id %}">
+                <b>{{project_detail.org.name}}</b>
+            </a></td>
+            <td width="10%"><a href="{% url 'project_homepage' project_detail.org.id project_detail.project_id%}">
+                <b>{{project_detail.project_name}}</b>
+            </a></td>
+            <td width="10%">{{project_detail.role}}</td>
+            <!-- <td width="10%">{{ role.lc_role_name }}</td>    -->
+        </tr>   
+        {% endfor %}
+    </table>    
 {% else %}
     <p>You have only one role, no need to choose!</p>
 {% endif %}

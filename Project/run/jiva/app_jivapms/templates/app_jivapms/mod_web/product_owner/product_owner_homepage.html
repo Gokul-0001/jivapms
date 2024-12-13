@@ -14,85 +14,125 @@
             <div id="content">
                 <!-- Welcome Super Admin dashboard -->
                 <div id="listSiteContent" style="display: none;">
-                    <h1>Welcome {{role}}: {{user.username}} </h1>
-                    <p>This is the main dashboard for this Jiva PMS site and installation, providing access to setup and configure the Organization.</p>
+                    <h1>Welcome {{role}}: {{user.username | title}} </h1>
+                    <p>This is your role related page, and you can navigate with the following links.</p>
                     
+                    <!--
+                        ABOUT THE ORG ROLES AND PROJECT ROLES in tabular column
+                    -->
                     <div class="row">
                         <div class="col col-md-6">
-                            {{user_roles_data}} <br>
-                            <hr>
-                            {{project_details}} 
-                            <br>
-                            <hr>
-                            {% for user_data in user_roles_data %}
-                            <h3>User: {{ user_data.username }}</h3>
-                            <ul>
-                                {% for role in user_data.roles %}
-                                    <li>
-                                        Role Name: {{ role.role_name }}<br>
-                                        Organization: {{ role.org_name }}<br>
-                                        Lowercase Role Name: {{ role.lc_role_name }}
-                                        
-                                       
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                            {% endfor %}                          
+                            <table class="table table-bordered">                                
+                                {% for user_data in user_roles_data %}                                
+                                <tr>
+                                    <th colspan="3" class="text-start"><h3>Your Role in Organization(s).</h3></th>
+                                </tr>        
+                                <tr>
+                                    <th width="1%" class="text-center">#</th>
+                                    <th>Org</th>
+                                    <th>Role</th>
+                                </tr>                           
+                                    {% for role in user_data.roles %}<tr>
+                                        <td width="1%" class="text-end">{{forloop.counter}}</td>
+                                        <td width="10%"><a href="{% url 'org_homepage' role.org_id %}">
+                                            <b>{{ role.org_name }}</b>
+                                        </a></td>
+                                        <td width="10%">{{ role.role_name }}</td>
+                                        <!-- <td width="10%">{{ role.lc_role_name }}</td>    -->
+                                    </tr>{% endfor %}
+                                {% endfor %}        
+                            </table>
+                                              
                             
                         </div>
                         <div class="col col-md-6">
-                            {% for project_detail in project_details %}                            
-                                <b>{{project_detail.org.id}}:{{project_detail.org.name}}:{{project_detail.project_id}}:{{project_detail.project_name}}:{{project_detail.role}}         </b>              
-                                <br>
-                            {% endfor %}
+                            <table class="table table-bordered">     
+                                <tr>
+                                    <th colspan="4" class="text-start"><h3>Your Project Access</h3></th>
+                                </tr>  
+                                <tr>
+                                    <th width="1%"  class="text-center">#</th>
+                                    <th>Org</th>
+                                    <th>Project</th>
+                                    <th>Role</th>
+                                </tr>
+                                {% for project_detail in project_details %}<tr>
+                                    <td width="1%" class="text-end">{{forloop.counter}}</td>
+                                    <td width="10%"><a href="{% url 'org_homepage' role.org_id %}">
+                                        <b>{{project_detail.org.name}}</b>
+                                    </a></td>
+                                    <td width="10%"><a href="{% url 'project_homepage' project_detail.org.id project_detail.project_id%}">
+                                        <b>{{project_detail.project_name}}</b>
+                                    </a></td>
+                                    <td width="10%">{{project_detail.role}}</td>
+                                    <!-- <td width="10%">{{ role.lc_role_name }}</td>    -->
+                                </tr>   
+                                {% endfor %}
+                            </table>    
                         </div>
                     </div>
 
-
-
-
+                    <!--
+                        List of options for the role
+                    -->
                     <div class="row">
-                        <div class="col-md-4">
-                            <b>Value Stream Mapping</b>
+                        <div class="col col-md-6">
+                            <table class="table table-bordered">                                
+                                                         
+                                <tr>
+                                    <th colspan="3" class="text-start"><h3>Mapping the Value &amp; Flow</h3></th>
+                                </tr>        
+                                <tr>
+                                    <th width="1%" class="text-center">#</th>
+                                    <th>Mapping</th>
+                                    <th>Description</th>
+                                </tr>                           
+                                <tr>
+                                    <td>1</td>
+                                    <td>
+                                        <a href="{% url 'list_impact_mappings' org_id %}"><b>Value Stream Mapping</b></a>
+                                    </td>
+                                    <td>
+                                        <p class="description_text">Value Stream Mapping is a lean-management method for 
+                                            analyzing the current state and designing a future state for the series of 
+                                            events that take a product or service from its beginning through to the customer.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>
+                                        <a href="{% url 'list_impact_mappings' org_id %}"><b>Impact Mapping</b></a>
+                                    </td>
+                                    <td>
+                                        <p class="description_text">Impact Mapping is a strategic planning technique that prevents organisations 
+                                            from getting lost while building products and delivering projects, 
+                                            by clearly communicating assumptions, helping teams align their 
+                                            activities with overall business objectives and make better roadmap decisions.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>
+                                        <a href="{% url 'create_story_map' org_id %}"><b>Story Mapping</b></a>
+                                    </td>
+                                    <td>
+                                        <p class="description_text">Story Mapping is a better way representing your flat backlog into two and three dimensional backlog
+                                            and helps us to work with Agile User Stories with a context. 
+                                            It helps to create a shared understanding of the work and its deliverables, 
+                                            and helps to prioritize the work that needs to be done.</p>
+                                    </td>
+                                </tr>
+                                    
+                            </table>
+                                              
+                            
                         </div>
-                        <div class="col-md-4">
-                            <b>
-                                <a href="{% url 'list_impact_mappings' org_id %}">Impact Mapping</a>
-                            </b>
+                        <div class="col col-md-6">
+                            
                         </div>
-                        <div class="col-md-4">
-                            <b>
-                                <a href="{% url 'create_story_map' org_id %}">Story Mapping</a>
-                            </b>
-                        </div>
-                        
                     </div>
 
 
-                    <div class="row">
-                        <div class="col-md-4">
-                            <b>Backlog Management</b>
-                        </div>
-                        <div class="col-md-4">
-                            <b>Value Stream Management</b>
-                        </div>
-                        <div class="col-md-4">
-                            <b>Prioritization</b>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <b>Team Events</b>
-                        </div>
-                        <div class="col-md-4">
-                            <b>Transformation</b>
-                        </div>
-                        <div class="col-md-4">
-                            <b>Stakeholder Management</b>
-
-                           
-                        </div>
-                    </div>
                 </div>
                 
                 <div id="settingsContent" style="display: none;">
