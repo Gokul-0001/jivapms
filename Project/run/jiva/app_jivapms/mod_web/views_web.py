@@ -18,7 +18,7 @@ from app_jivapms.mod_web.helper_web import *
 from app_jivapms.mod_web.views_ajax_web import *
 
 
-def index(request):
+def super_user_stats(request):
     user = request.user
     organization = Organization.objects.filter(active=True)
     framework = Framework.objects.filter(active=True)
@@ -26,6 +26,47 @@ def index(request):
     # Get the related Organization objects for those Frameworks
     org_ids = public_frameworks.values_list('organization__id', flat=True).distinct()
     organizations = Organization.objects.filter(id__in=org_ids)
+    all_orgs = Organization.objects.filter(active=True)
+    # Check the stats
+    org_count = organization.count()
+    framework_count = framework.count()
+    public_framework_count = public_frameworks.count()
+   
+    org_project_member_counts = []
+
+    for org in all_orgs:
+        project_count = org.org_projects.filter(active=True).count()
+        member_count = Member.objects.filter(member_roles__org=org).count()
+        org_project_member_counts.append({
+            'org_id': org.id,
+            'org_name': org.name,
+            'project_count': project_count,
+            'member_count': member_count,
+        })
+    logger.info(f"Total organizations: {org_count}")
+    logger.info(f"Total frameworks: {framework_count}")
+    logger.info(f"Total public frameworks: {public_framework_count}")
+    for org_stat in org_project_member_counts:
+        logger.info(f"Organization ID: {org_stat['org_id']}, Name: {org_stat['org_name']}, Projects: {org_stat['project_count']}, Members: {org_stat['member_count']}")
+    
+    return { 'org_count': org_count, 'framework_count': framework_count, 
+            'public_framework_count': public_framework_count, 
+            'org_project_member_counts': org_project_member_counts }
+
+def index(request):
+    user = request.user
+    this_member = Member.objects.get(user=user, active=True)
+    organization = Organization.objects.filter(active=True)
+    framework = Framework.objects.filter(active=True)
+    public_frameworks = Framework.objects.filter(public_framework=True, active=True)
+    # Get the related Organization objects for those Frameworks
+    org_ids = public_frameworks.values_list('organization__id', flat=True).distinct()
+    organizations = Organization.objects.filter(id__in=org_ids)
+    all_orgs = Organization.objects.filter(active=True)
+     
+    
+    
+    
     context = {
         'parent_page': 'home',
         'page': 'index',
@@ -48,6 +89,7 @@ def index(request):
         logger.debug(f"User authenticated: {user.id}")
         if user.is_superuser:
             context['role'] = COMMON_ROLE_CONFIG["SUPER_USER"]["name"]
+            super_user_stats(request)
         else:
             # Fetch all active member instances for this user
             members = Member.objects.prefetch_related('member_roles__role', 'member_roles__org').filter(user=user)
@@ -84,11 +126,23 @@ def index(request):
                 logger.error(f"Active member not found for user: {user.id}")
     else:
         logger.debug("Anonymous user access")
-
+        
+    this_member_project_memberships = Projectmembership.objects.filter(member=this_member, active=True)
+    # Group projects by organization
+    org_projects = defaultdict(list)
+    for membership in this_member_project_memberships:
+        org = membership.project.org  # Assuming project has an `org` attribute
+        org_projects[org].append({
+            'member': membership.member,          # Include member
+            'project': membership.project,        # Include project
+            'project_role': membership.project_role,  # Include project_role
+        })
     # Assign template based on role
     template_url = get_template_for_role(context)
     context_json = context
     context['context_json'] = context_json
+    context['this_member_project_memberships'] = this_member_project_memberships
+    context['org_projects'] = dict(org_projects)
     try:
         get_template(template_url)
         return render(request, template_url, context)

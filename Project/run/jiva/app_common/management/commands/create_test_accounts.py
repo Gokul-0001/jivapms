@@ -4,7 +4,7 @@ from app_organization.mod_organization.models_organization import *
 from app_memberprofilerole.mod_profile.models_profile import *
 from app_memberprofilerole.mod_member.models_member import *
 from app_jivapms.mod_app.all_view_imports import *
-
+from app_common.mod_app.all_view_imports import *
 import random
 
 role_config = COMMON_ROLE_CONFIG

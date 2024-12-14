@@ -568,14 +568,17 @@ def project_dvs(request, org_id, project_id):
     
     # Get the DevValueStream Relation
     dvs = DevValueStream.objects.filter(project=project, active=True).first()
-    
+    if dvs != None:
+        ops = dvs.ops
+    else:
+        ops = None
     
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'project_dvs',
         'organization': organization,
         'org_id': org_id,
-        
+        'ops': ops,
         'module_path': module_path,
         'object': object,
         'project': object,

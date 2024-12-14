@@ -165,7 +165,7 @@
                         text-danger
                     {% endif %}">
                     <input class="form-check-input" type="checkbox" value="" 
-                    id="flexCheckDefault" {% if node.done %}checked{% endif %} onclick="updateDoneState('{{ node.id }}', this.checked)">   
+                    id="flexCheckDefault" {% if node.done %}checked{% endif %} onclick="updateDoneState('{{ node.id }}', '{{ node.id }}_{{forloop.counter}}', this.checked)">   
                     <label class="form-check
                         {% if node.done %}
                             text-success
@@ -190,12 +190,14 @@
 </div>
 </form>
 <script>
-    function updateDoneState(wslistId, isType) {
+    function updateDoneState(wslistId, rowId, isType) {
+       
     $.ajax({
-        url: '/common/common_ajax/ajax_update_task_done_state/',  // Ensure this URL is correct and handled properly in Django
+        url: '/common/common_ajax/ajax_update_row_task_done_state/',  // Ensure this URL is correct and handled properly in Django
         type: 'POST',
         data: {
             'id': wslistId,
+            'row_id': rowId,
             'done': isType,
             'model_name': 'Backlog',
             'app_name': 'app_organization',
@@ -204,7 +206,9 @@
         success: function(response) {
             console.log('Update successful!');
             // Optionally, trigger a DOM update here to visually confirm the change
-            location.reload();
+            var newUrl = window.location.pathname + '#' + response.row_id;
+            history.replaceState(null, null, newUrl);
+            window.location.reload();
         },
         error: function(xhr, status, error) {
             console.log('An error occurred: ' + error);
@@ -212,7 +216,159 @@
     });
 }
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.location.hash) {
+            var rowId = window.location.hash.substring(1);
+            var row = document.getElementById(rowId);
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                console.warn('Row with ID "' + rowId + '" not found.');
+            }
+        }
+    });
+</script>
 
+<script>
+    function updateDoneState12(backlogId, isDone) {
+        $.ajax({
+            url: '/common/common_ajax/ajax_update_tree_task_done_state/',
+            type: 'POST',
+            data: {
+                'id': backlogId,
+                'done': isDone,
+                'model_name': 'Backlog',
+                'app_name': 'app_organization',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('AJAX Response:', response);
+                if (response.success) {
+                    response.updated_nodes.forEach(function(node) {
+                        console.log('Updating node:', node.id);
+                        var row = $('tr[data-node-id="' + node.id + '"]');
+                        if (row.length === 0) {
+                            console.warn('Row not found for node ID:', node.id);
+                            return;
+                        }
+                        
+                        // Update the progress text (8th column: Progress)
+                        var progressCell = row.find('td:nth-child(8) font');
+                        if (progressCell.length === 0) {
+                            console.warn('Progress cell not found in row for node ID:', node.id);
+                        } else {
+                            progressCell.text(node.completed_count + '/' + node.total_count + ' done. ' + node.percent_complete + '%');
+                        }
+
+                        // Update the progress bar width and aria attributes
+                        var progressBar = row.find('td:nth-child(8) .progress-bar');
+                        if (progressBar.length === 0) {
+                            console.warn('Progress bar not found in row for node ID:', node.id);
+                        } else {
+                            progressBar.css('width', node.percent_complete + '%')
+                                      .attr('aria-valuenow', node.percent_complete)
+                                      .text(node.percent_complete + '%');
+                        }
+                    });
+                } else {
+                    console.log('Error: ' + response.error);
+                    alert('Error updating task: ' + response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('An error occurred: ' + error);
+                alert('An unexpected error occurred. Please try again.');
+            }
+        });
+    }
+
+    // Existing sortable and editable scripts
+    $(".sortable_table").find("tbody").sortable({
+        items: "> tr",
+        handle: ".drag-handle",
+        appendTo: "parent",
+        cancel: "[contenteditable]",
+        update: function(event, ui) {
+            var arrayOrder = $('#sortable').sortable('toArray');
+            $.ajax({
+                url: '/common/common_ajax/ajax_update_model_list_sorted/',
+                type: 'POST',
+                data : {
+                    'csrfmiddlewaretoken': "{{ csrf_token }}",
+                    'model_name': 'Backlog',
+                    'app_name': 'app_organization',
+                    'sorted_list_data': JSON.stringify(arrayOrder),
+                },
+                dataType: 'json',
+                success: function(data) {
+                    console.log('Sorted list updated:', data);
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error updating sorted list:', error);
+                }
+            });
+        }
+    });
+
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
+    }    
+
+    function save_element_text(element, id, appName, modelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_element_text/',
+            type: 'POST',
+            data : {
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'model_name': modelName,
+                'app_name': appName,
+                'field_name': fieldName,
+                'text': element.textContent, 
+                'id': id,
+            },
+            dataType: 'json',
+            success: function(data) {
+                console.log('Element text saved:', data);
+            },
+            error: function(xhr, status, error) {
+                console.log('Error saving text:', error);
+                alert('Failed to save changes. Please try again.');
+            }
+        });
+    }
+
+    $('#id_release').change(function() {
+        var releaseId = $(this).val();
+        var csrfToken = '{{ csrf_token }}'; // CSRF token from the template
+        console.log("Release selected:", releaseId); // Debugging line
+        if (releaseId) {
+            $.ajax({
+                url: '/org/backlog/ajax_get_iterations/' + releaseId + '/', // Correct URL
+                method: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': csrfToken,
+                },
+                success: function(data) {
+                    console.log("Iterations fetched:", data); // Debugging line
+                    $('#id_iteration').empty().append('<option value="">Select Iteration</option>');
+                    data.forEach(function(iteration) {
+                        $('#id_iteration').append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
+                    });
+                    $('#id_iteration').prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching iterations:", error); // Debugging line
+                    alert('Error fetching iterations');
+                }
+            });
+        } else {
+            $('#id_iteration').empty().append('<option value="">Select Iteration</option>').prop('disabled', true);
+        }
+    });
+</script>
 
 <script>
     $(".sortable_table").find("tbody").sortable({

@@ -84,43 +84,39 @@
                                 </tr>        
                                 <tr>
                                     <th width="1%" class="text-center">#</th>
-                                    <th>Mapping</th>
-                                    <th>Description</th>
+                                    <th>Mapping Concept</th>
+                                    <th>Implementation</th>
                                 </tr>                           
+                               
                                 <tr>
                                     <td>1</td>
-                                    <td>
-                                        <a href="{% url 'list_impact_mappings' org_id %}"><b>Value Stream Mapping</b></a>
-                                    </td>
-                                    <td>
-                                        <p class="description_text">Value Stream Mapping is a lean-management method for 
-                                            analyzing the current state and designing a future state for the series of 
-                                            events that take a product or service from its beginning through to the customer.</p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>
-                                        <a href="{% url 'list_impact_mappings' org_id %}"><b>Impact Mapping</b></a>
-                                    </td>
                                     <td>
                                         <p class="description_text">Impact Mapping is a strategic planning technique that prevents organisations 
                                             from getting lost while building products and delivering projects, 
                                             by clearly communicating assumptions, helping teams align their 
                                             activities with overall business objectives and make better roadmap decisions.</p>
                                     </td>
+                                    <td>
+                                        <a href="{% url 'list_impact_mappings' org_id %}"><b>Impact Mapping</b></a>
+                                    </td>
+                                    
                                 </tr>
                                 <tr>
-                                    <td>3</td>
-                                    <td>
-                                        <a href="{% url 'create_story_map' org_id %}"><b>Story Mapping</b></a>
-                                    </td>
+                                    <td>2</td>
                                     <td>
                                         <p class="description_text">Story Mapping is a better way representing your flat backlog into two and three dimensional backlog
                                             and helps us to work with Agile User Stories with a context. 
                                             It helps to create a shared understanding of the work and its deliverables, 
                                             and helps to prioritize the work that needs to be done.</p>
                                     </td>
+                                    <td>
+                                        <ul>
+                                            <li><a href="{% url 'create_story_map' org_id %}"><b>Story Mapping from Begining</b></a></li>
+                                            <br>
+                                            <li><a href="{% url 'list_personae' org_id %}"><b>Story Mapping by Persona</b></a></li>
+                                        </ul>
+                                    </td>
+                                    
                                 </tr>
                                     
                             </table>

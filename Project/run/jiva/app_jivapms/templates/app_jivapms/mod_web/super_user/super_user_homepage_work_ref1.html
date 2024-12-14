@@ -6,7 +6,30 @@
 
 
 <div class="content-wrapper">
-    {% include 'app_organization/mod_project/sidebar_menu_super_user.html' %}
+    <button class="toggle-btn" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+    <div class="sidebar" id="sidebar">
+        <!-- Scrollable menu section -->
+        <div class="sidebar-menu">
+            <a href="#" class="nav-link active" onclick="displayContent('listSiteContent', 'Site Administration')">
+                <i class="bi bi-grid"></i>
+                <span>Site Administration</span>
+            </a>
+            <a href="#" class="nav-link active" onclick="displayContent('dashboardContent', 'Dashboard')">
+                <i class="bi bi-collection"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <!-- Sticky settings section -->
+        <div class="settings">
+            <a href="#" class="nav-link" onclick="displayContent('settingsContent', 'Settings')">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+    </div>
 
     <div class="contentbar" id="contentbar">
         <!-- <div id="loading">Loading...</div> -->
@@ -18,16 +41,27 @@
                 
                 <div class="row">
                     <div class="col-md-4">
-                        <b></b>
+                        <b>Create/Manage Organizations</b>
                     </div>
                     <div class="col-md-4">
-                        <b></b>
+                        <b>Create/Manage Organization Admins</b>
                     </div>
                     <div class="col-md-4">
-                        <b></b>
+                        <b>Access Site Metrics</b>
                     </div>
                 </div>
-               
+                <div class="row">
+                    <div class="col-md-4">
+                        <b>Review/Analyze Site Reports</b>
+                    </div>
+                    <div class="col-md-4">
+                        <b>Value Stream Management</b>
+                    </div>
+                    <div class="col-md-4">
+                        <b>Site Level Blogs</b>
+                    </div>
+                </div>
+            </div>
             
             <div id="settingsContent" style="display: none;">
                 <h1>Settings</h1>

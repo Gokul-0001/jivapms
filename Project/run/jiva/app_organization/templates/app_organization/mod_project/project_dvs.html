@@ -25,8 +25,14 @@
 <div class="contentbar mb-5" id="contentbar">
     <div class="container">
         <h1 class="">Project: {{ project }}</h1>
+        {% if ops != None %}
         <p>This project is connected with <b>{{dvs}}</b> <i>Development Value Stream</i></p>
-        <p>Visit the Project DVS for more information here: <a href="{% url 'list_dev_value_streams' dvs.ops.id %}">Project DVS</a></p>
+        <p>Visit the Project DVS for more information here: <a href="{% url 'list_dev_value_streams' dvs.ops.id %}">Project DVS</a></p>    
+        {% else %}
+            <p>This project is not connected with any Development Value Stream</p>
+            <p>Connect this project with a Development Value Stream to get started</p>
+            <p><a href="{% url  'list_ops_value_streams' project.org.id  %}"  >Go to Operational Value Streams and select the DVS and create/edit to add the project</a></p>
+        {% endif %}
     </div>
 
     </div>

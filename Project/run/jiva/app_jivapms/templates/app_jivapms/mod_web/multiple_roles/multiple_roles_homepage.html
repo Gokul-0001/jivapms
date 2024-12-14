@@ -3,7 +3,7 @@
 
 {% block content %}
 {% include 'app_common/common_files/navbar.html' %}
-{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
 <!-- Start: Content -->
 <div class="container">
     <div class="row">
@@ -26,6 +26,7 @@
         <tbody>
             {% for user in user_roles_data %}                   
                 {% for role in user.roles %}
+                {% if role.org_id != None %}
                 <tr>
                     <td>{{forloop.counter}}</td>
                     <td><a href="{% url 'org_homepage' role.org_id %}"><b>{{ role.org_name }}</b></a></td> <!-- Display organization -->
@@ -39,11 +40,12 @@
                         </a>
                     </td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             {% endfor %}
         </tbody>
     </table>
-
+    
     <table class="table table-bordered mt-5" width="80%" border="1" cellpadding="10" cellspacing="0" >     
         <tr>
             <th colspan="4" class="text-start"><h3>Your Project Access</h3></th>
@@ -52,18 +54,24 @@
             <th width="1%"  class="text-center">#</th>
             <th>Org</th>
             <th>Project</th>
-            <th>Role</th>
         </tr>
-        {% for project_detail in project_details %}<tr>
+        {% for org, memberships in org_projects.items %}<tr>
             <td width="1%" class="text-end">{{forloop.counter}}</td>
-            <td width="10%"><a href="{% url 'org_homepage' project_detail.org.id %}">
-                <b>{{project_detail.org.name}}</b>
+            <td width="20%"><a href="{% url 'org_homepage' org.id %}">
+                <b>{{org.name}}</b>
             </a></td>
-            <td width="10%"><a href="{% url 'project_homepage' project_detail.org.id project_detail.project_id%}">
-                <b>{{project_detail.project_name}}</b>
-            </a></td>
-            <td width="10%">{{project_detail.role}}</td>
-            <!-- <td width="10%">{{ role.lc_role_name }}</td>    -->
+            <td width="50%">
+                <table>
+                    {% for membership in memberships %}
+                        <tr>
+                            <td width="20%"><b>{{forloop.counter}}) <a href="{% url 'project_homepage' org.id membership.project.id  %}">{{ membership.project.name }}</a></b></td> 
+                            <td width="4%" class="text-end">{{ membership.project_role }}</td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </td>
+                
+          
         </tr>   
         {% endfor %}
     </table>    

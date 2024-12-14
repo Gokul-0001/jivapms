@@ -3,6 +3,7 @@ from django.urls import path, include
 
 from app_jivapms.mod_web import views_web as web
 from app_jivapms.mod_web import views_ajax_web as ajax_web
+from app_jivapms.mod_web import views_super_user as super_user
 
 
 urlpatterns = [
@@ -25,4 +26,8 @@ urlpatterns = [
 
     # Ajax related
     path('ajax_super_user_orgcrudlsp/', ajax_web.ajax_super_user_orgcrudlsp, name='ajax_super_user_orgcrudlsp'),
+    
+    # Super user
+    path('stats/', super_user.stats, name='stats'),
+    path('super_user_admin/', super_user.super_user_admin, name='super_user_admin'),
 ]

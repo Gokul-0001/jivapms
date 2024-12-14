@@ -101,7 +101,8 @@ def list_dev_value_streams(request, ops_id):
         'page': 'list_dev_value_streams',
         'ops_value_stream': ops_value_stream,
         'ops_id': ops_id,
-        
+        'org_id': ops_value_stream.org.id,
+        'org': ops_value_stream.org,
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -412,7 +413,8 @@ def view_dvs(request, ops_id, dev_value_stream_id):
         'page': 'view_dev_value_stream',
         'ops_value_stream': ops_value_stream,
         'ops_id': ops_id,
-        
+        'org_id': ops_value_stream.org.id,
+        'org': ops_value_stream.org,
         'module_path': module_path,
         'object': object,
         'steps': steps,

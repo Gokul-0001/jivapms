@@ -19,34 +19,34 @@
             <i class="material-icons" style="font-size: 18px;">checklist</i>
             <span>Backlog</span>
         </a>     
-        <a href="{% url 'list_org_boards' org_id %}?project_id={{project.id}}" class="nav-link" >
+        <a href="{% url 'list_org_boards' org_id %}" class="nav-link" >
             <i class="bi bi-kanban"></i>
             <span>Board</span>
         </a>
         {% endif %}
         {% if org_id %} 
         
-        <a href="{% url 'list_org_work_flows' org_id %}{% if project.id %}?project_id={{project.id}}{% endif %}" class="nav-link" >
+        <a href="{% url 'list_org_work_flows' org_id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">arrow_forward</i>
             <span>Workflow</span>
         </a>
-        <a href="{% url 'list_teams' org_id %}{% if project.id %}?project_id={{project.id}}{% endif %}" class="nav-link" >
+        <a href="{% url 'list_teams' org_id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">groups</i>            
             <span>Teams</span>
         </a>
         
        
-        <a href="{% url 'list_org_events' org_id %}{% if project.id %}?project_id={{project.id}}{% endif %}" class="nav-link" >
+        <a href="{% url 'list_org_events' org_id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">event</i>
             <span>Events</span>
         </a>
 
-        <a href="{% url 'list_org_releases' org_id %}{% if project.id %}?project_id={{project.id}}{% endif %}" class="nav-link" >
+        <a href="{% url 'list_org_releases' org_id %}" class="nav-link" >
             <i class="bi bi-basket"></i>
             <span>Release</span>
         </a>
         
-        <a href="{% url 'list_org_metrics' org_id %}{% if project.id %}?project_id={{project.id}}{% endif %}" class="nav-link" >
+        <a href="{% url 'list_org_metrics' org_id %}" class="nav-link" >
             <i class="bi bi-compass"></i>
             <span>Metrics</span>
         </a>

@@ -304,3 +304,34 @@ def ajax_update_task_done_state(request):
                 return JsonResponse({'success': True})      
 
     return JsonResponse({'success': False})
+
+
+
+@login_required
+def ajax_update_row_task_done_state(request):
+    if request.method == 'POST':
+        user = request.user
+        id = request.POST.get('id', None)
+        done = request.POST.get('done', None)
+        row_id = request.POST.get('row_id', None)
+        model_name = request.POST['model_name']
+        given_app_name = app_name
+        if 'app_name' in request.POST:            
+            given_app_name = request.POST['app_name']
+        
+        model_class = apps.get_model(given_app_name, model_name)
+        if id and done:
+            object = model_class.objects.filter(id=id).first()
+            if object:
+                object.done = done.lower() == 'true'
+                object.completed_at = timezone.now()
+                
+                 # Calculate duration in hours
+                if object.created_at and object.completed_at:
+                    duration = object.completed_at - object.created_at
+                    object.duration_in_hours = duration.total_seconds() / 3600  # Convert seconds to hours
+                
+                object.save()
+                return JsonResponse({'success': True, 'row_id': row_id})      
+
+    return JsonResponse({'success': False})

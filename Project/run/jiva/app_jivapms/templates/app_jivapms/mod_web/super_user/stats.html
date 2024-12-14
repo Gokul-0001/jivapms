@@ -1,0 +1,142 @@
+{% extends 'app_common/common_files/jiva/jiva_base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/jiva/jiva_navbar.html' %}
+
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu_super_user.html' %}
+
+    <div class="contentbar" id="contentbar">
+        <!-- <div id="loading">Loading...</div> -->
+        <div id="content">
+            <!-- Welcome Super Admin dashboard -->
+            <div id="listSiteContent" style="display: none;">
+                <h1>Welcome Super User</h1>
+                <p>Stats for this Site</p>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <b>Stats</b>
+                        <table class="table-bordered">
+                            <tr>
+                                <td>
+                                    <b>Total Organizations: </b>
+                                    
+                                </td>
+                                <td>
+                                    {{org_count}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Total Frameworks: </b>
+                                    
+                                </td>
+                                <td>
+                                    {{framework_count}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Total Public Frameworks: </b>
+                                    
+                                </td>
+                                <td>
+                                    {{public_framework_count}}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-4">
+                        <b>High Level Details</b>
+                        <table class="table-bordered">
+                            <tr>
+                                <th>#</th>
+                                <th>Organization</th>
+                                <th>Projects</th>
+                                <th>Members</th>
+                            </tr>
+                            {% for org in org_project_member_counts %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td>{{org.org_name}}</td>
+                                <td>{{org.project_count}}</td>
+                                <td>{{org.member_count}}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="col-md-4">
+                        <b>Project Roles / Memberships</b>
+                      
+                        <table class="table-bordered">
+                            <tr>
+                                <th>#</th>
+                                <th>Project</th>
+                                <th>Member</th>
+                                <th>Role</th>
+                                <th>Team</th>
+                            </tr>
+                            {% for member in project_memberships %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ member.project }}</td>
+                                <td>{{ member.member }}</td>
+                                <td>{{ member.project_role }}</td>
+                                <td>{{ member.team }}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                        
+                    </div>
+                </div>
+               
+            
+            <div id="settingsContent" style="display: none;">
+                <h1>Settings</h1>
+                <p>Configure and adjust Site settings and preferences.</p>
+            </div>
+            <div id="dashboardContent" style="display: none;">
+                <h1>SuperAdmin Dashboard</h1>
+                <p>Information about the site.</p>
+                
+                <div class="row">
+                    <!-- Pie Chart for Organizations Overview -->
+                    <div class="col-md-4">
+                        <canvas id="organizationsChart" style="max-width: 400px;"></canvas>
+                    </div>
+
+                    <!-- Pie Chart for Projects Overview -->
+                    <div class="col-md-4">
+                        <canvas id="projectsChart" style="max-width: 400px;"></canvas>
+                    </div>
+
+                    <!-- Line Chart for Users Growth -->
+                    <div class="col-md-4">
+                        <canvas id="usersChart" style="max-width: 400px;"></canvas>
+                    </div>
+                </div>
+            </div>      
+            
+            <div id="aboutContent" style="display: none;">
+                <h1>About the Project</h1>
+                <p>Information about the project's goals, team, and background.</p>
+               
+            </div>               
+            <div id="profileContent" style="display: none;">
+                <h1>User Profile</h1>
+                <p>Manage your profile information and settings.</p>
+            </div>
+            <div id="logoutContent" style="display: none;">
+                <h1>Logout</h1>
+                <p>You have been logged out.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- End: Content -->
+{% endblock content %}
