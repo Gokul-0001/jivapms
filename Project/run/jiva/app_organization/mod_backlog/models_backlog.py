@@ -8,9 +8,60 @@ from app_organization.mod_org_iteration.models_org_iteration import *
 from app_organization.mod_persona.models_persona import *
 from app_organization.mod_backlog_type.models_backlog_type import *
 
+from app_common.mod_app.all_view_imports import *
 
+
+#
+#  The idea is the backlog can be flat and have one child element / sub-tasks
+#  When needed the backlog can be self-contained with tree structure of own scheme or standard schema
+#
 # Core Hierarchical System Database
 class Backlog(MPTTModel, BaseModelImpl):
+    STATUS_CHOICES = (
+        ('Backlog', 'Backlog'),
+        ('To Do', 'To Do'),
+        ('In Progress', 'In Progress'),
+        ('Done', 'Done'),
+        ('Blocked', 'Blocked'),
+        ('Unblocked', 'Unblocked'),
+        ('Deleted', 'Deleted'),
+        ('Archived', 'Archived'),
+    )
+    
+    SIZE_CHOICES = (       
+        ('0', '0'),
+        ('0.5', '0.5'),
+        ('1', '1'),
+        ('2', '2'),
+        ('3', '3'),
+        ('5', '5'),
+        ('8', '8'),
+        ('13', '13'),
+        ('20', '2'),
+        ('100', '100'),
+        
+        ('XS', 'XS'),
+        ('S', 'S'),
+        ('M', 'M'),
+        ('L', 'L'),
+        ('XL', 'XL'),
+        ('XXL', 'XXL'),
+        ('XXXL', 'XXXL'),
+    )
+    
+    FLAT_BACKLOG_TYPES = {
+    "USER STORY": "User Story",
+    "TASK": "Task",
+    "BUG": "Bug",
+    "ENHANCEMENT": "Enhancement",
+    "DEFECT": "Defect",
+    "ISSUE": "Issue",    
+    "REFACTOR": "Refactor", 
+    "TECH_DEBT": "Tech Debt",
+    "TEST": "Test",
+    "DOC": "Doc",  
+    "SPIKE": "Spike",
+    }
     persona = models.ForeignKey('app_organization.Persona', on_delete=models.CASCADE,
                                 related_name="persona_backlogs", null=True, blank=True)
     
@@ -30,21 +81,38 @@ class Backlog(MPTTModel, BaseModelImpl):
     iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, 
                             related_name="backlog_iteration", null=True, blank=True)
      
-    
+    flat_backlog_type = models.CharField(max_length=100, choices=FLAT_BACKLOG_TYPES.items(), default='USER STORY')
+    size = models.CharField(max_length=100, choices=SIZE_CHOICES, default='0')
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='Backlog')
     # for now label is a char field
     tag =  models.CharField(max_length=256,null=True, blank=True, default='')
           
    
     duration_in_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     
-
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='fb_created_by')
+    pulled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='fb_pulled_by')
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, 
                                blank=True, related_name='author_backlogs')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
                              related_name='user_backlogs')
+    
+    PRIORITY_CHOICES = (
+        ('Low', 'Low'),
+        ('Normal', 'Normal'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+        ('Critical', 'Critical'),
+    )
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='Normal')
+
    
     class MPTTMeta:
-        order_insertion_by = ['position']
+        order_insertion_by = ['position', 'created_at']
+        
+    class Meta:
+        ordering = ['position', '-created_at']
+
 
     def __str__(self):
         if self.name:
@@ -52,6 +120,19 @@ class Backlog(MPTTModel, BaseModelImpl):
         else:
             return '' + str(self.pk)
 
+    
+
+    def get_cached_completion_stats(self):
+        cache_key = f"backlog_completion_{self.pk}"
+        stats = cache.get(cache_key)
+        if stats is None:
+            total_count = self.get_descendants().filter(active=True).count()
+            completed_count = self.get_descendants().filter(done=True, active=True).count()
+            percent_complete = round((completed_count / total_count) * 100, 2) if total_count > 0 else 0.0
+            stats = {'total_count': total_count, 'completed_count': completed_count, 'percent_complete': percent_complete}
+            cache.set(cache_key, stats, timeout=300)  # Cache for 5 minutes
+        return stats
+    
     def get_completion_stats(self):
         total_count = self.get_descendants().filter(done=True, active=True).count() + self.get_descendants().filter(done=False, active=True).count()
         completed_count = self.get_descendants().filter(done=True, active=True).count()
@@ -88,6 +169,44 @@ class Backlog(MPTTModel, BaseModelImpl):
     
     def get_active_children(self):
         return self.get_children().filter(active=True)
+    
+    ALLOWED_TRANSITIONS = {
+        'Backlog': ['To Do'],
+        'To Do': ['In Progress', 'Blocked'],
+        'In Progress': ['Done', 'Blocked'],
+        'Blocked': ['In Progress', 'Unblocked'],
+        'Unblocked': ['In Progress'],
+        'Done': ['Backlog', 'Archived', 'Deleted', 'Blocked', 'To Do'],
+        # etc.
+    }
+    def can_transition_to(self, new_status):
+        return new_status in self.ALLOWED_TRANSITIONS[self.status]
+    
+    def update_estimates(self):
+        self.estimate = self.sub_tasks.aggregate(total=models.Sum('estimate'))['total'] or 0
+        self.save()
+
+
+    def save(self, *args, **kwargs):
+        # Check if the parent backlog item exists
+        if self.parent:
+            # Validate that the parent is of a flat backlog type
+            if self.parent.flat_backlog_type not in Backlog.FLAT_BACKLOG_TYPES:
+                raise ValidationError("Subtasks can only be added to flat backlog types.")
+
+            # Ensure that the parent is not part of a hierarchy
+            if self.parent.get_children().exists():
+                raise ValidationError("Cannot add subtasks to a hierarchical backlog item.")
+        # Check if the status is being set to "Done"
+        if self.flat_backlog_type in self.FLAT_BACKLOG_TYPES and self.status == "Done":
+            # Ensure all subtasks are also marked as "Done"
+            incomplete_subtasks = self.sub_tasks.filter(~models.Q(status="Done")).exists()
+            if incomplete_subtasks:
+                raise ValidationError("Cannot mark the backlog item as 'Done' while subtasks are incomplete.")
+        
+        # Proceed with saving
+        super().save(*args, **kwargs)
+
 
 
 # 07122024
@@ -114,3 +233,20 @@ class StoryMapping(BaseModelTrackDateImpl):
 
     def __str__(self):
         return f"Story {self.story_id} mapped to Release {self.release_id}, Activity {self.activity_id}, Step {self.step_id}, Persona {self.persona_id}"
+
+
+# 14122024
+# adding the flat backlog approach where, user story and similar level types will have sub-tasks
+
+class SubTasks(BaseModelTrackDateImpl):
+    parent = models.ForeignKey(Backlog, on_delete=models.CASCADE, related_name='sub_tasks')
+    name = models.CharField(max_length=256, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=100, choices=Backlog.STATUS_CHOICES, default='To Do')
+    estimate = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_by')
+    pulled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='pulled_by')
+    
+
+    def __str__(self):
+        return self.name

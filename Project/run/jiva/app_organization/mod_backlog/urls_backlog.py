@@ -42,5 +42,8 @@ urlpatterns = [
     path('ajax_unmap_steps_from_activity/', views_story_map.ajax_unmap_steps_from_activity, name='ajax_unmap_steps_from_activity'),
     path('storymap_group_steps/<int:pro_id>/<int:persona_id>/', views_story_map.storymap_group_steps, name='storymap_group_steps'),
     
+    # backlog
+    path('project_backlog_decide/<int:pro_id>/', views_backlog.project_backlog_decide, name='project_backlog_decide'),
+    path('view_flat_backlog/<int:pro_id>/<int:parent_id>/', views_backlog.view_flat_backlog, name='view_flat_backlog'),
     
 ]

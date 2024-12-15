@@ -9,6 +9,8 @@ from app_organization.mod_activity.models_activity import *
 from app_organization.mod_step.models_step import *
 from app_jivapms.mod_app.all_view_imports import *
 
+from app_common.mod_app.all_view_imports import *
+
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -492,6 +494,29 @@ def view_backlog(request, pro_id, parent_id,  content_id):
     template_file = f"{app_name}/{module_path}/view__backlog.html"
     return render(request, template_file, context)
 
+@login_required
+def project_backlog_decide(request, pro_id):
+    user = request.user
+    pro = get_object_or_404(Project, pk=pro_id)
+   
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'backlog_decide',
+        'pro_id': pro_id,
+        'pro': pro,
+        'project': pro,
+        'org': pro.org,
+        'org_id': pro.org_id,
+       
+        'module_path': module_path,
+        'project': pro,
+        'object': pro,
+
+        'page_title': f'Backlog',
+    }
+    template_file = f"{app_name}/{module_path}/project_backlog.html"
+    return render(request, template_file, context)
 
 @login_required
 def copy_backlog(request, pro_id , parent_id, content_id):
@@ -1191,74 +1216,93 @@ def ajax_story_back_to_list(request):
         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
     
     
+@login_required
+def view_flat_backlog(request, pro_id, parent_id):
+    user = request.user
+    member = get_object_or_404(Member, user=user)
+    project = Project.objects.get(id=pro_id)
+    # Filter BacklogTypes based on the COMMON_BACKLOG_TYPES dictionary
+    
+    
+    
+    
+    backlog_types = BacklogType.objects.filter(
+        active=True, 
+        name__in=FLAT_BACKLOG_TYPES.values(), 
+    ).select_related('type')
 
-
-
-# @login_required
-# def ajax_recieve_story_mapped_details(request):
-#     try:
-#         data = json.loads(request.body)  # Correctly parsing JSON data from the request body
-#         project_id = data['project_id']
-#         story_id = data['story_id']
-#         release_id = data['release_id']
-#         iteration_id = data['iteration_id']
-#         activity_id = data['activity_id']
-#         step_id = data['step_id']
-#         persona_id = data['persona_id']
-        
-#         if iteration_id == '-1':
-#             iteration_id = None
-        
-#         print(f">>> === Project ID: {project_id} === <<<")
-#         print(f">>> === Story ID: {story_id} === <<<")
-#         print(f">>> === Release ID: {release_id} === <<<")
-#         print(f">>> === Iteration ID: {iteration_id} === <<<")
-#         print(f">>> === Activity ID: {activity_id} === <<<")
-#         print(f">>> === Step ID: {step_id} === <<<")
-#         print(f">>> === Persona ID: {persona_id} === <<<")
-#         #StoryMapping.objects.all().delete()
-#         with transaction.atomic():  # Ensure atomicity
-#             print(f">>> === Story ID: {story_id} === <<<")
-#             # Save or update the story mapping
-#             story_details = Backlog.objects.get(id=story_id)
-#             print(f">>> === Story ID: {story_details} === <<<")
-#             # Save or update the story mapping            
-#             mapping, created = StoryMapping.objects.update_or_create(
-#                 story_id=story_id,
-#                 defaults={
-#                     'pro_id': project_id,
-#                     'persona_id': persona_id,
-#                     'mapped_at': timezone.now(),
-#                     'active': True,
-#                     'story_name': story_details.name,
-#                     'release_id': release_id,
-#                     'iteration_id': iteration_id,
-#                     'activity_id': activity_id,
-#                     'step_id': step_id,
-#                 }
-#             )
-#             #StoryMapping.objects.all().delete()
+    # Collect backlog items for the filtered backlog types
+    backlog_items = Backlog.objects.filter(
+        pro_id=pro_id,
+        type__in=backlog_types, 
+        active=True
+    ).order_by('position', '-created_at')
+    
+    backlog_items_count = backlog_items.count()
+    
+    
+    
+    if request.method == 'POST':
+        backlog_summary = request.POST.get('backlog_summary')
+        create_backlog_type = BacklogType.objects.filter(name='User Story').first()
+        print(f">>> === Backlog Summary: {backlog_summary} === <<<")
+        if 'add_to_top' in request.POST:
+            backlog_item = Backlog.objects.create(
+                pro=project,
+                type=create_backlog_type,
+                name=backlog_summary,
+                created_by=user,
+                position=0, 
+                author=user,
+            )
+            print(f">>> === Backlog Item: {backlog_item} {backlog_item.type} {backlog_item.position} {backlog_item.pro} === <<<")
             
-#             if created:
-#                 message = "Story mapped successfully."
-#             else:
-#                 message = "Story mapping updated successfully."
-#             logger.debug(f">>> === Story Mapping: {message} === <<<")
-        
-#             # Update backlog item with release
-#             story_details.release_id = release_id
-#             story_details.save()
-#             print(f">>> === Story Mapping: {story_details.release_id} === <<<")
-#             print(f">>> === Story Mapping1: {message} === <<<")
-#             response = {"status": "success", "message": message}
-#             print(f">>> ===" + json.dumps(response) + " === <<<")  # Validate this
-#             return JsonResponse(response)
-#         #return JsonResponse({"status": "success", "message": message})
-#     except json.JSONDecodeError:
-#         logger.debug(f">>> === Story Mapping: Invalid JSON === <<<")
-#         print(f">>> === Story Mapping2: {message} === <<<")
-#         return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
-#     except KeyError:
-#         logger.debug(f">>> === Story Mapping: Missing required parameters === <<<")
-#         print(f">>> === Story Mapping2: {message} === <<<")
-#         return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
+        if 'add_to_bottom' in request.POST:
+            max_position = Backlog.objects.filter(pro=project).aggregate(models.Max('position'))['position__max']
+            new_position = max_position + 1 if max_position is not None else 0
+
+            backlog_item = Backlog.objects.create(
+                pro=project,
+                type=create_backlog_type,
+                name=backlog_summary,
+                created_by=user,
+                position=new_position,
+                author=user,
+            )
+            print(f">>> === Backlog Item: {backlog_item} === <<<")
+
+        else:
+            max_position = Backlog.objects.filter(pro=project).aggregate(models.Max('position'))['position__max']
+            new_position = max_position + 1 if max_position is not None else 0
+
+            backlog_item = Backlog.objects.create(
+                pro=project,
+                type=create_backlog_type,
+                name=backlog_summary,
+                created_by=user,
+                position=new_position,
+                author=user,
+            )
+            print(f">>> === Backlog Item: {backlog_item} === <<<")
+
+    # send outputs (info, template,
+    context = {
+        'parent_page': '__PARENTPAGE__',
+        'page': 'iterate',
+        'user': user,
+        'member': member,
+        'pro': project,
+        'project': project,
+        'pro_id': pro_id,
+        'org': project.org,
+        'org_id': project.org_id,
+        'backlog_items': backlog_items,
+        'backlog_types': backlog_types,
+        'COMMON_BACKLOG_TYPES': COMMON_BACKLOG_TYPES,
+        'ICON_MAPPING': ICON_MAPPING,
+        'backlog_items_count': backlog_items_count,
+        'page_title': f'View Flat Backlog',
+    }       
+    template_file = f"{app_name}/{module_path}/view_flat_backlog.html"
+    return render(request, template_file, context)
+

@@ -1,0 +1,578 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<style>
+    .trash-icon {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      font-size: 24px;  /* Size of the icon */
+      cursor: pointer;
+      color: #707070;  /* Color of the icon */
+    }
+    .display_items {
+      font-size: 11px;
+      color: #707070;
+      display: inline-block;
+    
+    }
+
+
+
+</style>
+
+<style>
+
+/* General table styling */
+.backlog_table {
+    width: 60%;
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    border-collapse: collapse;
+}
+
+/* Add a border to each row (tr), not to individual cells (td) */
+.backlog_table tbody tr {
+    border: 1px solid #ccc;
+}
+.backlog_table thead tr {
+    border: 1px solid #ccc;
+}
+
+/* Remove borders from table cells */
+.backlog_table tbody td {
+    border: none;
+    padding: 4px; /* Add padding for better readability */
+}
+
+/* Header styling */
+.backlog_table thead th {
+    background-color: #f5f5f5;
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+}
+
+/* Alignment styles */
+.ra { /* Right-aligned */
+    text-align: right;
+}
+
+.la { /* Left-aligned */
+    text-align: left;
+}
+
+.ca { /* Center-aligned */
+    text-align: center;
+}
+
+/* General alignment styles */
+.la { /* Left-aligned */
+    text-align: left !important; /* Add !important to override any conflicting styles */
+}
+
+/* Specific to headers to ensure alignment */
+.backlog_table th.la {
+    text-align: left !important;
+}
+
+/* For body cells */
+.backlog_table td.la {
+    text-align: left !important;
+}
+
+.display_slno {
+    min-width: 50px;
+}
+
+
+
+.display_backlog_count {
+    font-size: 11px;
+    margin-left: 10px;
+    color: #707070;
+    display: inline-block;
+}
+
+</style>
+<style>
+    .d-flex {
+    display: flex;
+    align-items: flex-start;
+}
+
+.vertical-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin-right: 20px;
+}
+
+.vertical-text-top {
+    margin-top: 40px
+}
+
+.vertical-text {
+    writing-mode: vertical-rl; /* Vertical text top-down */
+    transform: rotate(360deg); /* Rotate to make text top-down */
+    text-decoration: none;
+    color: #007bff; /* Link color */
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-left: 40px;
+    
+    background-color: #f1f1f1;
+}
+
+.vertical-text:hover {
+    text-decoration: underline;
+}
+
+</style>
+
+<style>
+     .select-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .select-item.selected {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+
+<style>
+/* Collection Panel */
+.collection-panel {
+    position: absolute; /* Adjusted to align with the vertical text */
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    background-color: #f9f9f9;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    transform: translateX(-100%); /* Initially hidden */
+}
+
+/* Open State */
+.collection-panel.open {
+    transform: translateX(0); /* Slide in when open */
+}
+
+/* Contentbar Shift */
+.contentbar.shifted {
+    margin-left: 300px; /* Match the panel's width */
+    transition: margin-left 0.3s ease;
+}
+
+/* Panel Header */
+.collection-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+}
+
+.collection-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.collection-list li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+.collection-list li:hover {
+    background-color: #f1f1f1;
+}
+
+/* Collection Panel */
+.collection-panel {
+    position: absolute; /* Allow flexible placement */
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    background-color: #f9f9f9;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    transform: translateX(-100%); /* Initially hidden */
+    transition: transform 0.3s ease; /* Smooth slide-in */
+    z-index: 1000;
+}
+
+.collection-panel.open {
+    transform: translateX(0); /* Slide into view */
+}
+
+/* Content Shift */
+.contentbar {
+    transition: margin-left 0.3s ease; /* Smooth margin adjustment */
+}
+
+</style>
+<form method="post">
+{% csrf_token %}
+
+
+
+<div class="content-wrapper">
+
+    <div class="breadcrumb">
+        <nav aria-label="breadcrumb"> <!-- Inline style for demonstration -->
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'project_homepage' pro.org.id pro_id   %}">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'project_homepage' pro.org.id pro_id   %}">
+                        {{project}}
+                    </a>
+                </li>
+            </ol>
+        </nav>
+    </div>
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    <div class="d-flex">
+        <!-- Vertical Text Section -->
+        <div class="vertical-text-container">
+            <a href="#" class="vertical-text vertical-text-top" id="collection-link"
+            onclick="toggleCollectionPanel()"
+            >Collections</a>
+            <a href="#" class="vertical-text" id="revision-link">Iterate</a>
+        </div>
+
+         <!-- Sliding Panel -->
+    <div id="collection-panel" class="collection-panel">
+        <div class="collection-panel-header">
+            <h4>Collections</h4>
+            <button onclick="toggleCollectionPanel()">Close</button>
+        </div>
+        <ul class="collection-list">
+            <li onclick="assignToCollection('Collection 1')">Feature</li>
+            <li onclick="assignToCollection('Collection 2')">Internal Work</li>
+            <li onclick="assignToCollection('Collection 3')">Module1</li>
+            <li onclick="assignToCollection('Collection 3')">Login System</li>
+        </ul>
+    </div>
+    <div class="contentbar mb-5" id="contentbar">
+ 
+    <table class="table backlog_table" id="backlog_table">
+        <thead class="add_backlog_item_row">
+            <tr class="add_backlog_item">
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    
+                <td id="input_summary" width="100%" class="input_summary la" colspan="8">
+                   
+                    <input type="text" id="backlog_summary" name="backlog_summary" size="100" placeholder="Enter backlog item" class="me-2">
+                    <input type="submit" name="add_to_top" value="Add to Top" class="btn btn-sm btn-primary me-2">
+                    <input type="submit" name="add_to_bottom" value="Add to Bottom" class="btn btn-sm btn-primary me-2">
+                </td>
+            </tr>
+            </form>
+        </thead>
+        <thead>
+            <tr class="header">
+                <th id="header_type" width="2%" class="header_type ca">Type</th>                
+                <th id="header_summary" width="39%" class="header_summary la">Backlog Item 
+                    <div class="display_backlog_count">{{backlog_items_count}} items</div></th>
+                <th id="header_parent" width="14%" class="header_parent la">Parent</th>
+                <th id="header_release" width="10%" class="header_release la">Release</th>
+                <th id="header_iteration" width="8%" class="header_iteration la">Iteration</th>
+                <th id="header_slno" width="4%" class="header_slno ra">#</th>
+                <th id="header_size" width="4%" class="header_size ca">Size</th>
+                <th id="header_status" width="5%" class="header_status ca">Status</th>
+                <th id="header_select" width="2%" class="header_select ca">
+                    <input type="checkbox" name="select_all" class="select-all-checkbox">
+                </th>       
+            </tr>
+        </thead>
+        <!-- Row for adding a new backlog item -->
+       
+
+        <tbody class="backlog_body">
+            {% for item in backlog_items %}
+            <tr class="backlog_item select-item" id="{{item.id}}_{{forloop.counter}}" data-backlog-item-id="{{item.id}}" onclick="toggleItemSelection(this)">
+                <td id="display_type" width="2%" class="display_type ca" data-type="{{item.type}}">
+                    
+                </td>                
+                <td id="display_summary" width="39%" class="display_summary la">{{item.name|display_if_not_none}}</td>
+                <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
+                <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
+                <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
+                <td id="display_slno" width="4%" class="display_slno ra">BI-{{forloop.counter}}</td>
+                <td id="display_size" width="4%" class="display_size ca">{{item.size|display_if_not_none}}</td>
+                <td id="display_status" width="5%" class="display_status ca">{{item.status|display_if_not_none}}</td>
+                <th id="display_select" width="2%" class="display_select ca">
+                    <input type="checkbox" name="selected_items" value="{{item.id}}" class="select-item-checkbox">
+                </th> 
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+     
+    </div>
+</div>
+
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const selectAllCheckbox = document.querySelector('.select-all-checkbox');
+        const itemCheckboxes = document.querySelectorAll('.select-item-checkbox');
+
+        selectAllCheckbox.addEventListener('change', () => {
+            const isChecked = selectAllCheckbox.checked;
+            itemCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                toggleItemSelection(checkbox);
+            });
+        });
+    });
+</script>
+<script>
+  function toggleCollectionPanel() {
+    const panel = document.getElementById('collection-panel');
+    const contentbar = document.getElementById('contentbar');
+    const isOpen = panel.classList.contains('open');
+
+    if (isOpen) {
+        // Close the panel
+        panel.classList.remove('open');
+        contentbar.classList.remove('shifted');
+    } else {
+        // Open the panel
+        const collectionLink = document.getElementById('collection-link');
+        const linkRect = collectionLink.getBoundingClientRect();
+
+        // Align the panel with the link
+        panel.style.top = `${linkRect.top}px`;
+        panel.style.left = `${linkRect.right}px`;
+        panel.classList.add('open');
+        contentbar.classList.add('shifted');
+    }
+}
+
+function assignToCollection(collectionName) {
+    if (selectedItems.size === 0) {
+        alert("No items selected!");
+        return;
+    }
+
+    // Convert selected items to an array for display
+    const selectedItemsArray = Array.from(selectedItems);
+
+    // Log or alert the assignment for simulation
+    console.log(`Assigned items: ${selectedItemsArray.join(', ')} to ${collectionName}`);
+    alert(`Assigned items: ${selectedItemsArray.join(', ')} to ${collectionName}`);
+
+    // // Close the panel
+    // toggleCollectionPanel();
+
+    // // Clear selection (optional)
+    // clearSelection();
+}
+
+function clearSelection() {
+    // Clear the selection state
+    selectedItems.clear();
+
+    // Remove the 'selected' class from rows
+    const selectedRows = document.querySelectorAll('.backlog_item.selected');
+    selectedRows.forEach(row => row.classList.remove('selected'));
+
+    // Uncheck all checkboxes
+    const checkboxes = document.querySelectorAll('.select-item-checkbox');
+    checkboxes.forEach(checkbox => (checkbox.checked = false));
+}
+
+</script>
+
+<script>
+    // Global set for selected items
+let selectedItems = new Set();
+
+// Toggle selection state for a row
+function toggleItemSelection(checkboxElement) {
+    const rowElement = checkboxElement.closest('tr'); // Find the row containing the checkbox
+    const itemId = checkboxElement.value; // Use the value of the checkbox as the item ID
+
+    if (checkboxElement.checked) {
+        // Add the item to the selected set and highlight the row
+        selectedItems.add(itemId);
+        rowElement.classList.add('selected');
+    } else {
+        // Remove the item from the selected set and remove highlight
+        selectedItems.delete(itemId);
+        rowElement.classList.remove('selected');
+    }
+}
+
+// Initialize checkbox listeners on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const checkboxes = document.querySelectorAll('.select-item-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            toggleItemSelection(this); // Pass the changed checkbox to the toggle function
+        });
+    });
+});
+
+</script>
+
+<script>
+    // Define the dictionary with keys in ALL CAPS
+    const BACKLOG_TYPE_INFO = {
+    "EPIC": { "name": "Epic", "icon": "fas fa-mountain" },
+    "USER STORY": { "name": "User Story", "icon": "fas fa-user" },
+    "TASK": { "name": "Task", "icon": "fas fa-tasks" },
+    "BUG": { "name": "Bug", "icon": "fas fa-bug" },
+    "FEATURE": { "name": "Feature", "icon": "fas fa-star" },
+    "ENHANCEMENT": { "name": "Enhancement", "icon": "fas fa-wrench" },
+    "DEFECT": { "name": "Defect", "icon": "fas fa-exclamation-triangle" },
+    "ISSUE": { "name": "Issue", "icon": "fas fa-question-circle" },
+    "REQUIREMENT": { "name": "Requirement", "icon": "fas fa-list" },
+    "CHANGE": { "name": "Change", "icon": "fas fa-exchange-alt" },
+    "IMPROVEMENT": { "name": "Improvement", "icon": "fas fa-arrow-up" },
+    "REFACTOR": { "name": "Refactor", "icon": "fas fa-code" },
+    "RESEARCH": { "name": "Research", "icon": "fas fa-search" },
+    "DESIGN": { "name": "Design", "icon": "fas fa-pencil-ruler" },
+    "ARCHITECTURE": { "name": "Architecture", "icon": "fas fa-drafting-compass" },
+    "TECH_DEBT": { "name": "Tech Debt", "icon": "fas fa-code-branch" },
+    "TEST": { "name": "Test", "icon": "fas fa-vial" },
+    "DOC": { "name": "Doc", "icon": "fas fa-file-alt" },
+    "RELEASE": { "name": "Release", "icon": "fas fa-rocket" },
+    "DEPLOY": { "name": "Deploy", "icon": "fas fa-cloud-upload-alt" },
+    "SUPPORT": { "name": "Support", "icon": "fas fa-life-ring" },
+    "TRAINING": { "name": "Training", "icon": "fas fa-chalkboard-teacher" },
+    "MEETING": { "name": "Meeting", "icon": "fas fa-handshake" },
+    "WORKSHOP": { "name": "Workshop", "icon": "fas fa-tools" },
+    "EVENT": { "name": "Event", "icon": "fas fa-calendar-alt" },
+    "CONFERENCE": { "name": "Conference", "icon": "fas fa-users" },
+    "SEMINAR": { "name": "Seminar", "icon": "fas fa-university" },
+    "WEBINAR": { "name": "Webinar", "icon": "fas fa-laptop" },
+    "PRESENTATION": { "name": "Presentation", "icon": "fas fa-project-diagram" },
+    "DEMO": { "name": "Demo", "icon": "fas fa-play-circle" },
+    "REVIEW": { "name": "Review", "icon": "fas fa-clipboard-check" },
+    "RETROSPECTIVE": { "name": "Retrospective", "icon": "fas fa-clock" },
+    "PLANNING": { "name": "Planning", "icon": "fas fa-map" },
+    "LEARNING": { "name": "Learning", "icon": "fas fa-graduation-cap" },
+    "INNOVATION": { "name": "Innovation", "icon": "fas fa-lightbulb" },
+    "STRATEGIC THEME": { "name": "Strategic Theme", "icon": "fas fa-cogs" },
+    "STRATEGY": { "name": "Strategy", "icon": "fas fa-cogs" },
+    "OBJECTIVE": { "name": "Objective", "icon": "fas fa-bullseye" },
+    "KEY RESULT": { "name": "Key Result", "icon": "fas fa-chart-line" },
+    "OKR": { "name": "OKR", "icon": "fas fa-check-double" },
+    "KPI": { "name": "KPI", "icon": "fas fa-chart-bar" },
+    "METRIC": { "name": "Metric", "icon": "fas fa-ruler" },
+    "GOAL": { "name": "Goal", "icon": "fas fa-flag-checkered" },
+    "TARGET": { "name": "Target", "icon": "fas fa-crosshairs" },
+    "INITIATIVE": { "name": "Initiative", "icon": "fas fa-rocket" },
+    "PROJECT": { "name": "Project", "icon": "fas fa-folder" },
+    "PROGRAM": { "name": "Program", "icon": "fas fa-layer-group" },
+    "PORTFOLIO": { "name": "Portfolio", "icon": "fas fa-suitcase" },
+    "PRODUCT": { "name": "Product", "icon": "fas fa-box" },
+    "SERVICE": { "name": "Service", "icon": "fas fa-concierge-bell" },
+    "APPLICATION": { "name": "Application", "icon": "fas fa-mobile-alt" },
+    "PLATFORM": { "name": "Platform", "icon": "fas fa-server" },
+    "INFRASTRUCTURE": { "name": "Infrastructure", "icon": "fas fa-network-wired" },
+    "TEAM": { "name": "Team", "icon": "fas fa-users" },
+    "GROUP": { "name": "Group", "icon": "fas fa-object-group" },
+    "DEPARTMENT": { "name": "Department", "icon": "fas fa-building" },
+    "DIVISION": { "name": "Division", "icon": "fas fa-columns" },
+    "COMPANY": { "name": "Company", "icon": "fas fa-city" },
+    "ORGANIZATION": { "name": "Organization", "icon": "fas fa-sitemap" },
+    "COMMUNITY": { "name": "Community", "icon": "fas fa-comments" },
+    "NETWORK": { "name": "Network", "icon": "fas fa-network-wired" },
+    "MARKET": { "name": "Market", "icon": "fas fa-shopping-cart" },
+    "CUSTOMER": { "name": "Customer", "icon": "fas fa-user-circle" },
+    "USER": { "name": "User", "icon": "fas fa-user" },
+    "STAKEHOLDER": { "name": "Stakeholder", "icon": "fas fa-users-cog" },
+    "PARTNER": { "name": "Partner", "icon": "fas fa-handshake" },
+    "VENDOR": { "name": "Vendor", "icon": "fas fa-store" },
+    "RELEASE TRAIN": { "name": "Release Train", "icon": "fas fa-train" },
+    "VALUE STREAM": { "name": "Value Stream", "icon": "fas fa-stream" },
+    "PRODUCT LINE": { "name": "Product Line", "icon": "fas fa-boxes" },
+    "PRODUCT FAMILY": { "name": "Product Family", "icon": "fas fa-cube" },
+    "PRODUCT CATEGORY": { "name": "Product Category", "icon": "fas fa-list-alt" },
+    "PRODUCT GROUP": { "name": "Product Group", "icon": "fas fa-th-large" },
+    "PRODUCT TEAM": { "name": "Product Team", "icon": "fas fa-users" },
+    "PRODUCT OWNER": { "name": "Product Owner", "icon": "fas fa-user-tag" },
+    "SCRUM MASTER": { "name": "Scrum Master", "icon": "fas fa-chess-king" },
+    "TEAM MEMBER": { "name": "Team Member", "icon": "fas fa-user-friends" },
+    "ADMIN": { "name": "Admin", "icon": "fas fa-user-shield" },
+    "EDITOR": { "name": "Editor", "icon": "fas fa-pencil-alt" },
+    "VIEWER": { "name": "Viewer", "icon": "fas fa-eye" },
+    "MANAGER": { "name": "Manager", "icon": "fas fa-user-tie" },
+    "CONTRIBUTOR": { "name": "Contributor", "icon": "fas fa-hands-helping" },
+    "DEVELOPER": { "name": "Developer", "icon": "fas fa-code" },
+    "DESIGNER": { "name": "Designer", "icon": "fas fa-paint-brush" },
+    "UI_UX": { "name": "UI/UX", "icon": "fas fa-pencil-ruler" },
+    "SYSTEM_ARCHITECT": { "name": "System Architect", "icon": "fas fa-cogs" },
+    "ENTERPRISE_ARCHITECT": { "name": "Enterprise Architect", "icon": "fas fa-project-diagram" },
+    "BUSINESS_OWNER": { "name": "Business Owner", "icon": "fas fa-briefcase" },
+    "PROGRAM_MANAGER": { "name": "Program Manager", "icon": "fas fa-layer-group" },
+    "PROJECT_MANAGER": { "name": "Project Manager", "icon": "fas fa-tasks" },
+    "PORTFOLIO_MANAGER": { "name": "Portfolio Manager", "icon": "fas fa-suitcase" },
+    "BLOG_ADMIN": { "name": "Blog Admin", "icon": "fas fa-blog" },
+    "COMPONENT": { "name": "Component", "icon": "fas fa-cogs" },
+    "MODULE": { "name": "Module", "icon": "fas fa-th" },
+    "SERVICE": { "name": "Service", "icon": "fas fa-concierge-bell" },
+    "FUNCTION": { "name": "Function", "icon": "fas fa-tools" },
+    "CAPABILITY": { "name": "Capability", "icon": "fas fa-lightbulb" },
+    "MVP": { "name": "Minimum Viable Product (MVP)", "icon": "fas fa-cubes" }
+};
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const typeCells = document.querySelectorAll('td[data-type]');
+    
+        typeCells.forEach(cell => {
+            // Convert `type` to uppercase before lookup
+            const type = cell.getAttribute('data-type').toUpperCase();
+            const typeInfo = BACKLOG_TYPE_INFO[type]; // Access the dictionary
+
+            if (typeInfo) {
+                // Add the tooltip as the `title` attribute
+                cell.setAttribute('title', typeInfo.name);
+
+                // Create an icon element
+                const iconElement = document.createElement('i');
+                iconElement.className = typeInfo.icon; // Add the icon class
+                
+                // Append the icon to the cell
+                cell.appendChild(iconElement);
+            }
+        });
+    });
+
+</script>
+
+
+{% endblock content %}
+
+

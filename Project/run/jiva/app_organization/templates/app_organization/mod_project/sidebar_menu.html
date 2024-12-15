@@ -18,6 +18,10 @@
         <a href="{% url 'list_backlogs' project.id 0 %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">checklist</i>
             <span>Backlog</span>
+        </a>  
+        <a href="{% url 'project_backlog_decide' project.id  %}" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">checklist</i>
+            <span>Project Backlog</span>
         </a>     
         <a href="{% url 'list_org_boards' org_id %}?project_id={{project.id}}" class="nav-link" >
             <i class="bi bi-kanban"></i>

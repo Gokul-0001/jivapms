@@ -27,6 +27,9 @@
         counter-increment: level3;  /* Increment the level 3 counter */
         content: counter(level1) "." counter(level2) "." counter(level3) ". ";  /* Display full hierarchical numbering */
     }
+    .scroll-target {
+    scroll-margin-top: 260px; /* Height of your navbar */
+}
 </style>
 {% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
 <div class="content-wrapper">
@@ -218,17 +221,38 @@
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        if (window.location.hash) {
-            var rowId = window.location.hash.substring(1);
+        function scrollToRow(rowId) {
             var row = document.getElementById(rowId);
             if (row) {
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Check if scrollMarginTop is supported
+                var style = window.getComputedStyle(document.documentElement);
+                var isSupported = 'scrollMarginTop' in document.documentElement.style;
+
+                if (isSupported) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    // Fallback for older browsers
+                    var navbarHeight = 60; // Replace with your navbar's actual height
+                    var rowPosition = row.getBoundingClientRect().top + window.pageYOffset;
+                    var offsetPosition = rowPosition - navbarHeight;
+
+                    window.scrollTo({
+                        bottom: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
             } else {
                 console.warn('Row with ID "' + rowId + '" not found.');
             }
         }
+
+        if (window.location.hash) {
+            var rowId = window.location.hash.substring(1);
+            scrollToRow(rowId);
+        }
     });
 </script>
+
 
 <script>
     function updateDoneState12(backlogId, isDone) {
