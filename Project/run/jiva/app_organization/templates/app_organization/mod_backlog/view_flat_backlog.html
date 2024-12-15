@@ -380,6 +380,10 @@
                         {{project}}
                     </a>
                 </li>
+
+                <li class="breadcrumb-item" aria-current="page">
+                    Backlog
+                </li>
             </ol>
         </nav>
     </div>
@@ -397,6 +401,8 @@
         <div id="collection-panel" class="collection-panel">
             <div class="collection-panel-header">
                 <h4>Collections</h4>
+                &nbsp;
+                <a href="{% url 'list_collections' project.id %}" class="btn btn-sm btn-primary">Setup</a>
                
                 <button onclick="toggleCollectionPanel()">Close</button>
             </div>
@@ -515,7 +521,10 @@
                 <td id="display_type" width="2%" class="display_type ca" data-type="{{item.type}}">
                     
                 </td>                
-                <td id="display_summary" width="39%" class="display_summary la">{{item.name|display_if_not_none}}</td>
+                <td id="display_summary" width="39%" class="display_summary la"
+                ondblclick="makeEditable(this);"
+                onblur="save_element_text(this, '{{item.id}}', 'app_organization', 'backlog', 'name');"
+                >{{item.name|display_if_not_none}}</td>
                 <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
@@ -738,6 +747,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
 
+<script>
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
+    }
+
+
+    function save_element_text(element, id,  appName, modelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_element_text/',
+            type: 'POST',
+            data : {
+            'csrfmiddlewaretoken': "{{ csrf_token }}",
+            'model_name': modelName,
+            'app_name': appName,
+            'field_name': fieldName,
+            'text': element.textContent, 
+            'id': id,
+            },
+            dataType: 'json',
+            success: function(data) {
+            console.log(data);
+            }
+        })
+    }
+</script>
 <script>
     // Define the dictionary with keys in ALL CAPS
     const BACKLOG_TYPE_INFO = {

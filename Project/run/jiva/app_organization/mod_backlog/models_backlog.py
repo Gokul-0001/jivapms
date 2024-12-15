@@ -7,7 +7,7 @@ from app_organization.mod_org_release.models_org_release import *
 from app_organization.mod_org_iteration.models_org_iteration import *
 from app_organization.mod_persona.models_persona import *
 from app_organization.mod_backlog_type.models_backlog_type import *
-
+from app_organization.mod_collection.models_collection import *
 from app_common.mod_app.all_view_imports import *
 
 
@@ -84,7 +84,8 @@ class Backlog(MPTTModel, BaseModelImpl):
     flat_backlog_type = models.CharField(max_length=100, choices=FLAT_BACKLOG_TYPES.items(), default='USER STORY')
     size = models.CharField(max_length=100, choices=SIZE_CHOICES, default='0')
     status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='Backlog')
-    
+    collection = models.ForeignKey('app_organization.Collection', on_delete=models.CASCADE,
+                                      related_name="backlog_collections", null=True, blank=True)
     connected_to_hierarchy = models.BooleanField(default=False)
     connected_to_hierarchy_id = TreeForeignKey('self', null=True, blank=True, related_name='Tree', on_delete=models.CASCADE)
     

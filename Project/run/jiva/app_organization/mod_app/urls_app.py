@@ -2,11 +2,12 @@ from django.urls import include, path
 
 urlpatterns = [
     path('activity/', include('app_organization.mod_activity.urls_activity')),
-    
+    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
     path('backlog_super_type/', include('app_organization.mod_backlog_super_type.urls_backlog_super_type')),
     path('backlog_type/', include('app_organization.mod_backlog_type.urls_backlog_type')),
     path('blog/', include('app_organization.mod_blog.urls_blog')),
     path('board/', include('app_organization.mod_board.urls_board')),
+    path('collection/', include('app_organization.mod_collection.urls_collection')),
     path('dev_value_stream/', include('app_organization.mod_dev_value_stream.urls_dev_value_stream')),
     path('dev_value_stream_step/', include('app_organization.mod_dev_value_stream_step.urls_dev_value_stream_step')),
     path('event/', include('app_organization.mod_event.urls_event')),
@@ -42,5 +43,4 @@ urlpatterns = [
     path('team/', include('app_organization.mod_team.urls_team')),
     path('teammember/', include('app_organization.mod_teammember.urls_teammember')),
     path('work_flow/', include('app_organization.mod_work_flow.urls_work_flow')),
-    path('backlog/', include('app_organization.mod_backlog.urls_backlog')),
 ]

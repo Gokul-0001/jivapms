@@ -1321,9 +1321,7 @@ def view_flat_backlog(request, pro_id, parent_id):
             # Collection no longer exists; this backlog item should be removed
             bdc.active = False
             bdc.save()
-             # Update child items to detach from the deactivated parent
-            child_backlogs = Backlog.objects.filter(parent=bdc)
-            child_backlogs.update(parent=flat_backlog_root, collection=None)
+           
 
     # Step 4: Add missing `Collection` items to the `Backlog`
     existing_collection_ids = {bdc.collection.id for bdc in backlog_collections}
