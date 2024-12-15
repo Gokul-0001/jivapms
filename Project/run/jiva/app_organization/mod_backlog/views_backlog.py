@@ -1222,68 +1222,153 @@ def view_flat_backlog(request, pro_id, parent_id):
     member = get_object_or_404(Member, user=user)
     project = Project.objects.get(id=pro_id)
     # Filter BacklogTypes based on the COMMON_BACKLOG_TYPES dictionary
+    flat_backlog_root = Backlog.objects.filter(pro=project, name=FLAT_BACKLOG_ROOT_NAME).first()
+    filters = {}
+    
+    # Extract filter_by parameter
+    filter_by = request.GET.get('filter_by', '').strip()  # Default to empty string if not provided
+
+    # Handle "unmapped" case
+    if filter_by == 'unmapped':
+        filters['parent'] = None
+        #print(f">>> === Filters unmapped: {filters} unmapped === <<<")
+   
+    elif filter_by == 'all_items':
+        filters = {}
+        #print(f">>> === Filters allitems: {filters} all_items === <<<")
+    elif filter_by.startswith('filter_'):
+        # Extract the collection ID from the filter_by parameter
+        collection_id = filter_by.replace('filter_', '')
+        if collection_id.isdigit():  # Ensure it's a valid numeric ID
+            filters['parent_id'] = int(collection_id)
+            #print(f">>> === Filters Collection: {filters} match === <<<")
+    # else:
+    #     filters = {}
+    #     print(f">>> === Filters ELSE: {filters} {flat_backlog_root} === <<<")
     
     
-    
-    
+    #
+    # This is where the backlog items are selected for display
+    # can be filtered based on collections
+    #
     backlog_types = BacklogType.objects.filter(
         active=True, 
         name__in=FLAT_BACKLOG_TYPES.values(), 
     ).select_related('type')
 
     # Collect backlog items for the filtered backlog types
-    backlog_items = Backlog.objects.filter(
-        pro_id=pro_id,
-        type__in=backlog_types, 
-        active=True
-    ).order_by('position', '-created_at')
-    
+    backlog_deleted = False
+    backlog_deleted_count = Backlog.objects.filter(
+                            pro_id=pro_id,
+                            active=False
+                            ).count()
+    if backlog_deleted_count > 0:
+        backlog_deleted = True
+    if filter_by == "deleted":
+        backlog_items = Backlog.objects.filter(
+            pro_id=pro_id,
+            active=False
+        ).order_by('position', '-created_at')
+    else:
+        backlog_items = Backlog.objects.filter(
+            pro_id=pro_id,
+            type__in=backlog_types, 
+            **filters,
+            active=True
+        ).order_by('position', '-created_at')
     backlog_items_count = backlog_items.count()
     
+    # find out the flat backlog for this project
     
+    flat_backlog_collection_type = BacklogType.objects.filter(name='Collection').first() 
+    if not flat_backlog_collection_type:
+        flat_backlog_collection_type = BacklogType.objects.create(
+            name='Collection',
+            pro=project,
+            active=True,
+        )
     
+    # demo collections for testing
+    demo_collections = ['Feature1', 'Internal Work', 'Component1', 'Module1']
+    for dc in demo_collections:
+        if not Backlog.objects.filter(pro=project, name=dc).exists():
+            Backlog.objects.create(
+                pro=project,
+                type=flat_backlog_collection_type,
+                name=dc,
+                created_by=user,
+                position=0,
+                parent=flat_backlog_root,
+                author=user,
+            )
+    collections = Backlog.objects.filter(pro=project, type=flat_backlog_collection_type, parent=flat_backlog_root)
     if request.method == 'POST':
+        
+        
         backlog_summary = request.POST.get('backlog_summary')
-        create_backlog_type = BacklogType.objects.filter(name='User Story').first()
-        print(f">>> === Backlog Summary: {backlog_summary} === <<<")
-        if 'add_to_top' in request.POST:
-            backlog_item = Backlog.objects.create(
-                pro=project,
-                type=create_backlog_type,
-                name=backlog_summary,
-                created_by=user,
-                position=0, 
-                author=user,
-            )
-            print(f">>> === Backlog Item: {backlog_item} {backlog_item.type} {backlog_item.position} {backlog_item.pro} === <<<")
-            
-        if 'add_to_bottom' in request.POST:
-            max_position = Backlog.objects.filter(pro=project).aggregate(models.Max('position'))['position__max']
-            new_position = max_position + 1 if max_position is not None else 0
-
-            backlog_item = Backlog.objects.create(
-                pro=project,
-                type=create_backlog_type,
-                name=backlog_summary,
-                created_by=user,
-                position=new_position,
-                author=user,
-            )
-            print(f">>> === Backlog Item: {backlog_item} === <<<")
-
+        add_action = request.POST.get('add_action')
+        action = request.POST.get('read_action', '').strip().lower()
+        collection_id = request.POST.get("collection_id")
+        selected_items = request.POST.get("selected_items", "").split(",")
+        
+        if action == 'assign':
+            #print(f">>> === Assigning Items: {selected_items} to Collection: {collection_id} === <<<")
+            for each_item in selected_items:
+                backlog_item = Backlog.objects.get(id=each_item)
+                if collection_id == 'Others':
+                    backlog_item.parent = flat_backlog_root
+                elif collection_id == "deleted":
+                    backlog_item.active = False
+                else:
+                    backlog_item.parent = Backlog.objects.get(id=collection_id)
+                
+                    
+                backlog_item.save() 
+            messages.success(request, f"Items {selected_items} assigned to collection {collection_id} successfully!")
+        elif action == "unassign":
+            #print(f">>> === UnAssigning Items: {selected_items} from Collection: {collection_id} === <<<")
+            for each_item in selected_items:
+                backlog_item = Backlog.objects.get(id=each_item)
+                backlog_item.parent = flat_backlog_root
+                if collection_id == "deleted":
+                    backlog_item.active = True
+                backlog_item.save()
+            messages.success(request, f"Items {selected_items} unassigned from collection {collection_id} successfully!")
         else:
-            max_position = Backlog.objects.filter(pro=project).aggregate(models.Max('position'))['position__max']
-            new_position = max_position + 1 if max_position is not None else 0
+            messages.error(request, "Invalid action.")
+            
+        
+        if add_action == 'add':
+            create_backlog_type = BacklogType.objects.filter(name='User Story').first()
+            #print(f">>> === Backlog Summary: {backlog_summary} === <<<")
+            if 'add_to_top' in request.POST:
+                backlog_item = Backlog.objects.create(
+                    pro=project,
+                    type=create_backlog_type,
+                    name=backlog_summary,
+                    created_by=user,
+                    position=0, 
+                    parent=flat_backlog_root,
+                    author=user,
+                )
+                #print(f">>> === Backlog Item ADD TO TOP : {backlog_item} {backlog_item.type} {backlog_item.position} {backlog_item.pro} === <<<")
+                
+            if 'add_to_bottom' in request.POST:
+                max_position = Backlog.objects.filter(pro=project).aggregate(models.Max('position'))['position__max']
+                new_position = max_position + 1 if max_position is not None else 0
 
-            backlog_item = Backlog.objects.create(
-                pro=project,
-                type=create_backlog_type,
-                name=backlog_summary,
-                created_by=user,
-                position=new_position,
-                author=user,
-            )
-            print(f">>> === Backlog Item: {backlog_item} === <<<")
+                backlog_item = Backlog.objects.create(
+                    pro=project,
+                    type=create_backlog_type,
+                    name=backlog_summary,
+                    created_by=user,
+                    position=new_position,
+                    parent=flat_backlog_root,
+                    author=user,
+                )
+                #print(f">>> === Backlog Item ADD TO BOTTOM: {backlog_item} === <<<")
+
+       
 
     # send outputs (info, template,
     context = {
@@ -1296,8 +1381,11 @@ def view_flat_backlog(request, pro_id, parent_id):
         'pro_id': pro_id,
         'org': project.org,
         'org_id': project.org_id,
+        'backlog_deleted': backlog_deleted,
+        'backlog_deleted_count': backlog_deleted_count,
         'backlog_items': backlog_items,
         'backlog_types': backlog_types,
+        'collections': collections,
         'COMMON_BACKLOG_TYPES': COMMON_BACKLOG_TYPES,
         'ICON_MAPPING': ICON_MAPPING,
         'backlog_items_count': backlog_items_count,

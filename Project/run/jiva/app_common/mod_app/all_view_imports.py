@@ -72,7 +72,15 @@ import pytz
 SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
 
 ##################################  CONSTANTS ##################################
+
+15/12/2024
+# Flat backlog additions
+FLAT_BACKLOG_ROOT_NAME = "Flat Backlog"
+
+
+
 FLAT_BACKLOG_TYPES = {
+    "Flat Backlog": "Flat Backlog",
     "USER STORY": "User Story",
     "TASK": "Task",
     "BUG": "Bug",

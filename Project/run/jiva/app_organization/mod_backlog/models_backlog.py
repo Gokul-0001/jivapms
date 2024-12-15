@@ -84,6 +84,10 @@ class Backlog(MPTTModel, BaseModelImpl):
     flat_backlog_type = models.CharField(max_length=100, choices=FLAT_BACKLOG_TYPES.items(), default='USER STORY')
     size = models.CharField(max_length=100, choices=SIZE_CHOICES, default='0')
     status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='Backlog')
+    
+    connected_to_hierarchy = models.BooleanField(default=False)
+    connected_to_hierarchy_id = TreeForeignKey('self', null=True, blank=True, related_name='Tree', on_delete=models.CASCADE)
+    
     # for now label is a char field
     tag =  models.CharField(max_length=256,null=True, blank=True, default='')
           
@@ -191,12 +195,14 @@ class Backlog(MPTTModel, BaseModelImpl):
         # Check if the parent backlog item exists
         if self.parent:
             # Validate that the parent is of a flat backlog type
+            #print(f"=== >>> {self.parent.flat_backlog_type} ===> {self.flat_backlog_type} === <<<")
             if self.parent.flat_backlog_type not in Backlog.FLAT_BACKLOG_TYPES:
                 raise ValidationError("Subtasks can only be added to flat backlog types.")
 
-            # Ensure that the parent is not part of a hierarchy
-            if self.parent.get_children().exists():
-                raise ValidationError("Cannot add subtasks to a hierarchical backlog item.")
+            # # Ensure that the parent is not part of a hierarchy
+            # print(f"=== >>> {self.parent.get_children()} === <<<")
+            # if self.parent.get_children().exists():
+            #     raise ValidationError("Cannot add subtasks to a hierarchical backlog item.")
         # Check if the status is being set to "Done"
         if self.flat_backlog_type in self.FLAT_BACKLOG_TYPES and self.status == "Done":
             # Ensure all subtasks are also marked as "Done"

@@ -315,54 +315,7 @@
 
 </style>
 
-<style>
-.add-backlog-container {
-    display: flex;
-    flex-wrap: wrap; /* Allows wrapping when space is limited */
-    align-items: center; /* Vertically align items */
-    gap: 10px; /* Add space between items */
-}
 
-.backlog-input {
-    flex: 1 1 auto; /* Input field grows to fill available space */
-    min-width: 200px; /* Prevents input from becoming too small */
-}
-
-.add-button-container {
-    display: flex;
-    flex-wrap: wrap; /* Allows buttons to wrap when needed */
-    gap: 10px; /* Add space between buttons */
-}
-
-.add-button-container input[type="submit"] {
-    flex: 0 1 auto; /* Buttons resize automatically but do not grow excessively */
-    min-width: 100px; /* Prevents buttons from shrinking too much */
-}
-.add-button-container input[type="submit"] {
-    font-size: 12px; /* Default text size for buttons */
-    font-weight: bold; /* Bold text for emphasis */
-    padding: 6px 12px; /* Adjust padding for smaller buttons */
-}
-
-@media (max-width: 768px) {
-    /* Smaller screens */
-    .add-button-container input[type="submit"] {
-        font-size: 10px; /* Smaller text size on narrow screens */
-        font-weight: bold; /* Bold text for emphasis */
-        padding: 4px 8px; /* Reduce padding to match smaller size */
-    }
-}
-
-@media (max-width: 480px) {
-    /* Very small screens (e.g., mobile devices) */
-    .add-button-container input[type="submit"] {
-        font-size: 10px; /* Even smaller text size */
-        font-weight: bold; /* Bold text for emphasis */
-        padding: 3px 6px; /* Further reduce padding */
-    }
-}
-
-</style>
 
 
 <div class="content-wrapper">
@@ -401,24 +354,13 @@
                 <button onclick="toggleCollectionPanel()">Close</button>
             </div>
             <ul class="collection-list">
-                <li>
-                    <div class="collection-item">
-                        <span id="filter_unmapped" onclick="filterBacklog('all_items')">All Items</span>
-                       
-                    </div>
-                    <div id="others" class="details hidden">
-                        <p>List all the backlog items.</p>
-                    </div>
-                </li>
-
-                <!-- COLLECTION FOR BACKLOG -->
                 {% for collection in collections %}
                 <li>
                     <div class="collection-item">
-                        <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.id}}')">{{collection.name}}</span>
+                        <span>{{collection.name}}</span>
                         <div class="action-buttons">
                             <button class="small-btn assign-btn" onclick="assignToCollection('{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
-                            <button class="small-btn unassign-btn me-2" onclick="unassignFromCollection('{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
+                            <button class="small-btn unassign-btn me-2" nclick="unassignFromCollection('{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
                             <button class="dropdown-btn" onclick="toggleDetails('{{collection.id}}-details')">▼</button>
                         </div>
                     </div>
@@ -427,10 +369,9 @@
                     </div>
                 </li>
                 {% endfor %}
-                
                 <li>
                     <div class="collection-item">
-                        <span id="filter_unmapped" onclick="filterBacklog('unmapped')">Unmapped Items</span>
+                        <span>Unmap Items</span>
                         <div class="action-buttons">
                             <button class="small-btn assign-btn" onclick="assignToCollection('Others')">&lt;&lt; &nbsp; Map</button>
                             <button class="small-btn unassign-btn" onclick="unassignFromCollection('Others')">Unmap &nbsp; &gt;&gt;</button>
@@ -441,53 +382,25 @@
                         <p>These are backlog items that are not part of any collection yet.</p>
                     </div>
                 </li>
-                <li>
-                    <div class="collection-item">
-                        <span id="filter_deleted" onclick="filterBacklog('deleted')">Deleted Items</span>
-                        <div class="action-buttons">
-                            <button class="small-btn assign-btn" onclick="assignToCollection('deleted')">&lt;&lt; &nbsp; Delete</button>
-                            <button class="small-btn unassign-btn" onclick="unassignFromCollection('deleted')">Restore &nbsp; &gt;&gt;</button>
-                            <button class="dropdown-btn" onclick="toggleDetails('deleted')">▼</button>
-                        </div>
-                    </div>
-                    <div id="others" class="details hidden">
-                        <p>These are backlog items that are Deleted.</p>
-                    </div>
-                </li>
+              
             </ul>
         </div>
 
     <div class="contentbar mb-5" id="contentbar">
-        <div class="backlog_header"><b>Backlog</b></div>
+ 
     <table class="table backlog_table" id="backlog_table">
         <thead class="add_backlog_item_row">
             <tr class="add_backlog_item">
                 <form action="" method="POST">
                     {% csrf_token %}
                     <input type="hidden" name="add_action" value="add">
-                    <td id="input_summary" width="80%" class="input_summary la" colspan="8">
-                        <div class="add-backlog-container">
-                            
-                            <input type="text" id="backlog_summary" name="backlog_summary" placeholder="Enter backlog item" class="backlog-input me-2">
-                            <div class="add-button-container">
-                                <!-- <input type="submit" name="add_to_top" value="Add to Top" class="btn btn-sm btn-primary me-2">
-                                <input type="submit" name="add_to_bottom" value="Add to Bottom" class="btn btn-sm btn-primary me-2">
-                                 -->
-                                 <button type="submit" name="add_to_top" class="btn btn-sm btn-success me-2">
-                                    <i class="bi bi-arrow-up"></i> Add to Top
-                                </button>
-                                <button type="submit" name="add_to_bottom" class="btn btn-sm btn-warning me-2">
-                                     Add to Bottom <i class="bi bi-arrow-down"></i>
-                                </button>
-                                  {% if backlog_deleted %}
-                                  <a href="?filter_by=deleted"><i class="bi bi-trash-fill" style="font-size: 14px;"></i></a>
-                                  {% endif %}
-                            </div>
-                        </div>
-                    </td>
-                </form>
+                <td id="input_summary" width="80%" class="input_summary la" colspan="8">
+                   
+                    <input type="text" id="backlog_summary" name="backlog_summary" size="100" placeholder="Enter backlog item" class="me-2">
+                    <input type="submit" name="add_to_top" value="Add to Top" class="btn btn-sm btn-primary me-2">
+                    <input type="submit" name="add_to_bottom" value="Add to Bottom" class="btn btn-sm btn-primary me-2">
+                </td>
             </tr>
-            
             </form>
         </thead>
         <thead>
@@ -495,7 +408,7 @@
                 <th id="header_type" width="2%" class="header_type ca">Type</th>                
                 <th id="header_summary" width="39%" class="header_summary la">Backlog Item 
                     <div class="display_backlog_count">{{backlog_items_count}} items</div></th>
-                <th id="header_parent" width="14%" class="header_parent la">Collection</th>
+                <th id="header_parent" width="14%" class="header_parent la">Parent</th>
                 <th id="header_release" width="10%" class="header_release la">Release</th>
                 <th id="header_iteration" width="8%" class="header_iteration la">Iteration</th>
                 <th id="header_slno" width="4%" class="header_slno ra">#</th>
@@ -541,25 +454,6 @@
     <input type="hidden" name="selected_items" id="form-selected-items">
 </form>
 </div>
-
-
-<script>
-    // Focus on the backlog summary input field on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('backlog_summary').focus();
-    });
-</script>
-
-<script>
-function filterBacklog(collectionId) {
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('filter_by', collectionId); // Add or update the 'filter_by' parameter
-    window.location.href = currentUrl.href; // Redirect to the updated URL
-}
-
-</script>
-
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const selectAllCheckbox = document.querySelector('.select-all-checkbox');
@@ -596,14 +490,11 @@ function filterBacklog(collectionId) {
         panel.classList.add('open');
         contentbar.classList.add('shifted');
     }
-
-
-    
 }
 
 function assignToCollection(collectionId) {
     if (selectedItems.size === 0) {
-        //alert("No items selected!");
+        alert("No items selected!");
         return;
     }
 
@@ -631,9 +522,9 @@ function assignToCollection(collectionId) {
 
 
 function unassignFromCollection(collectionId) {
-    //alert(`Unassigned from ${collectionId}`);
+    alert(`Unassigned from ${collectionId}`);
     if (selectedItems.size === 0) {
-        //alert("No items selected!");
+        alert("No items selected!");
         return;
     }
 

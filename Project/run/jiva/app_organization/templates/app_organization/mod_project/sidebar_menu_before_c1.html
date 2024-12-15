@@ -12,16 +12,16 @@
         {% if project.org.id %}
        
         <a href="{% url 'project_dvs' org_id project.id %}" class="nav-link" >
-            <i class="material-icons" style="font-size: 18px;">diamond</i>
+            <i class="material-icons" style="font-size: 18px;">list</i>
             <span>Dev Value Stream</span>
         </a>
-        <a href="{% url 'project_homepage' project.org.id project.id  %}" class="nav-link" >
-            <i class="material-icons" style="font-size: 18px;">map</i>
-            <span>Roadmap</span>
-        </a>     
-        <a href="{% url 'view_flat_backlog' project.id 0 %}" class="nav-link" >
+        <a href="{% url 'list_backlogs' project.id 0 %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">checklist</i>
             <span>Backlog</span>
+        </a>  
+        <a href="{% url 'project_backlog_decide' project.id  %}" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">checklist</i>
+            <span>Project Backlog</span>
         </a>     
         <a href="{% url 'list_org_boards' org_id %}?project_id={{project.id}}" class="nav-link" >
             <i class="bi bi-kanban"></i>
