@@ -14,4 +14,8 @@ urlpatterns = [
     path('permanent_deletion_org_board/<int:org_id>/<int:org_board_id>/', views_org_board.permanent_deletion_org_board, name='permanent_deletion_org_board'),
     path('restore_org_board/<int:org_id>/<int:org_board_id>/', views_org_board.restore_org_board, name='restore_org_board'),
     path('view_org_board/<int:org_id>/<int:org_board_id>/', views_org_board.view_org_board, name='view_org_board'),
+    
+    
+    path('view_project_board/<int:project_id>/', views_org_board.view_project_board, name='view_project_board'),
+    path('ajax_update_project_board_card_state/', views_org_board.ajax_update_project_board_card_state, name='ajax_update_project_board_card_state'),
 ]

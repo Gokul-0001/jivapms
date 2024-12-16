@@ -14,9 +14,16 @@
 
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
-           <h3>Base Template</h3>
+           <h3>Project Board</h3>
            <form method="post">
             {% csrf_token %}
+            {% for bi in backlog_items %}
+                {{bi}} <br>
+            {% endfor %}
+
+            {% for bc in backlog_collections %}
+                {{bc}} <br>
+            {% endfor %}
             </form> 
         </div>
     </div>
