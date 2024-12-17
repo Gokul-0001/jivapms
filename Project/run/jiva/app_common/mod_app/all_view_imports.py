@@ -129,6 +129,22 @@ FLAT_BACKLOG_TYPES = {
     "SPIKE": "Spike",
 }
 
+FLAT_BACKLOG_NAME_ICONS = {
+    "USER STORY": {"name": "User Story", "icon": "fas fa-book-open"},
+    "TASK": {"name": "Task", "icon": "fas fa-tasks"},
+    "BUG": {"name": "Bug", "icon": "fas fa-bug"},
+    "ENHANCEMENT": {"name": "Enhancement", "icon": "fas fa-lightbulb"},
+    "DEFECT": {"name": "Defect", "icon": "fas fa-exclamation-triangle"},
+    "ISSUE": {"name": "Issue", "icon": "fas fa-info-circle"},
+    "REFACTOR": {"name": "Refactor", "icon": "fas fa-sync-alt"},
+    "TECH_DEBT": {"name": "Tech Debt", "icon": "fas fa-tools"},
+    "TEST": {"name": "Test", "icon": "fas fa-vial"},
+    "DOC": {"name": "Doc", "icon": "fas fa-file-alt"},
+    "SPIKE": {"name": "Spike", "icon": "fas fa-search"},
+}
+
+
+
 COMMON_BACKLOG_TYPES = {
     "EPIC": "Epic",
     "USER STORY": "User Story",

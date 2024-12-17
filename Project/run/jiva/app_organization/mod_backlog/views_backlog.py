@@ -1223,6 +1223,17 @@ def view_flat_backlog(request, pro_id, parent_id):
     user = request.user
     member = get_object_or_404(Member, user=user)
     project = Project.objects.get(id=pro_id)
+    
+    # BacklogType for FLAT_BACKLOG_TYPES
+    for key, value in FLAT_BACKLOG_NAME_ICONS.items():
+        backlog_type, created = BacklogType.objects.get_or_create(
+            name=value["name"], 
+            pro=project, 
+            active=True
+        )
+        print(f">>> === BacklogType: {backlog_type}, Created: {created} === <<<")
+
+    
     # Filter BacklogTypes based on the COMMON_BACKLOG_TYPES dictionary
     flat_backlog_root = Backlog.objects.filter(pro=project, name=FLAT_BACKLOG_ROOT_NAME).first()
     filters = {}
@@ -1252,7 +1263,7 @@ def view_flat_backlog(request, pro_id, parent_id):
     #
     backlog_types = BacklogType.objects.filter(
         active=True, 
-        name__in=FLAT_BACKLOG_TYPES.values(), 
+        name__in=[item["name"] for item in FLAT_BACKLOG_NAME_ICONS.values()]
     ).select_related('type')
 
     # Collect backlog items for the filtered backlog types
@@ -1354,6 +1365,7 @@ def view_flat_backlog(request, pro_id, parent_id):
         action = request.POST.get('read_action', '').strip().lower()
         collection_id = request.POST.get("collection_id")
         selected_items = request.POST.get("selected_items", "").split(",")
+        type_of_bi = request.POST.get("type")
         
         if action == 'assign':
             #print(f">>> === Assigning Items: {selected_items} to Collection: {collection_id} === <<<")
@@ -1384,8 +1396,15 @@ def view_flat_backlog(request, pro_id, parent_id):
         
         if add_action == 'add':
             create_backlog_type = BacklogType.objects.filter(name='User Story').first()
+            if type_of_bi:
+                other_backlog_type = BacklogType.objects.filter(name=type_of_bi).first() 
+                if other_backlog_type == None:
+                    create_backlog_type = BacklogType.objects.filter(name='User Story').first()
+                else:
+                    create_backlog_type = other_backlog_type
             #print(f">>> === Backlog Summary: {backlog_summary} === <<<")
             if 'add_to_top' in request.POST:
+                #print(f">>> === Backlog Item ADD TO TOP : {create_backlog_type} === <<<")
                 backlog_item = Backlog.objects.create(
                     pro=project,
                     type=create_backlog_type,
@@ -1412,7 +1431,7 @@ def view_flat_backlog(request, pro_id, parent_id):
                 )
                 #print(f">>> === Backlog Item ADD TO BOTTOM: {backlog_item} === <<<")
 
-       
+
 
     # send outputs (info, template,
     context = {
@@ -1436,7 +1455,7 @@ def view_flat_backlog(request, pro_id, parent_id):
         'page_title': f'View Flat Backlog',
         "STATUS_CHOICES": STATUS_CHOICES,
         "SIZE_CHOICES": SIZE_CHOICES,
-        "FLAT_BACKLOG_TYPES": FLAT_BACKLOG_TYPES,
+        "FLAT_BACKLOG_NAME_ICONS": FLAT_BACKLOG_NAME_ICONS,
     }       
     template_file = f"{app_name}/{module_path}/view_flat_backlog.html"
     return render(request, template_file, context)

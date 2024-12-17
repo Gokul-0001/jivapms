@@ -344,9 +344,9 @@
                     <div class="kanban-swimlane" id="backlog">
                         {% for item in backlog_items %}
                             <div class="kanban-card" data-id="{{ item.id }}">
-                                <h5>{{forloop.counter}}:{{ item }}{{item.type}}</h5>
+                                <h5>{{forloop.counter}}:{{ item }}:{{ item.id }}:{{item.position}}</h5>
                                 <p>{{ item.description | display_if_not_none }}</p>
-                                <span class="tag">{{ item.parent | display_if_not_none }}</span>
+                                <span class="tag">{{ item.collection | display_if_not_none }}</span>
                             </div>
                         {% endfor %}
                     </div>
@@ -361,7 +361,7 @@
                         <div class="kanban-swimlane" id="todo">
                             {% for item in todo_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }}</h5>
+                                    <h5>{{ item }} {{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -376,7 +376,7 @@
                         <div class="kanban-swimlane" id="in-progress">
                             {% for item in in_progress_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }}</h5>
+                                    <h5>{{ item }}{{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -391,7 +391,7 @@
                         <div class="kanban-swimlane" id="blocked">
                             {% for item in blocked_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }}</h5>
+                                    <h5>{{ item }}{{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -406,7 +406,7 @@
                         <div class="kanban-swimlane" id="done">
                             {% for item in done_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }}</h5>
+                                    <h5>{{ item }}{{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>

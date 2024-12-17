@@ -574,12 +574,12 @@
                     <input type="hidden" name="add_action" value="add">
                     <td id="input_summary" width="80%" class="input_summary la" colspan="8">
                         <div class="add-backlog-container">
-                            
                             <input type="text" id="backlog_summary" name="backlog_summary" placeholder="Enter backlog item" class="backlog-input me-2">
-
-                            <select name="type" id="type-select" class="form-select custom-select">
-                                {% for key, value in FLAT_BACKLOG_TYPES.items %}
-                                <option value="{{ key }}">{{ value }}</option>
+                            <select name="type" id="type-select" class="form-select custom-select">                                
+                                {% for key, data in FLAT_BACKLOG_NAME_ICONS.items %}
+                                    <option value="{{ data.name }}">
+                                        <i class="{{ data.icon }}"></i> {{ data.name }}
+                                    </option>
                                 {% endfor %}
                             </select>
                             
@@ -920,115 +920,27 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <script>
     // Define the dictionary with keys in ALL CAPS
-    const BACKLOG_TYPE_INFO = {
-    "EPIC": { "name": "Epic", "icon": "fas fa-mountain" },
-    "USER STORY": { "name": "User Story", "icon": "fas fa-user" },
-    "TASK": { "name": "Task", "icon": "fas fa-tasks" },
-    "BUG": { "name": "Bug", "icon": "fas fa-bug" },
-    "FEATURE": { "name": "Feature", "icon": "fas fa-star" },
-    "ENHANCEMENT": { "name": "Enhancement", "icon": "fas fa-wrench" },
-    "DEFECT": { "name": "Defect", "icon": "fas fa-exclamation-triangle" },
-    "ISSUE": { "name": "Issue", "icon": "fas fa-question-circle" },
-    "REQUIREMENT": { "name": "Requirement", "icon": "fas fa-list" },
-    "CHANGE": { "name": "Change", "icon": "fas fa-exchange-alt" },
-    "IMPROVEMENT": { "name": "Improvement", "icon": "fas fa-arrow-up" },
-    "REFACTOR": { "name": "Refactor", "icon": "fas fa-code" },
-    "RESEARCH": { "name": "Research", "icon": "fas fa-search" },
-    "DESIGN": { "name": "Design", "icon": "fas fa-pencil-ruler" },
-    "ARCHITECTURE": { "name": "Architecture", "icon": "fas fa-drafting-compass" },
-    "TECH_DEBT": { "name": "Tech Debt", "icon": "fas fa-code-branch" },
-    "TEST": { "name": "Test", "icon": "fas fa-vial" },
-    "DOC": { "name": "Doc", "icon": "fas fa-file-alt" },
-    "RELEASE": { "name": "Release", "icon": "fas fa-rocket" },
-    "DEPLOY": { "name": "Deploy", "icon": "fas fa-cloud-upload-alt" },
-    "SUPPORT": { "name": "Support", "icon": "fas fa-life-ring" },
-    "TRAINING": { "name": "Training", "icon": "fas fa-chalkboard-teacher" },
-    "MEETING": { "name": "Meeting", "icon": "fas fa-handshake" },
-    "WORKSHOP": { "name": "Workshop", "icon": "fas fa-tools" },
-    "EVENT": { "name": "Event", "icon": "fas fa-calendar-alt" },
-    "CONFERENCE": { "name": "Conference", "icon": "fas fa-users" },
-    "SEMINAR": { "name": "Seminar", "icon": "fas fa-university" },
-    "WEBINAR": { "name": "Webinar", "icon": "fas fa-laptop" },
-    "PRESENTATION": { "name": "Presentation", "icon": "fas fa-project-diagram" },
-    "DEMO": { "name": "Demo", "icon": "fas fa-play-circle" },
-    "REVIEW": { "name": "Review", "icon": "fas fa-clipboard-check" },
-    "RETROSPECTIVE": { "name": "Retrospective", "icon": "fas fa-clock" },
-    "PLANNING": { "name": "Planning", "icon": "fas fa-map" },
-    "LEARNING": { "name": "Learning", "icon": "fas fa-graduation-cap" },
-    "INNOVATION": { "name": "Innovation", "icon": "fas fa-lightbulb" },
-    "STRATEGIC THEME": { "name": "Strategic Theme", "icon": "fas fa-cogs" },
-    "STRATEGY": { "name": "Strategy", "icon": "fas fa-cogs" },
-    "OBJECTIVE": { "name": "Objective", "icon": "fas fa-bullseye" },
-    "KEY RESULT": { "name": "Key Result", "icon": "fas fa-chart-line" },
-    "OKR": { "name": "OKR", "icon": "fas fa-check-double" },
-    "KPI": { "name": "KPI", "icon": "fas fa-chart-bar" },
-    "METRIC": { "name": "Metric", "icon": "fas fa-ruler" },
-    "GOAL": { "name": "Goal", "icon": "fas fa-flag-checkered" },
-    "TARGET": { "name": "Target", "icon": "fas fa-crosshairs" },
-    "INITIATIVE": { "name": "Initiative", "icon": "fas fa-rocket" },
-    "PROJECT": { "name": "Project", "icon": "fas fa-folder" },
-    "PROGRAM": { "name": "Program", "icon": "fas fa-layer-group" },
-    "PORTFOLIO": { "name": "Portfolio", "icon": "fas fa-suitcase" },
-    "PRODUCT": { "name": "Product", "icon": "fas fa-box" },
-    "SERVICE": { "name": "Service", "icon": "fas fa-concierge-bell" },
-    "APPLICATION": { "name": "Application", "icon": "fas fa-mobile-alt" },
-    "PLATFORM": { "name": "Platform", "icon": "fas fa-server" },
-    "INFRASTRUCTURE": { "name": "Infrastructure", "icon": "fas fa-network-wired" },
-    "TEAM": { "name": "Team", "icon": "fas fa-users" },
-    "GROUP": { "name": "Group", "icon": "fas fa-object-group" },
-    "DEPARTMENT": { "name": "Department", "icon": "fas fa-building" },
-    "DIVISION": { "name": "Division", "icon": "fas fa-columns" },
-    "COMPANY": { "name": "Company", "icon": "fas fa-city" },
-    "ORGANIZATION": { "name": "Organization", "icon": "fas fa-sitemap" },
-    "COMMUNITY": { "name": "Community", "icon": "fas fa-comments" },
-    "NETWORK": { "name": "Network", "icon": "fas fa-network-wired" },
-    "MARKET": { "name": "Market", "icon": "fas fa-shopping-cart" },
-    "CUSTOMER": { "name": "Customer", "icon": "fas fa-user-circle" },
-    "USER": { "name": "User", "icon": "fas fa-user" },
-    "STAKEHOLDER": { "name": "Stakeholder", "icon": "fas fa-users-cog" },
-    "PARTNER": { "name": "Partner", "icon": "fas fa-handshake" },
-    "VENDOR": { "name": "Vendor", "icon": "fas fa-store" },
-    "RELEASE TRAIN": { "name": "Release Train", "icon": "fas fa-train" },
-    "VALUE STREAM": { "name": "Value Stream", "icon": "fas fa-stream" },
-    "PRODUCT LINE": { "name": "Product Line", "icon": "fas fa-boxes" },
-    "PRODUCT FAMILY": { "name": "Product Family", "icon": "fas fa-cube" },
-    "PRODUCT CATEGORY": { "name": "Product Category", "icon": "fas fa-list-alt" },
-    "PRODUCT GROUP": { "name": "Product Group", "icon": "fas fa-th-large" },
-    "PRODUCT TEAM": { "name": "Product Team", "icon": "fas fa-users" },
-    "PRODUCT OWNER": { "name": "Product Owner", "icon": "fas fa-user-tag" },
-    "SCRUM MASTER": { "name": "Scrum Master", "icon": "fas fa-chess-king" },
-    "TEAM MEMBER": { "name": "Team Member", "icon": "fas fa-user-friends" },
-    "ADMIN": { "name": "Admin", "icon": "fas fa-user-shield" },
-    "EDITOR": { "name": "Editor", "icon": "fas fa-pencil-alt" },
-    "VIEWER": { "name": "Viewer", "icon": "fas fa-eye" },
-    "MANAGER": { "name": "Manager", "icon": "fas fa-user-tie" },
-    "CONTRIBUTOR": { "name": "Contributor", "icon": "fas fa-hands-helping" },
-    "DEVELOPER": { "name": "Developer", "icon": "fas fa-code" },
-    "DESIGNER": { "name": "Designer", "icon": "fas fa-paint-brush" },
-    "UI_UX": { "name": "UI/UX", "icon": "fas fa-pencil-ruler" },
-    "SYSTEM_ARCHITECT": { "name": "System Architect", "icon": "fas fa-cogs" },
-    "ENTERPRISE_ARCHITECT": { "name": "Enterprise Architect", "icon": "fas fa-project-diagram" },
-    "BUSINESS_OWNER": { "name": "Business Owner", "icon": "fas fa-briefcase" },
-    "PROGRAM_MANAGER": { "name": "Program Manager", "icon": "fas fa-layer-group" },
-    "PROJECT_MANAGER": { "name": "Project Manager", "icon": "fas fa-tasks" },
-    "PORTFOLIO_MANAGER": { "name": "Portfolio Manager", "icon": "fas fa-suitcase" },
-    "BLOG_ADMIN": { "name": "Blog Admin", "icon": "fas fa-blog" },
-    "COMPONENT": { "name": "Component", "icon": "fas fa-cogs" },
-    "MODULE": { "name": "Module", "icon": "fas fa-th" },
-    "SERVICE": { "name": "Service", "icon": "fas fa-concierge-bell" },
-    "FUNCTION": { "name": "Function", "icon": "fas fa-tools" },
-    "CAPABILITY": { "name": "Capability", "icon": "fas fa-lightbulb" },
-    "MVP": { "name": "Minimum Viable Product (MVP)", "icon": "fas fa-cubes" }
-};
 
-
+FLAT_BACKLOG_NAME_ICONS = {
+    "USER STORY": {"name": "User Story", "icon": "fas fa-user"},
+    "TASK": {"name": "Task", "icon": "fas fa-tasks"},
+    "BUG": {"name": "Bug", "icon": "fas fa-bug"},
+    "ENHANCEMENT": {"name": "Enhancement", "icon": "fas fa-lightbulb"},
+    "DEFECT": {"name": "Defect", "icon": "fas fa-exclamation-triangle"},
+    "ISSUE": {"name": "Issue", "icon": "fas fa-info-circle"},
+    "REFACTOR": {"name": "Refactor", "icon": "fas fa-sync-alt"},
+    "TECH DEBT": {"name": "Tech Debt", "icon": "fas fa-tools"},
+    "TEST": {"name": "Test", "icon": "fas fa-vial"},
+    "DOC": {"name": "Doc", "icon": "fas fa-file-alt"},
+    "SPIKE": {"name": "Spike", "icon": "fas fa-search"},
+}
     document.addEventListener('DOMContentLoaded', () => {
     const typeCells = document.querySelectorAll('td[data-type]');
     
         typeCells.forEach(cell => {
             // Convert `type` to uppercase before lookup
             const type = cell.getAttribute('data-type').toUpperCase();
-            const typeInfo = BACKLOG_TYPE_INFO[type]; // Access the dictionary
+            const typeInfo = FLAT_BACKLOG_NAME_ICONS[type]; // Access the dictionary
 
             if (typeInfo) {
                 // Add the tooltip as the `title` attribute

@@ -361,6 +361,83 @@ def view_org_board(request, org_id, org_board_id):
     return render(request, template_file, context)
 
 
+# @login_required
+# def view_project_board(request, project_id):
+#     user = request.user
+#     project = Project.objects.get(id=project_id, active=True)
+#     org_id = project.org.id
+#     organization = project.org
+    
+#     # Backlog collections
+#     flat_backlog_root = Backlog.objects.filter(pro=project, name=FLAT_BACKLOG_ROOT_NAME).first()
+#     flat_backlog_collection_type = BacklogType.objects.filter(name='Collection').first() 
+#     backlog_collections = Backlog.objects.filter(pro=project, type=flat_backlog_collection_type, parent=flat_backlog_root, active=True)
+#     # send the backlog details of the project
+#     backlog_types = BacklogType.objects.filter(
+#         active=True, 
+#         name__in=FLAT_BACKLOG_TYPES.values(), 
+#     ).select_related('type')
+#     filters = {}
+    
+#     backlog_items = Backlog.objects.filter(
+#             pro_id=project.id,
+#             type__in=backlog_types, 
+#             **filters,
+#             active=True
+#         ).order_by('position', '-created_at')
+    
+    
+#     # Check the project default board
+#     DEFAULT_BOARD_NAME = 'Default Board'
+#     project_board = ProjectBoard.objects.filter(project=project, active=True, name=DEFAULT_BOARD_NAME).first()
+#     if not project_board:
+#         project_board = ProjectBoard()
+#         project_board.name = DEFAULT_BOARD_NAME
+#         project_board.project = project
+#         project_board.author = user
+#         project_board.save()
+    
+#     DEFAULT_BOARD_COLUMNS = ['Backlog', 'ToDo', 'In Progress', 'Blocked', 'Done']
+#     # Column is internally called as state
+#     for column_name in DEFAULT_BOARD_COLUMNS:
+#         column = ProjectBoardState.objects.filter(board=project_board, name=column_name).first()
+#         if not column:
+#             column = ProjectBoardState()
+#             column.name = column_name
+#             column.board = project_board
+#             column.author = user
+#             column.save()
+    
+#     project_board_states = ProjectBoardState.objects.filter(board=project_board, active=True)
+    
+#     # Categorize backlog items by their current state
+#     state_items = {state.name: [] for state in project_board_states}
+#     for item in backlog_items:
+#         if item.state and item.state.name in state_items:
+#             state_items[item.state.name].append(item)
+
+#     context = {
+#         'parent_page': '___PARENTPAGE___',
+#         'page': 'project_board',
+#         'organization': organization,
+#         'org_id': org_id,
+#         'project': project,
+#         'pro_id': project.id,
+#         'org': organization,
+#         'backlog_items': state_items.get('Backlog', []),
+#         'todo_items': state_items.get('ToDo', []),
+#         'in_progress_items': state_items.get('In Progress', []),
+#         'blocked_items': state_items.get('Blocked', []),
+#         'done_items': state_items.get('Done', []),
+#         'backlog_collections': backlog_collections,
+#         'project_board': project_board,
+#         'project_board_states': project_board_states,
+        
+#         'module_path': module_path,        
+#         'page_title': f'Project Board: '+project.name,
+#     }
+#     template_file = f"{app_name}/{module_path}/project/view_project_board.html"
+#     return render(request, template_file, context)
 
 
 @login_required
@@ -402,6 +479,10 @@ def view_project_board(request, project_id):
         if column_name == 'Backlog':
             backlog_state = state
 
+    # ACTUAL project backlog items 
+    # Fetch unlinked backlog items
+
+
     actual_project_backlog_items = Backlog.objects.filter(
         pro_id=project.id,
         type__in=backlog_types,
@@ -428,6 +509,19 @@ def view_project_board(request, project_id):
             backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
         ).select_related('backlog').order_by('position', '-created_at')
 
+    
+    # print(f">>> === state_items: {state_items} === <<<")
+    # print(f">>> === Backlog: { actual_project_backlog_items} === <<<")
+    # print(f">>> === Todo: { state_items.get('ToDo', [])} === <<<")
+    # print(f">>> === InProgress: { state_items.get('In Progress', [])} === <<<")
+    # print(f">>> === Blocked: { state_items.get('Blocked', [])} === <<<")
+    # print(f">>> === Done: { state_items.get('Done', [])} === <<<")
+   
+   
+    #chart_data = get_cumulative_flow_data(project_board.id)
+   
+    
+
     context = {
         'organization': organization,
         'org_id': org_id,
@@ -448,46 +542,99 @@ def view_project_board(request, project_id):
     template_file = f"{app_name}/{module_path}/project/view_project_board.html"
     return render(request, template_file, context)
 
-def update_project_board_state_transition(card, from_state_id, to_state_id):
-    if to_state_id == 0:
-        # Move to backlog
-        to_state_id = None
-    if from_state_id == 0:
-        # Move from backlog
-        from_state_id = None
-     # Log the transition
-    created_st_entry = ProjectBoardStateTransition.objects.create(
-        card=card.backlog,
-        from_state_id=from_state_id,
-        to_state_id=to_state_id,
-        transition_time=now(),
-    )
-    print(f">>> === Created State Transition: {created_st_entry} === <<<")
-    return created_st_entry
-                
-
-
-def column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id):    
-    pbc = ProjectBoardCard.objects.get(id=card_id)    
+def column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id):
+    print(f">>> === FROM_COLUMN: {from_column} === <<<")
+    print(f">>> === DEST_COLUMN: {dest_column} === <<<")
+    print(f">>> === FROM_STATE_ID: {from_state_id} === <<<")
+    print(f">>> === TO_STATE_ID: {to_state_id} === <<<")
+    print(f">>> === POSITIONS: {positions} === <<<")
+    print(f">>> === BOARD_ID: {board_id} === <<<")
+    print(f">>> === CARD_ID: {card_id} === <<<")
+    pbc = ProjectBoardCard.objects.get(id=card_id)
+    print(f">>> === PBC: {pbc} === <<<")
     for pos in positions:
         card_id = pos.get('card_id')
-        position = pos.get('position')      
-        ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id)        
-    update_project_board_state_transition(pbc, from_state_id, to_state_id)
+        position = pos.get('position')
+        print(f">>> === CARD_ID: {card_id} === <<<")
+        print(f">>> === POSITION: {position} === <<<")
+        ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id)
+        print(f">>> === UPDATED CARD_ID: {card_id} {from_column} to {dest_column} === <<<")
     return JsonResponse({"success": True})
 
+# def column_to_backlog_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
+#     print(f">>> === Column to Backlog === <<<")
+#     print(f">>> === POSITIONS: {positions} === <<<")
+#     print(f">>> === BOARD_ID: {board_id} === <<<")
+#     print(f">>> === CARD_ID: {this_card_id} === <<<")
+#     print(f">>> === FROM_COLUMN: {from_column} === <<<")
+#     print(f">>> === DEST_COLUMN: {dest_column} === <<<")
+#     print(f">>> === FROM_STATE_ID: {from_state_id} === <<<")
+#     print(f">>> === TO_STATE_ID: {to_state_id} === <<<")
+#     pbc = ProjectBoardCard.objects.get(id=this_card_id)
+#     pbc.state = None
+#     pbc.save()
+#     print(f">>> === PBC: {pbc} === <<<")
+#     for pos in positions:
+#         card_id = pos.get('card_id')
+#         position = pos.get('position')       
+#         print(f">>> === CARD_ID: {card_id} === <<<")
+#         print(f">>> === POSITION: {position} === <<<")
+#         if card_id == this_card_id:
+#             print(f">>> === FOUND CARD_ID: {card_id} === <<<")
+#             ProjectBoardCard.objects.filter(id=this_card_id).update(state_id=None, position=position)
+#             continue
+#         Backlog.objects.filter(id=card_id).update(position=position)               
+            
+#         print(f">>> === UPDATED CARD_ID: {card_id} {from_column} to {dest_column} === <<<")     
+#     return JsonResponse({"success": True})
 
-def column_to_backlog_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):  
+# def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
+#     print(f">>> === Backlog to Column === <<<")
+#     print(f">>> === POSITIONS: {positions} === <<<")
+#     print(f">>> === BOARD_ID: {board_id} === <<<")
+#     print(f">>> === CARD_ID: {this_card_id} === <<<")
+#     print(f">>> === FROM_COLUMN: {from_column} === <<<")
+#     print(f">>> === DEST_COLUMN: {dest_column} === <<<")
+#     print(f">>> === FROM_STATE_ID: {from_state_id} === <<<")
+#     print(f">>> === TO_STATE_ID: {to_state_id} === <<<")
+#     pbc = ProjectBoardCard.objects.get(backlog_id=this_card_id)
+#     print(f">>> === PBC: {pbc} {pbc.id} === <<<")
+#     ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(state_id=to_state_id)
+#     find_position = 0
+#     for pos in positions:
+#         card_id = pos.get('card_id')
+#         position = pos.get('position')     
+#         print(f">>> === CARD_ID: {card_id} === <<<")
+#         print(f">>> === POSITION: {position} === <<<")    
+#         if card_id == this_card_id:
+#             find_position = position
+#             print(f">>> === FIND_POSITION: {find_position} === <<<")
+#             ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(state_id=to_state_id, position=position)
+#             continue
+#         ProjectBoardCard.objects.filter(id=card_id).update(position=position)        
+#         print(f">>> === UPDATED CARD_ID: {card_id} {position} {from_column} to {dest_column} === <<<")
+#     return JsonResponse({"success": True})
+
+def column_to_backlog_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
+    print(f">>> === Column to Backlog === <<<")
+    print(f">>> === POSITIONS: {positions} === <<<")
+    print(f">>> === CARD_ID: {this_card_id} === <<<")
+    
     try:
         # Update the card to have no state (move to backlog)
         card = ProjectBoardCard.objects.get(id=this_card_id)
         card.state = None
         card.position = 0  # Reset position in column
         card.save()
+
+        print(f">>> === MOVED CARD TO BACKLOG: {card.id} === <<<")
+
         # Update positions in the Backlog
         for pos in positions:
             backlog_card_id = pos.get('card_id')
             position = pos.get('position')
+            print(f">>> === BACKLOG_CARD_ID: {backlog_card_id}, POSITION: {position} === <<<")
+
             if backlog_card_id == card.backlog_id:
                 # Update position of the moved backlog item
                 Backlog.objects.filter(id=backlog_card_id).update(position=position)
@@ -495,7 +642,7 @@ def column_to_backlog_update(positions, board_id, this_card_id, from_column, fro
                 # Update positions of other backlog items
                 Backlog.objects.filter(id=backlog_card_id).update(position=position)
 
-        update_project_board_state_transition(card, from_state_id, to_state_id)
+        print(f">>> === Column to Backlog Update Successful === <<<")
         return JsonResponse({"success": True})
 
     except Exception as e:
@@ -503,27 +650,39 @@ def column_to_backlog_update(positions, board_id, this_card_id, from_column, fro
         return JsonResponse({"success": False, "error": str(e)})
 
 
-def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id): 
+def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
+    print(f">>> === Backlog to Column === <<<")
+    print(f">>> === POSITIONS: {positions} === <<<")
+    print(f">>> === BOARD_ID: {board_id} === <<<")
+    print(f">>> === CARD_ID: {this_card_id} === <<<")
+    print(f">>> === DEST_COLUMN: {dest_column} === <<<")
+    
     try:
         # Fetch or create the ProjectBoardCard for the backlog item
         card, created = ProjectBoardCard.objects.get_or_create(
             backlog_id=this_card_id,
-            defaults={"board_id": board_id, "state_id": to_state_id, "position": 0}
+            defaults={"board_id": board_id, "state_id": to_state_id, "position": None}
         )
         if not created:
             card.state_id = to_state_id  # Move to column
             card.save()
+        
+        print(f">>> === PBC: {card.id}, CREATED: {created} === <<<")
+
         # Update positions for all cards in the destination column
         for pos in positions:
             card_id = pos.get('card_id')
-            position = pos.get('position')            
+            position = pos.get('position')
+            print(f">>> === CARD_ID: {card_id}, POSITION: {position} === <<<")
+
             if card_id == this_card_id:
                 # Update the moved card
                 ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(position=position, state_id=to_state_id)
             else:
                 # Update other cards in the column
-                ProjectBoardCard.objects.filter(id=card_id).update(position=position)       
-        update_project_board_state_transition(card, from_state_id, to_state_id)
+                ProjectBoardCard.objects.filter(id=card_id).update(position=position)
+
+        print(f">>> === Backlog to Column Update Successful === <<<")
         return JsonResponse({"success": True})
 
     except Exception as e:
@@ -561,22 +720,26 @@ def ajax_update_project_board_card_state(request):
         dest_column = data.get('dest_column')
         project_id = data.get('project_id')
         board_id = data.get('board_id')
-      
+        # print(f">>> === PROJECT_ID: {project_id}, BOARD_ID: {board_id} === <<<")
+        # print(f">>> === COLUMN: {dest_column}=== <<<") 
+        # print(f">>> === CARD_ID: {card_id}=== <<<")        
+        # print(f">>> === Movement from_state_id: {from_state_id}: to_state_id:{to_state_id} === <<<")
+        # print(f">>> === Movement positions: {positions} === <<<")
         
         if from_state_id == 0 and from_state_id == to_state_id and to_state_id == 0:
-            #print(f">>> === Backlog: Within column movement === <<<")
+            print(f">>> === Backlog: Within column movement === <<<")
             within_backlog_update(positions, board_id, card_id)
         elif from_state_id !=0 and to_state_id != 0 and from_state_id == to_state_id:
-            #print(f">>> === {dest_column}: Within column movement  === <<<")
+            print(f">>> === {dest_column}: Within column movement  === <<<")
             within_column_update(positions, board_id, card_id, dest_column, to_state_id)
         elif from_state_id !=0 and to_state_id != 0 and from_state_id != to_state_id:
-            #print(f">>> === {from_column} to {dest_column}: Between column movement  === <<<")
+            print(f">>> === {from_column} to {dest_column}: Between column movement  === <<<")
             column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
         elif from_state_id == 0 and to_state_id != 0:
-            #print(f">>> ===  {from_column} to {dest_column}: Between column movement (from Backlog) === <<<")
+            print(f">>> ===  {from_column} to {dest_column}: Between column movement (from Backlog) === <<<")
             backlog_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
         elif to_state_id == 0 and from_state_id != 0:
-            #print(f">>> ===   {from_column} to {dest_column}: Betwee Column Movement (to Backlog)   === <<<")
+            print(f">>> ===   {from_column} to {dest_column}: Betwee Column Movement (to Backlog)   === <<<")
             column_to_backlog_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
 
         return JsonResponse({"success": True})
@@ -699,7 +862,8 @@ def ajax_update_project_board_card_state_REF(request):
                 card.backlog.status = to_state_name
                 card.backlog.save()
                 
-             
+                # st_count = ProjectBoardStateTransition.objects.all().count()
+                # print(f">>> === st_count: {st_count}: {created_st_entry} === <<<")
 
                 return JsonResponse({
                     "message": "Card state updated successfully",
