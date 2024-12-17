@@ -542,167 +542,47 @@ def view_project_board(request, project_id):
     template_file = f"{app_name}/{module_path}/project/view_project_board.html"
     return render(request, template_file, context)
 
-def column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id):
-    print(f">>> === FROM_COLUMN: {from_column} === <<<")
-    print(f">>> === DEST_COLUMN: {dest_column} === <<<")
-    print(f">>> === FROM_STATE_ID: {from_state_id} === <<<")
-    print(f">>> === TO_STATE_ID: {to_state_id} === <<<")
-    print(f">>> === POSITIONS: {positions} === <<<")
-    print(f">>> === BOARD_ID: {board_id} === <<<")
-    print(f">>> === CARD_ID: {card_id} === <<<")
+def column_to_column_update():
+    return JsonResponse({"success": True})
+
+def column_to_backlog_update():
+    return JsonResponse({"success": True})
+
+def backlog_to_column_update():
+    return JsonResponse({"success": True})
+
+def within_column_update(positions, board_id, card_id, dest_column, to_state_id):
+    print(f">>> === Within Column Update === <<<")
+    print(f">>> === positions: {positions} === <<<")
+    print(f">>> === board_id: {board_id} === <<<")
+    print(f">>> === card_id: {card_id} === <<<")
+    print(f">>> === dest_column: {dest_column} === <<<")
+    print(f">>> === to_state_id: {to_state_id} === <<<")
     pbc = ProjectBoardCard.objects.get(id=card_id)
-    print(f">>> === PBC: {pbc} === <<<")
+    print(f">>> === pbc: {pbc} === <<<")
     for pos in positions:
         card_id = pos.get('card_id')
         position = pos.get('position')
-        print(f">>> === CARD_ID: {card_id} === <<<")
-        print(f">>> === POSITION: {position} === <<<")
-        ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id)
-        print(f">>> === UPDATED CARD_ID: {card_id} {from_column} to {dest_column} === <<<")
+        print(f">>> === card_id: {card_id} === <<<")
+        print(f">>> === position: {position} === <<<")
+        ProjectBoardCard.objects.filter(id=card_id).update(position=position)
+        print(f">>> === Updated card_id: {card_id} in {dest_column} === <<<")
     return JsonResponse({"success": True})
 
-# def column_to_backlog_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
-#     print(f">>> === Column to Backlog === <<<")
-#     print(f">>> === POSITIONS: {positions} === <<<")
-#     print(f">>> === BOARD_ID: {board_id} === <<<")
-#     print(f">>> === CARD_ID: {this_card_id} === <<<")
-#     print(f">>> === FROM_COLUMN: {from_column} === <<<")
-#     print(f">>> === DEST_COLUMN: {dest_column} === <<<")
-#     print(f">>> === FROM_STATE_ID: {from_state_id} === <<<")
-#     print(f">>> === TO_STATE_ID: {to_state_id} === <<<")
-#     pbc = ProjectBoardCard.objects.get(id=this_card_id)
-#     pbc.state = None
-#     pbc.save()
-#     print(f">>> === PBC: {pbc} === <<<")
-#     for pos in positions:
-#         card_id = pos.get('card_id')
-#         position = pos.get('position')       
-#         print(f">>> === CARD_ID: {card_id} === <<<")
-#         print(f">>> === POSITION: {position} === <<<")
-#         if card_id == this_card_id:
-#             print(f">>> === FOUND CARD_ID: {card_id} === <<<")
-#             ProjectBoardCard.objects.filter(id=this_card_id).update(state_id=None, position=position)
-#             continue
-#         Backlog.objects.filter(id=card_id).update(position=position)               
-            
-#         print(f">>> === UPDATED CARD_ID: {card_id} {from_column} to {dest_column} === <<<")     
-#     return JsonResponse({"success": True})
-
-# def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
-#     print(f">>> === Backlog to Column === <<<")
-#     print(f">>> === POSITIONS: {positions} === <<<")
-#     print(f">>> === BOARD_ID: {board_id} === <<<")
-#     print(f">>> === CARD_ID: {this_card_id} === <<<")
-#     print(f">>> === FROM_COLUMN: {from_column} === <<<")
-#     print(f">>> === DEST_COLUMN: {dest_column} === <<<")
-#     print(f">>> === FROM_STATE_ID: {from_state_id} === <<<")
-#     print(f">>> === TO_STATE_ID: {to_state_id} === <<<")
-#     pbc = ProjectBoardCard.objects.get(backlog_id=this_card_id)
-#     print(f">>> === PBC: {pbc} {pbc.id} === <<<")
-#     ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(state_id=to_state_id)
-#     find_position = 0
-#     for pos in positions:
-#         card_id = pos.get('card_id')
-#         position = pos.get('position')     
-#         print(f">>> === CARD_ID: {card_id} === <<<")
-#         print(f">>> === POSITION: {position} === <<<")    
-#         if card_id == this_card_id:
-#             find_position = position
-#             print(f">>> === FIND_POSITION: {find_position} === <<<")
-#             ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(state_id=to_state_id, position=position)
-#             continue
-#         ProjectBoardCard.objects.filter(id=card_id).update(position=position)        
-#         print(f">>> === UPDATED CARD_ID: {card_id} {position} {from_column} to {dest_column} === <<<")
-#     return JsonResponse({"success": True})
-
-def column_to_backlog_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
-    print(f">>> === Column to Backlog === <<<")
-    print(f">>> === POSITIONS: {positions} === <<<")
-    print(f">>> === CARD_ID: {this_card_id} === <<<")
-    
-    try:
-        # Update the card to have no state (move to backlog)
-        card = ProjectBoardCard.objects.get(id=this_card_id)
-        card.state = None
-        card.position = 0  # Reset position in column
-        card.save()
-
-        print(f">>> === MOVED CARD TO BACKLOG: {card.id} === <<<")
-
-        # Update positions in the Backlog
-        for pos in positions:
-            backlog_card_id = pos.get('card_id')
-            position = pos.get('position')
-            print(f">>> === BACKLOG_CARD_ID: {backlog_card_id}, POSITION: {position} === <<<")
-
-            if backlog_card_id == card.backlog_id:
-                # Update position of the moved backlog item
-                Backlog.objects.filter(id=backlog_card_id).update(position=position)
-            else:
-                # Update positions of other backlog items
-                Backlog.objects.filter(id=backlog_card_id).update(position=position)
-
-        print(f">>> === Column to Backlog Update Successful === <<<")
-        return JsonResponse({"success": True})
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return JsonResponse({"success": False, "error": str(e)})
-
-
-def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
-    print(f">>> === Backlog to Column === <<<")
-    print(f">>> === POSITIONS: {positions} === <<<")
-    print(f">>> === BOARD_ID: {board_id} === <<<")
-    print(f">>> === CARD_ID: {this_card_id} === <<<")
-    print(f">>> === DEST_COLUMN: {dest_column} === <<<")
-    
-    try:
-        # Fetch or create the ProjectBoardCard for the backlog item
-        card, created = ProjectBoardCard.objects.get_or_create(
-            backlog_id=this_card_id,
-            defaults={"board_id": board_id, "state_id": to_state_id, "position": None}
-        )
-        if not created:
-            card.state_id = to_state_id  # Move to column
-            card.save()
-        
-        print(f">>> === PBC: {card.id}, CREATED: {created} === <<<")
-
-        # Update positions for all cards in the destination column
-        for pos in positions:
-            card_id = pos.get('card_id')
-            position = pos.get('position')
-            print(f">>> === CARD_ID: {card_id}, POSITION: {position} === <<<")
-
-            if card_id == this_card_id:
-                # Update the moved card
-                ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(position=position, state_id=to_state_id)
-            else:
-                # Update other cards in the column
-                ProjectBoardCard.objects.filter(id=card_id).update(position=position)
-
-        print(f">>> === Backlog to Column Update Successful === <<<")
-        return JsonResponse({"success": True})
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return JsonResponse({"success": False, "error": str(e)})
-
-def within_column_update(positions, board_id, card_id, dest_column, to_state_id):   
-    pbc = ProjectBoardCard.objects.get(id=card_id)    
+def within_backlog_update(positions, board_id, card_id):
+    print(f">>> === Within Backlog Update === <<<")
+    print(f">>> === positions: {positions} === <<<")
+    print(f">>> === board_id: {board_id} === <<<")
+    print(f">>> === card_id: {card_id} === <<<")
+    bi = Backlog.objects.get(id=card_id)
+    print(f">>> === bi: {bi} === <<<")
     for pos in positions:
         card_id = pos.get('card_id')
-        position = pos.get('position')     
-        ProjectBoardCard.objects.filter(id=card_id).update(position=position)       
-    return JsonResponse({"success": True})
-
-def within_backlog_update(positions, board_id, card_id):  
-    bi = Backlog.objects.get(id=card_id)    
-    for pos in positions:
-        card_id = pos.get('card_id')
-        position = pos.get('position')       
-        Backlog.objects.filter(id=card_id).update(position=position)        
+        position = pos.get('position')
+        print(f">>> === card_id: {card_id} === <<<")
+        print(f">>> === position: {position} === <<<")
+        Backlog.objects.filter(id=card_id).update(position=position)
+        print(f">>> === Updated card_id: {card_id} in Backlog === <<<")
     return JsonResponse({"success": True})
 
 @login_required
@@ -734,13 +614,10 @@ def ajax_update_project_board_card_state(request):
             within_column_update(positions, board_id, card_id, dest_column, to_state_id)
         elif from_state_id !=0 and to_state_id != 0 and from_state_id != to_state_id:
             print(f">>> === {from_column} to {dest_column}: Between column movement  === <<<")
-            column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
         elif from_state_id == 0 and to_state_id != 0:
             print(f">>> ===  {from_column} to {dest_column}: Between column movement (from Backlog) === <<<")
-            backlog_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
         elif to_state_id == 0 and from_state_id != 0:
             print(f">>> ===   {from_column} to {dest_column}: Betwee Column Movement (to Backlog)   === <<<")
-            column_to_backlog_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
 
         return JsonResponse({"success": True})
 

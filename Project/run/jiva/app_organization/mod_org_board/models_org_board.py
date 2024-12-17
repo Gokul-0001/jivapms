@@ -87,9 +87,9 @@ class ProjectBoardStateTransition(BaseModelTrackDateImpl):
 
 
 class ProjectBoardCard(BaseModelTrackDateImpl):
-    backlog = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE, related_name="board_cards")
-    board = models.ForeignKey(ProjectBoard, on_delete=models.CASCADE, related_name="board_cards")
-    state = models.ForeignKey(ProjectBoardState, on_delete=models.CASCADE, related_name="state_cards")
+    backlog = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE, related_name="board_cards", null=True, blank=True)
+    board = models.ForeignKey(ProjectBoard, on_delete=models.CASCADE, related_name="board_cards", null=True, blank=True)
+    state = models.ForeignKey(ProjectBoardState, on_delete=models.CASCADE, related_name="state_cards", null=True, blank=True)
     swimlane = models.ForeignKey(
         'app_organization.ProjectBoardSwimLane', on_delete=models.SET_NULL, null=True, blank=True, related_name="swimlane_cards"
     )

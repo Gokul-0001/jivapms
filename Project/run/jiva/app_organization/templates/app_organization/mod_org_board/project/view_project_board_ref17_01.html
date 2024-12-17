@@ -306,22 +306,7 @@
         pointer-events: none; /* Ignore clicks on the arrow */
     }
 </style>
-<style>
-    .spinner-border {
-    border: 0.25em solid #f3f3f3;
-    border-top: 0.25em solid #007bff;
-    border-radius: 50%;
-    width: 3rem;
-    height: 3rem;
-    animation: spin 1s linear infinite;
-}
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-</style>
 
 <div class="content-wrapper">
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
@@ -344,7 +329,7 @@
                     <div class="kanban-swimlane" id="backlog">
                         {% for item in backlog_items %}
                             <div class="kanban-card" data-id="{{ item.id }}">
-                                <h5>{{forloop.counter}}:{{ item }}:{{ item.id }}:{{item.position}}</h5>
+                                <h5>{{forloop.counter}}:{{ item }}</h5>
                                 <p>{{ item.description | display_if_not_none }}</p>
                                 <span class="tag">{{ item.collection | display_if_not_none }}</span>
                             </div>
@@ -357,11 +342,11 @@
                     {% if state.name == 'ToDo' %}
                     <!-- To Do Column -->
                     <div class="kanban-column" data-id="{{ state.id }}">
-                        <h4>{{state.name}}</h4>
+                        <h4>To Do</h4>
                         <div class="kanban-swimlane" id="todo">
                             {% for item in todo_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }} {{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
+                                    <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -372,11 +357,11 @@
                     {% if state.name == 'In Progress' %}
                     <!-- In Progress Column -->
                     <div class="kanban-column" data-id="{{ state.id }}">
-                        <h4>{{state.name}}</h4>
+                        <h4>In Progress</h4>
                         <div class="kanban-swimlane" id="in-progress">
                             {% for item in in_progress_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }}{{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
+                                    <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -387,11 +372,11 @@
                     {% if state.name == 'Blocked' %}
                     <!-- Blocked Column -->
                     <div class="kanban-column" data-id="{{ state.id }}">
-                        <h4>{{state.name}}</h4>
+                        <h4>Blocked</h4>
                         <div class="kanban-swimlane" id="blocked">
                             {% for item in blocked_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }}{{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
+                                    <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -402,11 +387,11 @@
                     {% if state.name == 'Done' %}
                     <!-- Done Column -->
                     <div class="kanban-column" data-id="{{ state.id }}">
-                        <h4>{{state.name}}</h4>
+                        <h4>Done</h4>
                         <div class="kanban-swimlane" id="done">
                             {% for item in done_items %}
                                 <div class="kanban-card" data-id="{{ item.id }}">
-                                    <h5>{{ item }}{{ item.id }}:{{item.backlog.id}}:{{item.position}}</h5>
+                                    <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -421,122 +406,61 @@
         </div>
     </div>
 </div>
-<div id="loading-spinner" style="
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.7);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
 
 <!-- Include jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script>
-   $(function() {
+$(function() {
     $(".kanban-swimlane").sortable({
         connectWith: ".kanban-swimlane",
         placeholder: "kanban-card-placeholder",
-
-        // Capture the starting column's ID and text
         start: function(event, ui) {
-            var fromColumn = ui.item.closest(".kanban-column");
-            ui.item.data("start-state", fromColumn.data("id")); // State ID
-            ui.item.data("from-column", fromColumn.find("h4").text().trim()); // Column Name
+            ui.item.data("start-state", ui.item.closest(".kanban-column").data("id"));
         },
-
-        // When drag is complete
         stop: function(event, ui) {
-            var projectId = {{ project.id }};
             var cardId = ui.item.data("id");
             var boardId = {{ project_board.id }};
-            var fromStateId = ui.item.data("start-state"); // Initial state ID
-            var fromColumn = ui.item.data("from-column");  // Initial column name
-
-            var toColumn = ui.item.closest(".kanban-column"); // Target column
-            var toStateId = toColumn.data("id"); // Target state ID
-            var destColumn = toColumn.find("h4").text().trim(); // Target column name
-
-            // Collect positions of cards in the target column
-            var destPositions = [];
-            toColumn.find(".kanban-card").each(function(index) {
-                var id = $(this).data("id");
-                destPositions.push({ card_id: id, position: index + 1 });
-            });
-
-            console.log("Updated Positions:", destPositions);
-            console.log("Card moved => From:", fromColumn, "To:", destColumn, "State:", fromStateId, "to", toStateId);
-
-            // Call the backend to update the card state and positions
-            updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
-
-            // Clear and reset the data to avoid stale values
-            ui.item.removeData("start-state").removeData("from-column");
-            ui.item.data("start-state", toStateId);
-            ui.item.data("from-column", destColumn);
+            var fromStateId = ui.item.data("start-state");
+            var toStateId = ui.item.closest(".kanban-column").data("id");
+            console.log("Card ID:", cardId);
+            console.log("From State ID:", fromStateId);
+            console.log("To State ID:", toStateId);
+            if (fromStateId !== toStateId) {
+                updateCardState(cardId, fromStateId, toStateId);
+                console.log("Card moved from", fromStateId, "to", toStateId);
+            }
         }
     }).disableSelection();
 });
 
-    // Function to update the card state
-    function updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn) {
-        fetch("{% url 'ajax_update_project_board_card_state' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: JSON.stringify({
-                card_id: cardId,
-                board_id: {{ project_board.id }},
-                from_state_id: fromStateId,
-                to_state_id: toStateId,
-                positions: destPositions,
-                dest_column: destColumn,
-                project_id: projectId,
-                board_id: boardId,
-                from_column: fromColumn
-            })
+// Function to update the card state
+function updateCardState(cardId, fromStateId, toStateId) {
+    fetch("{% url 'ajax_update_project_board_card_state' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            card_id: cardId,
+            board_id: {{ project_board.id }},
+            from_state_id: fromStateId,
+            to_state_id: toStateId
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                console.error("Error:", data.error);
-            } else {
-                console.log("Success:", data);
-                refreshKanbanBoard();
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        });
-    }
-    
-
-
-function refreshKanbanBoard() {
-    // Show the spinner
-    document.getElementById("loading-spinner").style.display = "flex";
-
-    // Trigger page reload
-    setTimeout(() => {
-        location.reload(); // Reload the page
-    }, 200); // Add slight delay for the spinner to appear
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error("Error:", data.error);
+        } else {
+            console.log("Success:", data);
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
 }
 
-
-// Hide spinner when the page finishes loading
-window.addEventListener('load', function() {
-    document.getElementById("loading-spinner").style.display = "none";
-});
-    </script>
+</script>
 {% endblock content %}

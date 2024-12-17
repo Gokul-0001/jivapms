@@ -156,7 +156,7 @@
 
 <style>
 /* Collection Panel */
-.collection-panel {
+.collection-panel, .version-panel {
     position: absolute; /* Adjusted to align with the vertical text */
     top: 0;
     left: 0;
@@ -171,7 +171,7 @@
 }
 
 /* Open State */
-.collection-panel.open {
+.collection-panel.open, .version-panel.open {
     transform: translateX(0); /* Slide in when open */
 }
 
@@ -182,7 +182,7 @@
 }
 
 /* Panel Header */
-.collection-panel-header {
+.collection-panel-header, .version-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -191,19 +191,19 @@
     color: white;
 }
 
-.collection-list {
+.collection-list, .version-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.collection-list li {
+.collection-list li, .version-list li {
     padding: 10px;
     cursor: pointer;
     border-bottom: 1px solid #ddd;
 }
 
-.collection-list li:hover {
+.collection-list li:hover, .version-list li:hover {
     background-color: #f1f1f1;
 }
 
@@ -212,12 +212,12 @@
 </style>
 
 <style>
-    .collection-list {
+    .collection-list, .version-list {
         list-style-type: none;
         padding: 0;
     }
 
-    .collection-item {
+    .collection-item, .version-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -300,14 +300,14 @@
 </style>
 
 <style>
-#collection-panel {
+#collection-panel, #version-panel {
     opacity: 0;
     transform: translateX(-100%);
     transition: all 0.3s ease;
     display: none; /* Default hidden state */
 }
 
-#collection-panel.open {
+#collection-panel.open, #version-panel.open {
     opacity: 1;
     transform: translateX(0);
     display: block; /* Visible when open */
@@ -364,6 +364,26 @@
 
 </style>
 
+<style>
+.custom-select {
+    font-size: 12px;
+    width: auto;
+    padding: 4px 8px;
+    border: 1px solid #ccc; /* Light border */
+    border-radius: 4px;
+    background-color: #f8f9fa; /* Light gray background */
+}
+
+.custom-select:focus {
+    border-color: #007bff; /* Highlight border on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Blue glow */
+}
+
+.custom-select:hover {
+    background-color: #e9ecef; /* Slightly darker gray on hover */
+}
+
+</style>
 
 <div class="content-wrapper">
 
@@ -381,9 +401,11 @@
                     </a>
                 </li>
 
-                <li class="breadcrumb-item" aria-current="page">
+                <li class="breadcrumb-item me-2" aria-current="page">
                     Backlog
+                   
                 </li>
+
             </ol>
         </nav>
     </div>
@@ -394,8 +416,15 @@
             <a href="#" class="vertical-text vertical-text-top" id="collection-link"
             onclick="toggleCollectionPanel()"
             >Collections</a>
-            <a href="#" class="vertical-text" id="revision-link">Iterate</a>
+            <a href="#" class="vertical-text" id="revision-link"
+            onclick="toggleCollectionPanel()"
+            >Release-Iterations</a>
+            <a href="#" class="vertical-text" id="versions-link"
+            onclick="toggleCollectionPanel()"
+            >Release-Versions</a>
         </div>
+
+        
 
         <!-- Sliding Panel -->
         <div id="collection-panel" class="collection-panel">
@@ -463,9 +492,81 @@
             </ul>
         </div>
 
+        <!-- Sliding Panel -->
+        <div id="version-panel" class="vesion-panel">
+            <div class="version-panel-header">
+                <h4>Versions</h4>
+                &nbsp;
+                <a href="{% url 'list_collections' project.id %}" class="btn btn-sm btn-primary">Setup</a>
+               
+                <button onclick="toggleCollectionPanel()">Close</button>
+            </div>
+            <ul class="version-list">
+                <li>
+                    <div class="version-item">
+                        <span id="filter_unmapped" onclick="filterBacklog('all_items')">All Versions</span>
+                       
+                    </div>
+                    <div id="others" class="details hidden">
+                        <p>List all versions.</p>
+                    </div>
+                </li>
+
+                <!-- COLLECTION FOR BACKLOG -->
+                {% for collection in collections %}
+                <li>
+                    <div class="collection-item">
+                        <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.id}}')">{{collection.name}}</span>
+                        <div class="action-buttons">
+                            <button class="small-btn assign-btn" onclick="assignToCollection('{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
+                            <button class="small-btn unassign-btn me-2" onclick="unassignFromCollection('{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
+                            <button class="dropdown-btn" onclick="toggleDetails('{{collection.id}}-details')">▼</button>
+                        </div>
+                    </div>
+                    <div id="{{collection.id}}-details" class="details hidden">
+                        <p class="display_details_small_text">{{collection.description|display_if_not_none}}</p>
+                    </div>
+                </li>
+                {% endfor %}
+                
+                <li>
+                    <div class="collection-item">
+                        <span id="filter_unmapped" onclick="filterBacklog('unmapped')">Unmapped Items</span>
+                        <div class="action-buttons">
+                            <button class="small-btn assign-btn" onclick="assignToCollection('Others')">&lt;&lt; &nbsp; Map</button>
+                            <button class="small-btn unassign-btn" onclick="unassignFromCollection('Others')">Unmap &nbsp; &gt;&gt;</button>
+                            <button class="dropdown-btn" onclick="toggleDetails('Others')">▼</button>
+                        </div>
+                    </div>
+                    <div id="others" class="details hidden">
+                        <p>These are backlog items that are not part of any collection yet.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="collection-item">
+                        <span id="filter_deleted" onclick="filterBacklog('deleted')">Deleted Items</span>
+                        <div class="action-buttons">
+                            <button class="small-btn assign-btn" onclick="assignToCollection('deleted')">&lt;&lt; &nbsp; Delete</button>
+                            <button class="small-btn unassign-btn" onclick="unassignFromCollection('deleted')">Restore &nbsp; &gt;&gt;</button>
+                            <button class="dropdown-btn" onclick="toggleDetails('deleted')">▼</button>
+                        </div>
+                    </div>
+                    <div id="others" class="details hidden">
+                        <p>These are backlog items that are Deleted.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+
+
     <div class="contentbar mb-5" id="contentbar">
-        <div class="backlog_header"><b>Backlog</b></div>
-    <table class="table backlog_table" id="backlog_table">
+        <div class="backlog_header"><b>Backlog</b>  &nbsp;
+           
+        </div>
+        <form action="" method="POST">
+            {% csrf_token %}
+    <table class="table backlog_table sortable_table" id="backlog_table">
         <thead class="add_backlog_item_row">
             <tr class="add_backlog_item">
                 <form action="" method="POST">
@@ -475,6 +576,13 @@
                         <div class="add-backlog-container">
                             
                             <input type="text" id="backlog_summary" name="backlog_summary" placeholder="Enter backlog item" class="backlog-input me-2">
+
+                            <select name="type" id="type-select" class="form-select custom-select">
+                                {% for key, value in FLAT_BACKLOG_TYPES.items %}
+                                <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                            
                             <div class="add-button-container">
                                 <!-- <input type="submit" name="add_to_top" value="Add to Top" class="btn btn-sm btn-primary me-2">
                                 <input type="submit" name="add_to_bottom" value="Add to Bottom" class="btn btn-sm btn-primary me-2">
@@ -498,15 +606,17 @@
         </thead>
         <thead>
             <tr class="header">
+                <th width="2%"><i class="bi bi-grip-vertical"></i></th>
+                <th id="header_slno" width="1%"style="text-align: center;">#</th>
                 <th id="header_type" width="2%" class="header_type ca">Type</th>                
-                <th id="header_summary" width="39%" class="header_summary la">Backlog Item 
+                <th id="header_summary" width="32%" class="header_summary la">Backlog Item 
                     <div class="display_backlog_count">{{backlog_items_count}} items</div></th>
                 <th id="header_parent" width="14%" class="header_parent la">Collection</th>
                 <th id="header_release" width="10%" class="header_release la">Release</th>
                 <th id="header_iteration" width="8%" class="header_iteration la">Iteration</th>
-                <th id="header_slno" width="4%" class="header_slno ra">#</th>
+                <th id="header_key" width="4%" class="header_key ra">ID</th>
                 <th id="header_size" width="4%" class="header_size ca">Size</th>
-                <th id="header_status" width="5%" class="header_status ca">Status</th>
+                <th id="header_status" width="8%" class="header_status ca">Status</th>
                 <th id="header_select" width="2%" class="header_select ca">
                     <input type="checkbox" name="select_all" class="select-all-checkbox">
                 </th>       
@@ -514,29 +624,33 @@
         </thead>
         <!-- Row for adding a new backlog item -->
        
-
-        <tbody class="backlog_body">
+       
+        <tbody class="backlog_body sortable-tbody" id="sortable">
             {% for item in backlog_items %}
             <tr class="backlog_item select-item" id="{{item.id}}_{{forloop.counter}}" data-backlog-item-id="{{item.id}}" onclick="toggleItemSelection(this)">
+                <td class="drag-handle" width="2%">
+                    <i class="bi bi-grip-vertical"></i>
+                </td>
+                <td id="display_slno" width="1%" style="text-align: end;">{{forloop.counter}}</td>
                 <td id="display_type" width="2%" class="display_type ca" data-type="{{item.type}}">
-                    
                 </td>                
-                <td id="display_summary" width="39%" class="display_summary la"
+                <td id="display_summary" width="32%" class="display_summary la"
                 ondblclick="makeEditable(this);"
                 onblur="save_element_text(this, '{{item.id}}', 'app_organization', 'backlog', 'name');"
                 >{{item.name|display_if_not_none}}</td>
                 <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
-                <td id="display_slno" width="4%" class="display_slno ra">BI-{{forloop.counter}}</td>
+                <td id="display_key" width="4%" class="display_key ra">BI-{{item.id}}</td>
                 <td id="display_size" width="4%" class="display_size ca">{% if item.size != '0'  and item.size != None %}{{item.size|display_if_not_none}}{% endif %}</td>
-                <td id="display_status" width="5%" class="display_status ca">{{item.status|display_if_not_none}}</td>
+                <td id="display_status" width="8%" class="display_status ca">{{item.status|display_if_not_none}}</td>
                 <th id="display_select" width="2%" class="display_select ca">
                     <input type="checkbox" name="selected_items" value="{{item.id}}" class="select-item-checkbox">
                 </th> 
             </tr>
             {% endfor %}
         </tbody>
+        </form> 
     </table>
 
      
@@ -551,6 +665,36 @@
 </form>
 </div>
 
+
+    <script>
+        $(".sortable_table").find("tbody").sortable({
+          items: "> tr",
+          handle: ".drag-handle",
+          appendTo: "parent",
+          cancel: "[contenteditable]",
+          update: function(event, ui) {
+                  var serialOrder = $('#sortable').sortable('serialize');
+                  var arrayOrder = $('#sortable').sortable('toArray');
+                  //alert(arrayOrder);
+                  $.ajax({
+                    url: '/common/common_ajax/ajax_update_model_list_sorted/',
+                    type: 'POST',
+                    data : {
+                      'csrfmiddlewaretoken': "{{ csrf_token }}",
+                      'model_name': 'Backlog',
+                      'app_name': 'app_organization',
+                      'sorted_list_data': JSON.stringify(arrayOrder),
+                      
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                      console.log(data);
+                    }
+                  })
+                }
+        });
+    </script>
+    
 
 <script>
     // Focus on the backlog summary input field on page load

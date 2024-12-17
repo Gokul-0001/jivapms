@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cumulative Flow Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chart-container {
+            width: 80%;
+            height: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <canvas id="cfdChart"></canvas>
+    </div>
+    <script>
+        const ctx = document.getElementById('cfdChart').getContext('2d');
+        const cfdChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['May 21', 'May 22', 'May 23', 'May 24', 'May 25'], // Days
+                datasets: [
+                    {
+                        label: 'Backlog',
+                        data: [5, 5, 7, 9, 15],
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)', // Now fully opaque
+                        borderColor: '#FF9F40',
+                        borderWidth: 1,
+                        fill: true,
+                        order: 5,
+                    },
+                    {
+                        label: 'Todo',
+                        data: [1, 2, 3, 4, 5],
+                        backgroundColor: 'rgba(54, 162, 235, 0.3)', // Now fully opaque
+                        borderColor: '#3668DB',
+                        borderWidth: 1,
+                        fill: true,
+                        order: 4,
+                    },
+                    {
+                        label: 'InProgress',
+                        data: [0, 1, 2, 3, 4],
+                        backgroundColor: 'rgba(75, 192, 192, 0.4)', // Now fully opaque
+                        borderColor: '#4BC0C0',
+                        borderWidth: 1,
+                        fill: true,
+                        order: 3,
+                    },
+                    {
+                        label: 'Review',
+                        data: [0, 0, 1, 2, 3],
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)', // Now fully opaque
+                        borderColor: '#9966FF',
+                        borderWidth: 1,
+                        fill: true,
+                        order: 2,
+                    },
+                    {
+                        label: 'Done',
+                        data: [0, 0, 0, 1, 2],
+                        backgroundColor: 'rgba(255, 99, 100, 1)', // Now fully opaque
+                        borderColor: '#FF6396',
+                        borderWidth: 1,
+                        fill: true,
+                        order: 1,
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4 // Smooths the line for better visual presentation
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+    </script>
+    
+</body>
+</html>

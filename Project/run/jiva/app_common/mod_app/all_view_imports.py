@@ -76,24 +76,58 @@ SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
 15/12/2024
 # Flat backlog additions
 FLAT_BACKLOG_ROOT_NAME = "Flat Backlog"
-
-
-
+ 
+PRIORITY_CHOICES = (
+    ('Low', 'Low'),
+    ('Normal', 'Normal'),
+    ('Medium', 'Medium'),
+    ('High', 'High'),
+    ('Critical', 'Critical'),
+)
+STATUS_CHOICES = (
+        ('Backlog', 'Backlog'),
+        ('To Do', 'To Do'),
+        ('In Progress', 'In Progress'),
+        ('Done', 'Done'),
+        ('Blocked', 'Blocked'),
+        ('Unblocked', 'Unblocked'),
+        ('Deleted', 'Deleted'),
+        ('Archived', 'Archived'),
+    )
+SIZE_CHOICES = (       
+        ('0', '0'),
+        ('0.5', '0.5'),
+        ('1', '1'),
+        ('2', '2'),
+        ('3', '3'),
+        ('5', '5'),
+        ('8', '8'),
+        ('13', '13'),
+        ('20', '2'),
+        ('100', '100'),
+        
+        ('XS', 'XS'),
+        ('S', 'S'),
+        ('M', 'M'),
+        ('L', 'L'),
+        ('XL', 'XL'),
+        ('XXL', 'XXL'),
+        ('XXXL', 'XXXL'),
+    )
+    
 FLAT_BACKLOG_TYPES = {
-    "Flat Backlog": "Flat Backlog",
     "USER STORY": "User Story",
     "TASK": "Task",
     "BUG": "Bug",
     "ENHANCEMENT": "Enhancement",
     "DEFECT": "Defect",
     "ISSUE": "Issue",    
-    "REFACTOR": "Refactor",
-    "RESEARCH": "Research",   
+    "REFACTOR": "Refactor", 
     "TECH_DEBT": "Tech Debt",
     "TEST": "Test",
     "DOC": "Doc",  
+    "SPIKE": "Spike",
 }
-
 
 COMMON_BACKLOG_TYPES = {
     "EPIC": "Epic",

@@ -1300,6 +1300,8 @@ def view_flat_backlog(request, pro_id, parent_id):
 
     # Step 3: Sync existing `Backlog` items with the corresponding `Collection` items
     for bdc in backlog_collections:
+        if bdc.collection == None:
+            continue
         collection = db_collection_map.get(bdc.collection.id)
 
         if collection:
@@ -1326,7 +1328,8 @@ def view_flat_backlog(request, pro_id, parent_id):
             child_backlogs.update(parent=flat_backlog_root, collection=None)
 
     # Step 4: Add missing `Collection` items to the `Backlog`
-    existing_collection_ids = {bdc.collection.id for bdc in backlog_collections}
+    existing_collection_ids = {bdc.collection.id for bdc in backlog_collections if bdc.collection is not None}
+
     for collection in db_collections.filter(active=True):  # Only add active collections
         if collection.id not in existing_collection_ids:
             Backlog.objects.create(
@@ -1341,8 +1344,6 @@ def view_flat_backlog(request, pro_id, parent_id):
             )
 
         
-  
-    
                 
     collections = Backlog.objects.filter(pro=project, type=flat_backlog_collection_type, parent=flat_backlog_root, active=True)
     if request.method == 'POST':
@@ -1433,6 +1434,9 @@ def view_flat_backlog(request, pro_id, parent_id):
         'ICON_MAPPING': ICON_MAPPING,
         'backlog_items_count': backlog_items_count,
         'page_title': f'View Flat Backlog',
+        "STATUS_CHOICES": STATUS_CHOICES,
+        "SIZE_CHOICES": SIZE_CHOICES,
+        "FLAT_BACKLOG_TYPES": FLAT_BACKLOG_TYPES,
     }       
     template_file = f"{app_name}/{module_path}/view_flat_backlog.html"
     return render(request, template_file, context)

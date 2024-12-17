@@ -17,51 +17,7 @@ from app_common.mod_app.all_view_imports import *
 #
 # Core Hierarchical System Database
 class Backlog(MPTTModel, BaseModelImpl):
-    STATUS_CHOICES = (
-        ('Backlog', 'Backlog'),
-        ('To Do', 'To Do'),
-        ('In Progress', 'In Progress'),
-        ('Done', 'Done'),
-        ('Blocked', 'Blocked'),
-        ('Unblocked', 'Unblocked'),
-        ('Deleted', 'Deleted'),
-        ('Archived', 'Archived'),
-    )
-    
-    SIZE_CHOICES = (       
-        ('0', '0'),
-        ('0.5', '0.5'),
-        ('1', '1'),
-        ('2', '2'),
-        ('3', '3'),
-        ('5', '5'),
-        ('8', '8'),
-        ('13', '13'),
-        ('20', '2'),
-        ('100', '100'),
-        
-        ('XS', 'XS'),
-        ('S', 'S'),
-        ('M', 'M'),
-        ('L', 'L'),
-        ('XL', 'XL'),
-        ('XXL', 'XXL'),
-        ('XXXL', 'XXXL'),
-    )
-    
-    FLAT_BACKLOG_TYPES = {
-    "USER STORY": "User Story",
-    "TASK": "Task",
-    "BUG": "Bug",
-    "ENHANCEMENT": "Enhancement",
-    "DEFECT": "Defect",
-    "ISSUE": "Issue",    
-    "REFACTOR": "Refactor", 
-    "TECH_DEBT": "Tech Debt",
-    "TEST": "Test",
-    "DOC": "Doc",  
-    "SPIKE": "Spike",
-    }
+  
     persona = models.ForeignKey('app_organization.Persona', on_delete=models.CASCADE,
                                 related_name="persona_backlogs", null=True, blank=True)
     
@@ -101,14 +57,7 @@ class Backlog(MPTTModel, BaseModelImpl):
                                blank=True, related_name='author_backlogs')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
                              related_name='user_backlogs')
-    
-    PRIORITY_CHOICES = (
-        ('Low', 'Low'),
-        ('Normal', 'Normal'),
-        ('Medium', 'Medium'),
-        ('High', 'High'),
-        ('Critical', 'Critical'),
-    )
+   
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='Normal')
 
    
@@ -197,7 +146,7 @@ class Backlog(MPTTModel, BaseModelImpl):
         if self.parent:
             # Validate that the parent is of a flat backlog type
             #print(f"=== >>> {self.parent.flat_backlog_type} ===> {self.flat_backlog_type} === <<<")
-            if self.parent.flat_backlog_type not in Backlog.FLAT_BACKLOG_TYPES:
+            if self.parent.flat_backlog_type not in FLAT_BACKLOG_TYPES:
                 raise ValidationError("Subtasks can only be added to flat backlog types.")
 
             # # Ensure that the parent is not part of a hierarchy
@@ -205,7 +154,7 @@ class Backlog(MPTTModel, BaseModelImpl):
             # if self.parent.get_children().exists():
             #     raise ValidationError("Cannot add subtasks to a hierarchical backlog item.")
         # Check if the status is being set to "Done"
-        if self.flat_backlog_type in self.FLAT_BACKLOG_TYPES and self.status == "Done":
+        if self.flat_backlog_type in FLAT_BACKLOG_TYPES and self.status == "Done":
             # Ensure all subtasks are also marked as "Done"
             incomplete_subtasks = self.sub_tasks.filter(~models.Q(status="Done")).exists()
             if incomplete_subtasks:
@@ -249,7 +198,7 @@ class SubTasks(BaseModelTrackDateImpl):
     parent = models.ForeignKey(Backlog, on_delete=models.CASCADE, related_name='sub_tasks')
     name = models.CharField(max_length=256, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=100, choices=Backlog.STATUS_CHOICES, default='To Do')
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='To Do')
     estimate = models.PositiveIntegerField(default=0)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_by')
     pulled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='pulled_by')

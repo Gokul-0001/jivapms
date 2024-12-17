@@ -98,6 +98,10 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
     persona = get_object_or_404(Persona, pk=persona_id)
     default_activity_id = request.session.pop('default_activity', None)
     organization = pro.org
+    flat_backlog_root = Backlog.objects.filter(pro=pro, name=FLAT_BACKLOG_ROOT_NAME).first()
+    
+    create_backlog_type = BacklogType.objects.filter(name='User Story').first()
+    filters = {}
     releases = OrgRelease.objects.filter(org_id=pro.org_id, active=True)
     activities = Activity.objects.filter(persona_id=persona_id, active=True)
     backlog = Backlog.objects.filter(pro_id=pro_id, persona_id=persona_id, active=True)
@@ -143,9 +147,12 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
                     name=detail_input,
                     persona_id=selected_persona_id,
                     pro_id=selected_project_id,
-                    active=True
+                    active=True,
+                    parent=flat_backlog_root,
+                    type=create_backlog_type,
+                    collection=None,
                 )
-                print(f">>> === DETAIL {detail} === <<<")
+                print(f">>> === DETAIL {detail} {selected_project_id} {selected_persona_id}=== <<<")
                 return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=selected_persona_id)
     
     # Context for GET request
