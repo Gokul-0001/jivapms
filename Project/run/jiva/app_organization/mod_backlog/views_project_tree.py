@@ -43,7 +43,7 @@ def create_display_of_backlog_itemsx(backlog_epic_items, epic_type_id):
 
     return display_backlog_items
 
-def create_display_of_backlog_items(backlog_epic_items, epic_type_id):
+def create_display_of_backlog_itemsx1(backlog_epic_items, epic_type_id):
     display_backlog_items = {}
     backlog_items_sorted = sorted(backlog_epic_items, key=lambda x: x.position)  # Sort by position
     counter = 1
@@ -60,6 +60,33 @@ def create_display_of_backlog_items(backlog_epic_items, epic_type_id):
         counter += 1
 
     return display_backlog_items
+
+def create_display_of_backlog_items(backlog_epic_items, epic_type_id):
+    """
+    Create a sorted display of backlog items, including non-Epic items and children of Epics.
+
+    Args:
+        backlog_epic_items (QuerySet): The list of backlog items.
+        epic_type_id (int): The type ID for Epic items.
+
+    Returns:
+        dict: A dictionary of sorted backlog items by position.
+    """
+    display_backlog_items = []
+
+    # Include non-Epic items and children of Epics
+    for bi in backlog_epic_items:
+        if bi.type.id == epic_type_id:  # If it's an Epic, add only its children
+            epic_children = bi.get_active_children()
+            display_backlog_items.extend(epic_children)
+        else:  # Add non-Epic items
+            display_backlog_items.append(bi)
+
+    # Sort all items by position
+    sorted_items = sorted(display_backlog_items, key=lambda x: x.position)
+
+    # Convert to dictionary for display
+    return {item.id: item for item in sorted_items}
 
 
 @login_required
