@@ -566,11 +566,10 @@
         </div>
         <form action="" method="POST">
             {% csrf_token %}
-    <table class="table backlog_table sortable_tabl mb-5" id="backlog_table">
+    <table class="table backlog_table sortable_table mb-5" id="backlog_table">
         <thead class="add_backlog_item_row">
             <tr class="add_backlog_item">
-                <form action="" method="POST">
-                    {% csrf_token %}
+               
                     <input type="hidden" name="add_action" value="add">
                     <td id="input_summary" width="80%" class="input_summary la" colspan="8">
                         <div class="add-backlog-container">
@@ -601,7 +600,7 @@
                             </div>
                         </div>
                     </td>
-                </form>
+                
             </tr>
             
             </form>
