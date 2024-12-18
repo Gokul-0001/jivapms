@@ -643,6 +643,15 @@ def within_backlog_update(positions, board_id, card_id):
         Backlog.objects.filter(id=card_id).update(position=position)        
     return JsonResponse({"success": True})
 
+def update_backlog_text_status(card_id, to_state):
+    try:
+        backlog = Backlog.objects.get(id=card_id)
+        backlog.status = to_state
+        backlog.save()
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)})  
+
 @login_required
 def ajax_update_project_board_card_state(request):
     if request.method == "POST":
@@ -669,12 +678,17 @@ def ajax_update_project_board_card_state(request):
         elif from_state_id !=0 and to_state_id != 0 and from_state_id != to_state_id:
             #logger.debug(f">>> === {from_column} to {dest_column}: Between column movement  === <<<")
             column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
+            actual_card = ProjectBoardCard.objects.get(id=card_id)
+            actual_card_id = actual_card.backlog.id
+            update_backlog_text_status(actual_card_id, dest_column)
         elif from_state_id == 0 and to_state_id != 0:
             #logger.debug(f">>> ===  {from_column} to {dest_column}: Between column movement (from Backlog) === <<<")
             backlog_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
+            update_backlog_text_status(card_id, dest_column)
         elif to_state_id == 0 and from_state_id != 0:
             #logger.debug(f">>> ===   {from_column} to {dest_column}: Betwee Column Movement (to Backlog)   === <<<")
             column_to_backlog_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
+            update_backlog_text_status(card_id, dest_column)
 
         return JsonResponse({"success": True})
 

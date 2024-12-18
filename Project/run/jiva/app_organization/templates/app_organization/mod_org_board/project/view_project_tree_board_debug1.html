@@ -327,31 +327,31 @@
     /* Default Backlog Card Style */
     .kanban-card {
         background-color: #dcdcdc; /* Light Grey */
-        color: #333 !important;
+        color: #333;
     }
 
     /* ToDo Column */
     .kanban-card.todo {
         background-color: #bbdefb; /* Light Blue */
-        color: #0d47a1 !important;
+        color: #0d47a1; /* Dark Blue Text */
     }
 
     /* In Progress Column */
     .kanban-card.in-progress {
         background-color: #fff59d; /* Light Yellow */
-        color: #f57f17 !important; /* Dark Yellow Text */
+        color: #f57f17; /* Dark Yellow Text */
     }
 
     /* Blocked Column */
     .kanban-card.blocked {
-        background-color: red; /* Red */
-        color: #ffffff !important ;/* White Text */
+        background-color: orange; /* Red */
+        color: #ffffff; !important /* White Text */
     }
 
     /* Done Column */
     .kanban-card.done {
         background-color: #81c784; /* Light Green */
-        color: #1b5e20 !important; /* Dark Green Text */
+        color: #1b5e20; /* Dark Green Text */
     }
 </style>
 
@@ -377,9 +377,7 @@
                     <div class="kanban-swimlane" id="backlog">
                         {% for item in backlog_items %}
                             <div class="kanban-card" data-id="{{ item.id }}">
-                                <b
-                               
-                                >{{ item }}</b>
+                                <h5>{{forloop.counter}}:{{ item }}:{{item.id}}</h5>
                                 <p>{{ item.description | display_if_not_none }}</p>
                                 <span class="tag">{{ item.parent | display_if_not_none }}</span>
                             </div>
@@ -396,7 +394,7 @@
                         <div class="kanban-swimlane" id="todo">
                             {% for item in todo_items %}
                                 <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
-                                    <b>{{ item }}</b>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -411,7 +409,7 @@
                         <div class="kanban-swimlane" id="in-progress">
                             {% for item in in_progress_items %}
                                 <div class="kanban-card in-progress" data-id="{{ item.id }}">
-                                    <b>{{ item }}</b>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -426,7 +424,7 @@
                         <div class="kanban-swimlane" id="blocked">
                             {% for item in blocked_items %}
                                 <div class="kanban-card blocked" data-id="{{ item.id }}">
-                                    <b>{{ item }}</b>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -441,7 +439,7 @@
                         <div class="kanban-swimlane" id="done">
                             {% for item in done_items %}
                                 <div class="kanban-card done" data-id="{{ item.id }}">
-                                    <b>{{ item }}</b>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
