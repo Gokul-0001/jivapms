@@ -4,8 +4,8 @@ from app_organization.mod_backlog.models_backlog import *
 from app_organization.mod_backlog_type.models_backlog_type import *
 from app_organization.mod_backlog_super_type.models_backlog_super_type import *
 
-from app_organization.mod_release.models_release import *
-from app_organization.mod_iteration.models_iteration import *
+from app_organization.mod_org_release.models_org_release import *
+from app_organization.mod_org_iteration.models_org_iteration import *
 
 class BacklogSuperTypeForm(forms.ModelForm):
     class Meta:
@@ -34,21 +34,21 @@ class BacklogForm(forms.ModelForm):
         super(BacklogForm, self).__init__(*args, **kwargs)
 
         # Filter releases to only active ones and add a placeholder
-        self.fields['release'].queryset = Release.objects.filter(active=True)
+        self.fields['release'].queryset = OrgRelease.objects.filter(active=True)
         self.fields['release'].empty_label = '-- Select Release --'
 
         # Update the iteration queryset based on the selected release in POST data
         if 'release' in self.data:
             try:
                 release_id = int(self.data.get('release'))
-                self.fields['iteration'].queryset = Iteration.objects.filter(rel_id=release_id, active=True)
+                self.fields['iteration'].queryset = OrgIteration.objects.filter(rel_id=release_id, active=True)
             except (ValueError, TypeError):
-                self.fields['iteration'].queryset = Iteration.objects.none()
+                self.fields['iteration'].queryset = OrgIteration.objects.none()
         elif 'release' in self.initial and self.initial['release']:
             release_id = self.initial['release']
-            self.fields['iteration'].queryset = Iteration.objects.filter(rel_id=release_id, active=True)
+            self.fields['iteration'].queryset = OrgIteration.objects.filter(rel_id=release_id, active=True)
         else:
-            self.fields['iteration'].queryset = Iteration.objects.none()
+            self.fields['iteration'].queryset = OrgIteration.objects.none()
         
         self.fields['iteration'].empty_label = '-- Select Iteration --'
 

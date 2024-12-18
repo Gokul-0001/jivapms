@@ -53,7 +53,7 @@ from django.db import transaction
 from django.utils.safestring import mark_safe
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
-
+from collections import OrderedDict
 
 import traceback
 
@@ -72,6 +72,59 @@ import pytz
 SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
 
 ##################################  CONSTANTS ##################################
+
+
+# 18/12/2024
+PROJECT_WBS_TREE_CONFIG = {
+    "name": "Strategic Theme",
+    "children": [
+        {
+            "name": "Initiative",
+            "children": [
+                {
+                    "name": "Epic",
+                    "children": [
+                        {"name": "Bug",
+                         "children": [
+                                {
+                                    "name": "Task",
+                                    "children": [
+                                        {"name": "Sub Task"}
+                                    ]
+                                }
+                            ]
+                         },
+                        {"name": "Technical Task",
+                         "children": [
+                                {
+                                    "name": "Task",
+                                    "children": [
+                                        {"name": "Sub Task"}
+                                    ]
+                                }
+                            ]},
+                        {
+                            "name": "User Story",
+                            "children": [
+                                {
+                                    "name": "Task",
+                                    "children": [
+                                        {"name": "Sub Task"}
+                                    ]
+                                }
+                            ]
+                        },
+                        {"name": "Feature"},
+                        {"name": "Component"},
+                        {"name": "Capability"},
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+
 
 15/12/2024
 # Flat backlog additions

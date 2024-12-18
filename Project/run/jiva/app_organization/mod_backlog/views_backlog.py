@@ -799,7 +799,7 @@ def view_tree__backlog(request, pro_id, parent_id):
 @login_required
 def ajax_get_iterations(request, release_id):
     
-    iterations = Iteration.objects.filter(rel_id=release_id, active=True)
+    iterations = OrgIteration.objects.filter(rel_id=release_id, active=True)
     data = [{'id': iteration.id, 'name': iteration.name} for iteration in iterations]
 
     return JsonResponse(data, safe=False)

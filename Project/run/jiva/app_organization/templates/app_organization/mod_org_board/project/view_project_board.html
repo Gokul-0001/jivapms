@@ -323,6 +323,39 @@
 
 </style>
 
+<style>
+    /* Default Backlog Card Style */
+    .kanban-card {
+        background-color: #dcdcdc; /* Light Grey */
+        color: #333;
+    }
+
+    /* ToDo Column */
+    .kanban-card.todo {
+        background-color: #bbdefb; /* Light Blue */
+        color: #0d47a1; /* Dark Blue Text */
+    }
+
+    /* In Progress Column */
+    .kanban-card.in-progress {
+        background-color: #fff59d; /* Light Yellow */
+        color: #f57f17; /* Dark Yellow Text */
+    }
+
+    /* Blocked Column */
+    .kanban-card.blocked {
+        background-color: orange; /* Red */
+        color: #ffffff; !important /* White Text */
+    }
+
+    /* Done Column */
+    .kanban-card.done {
+        background-color: #81c784; /* Light Green */
+        color: #1b5e20; /* Dark Green Text */
+    }
+</style>
+
+
 <div class="content-wrapper">
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
@@ -344,7 +377,7 @@
                     <div class="kanban-swimlane" id="backlog">
                         {% for item in backlog_items %}
                             <div class="kanban-card" data-id="{{ item.id }}">
-                                <h5>{{forloop.counter}}:{{ item }}{{item.type}}</h5>
+                                <h5>{{forloop.counter}}:{{ item }}</h5>
                                 <p>{{ item.description | display_if_not_none }}</p>
                                 <span class="tag">{{ item.parent | display_if_not_none }}</span>
                             </div>
@@ -360,7 +393,7 @@
                         <h4>{{state.name}}</h4>
                         <div class="kanban-swimlane" id="todo">
                             {% for item in todo_items %}
-                                <div class="kanban-card" data-id="{{ item.id }}">
+                                <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
                                     <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
@@ -375,7 +408,7 @@
                         <h4>{{state.name}}</h4>
                         <div class="kanban-swimlane" id="in-progress">
                             {% for item in in_progress_items %}
-                                <div class="kanban-card" data-id="{{ item.id }}">
+                                <div class="kanban-card in-progress" data-id="{{ item.id }}">
                                     <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
@@ -390,7 +423,7 @@
                         <h4>{{state.name}}</h4>
                         <div class="kanban-swimlane" id="blocked">
                             {% for item in blocked_items %}
-                                <div class="kanban-card" data-id="{{ item.id }}">
+                                <div class="kanban-card blocked" data-id="{{ item.id }}">
                                     <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
@@ -405,7 +438,7 @@
                         <h4>{{state.name}}</h4>
                         <div class="kanban-swimlane" id="done">
                             {% for item in done_items %}
-                                <div class="kanban-card" data-id="{{ item.id }}">
+                                <div class="kanban-card done" data-id="{{ item.id }}">
                                     <h5>{{ item }}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
@@ -442,6 +475,16 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script>
+    const columnColorMapping = {
+    "Backlog": "kanban-card",          // Default grey
+    "ToDo": "kanban-card todo",       // Light Blue
+    "In Progress": "kanban-card in-progress", // Light Yellow
+    "Blocked": "kanban-card blocked",  // Red with white font
+    "Done": "kanban-card done"         // Light Green
+};
+
+</script>
+<script>
    $(function() {
     $(".kanban-swimlane").sortable({
         connectWith: ".kanban-swimlane",
@@ -472,6 +515,17 @@
                 var id = $(this).data("id");
                 destPositions.push({ card_id: id, position: index + 1 });
             });
+            
+
+            // CLASS FOR COLOR
+            const card = ui.item; // The card being moved
+            // Remove all column color classes
+            card.removeClass("todo in-progress blocked done");
+            // Add the correct class based on the column name
+            const newClass = columnColorMapping[destColumn] || "kanban-card";
+            card.attr("class", newClass); // Replace classes dynamically
+            // END COLORING
+
 
             console.log("Updated Positions:", destPositions);
             console.log("Card moved => From:", fromColumn, "To:", destColumn, "State:", fromStateId, "to", toStateId);
@@ -483,6 +537,10 @@
             ui.item.removeData("start-state").removeData("from-column");
             ui.item.data("start-state", toStateId);
             ui.item.data("from-column", destColumn);
+
+            if (fromColumn == 'Backlog') {
+                refreshKanbanBoard();
+            }
         }
     }).disableSelection();
 });
@@ -513,7 +571,7 @@
                 console.error("Error:", data.error);
             } else {
                 console.log("Success:", data);
-                refreshKanbanBoard();
+                
             }
         })
         .catch(error => {
@@ -539,4 +597,7 @@ window.addEventListener('load', function() {
     document.getElementById("loading-spinner").style.display = "none";
 });
     </script>
+
+
+
 {% endblock content %}

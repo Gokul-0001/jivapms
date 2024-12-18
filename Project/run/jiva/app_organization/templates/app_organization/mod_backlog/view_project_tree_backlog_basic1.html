@@ -1,0 +1,30 @@
+<h2>Project Tree Backlog</h2>
+
+<a href="{{ project_backlog_super_type_url }}">Super Type</a>
+<br>
+<a href="{{ project_backlog_type_url }}">Type</a>
+
+<br>
+<a href="{{ project_backlog_url }}">Backlog</a>
+
+<!-- 'backlog_deleted': backlog_deleted,
+'backlog_deleted_count': backlog_deleted_count,
+'backlog_items': backlog_items,
+'backlog_types': backlog_types,
+'backlog_items_count': backlog_items_count, -->
+
+<h2>Backlog Types: </h2>
+{{ backlog_types_count }}
+<br>
+{% for item in backlog_types %}
+    <a href="">{{ item.name }}</a>
+    <br>
+{% endfor %}
+
+<h2>Backlog Items: </h2>
+{{ backlog_items_count }}
+<br>
+{% for item in backlog_items %}
+    <a href="">{{ item.name }}</a>
+    <br>
+{% endfor %}

@@ -25,7 +25,8 @@ class Backlog(MPTTModel, BaseModelImpl):
                                        on_delete=models.SET_NULL, 
                                               null=True, blank=True, 
                                               related_name='backlogs')
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='Project', on_delete=models.CASCADE)
+    #parent = TreeForeignKey('self', null=True, blank=True, related_name='Project', on_delete=models.CASCADE)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
    
     type = TreeForeignKey("app_organization.BacklogType", null=True, blank=True, 
                           related_name='backlog_types', 

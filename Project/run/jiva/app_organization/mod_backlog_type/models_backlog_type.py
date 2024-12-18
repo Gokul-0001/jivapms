@@ -14,7 +14,7 @@ class BacklogType(MPTTModel, BaseModelImpl):
                                               null=True, blank=True, 
                                               related_name='backlog_type_types')
     parent = TreeForeignKey('self', null=True, blank=True, 
-                            related_name='supertype', on_delete=models.CASCADE)
+                            related_name='children', on_delete=models.CASCADE)
     super_type = models.ForeignKey("app_organization.BacklogSuperType", 
                                    on_delete=models.CASCADE,
                                       related_name='supertype_backlogtypes', 
@@ -34,6 +34,9 @@ class BacklogType(MPTTModel, BaseModelImpl):
    
     def get_active_descendants(self):
         return self.get_descendants().filter(active=True)
+    
+    def get_active_children(self):
+        return self.get_children().filter(active=True)
     
     def get_parent_id(self):
         if self.parent:

@@ -4,6 +4,7 @@ from django.urls import path, include
 
 from app_organization.mod_backlog import views_backlog
 from app_organization.mod_backlog import views_story_map
+from app_organization.mod_backlog import views_project_tree
 
 
 urlpatterns = [
@@ -45,5 +46,7 @@ urlpatterns = [
     # backlog
     path('project_backlog_decide/<int:pro_id>/', views_backlog.project_backlog_decide, name='project_backlog_decide'),
     path('view_flat_backlog/<int:pro_id>/<int:parent_id>/', views_backlog.view_flat_backlog, name='view_flat_backlog'),
+    
+    path('view_project_tree_backlog/<int:pro_id>/', views_project_tree.view_project_tree_backlog, name='view_project_tree_backlog'),
     
 ]
