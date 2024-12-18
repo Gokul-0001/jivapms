@@ -394,7 +394,7 @@
                         <div class="kanban-swimlane" id="todo">
                             {% for item in todo_items %}
                                 <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
-                                    <h5>{{ item }}:{{item.id}}</h5>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -409,7 +409,7 @@
                         <div class="kanban-swimlane" id="in-progress">
                             {% for item in in_progress_items %}
                                 <div class="kanban-card in-progress" data-id="{{ item.id }}">
-                                    <h5>{{ item }}:{{item.id}}</h5>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -424,7 +424,7 @@
                         <div class="kanban-swimlane" id="blocked">
                             {% for item in blocked_items %}
                                 <div class="kanban-card blocked" data-id="{{ item.id }}">
-                                    <h5>{{ item }}:{{item.id}}</h5>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -439,7 +439,7 @@
                         <div class="kanban-swimlane" id="done">
                             {% for item in done_items %}
                                 <div class="kanban-card done" data-id="{{ item.id }}">
-                                    <h5>{{ item }}:{{item.id}}</h5>
+                                    <h5>{{ item }}:{{item.id}}:{{item.backlog.id}}</h5>
                                     <p>{{ item.description | display_if_not_none }}</p>
                                     <span class="tag">{{ item.backlog.parent | display_if_not_none }}</span>
                                 </div>
@@ -538,7 +538,7 @@
             ui.item.data("start-state", toStateId);
             ui.item.data("from-column", destColumn);
 
-            if (fromColumn == 'Backlog') {
+            if (fromColumn == 'Backlog' || destColumn == 'Backlog') {
                 refreshKanbanBoard();
             }
         }

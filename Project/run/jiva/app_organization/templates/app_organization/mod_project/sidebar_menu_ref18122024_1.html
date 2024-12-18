@@ -19,12 +19,18 @@
             <i class="material-icons" style="font-size: 18px;">map</i>
             <span>Roadmap</span>
         </a>     
-       
+        <a href="{% url 'view_flat_backlog' project.id 0 %}" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">checklist</i>
+            <span>Backlog</span>
+        </a>     
         <a href="{% url 'view_project_tree_backlog' project.id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">checklist</i>
             <span>Exp Backlog</span>
         </a>     
-       
+        <a href="{% url 'view_project_board' project.id %}?project_id={{project.id}}" class="nav-link" >
+            <i class="bi bi-kanban"></i>
+            <span>Board</span>
+        </a>
         <a href="{% url 'view_project_tree_board' project.id %}?project_id={{project.id}}" class="nav-link" >
             <i class="bi bi-kanban"></i>
             <span>Exp Board</span>

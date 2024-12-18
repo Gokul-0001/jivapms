@@ -136,7 +136,7 @@ def index(request):
             'member': membership.member,          # Include member
             'project': membership.project,        # Include project
             'project_role': membership.project_role,  # Include project_role
-        })
+        }) if membership.project.active == True else None
     # Assign template based on role
     template_url = get_template_for_role(context)
     context_json = context

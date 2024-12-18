@@ -577,16 +577,13 @@ def column_to_backlog_update(positions, board_id, this_card_id, from_column, fro
         card.state = None
         card.position = 0  # Reset position in column
         card.save()
-        logger.debug(f">>> === {card}{card.id} moved to Backlog === <<<")
-        logger.debug(f">>> === {card}{card.backlog.id}{positions} moved to Backlog === <<<")
         # Update positions in the Backlog
         for pos in positions:
             backlog_card_id = pos.get('card_id')
             position = pos.get('position')
-            if backlog_card_id == card.id:
-                logger.debug(f">>> === {card}{backlog_card_id}=={card.backlog.id} moved to Backlog === <<<")
+            if backlog_card_id == card.backlog_id:
                 # Update position of the moved backlog item
-                Backlog.objects.filter(id=card.backlog.id).update(position=position)
+                Backlog.objects.filter(id=backlog_card_id).update(position=position)
             else:
                 # Update positions of other backlog items
                 Backlog.objects.filter(id=backlog_card_id).update(position=position)
@@ -597,7 +594,6 @@ def column_to_backlog_update(positions, board_id, this_card_id, from_column, fro
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({"success": False, "error": str(e)})
-
 
 
 def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id): 
@@ -661,24 +657,159 @@ def ajax_update_project_board_card_state(request):
       
         
         if from_state_id == 0 and from_state_id == to_state_id and to_state_id == 0:
-            #logger.debug(f">>> === Backlog: Within column movement === <<<")
+            #print(f">>> === Backlog: Within column movement === <<<")
             within_backlog_update(positions, board_id, card_id)
         elif from_state_id !=0 and to_state_id != 0 and from_state_id == to_state_id:
-            #logger.debug(f">>> === {dest_column}: Within column movement  === <<<")
+            #print(f">>> === {dest_column}: Within column movement  === <<<")
             within_column_update(positions, board_id, card_id, dest_column, to_state_id)
         elif from_state_id !=0 and to_state_id != 0 and from_state_id != to_state_id:
-            #logger.debug(f">>> === {from_column} to {dest_column}: Between column movement  === <<<")
+            #print(f">>> === {from_column} to {dest_column}: Between column movement  === <<<")
             column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
         elif from_state_id == 0 and to_state_id != 0:
-            #logger.debug(f">>> ===  {from_column} to {dest_column}: Between column movement (from Backlog) === <<<")
+            #print(f">>> ===  {from_column} to {dest_column}: Between column movement (from Backlog) === <<<")
             backlog_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
         elif to_state_id == 0 and from_state_id != 0:
-            #logger.debug(f">>> ===   {from_column} to {dest_column}: Betwee Column Movement (to Backlog)   === <<<")
+            #print(f">>> ===   {from_column} to {dest_column}: Betwee Column Movement (to Backlog)   === <<<")
             column_to_backlog_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
 
         return JsonResponse({"success": True})
 
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@login_required
+def ajax_update_project_board_card_state_REF(request):
+    ################################# REF #################################
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            card_id = data.get('card_id')
+            board_id = data.get('board_id')
+            from_state_id = data.get('from_state_id')
+            to_state_id = data.get('to_state_id')
+                      
+            # position 
+            positions = data.get('dest_positions')
+            dest_column = data.get('save_dest_column')
+            got_project_id = data.get('send_project_id')
+            got_board_id = data.get('send_board_id')
+            print(f">>> === GENERAL CHECK dest_column: {dest_column}: position:{positions} === <<<")
+            all_states = ProjectBoardState.objects.filter(board_id=board_id).values_list('id', flat=True)
+            print(f"Available states for board {board_id}: {list(all_states)}")
+            print(f"Incoming dest_column: {dest_column}")
+            if dest_column and dest_column != 'Backlog':
+                dest_state_qs = ProjectBoardState.objects.filter(name=dest_column, board_id=board_id)
+                if dest_state_qs.exists() and dest_state_qs.count() == 1:
+                    dest_state = dest_state_qs.first()
+                    print(f"Destination State: ID {dest_state.id}, Name: {dest_state.name}")
+                    try:
+                        with transaction.atomic():
+                            for position in positions:
+                                card_id = position['card_id']
+                                position_value = position['position']
+
+                                card = ProjectBoardCard.objects.get(id=card_id, board_id=board_id)
+                                card.state_id = dest_state.id
+                                card.position = position_value
+                                card.save()
+
+                                print(f"Updated Card ID {card_id} to State {dest_state.id} at Position {position_value}")
+                    except Exception as e:
+                        print(f"Error during update: {e}")
+                        return JsonResponse({"error": "Failed to update cards"}, status=500)
+                else:
+                    print("Error: Multiple or no states found for the given name and board.")
+                    return JsonResponse({"error": "State is ambiguous or not found"}, status=400)
+
+                    
+                   
+            
+            if from_state_id == 0:
+                from_state_id = None
+
+                # Validate required fields
+                if not (card_id and to_state_id and board_id):
+                    return JsonResponse({"error": "Missing required fields"}, status=400)
+
+                try:
+                    # Check if the card already exists or create it
+                    if to_state_id != 0:
+                        card, created = ProjectBoardCard.objects.get_or_create(
+                            backlog_id=card_id,  # Use card_id as backlog_id
+                            board_id=board_id,
+                            defaults={
+                                'state_id': to_state_id,
+                            }
+                        )
+
+                    if created:
+                        print(f"Created new ProjectBoardCard: {card}")
+                    else:
+                        print(f"Found existing ProjectBoardCard: {card}")
+                except Exception as e:
+                    print(f"Error creating or retrieving ProjectBoardCard: {e}")
+                    return JsonResponse({"error": str(e)}, status=500)
+                
+                # pbc_count = ProjectBoardCard.objects.all().count()
+                # print(f">>> === pbc_count: {pbc_count}: {card} === <<<")
+
+                if not created and to_state_id != 0:
+                    # If the card already exists, update the state
+                    
+                    card.state_id = to_state_id
+                    card.save()
+
+                return JsonResponse({"success": True, "created": created})                
+            else:
+                # Fetch the card and states
+                card = ProjectBoardCard.objects.get(id=card_id)
+                from_state = ProjectBoardState.objects.get(id=from_state_id)
+                to_state = None
+                if to_state_id == 0:
+                    to_state = None
+                    print(f">>> === to_state_id: {to_state_id} === <<<")
+                else:
+                    to_state = ProjectBoardState.objects.get(id=to_state_id)
+                # Validate that the card belongs to the current state
+                if card.state != from_state:
+                    print(f"Card state mismatch: {card.state} != {from_state}")
+                    #return JsonResponse({"error": "Card state mismatch"}, status=400)
+                
+                # Update the card's state
+                
+                card.state = to_state
+                card.save()
+                
+                # Log the transition
+                created_st_entry = ProjectBoardStateTransition.objects.create(
+                    card=card.backlog,
+                    from_state=from_state,
+                    to_state=to_state,
+                    transition_time=now(),
+                )
+                
+                # update the status of the backlog item in text for display purposes
+                to_state_name = 'Backlog' if to_state_id == 0 else to_state.name
+              
+                card.backlog.status = to_state_name
+                card.backlog.save()
+                
+             
+
+                return JsonResponse({
+                    "message": "Card state updated successfully",
+                    "card_id": card.id,
+                    "from_state": from_state.name,
+                    "to_state": to_state_name,
+                })
+
+        except ProjectBoardCard.DoesNotExist:
+            return JsonResponse({"error": "Card does not exist"}, status=404)
+        except ProjectBoardState.DoesNotExist:
+            return JsonResponse({"error": "State does not exist"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+
 
 
 def get_cumulative_flow_data(board_id):
