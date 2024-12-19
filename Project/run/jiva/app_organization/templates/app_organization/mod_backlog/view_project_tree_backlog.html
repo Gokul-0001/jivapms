@@ -740,7 +740,7 @@
                 var arrayOrder = $('#sortable').sortable('toArray');
                 //alert(arrayOrder);
                 $.ajax({
-                url: '/common/common_ajax/ajax_update_model_list_sorted/',
+                url: '/common/common_ajax/ajax_project_tree_sorted/',
                 type: 'POST',
                 data : {
                     'csrfmiddlewaretoken': "{{ csrf_token }}",

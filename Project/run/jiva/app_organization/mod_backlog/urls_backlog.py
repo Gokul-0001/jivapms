@@ -49,4 +49,6 @@ urlpatterns = [
     
     path('view_project_tree_backlog/<int:pro_id>/', views_project_tree.view_project_tree_backlog, name='view_project_tree_backlog'),
     
+    path('ajax_project_tree_sorted/', views_project_tree.ajax_project_tree_sorted, name='ajax_project_tree_sorted'),
+    
 ]

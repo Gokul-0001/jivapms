@@ -21,6 +21,34 @@ module_name = 'backlog'
 module_path = f'mod_backlog'
 
 
+@login_required
+def ajax_project_tree_sorted(request):
+    if request.method == 'POST':
+        ajax_data = request.POST['sorted_list_data']
+        model_name = request.POST['model_name']
+        given_app_name = app_name
+        if 'app_name' in request.POST:            
+            given_app_name = request.POST['app_name']
+        new_data = ajax_data.replace("[",'')
+        new_data = new_data.replace("]",'')
+        sorted_list = new_data.split(",")
+        seq = 1
+        
+        #model_class = globals()[model_name]
+        model_class = apps.get_model(given_app_name, model_name)
+        logger.debug(f">>> === AJAX UPDATE SORTED === <<<")
+        for item in sorted_list:
+            str = item.replace('"','')
+            position = str.split('_')
+            logger.debug(f">>> === AJAX UPDATE SORTED {position} === <<<")
+            model_class.objects.filter(pk=position[0]).update(position=seq, author=request.user)
+            seq = seq + 1
+        context = {'page': 'Sorted Value', 
+                   'active_tab': 'sorted_value',
+                   'ajax_data': ajax_data}
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
+
 
 # Sequence the backlog items for addition at top
 def seq_add_to_top(ajax_data):
@@ -125,13 +153,13 @@ def view_project_tree_backlog(request, pro_id):
     backlog_epic_items = Backlog.objects.filter(pro=project, type__in=include_types, active=True)
     #backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog)
     backlog_epic_items_count = backlog_epic_items.count()
-    logger.debug(f">>> === BACKLOG ITEMS: {backlog_epic_items_count} {backlog_epic_items} === <<<")
+    #logger.debug(f">>> === BACKLOG ITEMS: {backlog_epic_items_count} {backlog_epic_items} === <<<")
 
 
     # 3.4 Get the epics of this backlog
     epics_in_backlog = Backlog.objects.filter(pro=project, type=epic_type_id, active=True)
     #epics_in_backlog = {epic.id: epic for epic in backlog_epic_items if epic.type.id == epic_type_id}
-    logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
+    #logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
     
     backlog_summary = request.POST.get('backlog_summary')
     add_action = request.POST.get('add_action')
@@ -140,13 +168,13 @@ def view_project_tree_backlog(request, pro_id):
     selected_items = request.POST.get("selected_items", "").split(",")
     type_of_bi = request.POST.get("type")
     ajax_data = request.POST.get("seq_list_data")
-    logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
-    display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
-    logger.debug(f">>> === DISPLAY DATA : {display_backlog_items} === <<<")
+    #logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
+    display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types).order_by('position')
+    #logger.debug(f">>> === DISPLAY DATA : {display_backlog_items} === <<<")
     test_display = None
     
     if action == 'assign':
-        logger.debug(f">>> === Assigning Items: {selected_items} to Collection: {collection_id} === <<<")
+        #logger.debug(f">>> === Assigning Items: {selected_items} to Collection: {collection_id} === <<<")
         for each_item in selected_items:
             backlog_item = Backlog.objects.get(id=each_item)
             if collection_id == 'Others':
@@ -157,11 +185,11 @@ def view_project_tree_backlog(request, pro_id):
                 backlog_item.parent = Backlog.objects.get(id=collection_id)
             backlog_item.save() 
       
-        logger.debug(f">>> === Items {selected_items} assigned to collection {collection_id} successfully! === <<<")
+        #logger.debug(f">>> === Items {selected_items} assigned to collection {collection_id} successfully! === <<<")
         return redirect("view_project_tree_backlog", pro_id=pro_id)
        
     elif action == "unassign":
-        logger.debug(f">>> === UnAssigning Items: {selected_items} from Collection: {collection_id} === <<<")
+        #logger.debug(f">>> === UnAssigning Items: {selected_items} from Collection: {collection_id} === <<<")
         for each_item in selected_items:
             backlog_item = Backlog.objects.get(id=each_item)
             backlog_item.parent = project_backlog
@@ -169,7 +197,7 @@ def view_project_tree_backlog(request, pro_id):
                 backlog_item.active = True
             backlog_item.save()
         #display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
-        logger.debug(f">>> === Items {selected_items} unassigned from collection {collection_id} successfully! === <<<")
+        #logger.debug(f">>> === Items {selected_items} unassigned from collection {collection_id} successfully! === <<<")
         
         return redirect("view_project_tree_backlog", pro_id=pro_id)
     else:        
@@ -178,9 +206,9 @@ def view_project_tree_backlog(request, pro_id):
     
     
     if add_action == 'add':
-        logger.debug(f">>> === ADD ACTION: {add_action} === <<<")
+        #logger.debug(f">>> === ADD ACTION: {add_action} === <<<")
         if 'add_to_top' in request.POST:
-            logger.debug(f">>> === ADD TO TOP:  === <<<")
+            #logger.debug(f">>> === ADD TO TOP:  === <<<")
             
             # Create the new backlog item with a temporary position
             create_backlog_item = Backlog.objects.create(
@@ -204,11 +232,11 @@ def view_project_tree_backlog(request, pro_id):
             # Regenerate display_backlog_items
             backlog_epic_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
             seq_add_to_top(ajax_data)
-            logger.debug(f">>> === ADD TO TOP: {create_backlog_item} {create_backlog_item.id} === <<<")
+            #logger.debug(f">>> === ADD TO TOP: {create_backlog_item} {create_backlog_item.id} === <<<")
 
             
         if 'add_to_bottom' in request.POST:
-            logger.debug(f">>> === ADD TO BOTTOM:  === <<<")
+            #logger.debug(f">>> === ADD TO BOTTOM:  === <<<")
 
             # Find the current maximum position in the existing items
             max_position = Backlog.objects.filter(pro=project, parent=project_backlog, active=True).aggregate(
@@ -226,17 +254,17 @@ def view_project_tree_backlog(request, pro_id):
             )
 
             # Regenerate display_backlog_items
-            logger.debug(f">>> === ADD TO BOTTOM: {create_backlog_item} {create_backlog_item.id} === <<<")
+            #logger.debug(f">>> === ADD TO BOTTOM: {create_backlog_item} {create_backlog_item.id} === <<<")
             return redirect("view_project_tree_backlog", pro_id=pro_id)
 
 
     
     # test
-    logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
+    #logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
     
     
     backlog_items_count = len(display_backlog_items)
-    logger.debug(f">>> === BACKLOG ITEMS COUNT: {display_backlog_items} === <<<")
+    #logger.debug(f">>> === BACKLOG ITEMS COUNT: {display_backlog_items} === <<<")
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
