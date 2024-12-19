@@ -55,7 +55,8 @@ def super_user_stats(request):
 
 def index(request):
     user = request.user
-    this_member = Member.objects.get(user=user, active=True)
+    #this_member = Member.objects.get(user=user, active=True)
+    this_member = None
     organization = Organization.objects.filter(active=True)
     framework = Framework.objects.filter(active=True)
     public_frameworks = Framework.objects.filter(public_framework=True, active=True)
@@ -87,6 +88,7 @@ def index(request):
 
     if user.is_authenticated:
         logger.debug(f"User authenticated: {user.id}")
+        this_member = Member.objects.get(user=user, active=True)
         if user.is_superuser:
             context['role'] = COMMON_ROLE_CONFIG["SUPER_USER"]["name"]
             super_user_stats(request)
