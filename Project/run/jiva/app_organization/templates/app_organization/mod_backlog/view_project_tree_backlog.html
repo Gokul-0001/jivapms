@@ -431,7 +431,7 @@
             <div class="collection-panel-header">
                 <h4>Epics</h4>
                 &nbsp;
-                <a href="{% url 'list_collections' project.id %}" class="btn btn-sm btn-primary">Manage</a>
+                <a href="{% url 'list_backlogs' project.id 0 %}" class="btn btn-sm btn-primary">Manage</a>
                
                 <button onclick="toggleCollectionPanel()">Close</button>
             </div>
@@ -447,7 +447,7 @@
                 </li>
 
                 <!-- COLLECTION FOR BACKLOG -->
-                {% for collection in collections %}
+                {% for collection in epics_in_backlog %}
                 <li>
                     <div class="collection-item">
                         <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.id}}')">{{collection.name}}</span>
@@ -583,15 +583,15 @@
                                     </option>
                                 {% endfor %}
                             </select>
-                            
+                            <input type="hidden" id="form-seq-list-data" name="seq_list_data" value="">
                             <div class="add-button-container">
                                 <!-- <input type="submit" name="add_to_top" value="Add to Top" class="btn btn-sm btn-primary me-2">
                                 <input type="submit" name="add_to_bottom" value="Add to Bottom" class="btn btn-sm btn-primary me-2">
                                  -->
-                                 <button type="submit" name="add_to_top" class="btn btn-sm btn-success me-2">
+                                 <button type="submit" name="add_to_top" class="btn btn-sm btn-success me-2"  onclick="submitWithOrder('add_to_top')">
                                     <i class="bi bi-arrow-up"></i> Add to Top
                                 </button>
-                                <button type="submit" name="add_to_bottom" class="btn btn-sm btn-warning me-2">
+                                <button type="submit" name="add_to_bottom" class="btn btn-sm btn-warning me-2" onclick="submitWithOrder('add_to_bottom')">
                                      Add to Bottom <i class="bi bi-arrow-down"></i>
                                 </button>
                                   {% if backlog_deleted %}
@@ -627,7 +627,7 @@
        
        
         <tbody class="backlog_body sortable-tbody" id="sortable">           
-            {% for id, item in display_backlog_items.items %}
+            {% for item in display_backlog_items %}
             <tr class="backlog_item select-item" id="{{item.id}}_{{forloop.counter}}" data-backlog-item-id="{{item.id}}" onclick="toggleItemSelection(this)">
                 <td class="drag-handle" width="2%">
                     <i class="bi bi-grip-vertical"></i>
@@ -639,7 +639,7 @@
                 ondblclick="makeEditable(this);"
                 onblur="save_element_text(this, '{{id}}', 'app_organization', 'backlog', 'name');"
                 >{{item.name|display_if_not_none}}</td>
-                <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
+                <td id="display_parent" width="14%" class="display_parent la">{{item.position}}: {{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
                 <td id="display_key" width="4%" class="display_key ra">BI-{{item.id}}</td>
@@ -663,39 +663,65 @@
     <input type="hidden" name="read_action" id="form-action">
     <input type="hidden" name="collection_id" id="form-collection-id">
     <input type="hidden" name="selected_items" id="form-selected-items">
+
 </form>
 </div>
+<script>
+    function submitWithOrder(actionName) {
+    // Get the current order of items
+    const arrayOrder = $('#sortable').sortable('toArray');
+    const sortedListData = JSON.stringify(arrayOrder);
 
+    // Set the serialized order in the hidden input field
+    document.getElementById('form-seq-list-data').value = sortedListData;
 
-    <script>
-        $(".sortable_table").find("tbody").sortable({
-          items: "> tr",
-          handle: ".drag-handle",
-          appendTo: "parent",
-          cancel: "[contenteditable]",
-          update: function(event, ui) {
-                  var serialOrder = $('#sortable').sortable('serialize');
-                  var arrayOrder = $('#sortable').sortable('toArray');
-                  //alert(arrayOrder);
-                  $.ajax({
-                    url: '/common/common_ajax/ajax_update_model_list_sorted/',
-                    type: 'POST',
-                    data : {
-                      'csrfmiddlewaretoken': "{{ csrf_token }}",
-                      'model_name': 'Backlog',
-                      'app_name': 'app_organization',
-                      'sorted_list_data': JSON.stringify(arrayOrder),
-                      
-                    },
-                    dataType: 'json',
-                    success: function(data) {
-                      console.log(data);
-                    }
-                  })
+    // Debug: alert or log the serialized order
+    console.log(sortedListData);
+    alert(sortedListData);
+
+    // Create a hidden form element for the action
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = actionName;
+    actionInput.value = 'true';
+
+    // Append the action input to the form and submit it
+    const form = document.querySelector('.add-backlog-container form') || document.querySelector('.add-backlog-container');
+    form.appendChild(actionInput);
+    form.submit();
+}
+
+</script>
+
+<script>
+    $(".sortable_table").find("tbody").sortable({
+        items: "> tr",
+        handle: ".drag-handle",
+        appendTo: "parent",
+        cancel: "[contenteditable]",
+        update: function(event, ui) {
+                var serialOrder = $('#sortable').sortable('serialize');
+                var arrayOrder = $('#sortable').sortable('toArray');
+                //alert(arrayOrder);
+                $.ajax({
+                url: '/common/common_ajax/ajax_update_model_list_sorted/',
+                type: 'POST',
+                data : {
+                    'csrfmiddlewaretoken': "{{ csrf_token }}",
+                    'model_name': 'Backlog',
+                    'app_name': 'app_organization',
+                    'sorted_list_data': JSON.stringify(arrayOrder),
+                    
+                },
+                dataType: 'json',
+                success: function(data) {
+                    console.log(data);
                 }
-        });
-    </script>
-    
+                })
+            }
+    });
+</script>
+
 
 <script>
     // Focus on the backlog summary input field on page load
@@ -773,14 +799,18 @@ function assignToCollection(collectionId) {
     document.getElementById('form-action').value = 'assign';
     document.getElementById('form-collection-id').value = collectionId;
     document.getElementById('form-selected-items').value = Array.from(selectedItems).join(',');
+    
 
     // Submit the form
     form.submit();
+   
+
     // // Close the panel
     toggleCollectionPanel();
 
     // // Clear selection (optional)
     // clearSelection();
+
 }
 
 
@@ -798,8 +828,9 @@ function unassignFromCollection(collectionId) {
     document.getElementById('form-selected-items').value = Array.from(selectedItems).join(',');
 
     // Submit the form
-  
+    
     form.submit();
+    
 }
 
 

@@ -21,73 +21,19 @@ module_name = 'backlog'
 module_path = f'mod_backlog'
 
 
-def create_display_of_backlog_itemsx(backlog_epic_items, epic_type_id):
-    display_backlog_items = {}
-    counter = 1
-    for bi in backlog_epic_items:
-        if bi.type.id == epic_type_id:
-            epic_children = bi.get_active_children()
-            logger.debug(f">>> === EPIC: {bi} {bi.id} === <<<")
-            for ec in epic_children:
-                logger.debug(f">>> === EPIC CHILDREN: {ec} {ec.id} === <<<")
-                ec.position = counter
-                ec.save()
-                display_backlog_items[ec.id] = ec
-                counter += 1
-        else:
-            logger.debug(f">>> === BACKLOG ITEM: {bi} {bi.id} === <<<")
-            bi.position = counter
-            bi.save()
-            display_backlog_items[bi.id] = bi
-            counter += 1
 
-    return display_backlog_items
-
-def create_display_of_backlog_itemsx1(backlog_epic_items, epic_type_id):
-    display_backlog_items = {}
-    backlog_items_sorted = sorted(backlog_epic_items, key=lambda x: x.position)  # Sort by position
-    counter = 1
-    for bi in backlog_items_sorted:
-        if bi.type.id == epic_type_id:
-            epic_children = bi.get_active_children()
-            logger.debug(f">>> === EPIC: {bi} {bi.id} === <<<")
-            for ec in epic_children:
-                logger.debug(f">>> === EPIC CHILDREN: {ec} {ec.id} === <<<")
-                display_backlog_items[ec.id] = ec
-        else:
-            logger.debug(f">>> === BACKLOG ITEM: {bi} {bi.id} === <<<")
-            display_backlog_items[bi.id] = bi
-        counter += 1
-
-    return display_backlog_items
-
-def create_display_of_backlog_items(backlog_epic_items, epic_type_id):
-    """
-    Create a sorted display of backlog items, including non-Epic items and children of Epics.
-
-    Args:
-        backlog_epic_items (QuerySet): The list of backlog items.
-        epic_type_id (int): The type ID for Epic items.
-
-    Returns:
-        dict: A dictionary of sorted backlog items by position.
-    """
-    display_backlog_items = []
-
-    # Include non-Epic items and children of Epics
-    for bi in backlog_epic_items:
-        if bi.type.id == epic_type_id:  # If it's an Epic, add only its children
-            epic_children = bi.get_active_children()
-            display_backlog_items.extend(epic_children)
-        else:  # Add non-Epic items
-            display_backlog_items.append(bi)
-
-    # Sort all items by position
-    sorted_items = sorted(display_backlog_items, key=lambda x: x.position)
-
-    # Convert to dictionary for display
-    return {item.id: item for item in sorted_items}
-
+# Sequence the backlog items for addition at top
+def seq_add_to_top(ajax_data):
+    seq = 2
+    new_data = ajax_data.replace("[",'')
+    new_data = new_data.replace("]",'')
+    sorted_list = new_data.split(",")
+    for item in sorted_list:
+        str = item.replace('"','')
+        position = str.split('_')
+        Backlog.objects.filter(pk=position[0]).update(position=seq)
+        logger.debug(f">>> === SEQ ADD TO TOP: {position[0]} with {seq} === <<<")
+        seq += 1
 
 @login_required
 def view_project_tree_backlog(request, pro_id):
@@ -138,7 +84,8 @@ def view_project_tree_backlog(request, pro_id):
     
     # 2.2 Get the Epic level id and its children
     epic_type_id = bt_tree_name_and_id.get("Epic")
-    epic_type_node = BacklogType.objects.get(id=epic_type_id)
+    epic_type_node = BacklogType.objects.get(id=epic_type_id, active=True)
+    epic_type_parent = epic_type_node.parent
     epic_type_children = epic_type_node.get_active_children()
     backlog_types = epic_type_children
     backlog_types_count = backlog_types.count()
@@ -163,18 +110,73 @@ def view_project_tree_backlog(request, pro_id):
     # logger.debug(f">>> === BACKLOG ITEM LIST: {list_created} === <<<")
     
     # 3.3 Get the Backlog Items
-    backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog)
+    
+    strategic_theme_id = bt_tree_name_and_id.get("Strategic Theme")
+    initiative_id = bt_tree_name_and_id.get("Initiative")
+    exclude_types = [strategic_theme_id, initiative_id]
+    bug_type_id = bt_tree_name_and_id.get("Bug")
+    story_type_id = bt_tree_name_and_id.get("User Story")
+    tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+    feature_type_id = bt_tree_name_and_id.get("Feature")
+    component_type_id = bt_tree_name_and_id.get("Component")
+    capability_type_id = bt_tree_name_and_id.get("Capability")
+    include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]
+    #backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog).exclude(type__in=exclude_types)
+    backlog_epic_items = Backlog.objects.filter(pro=project, type__in=include_types, active=True)
+    #backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog)
     backlog_epic_items_count = backlog_epic_items.count()
     logger.debug(f">>> === BACKLOG ITEMS: {backlog_epic_items_count} {backlog_epic_items} === <<<")
 
-   
+
+    # 3.4 Get the epics of this backlog
+    epics_in_backlog = Backlog.objects.filter(pro=project, type=epic_type_id, active=True)
+    #epics_in_backlog = {epic.id: epic for epic in backlog_epic_items if epic.type.id == epic_type_id}
+    logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
     
     backlog_summary = request.POST.get('backlog_summary')
     add_action = request.POST.get('add_action')
     action = request.POST.get('read_action', '').strip().lower()
+    collection_id = request.POST.get("collection_id")
+    selected_items = request.POST.get("selected_items", "").split(",")
     type_of_bi = request.POST.get("type")
-    display_backlog_items = create_display_of_backlog_items(backlog_epic_items, epic_type_id)
+    ajax_data = request.POST.get("seq_list_data")
+    logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
+    display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
+    logger.debug(f">>> === DISPLAY DATA : {display_backlog_items} === <<<")
     test_display = None
+    
+    if action == 'assign':
+        logger.debug(f">>> === Assigning Items: {selected_items} to Collection: {collection_id} === <<<")
+        for each_item in selected_items:
+            backlog_item = Backlog.objects.get(id=each_item)
+            if collection_id == 'Others':
+                backlog_item.parent = project_backlog
+            elif collection_id == "deleted":
+                backlog_item.active = False
+            else:
+                backlog_item.parent = Backlog.objects.get(id=collection_id)
+            backlog_item.save() 
+      
+        logger.debug(f">>> === Items {selected_items} assigned to collection {collection_id} successfully! === <<<")
+        return redirect("view_project_tree_backlog", pro_id=pro_id)
+       
+    elif action == "unassign":
+        logger.debug(f">>> === UnAssigning Items: {selected_items} from Collection: {collection_id} === <<<")
+        for each_item in selected_items:
+            backlog_item = Backlog.objects.get(id=each_item)
+            backlog_item.parent = project_backlog
+            if collection_id == "deleted":
+                backlog_item.active = True
+            backlog_item.save()
+        #display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
+        logger.debug(f">>> === Items {selected_items} unassigned from collection {collection_id} successfully! === <<<")
+        
+        return redirect("view_project_tree_backlog", pro_id=pro_id)
+    else:        
+        logger.debug(f">>> === Invalid action: {action} === <<<")
+            
+    
+    
     if add_action == 'add':
         logger.debug(f">>> === ADD ACTION: {add_action} === <<<")
         if 'add_to_top' in request.POST:
@@ -191,7 +193,7 @@ def view_project_tree_backlog(request, pro_id):
             )
             
             # Update positions of existing items
-            Backlog.objects.filter(pro=project, parent=project_backlog).exclude(id=create_backlog_item.id).update(
+            Backlog.objects.filter(pro=project, parent=project_backlog, active=True).exclude(id=create_backlog_item.id).update(
                 position=models.F('position') + 1
             )
 
@@ -200,9 +202,8 @@ def view_project_tree_backlog(request, pro_id):
             create_backlog_item.save()
 
             # Regenerate display_backlog_items
-            backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog)
-            display_backlog_items = create_display_of_backlog_items(backlog_epic_items, epic_type_id)
-
+            backlog_epic_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
+            seq_add_to_top(ajax_data)
             logger.debug(f">>> === ADD TO TOP: {create_backlog_item} {create_backlog_item.id} === <<<")
 
             
@@ -210,7 +211,7 @@ def view_project_tree_backlog(request, pro_id):
             logger.debug(f">>> === ADD TO BOTTOM:  === <<<")
 
             # Find the current maximum position in the existing items
-            max_position = Backlog.objects.filter(pro=project, parent=project_backlog).aggregate(
+            max_position = Backlog.objects.filter(pro=project, parent=project_backlog, active=True).aggregate(
                 max_position=models.Max('position')
             )['max_position'] or 0  # Default to 0 if no items exist
 
@@ -225,19 +226,17 @@ def view_project_tree_backlog(request, pro_id):
             )
 
             # Regenerate display_backlog_items
-            backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog)
-            display_backlog_items = create_display_of_backlog_items(backlog_epic_items, epic_type_id)
-
             logger.debug(f">>> === ADD TO BOTTOM: {create_backlog_item} {create_backlog_item.id} === <<<")
+            return redirect("view_project_tree_backlog", pro_id=pro_id)
 
 
     
-    
-    # get backlog types
+    # test
+    logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
     
     
     backlog_items_count = len(display_backlog_items)
-
+    logger.debug(f">>> === BACKLOG ITEMS COUNT: {display_backlog_items} === <<<")
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
@@ -259,6 +258,10 @@ def view_project_tree_backlog(request, pro_id):
         'backlog_items_count': backlog_items_count,
         'backlog_types_count': backlog_types_count,
         'display_backlog_items': display_backlog_items,
+        
+        'epics_in_backlog': epics_in_backlog,
+        'epic_type_parent': epic_type_parent,
+
         
         'project_backlog_super_type_url': f"/org/backlog_super_type/list_backlog_super_types/{pro_id}/",
         'project_backlog_type_url': f"/org/backlog_type/list_backlog_types/{pro_id}/{project_backlog_type.id}/",
@@ -411,3 +414,5 @@ def create_tree_from_config(config, model_name, parent=None, project=None):
     
     return node
 
+
+# create an ajax function to edit, move, delete, add backlog item
