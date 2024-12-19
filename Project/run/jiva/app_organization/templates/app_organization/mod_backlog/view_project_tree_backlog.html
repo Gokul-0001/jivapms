@@ -385,6 +385,33 @@
 
 </style>
 
+<style>
+     /* ToDo Column */
+     .kanban-card.todo {
+        background-color: #bbdefb; /* Light Blue */
+        color: #0d47a1 !important;
+        
+    }
+
+    /* In Progress Column */
+    .kanban-card.in-progress {
+        background-color: #fff59d; /* Light Yellow */
+        color: #f57f17 !important; /* Dark Yellow Text */
+    }
+
+    /* Blocked Column */
+    .kanban-card.blocked {
+        background-color: lightcoral; /* Red */
+        color: #ffffff !important ;/* White Text */
+    }
+
+    /* Done Column */
+    .kanban-card.done {
+        background-color: #81c784; /* Light Green */
+        color: #1b5e20 !important; /* Dark Green Text */
+    }
+</style>
+
 <div class="content-wrapper mb-5">
 
     <div class="breadcrumb">
@@ -638,13 +665,22 @@
                 <td id="display_summary" width="32%" class="display_summary la"
                 ondblclick="makeEditable(this);"
                 onblur="save_element_text(this, '{{id}}', 'app_organization', 'backlog', 'name');"
-                >{{item.name|display_if_not_none}}</td>
+                ><b class="summary_of_bi">{{item.name|display_if_not_none}}</b></td>
                 <td id="display_parent" width="14%" class="display_parent la">{{item.position}}: {{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
                 <td id="display_key" width="4%" class="display_key ra">BI-{{item.id}}</td>
                 <td id="display_size" width="4%" class="display_size ca">{% if item.size != '0'  and item.size != None %}{{item.size|display_if_not_none}}{% endif %}</td>
-                <td id="display_status" width="8%" class="display_status ca">{{item.status|display_if_not_none}}</td>
+                <td id="display_status" width="8%" class="display_status ca">
+                    <button 
+                    {% if item.status == 'ToDo' %}class="btn btn-sm btn-primary" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
+                    {% elif item.status == 'In Progress' %}class="btn btn-sm btn-warning" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
+                    {% elif item.status == 'Blocked' %}class="btn btn-sm btn-danger" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
+                    {% elif item.status == 'Done' %}class="btn btn-sm btn-success" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
+                    {% elif item.status == 'Backlog' %}class="btn btn-sm btn-secondary" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
+                    {% endif %}
+                    >{{item.status|display_if_not_none}}</button>
+                </td>
                 <th id="display_select" width="2%" class="display_select ca">
                     <input type="checkbox" name="selected_items" value="{{item.id}}" class="select-item-checkbox">
                 </th> 
@@ -677,7 +713,7 @@
 
     // Debug: alert or log the serialized order
     console.log(sortedListData);
-    alert(sortedListData);
+    //alert(sortedListData);
 
     // Create a hidden form element for the action
     const actionInput = document.createElement('input');
