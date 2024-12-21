@@ -254,45 +254,6 @@
     border: 1px solid #81c784; /* Green Border */
 }
 
-.activity-card {
-    display: inline-block;
-    min-width: 50px;
-    max-width: 180px;
-    min-height: 80px;
-    background: lightcoral;
-    color: black;
-    border: 1px solid #bbb;
-    padding: 5px;
-    margin-right: 10px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    white-space: normal; /* Allow text to wrap within the item */
-    overflow: hidden; /* Prevent text from spilling out */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-    vertical-align: top;
-    box-sizing: border-box;
-    word-wrap: break-word; /* Break long words onto the next line */
-}
-.step-card {
-    display: inline-block;
-    min-width: 50px;
-    max-width: 180px;
-    min-height: 40px;
-    background: lightskyblue;
-    color: black;
-    border: 1px solid #bbb;
-    padding: 5px;
-    margin-right: 10px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    white-space: normal; /* Allow text to wrap within the item */
-    overflow: hidden; /* Prevent text from spilling out */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-    vertical-align: top;
-    box-sizing: border-box;
-    word-wrap: break-word; /* Break long words onto the next line */
-}
-
 
 
 /* Ensure the table has a minimum width to trigger horizontal scrolling */
@@ -336,48 +297,6 @@
 }
 
 
-.card {
-  position: relative;
-  background-color: #fffa65; /* Default Post-it yellow */
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 10px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15);
-  cursor: grab;
-  transition:  box-shadow 0.2s;
-  width: 250px; /* Fixed width for consistency */
-  word-wrap: break-word;
-}
-
-
-.card:hover {
-  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
-  transform: scale(1) rotate(0deg);
-}
-
-/* Optional: Add a small triangle to mimic the corner fold */
-.card::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 0;
-  height: 0;
-  border-left: 15px solid transparent;
-  border-bottom: 15px solid #e0e0e0;
-}
-
-/* Text styling */
-.card p {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 14px;
-  color: #333;
-}
-
-
-
 </style>
 <div class="page-container">
     <!-- Custom Top Menu -->
@@ -385,9 +304,10 @@
         <div class="top-menu">
             <!-- Left-Aligned Section (40%) -->
             <div class="left-section">
-               <b>Story Mapping: <a href="{% url 'list_projects' org_id %}">{{project.name}}</a></b>
-               &nbsp;&nbsp;
-               <a href="{% url 'view_project_tree_backlog' project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;"><b>Back to Backlog</b></a>
+                <b>Persona:</b>
+                <b id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
+                onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">
+                {% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}</b>
             </div>
 
             <!-- Right-Aligned Section (60%) -->
@@ -455,9 +375,9 @@
                                 <input type="text" name="detail" id="detail" >
                             </form>
                             <br>
-               
-                            {% for backlog_item in initial_backlog|filter_active %}
-                            {% if backlog_item.release_id == None and backlog_item.name != project_id_str  %}
+                            <hr>
+                            {% for backlog_item in backlog|filter_active %}
+                            {% if backlog_item.release_id == None  %}
                             <div class="backlog-item post-it draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"
                             ondblclick="makeEditable(this);" 
                             onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Backlog', 'name')"    
@@ -474,11 +394,8 @@
             </div>
             <!-- Right Sidebar (Story Map) -->
             <div class="col col-md-10 text-start story-map-container">
-                <i class="bi bi-person-heart"></i> &nbsp;
-                <b>Persona:</b>
-                <b id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
-                onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">
-                {% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}</b>
+                <i class="bi bi-list"></i> &nbsp;
+                <strong>Story Mapping:</strong>&nbsp;&nbsp;{{persona}}
                 <div class="table-responsive">
                 <table class="table table-bordered">
                     <!-- Activities Row --> 
@@ -490,10 +407,7 @@
                             {% with activity.activity_steps.all|filter_active|length as step_count %}
                                 {% if step_count > 0 %}
                                     <td colspan="{{ step_count }}" class="activity-header" style="border-left: 3px solid lightgrey;">
-                                        <div class="activity-card post-it activity-color"  id="activity-{{ activity.id }}"
-                                        ondblclick="makeEditable(this);"
-                                        onblur="save_element_text(this, '{{ activity.id }}', 'app_organization', 'Activity', 'name')"
-                                        >
+                                        <div class="step-item post-it activity-color" draggable="true" id="activity-{{ activity.id }}">
                                             {{ activity.name }} ({{ step_count }})
                                         </div>
                                     </td>
@@ -513,7 +427,7 @@
                             {% with activity.activity_steps.all|filter_active as steps %}
                                 {% for step in steps %}
                                     <td class="step-cell" style="border-left: {% if forloop.first %}3px solid lightgrey;{% else %}none;{% endif %}">
-                                        <div class="step-card post-it step-color" draggable="true" id="step-{{ step.id }}"
+                                        <div class="step-item post-it step-color" draggable="true" id="step-{{ step.id }}"
                                              ondblclick="makeEditable(this);"
                                              onblur="save_element_text(this, '{{ step.id }}', 'app_organization', 'Step', 'name')">
                                             {{ step.name }}
@@ -526,34 +440,27 @@
                 
                     <!-- Releases Rows -->
                     {% for release in releases %}
-                        {% for iteration in release.org_release_org_iterations.all|filter_active %}
                         <tr id="release-row-{{ release.id }}">
                             <td width="3%">
-                                <div class="content-header">{{ release.name }} / {{iteration.name}}</div>
+                                <div class="content-header">{{ release.name }}</div>
                             </td>
                             {% for activity in activities %}
                                 {% with activity.activity_steps.all|filter_active as steps %}
                                     {% for step in steps %}
                                         <td class="release-drop-zone"
                                             data-release-id="{{ release.id }}"
-                                            data-iteration-id="{{ iteration.id }}"
                                             data-activity-id="{{ activity.id }}"
                                             data-step-id="{{ step.id }}"
-                                            
                                             ondragover="allowDrop(event)"
                                             ondrop="drop(event)"
                                             style="border-left: {% if forloop.first %}3px solid lightgrey;{% else %}none;{% endif %};">
                                             
                                             {% for story_map in story_maps %}
-                                                {% if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id and story_map.iteration_id == iteration.id and story_map.active %}
-                                                    <div class="step-item post-it card draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
+                                                {% if story_map.release_id == release.id and story_map.activity_id == activity.id and story_map.step_id == step.id and story_map.active %}
+                                                    <div class="step-item post-it draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
                                                          ondblclick="makeEditable(this);" 
                                                          onblur="save_element_text(this, '{{ story_map.story_id }}', 'app_organization', 'Backlog', 'name')">
-                                                        {% for backlog_item in backlog %}
-                                                        {% if story_map.story_id == backlog_item.id %}
-                                                            {{ backlog_item.name }}
-                                                        {% endif %}
-                                                        {% endfor %}
+                                                        {{ story_map.story_name }}
                                                     </div>
                                                 {% endif %}
                                             {% endfor %}
@@ -564,7 +471,6 @@
                             <!-- Optional: Add extra empty cells if needed -->
                           
                         </tr>
-                        {% endfor %}
                     {% endfor %}
                 </table>
             </div>
@@ -603,15 +509,6 @@
 </script>
 
 <script>
-
-     // Event Delegation for dragstart
-     document.addEventListener('dragstart', function(event) {
-        if (event.target.classList.contains('draggable-backlog')) {
-            event.dataTransfer.setData("text/plain", event.target.id);
-        }
-    });
-
-
     function makeEditable(element) {
         element.contentEditable = true;
         element.focus();
@@ -678,11 +575,8 @@
     // Get the drop zone's data attributes
     const dropZone = event.target.closest('.release-drop-zone');
     const releaseId = dropZone.getAttribute('data-release-id');
-    const iterationId = dropZone.getAttribute('data-iteration-id');
     const activityId = dropZone.getAttribute('data-activity-id');
     const stepId = dropZone.getAttribute('data-step-id');
-
-
 
     // Optional: Visual feedback for successful drop
     dropZone.classList.add('dropped');
@@ -692,12 +586,10 @@
         project_id: {{ pro_id }},
         story_id: backlogId,
         release_id: releaseId,
-        //iteration_id: '-1', // To skip iteration
-        iteration_id: iterationId,
+        iteration_id: '-1', // To skip iteration
         activity_id: activityId,
         step_id: stepId,
         persona_id: {{ persona.id }},
-
     };
 
     // Send the AJAX request to the backend
@@ -721,16 +613,12 @@
             if (data.status === 'success') {
                 // Move the dragged element to the drop zone
                 const clonedElement = draggedElement.cloneNode(true);
-                // Remove backlog-related classes
-                clonedElement.classList.remove('backlog-item');
-
-                // Add release-related classes
-                clonedElement.classList.add('step-item', 'card');
                 dropZone.appendChild(clonedElement);
                 
                 // Optionally, remove the element from the source container
                 draggedElement.remove();
-                
+                // Refresh the specific release row
+                refreshReleaseRows([releaseId]);
 
                 console.log('Backlog item successfully assigned to the release.');
             } else {
@@ -793,11 +681,6 @@ function dropToBacklog(event) {
                 // Append the dragged element back to the backlog drop zone
                 const backlogDropZone = document.querySelector('.backlog-drop-zone');
                 clonedElement = draggedElement.cloneNode(true);
-                // Remove release-related classes
-                clonedElement.classList.remove('step-item', 'card');
-
-                // Add backlog-related classes
-                clonedElement.classList.add('backlog-item');
                 backlogDropZone.appendChild(clonedElement);
 
                 // Optional: Remove the dropped element from its previous release zone

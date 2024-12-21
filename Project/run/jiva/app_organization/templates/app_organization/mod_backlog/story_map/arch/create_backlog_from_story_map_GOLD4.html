@@ -254,45 +254,6 @@
     border: 1px solid #81c784; /* Green Border */
 }
 
-.activity-card {
-    display: inline-block;
-    min-width: 50px;
-    max-width: 180px;
-    min-height: 80px;
-    background: lightcoral;
-    color: black;
-    border: 1px solid #bbb;
-    padding: 5px;
-    margin-right: 10px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    white-space: normal; /* Allow text to wrap within the item */
-    overflow: hidden; /* Prevent text from spilling out */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-    vertical-align: top;
-    box-sizing: border-box;
-    word-wrap: break-word; /* Break long words onto the next line */
-}
-.step-card {
-    display: inline-block;
-    min-width: 50px;
-    max-width: 180px;
-    min-height: 40px;
-    background: lightskyblue;
-    color: black;
-    border: 1px solid #bbb;
-    padding: 5px;
-    margin-right: 10px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    white-space: normal; /* Allow text to wrap within the item */
-    overflow: hidden; /* Prevent text from spilling out */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-    vertical-align: top;
-    box-sizing: border-box;
-    word-wrap: break-word; /* Break long words onto the next line */
-}
-
 
 
 /* Ensure the table has a minimum width to trigger horizontal scrolling */
@@ -385,9 +346,10 @@
         <div class="top-menu">
             <!-- Left-Aligned Section (40%) -->
             <div class="left-section">
-               <b>Story Mapping: <a href="{% url 'list_projects' org_id %}">{{project.name}}</a></b>
-               &nbsp;&nbsp;
-               <a href="{% url 'view_project_tree_backlog' project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;"><b>Back to Backlog</b></a>
+                <b>Persona:</b>
+                <b id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
+                onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">
+                {% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}</b>
             </div>
 
             <!-- Right-Aligned Section (60%) -->
@@ -456,8 +418,8 @@
                             </form>
                             <br>
                
-                            {% for backlog_item in initial_backlog|filter_active %}
-                            {% if backlog_item.release_id == None and backlog_item.name != project_id_str  %}
+                            {% for backlog_item in backlog|filter_active %}
+                            {% if backlog_item.release_id == None  %}
                             <div class="backlog-item post-it draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"
                             ondblclick="makeEditable(this);" 
                             onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Backlog', 'name')"    
@@ -474,11 +436,8 @@
             </div>
             <!-- Right Sidebar (Story Map) -->
             <div class="col col-md-10 text-start story-map-container">
-                <i class="bi bi-person-heart"></i> &nbsp;
-                <b>Persona:</b>
-                <b id="persona_name" class="persona-name" ondblclick="makeEditable(this)"
-                onblur="save_element_text(this, '{{ persona.id }}', 'app_organization', 'Persona', 'name')">
-                {% if persona.name != '' %}{{ persona.name }}{% else %}Enter Persona name here...{% endif %}</b>
+                <i class="bi bi-list"></i> &nbsp;
+                <strong>Story Mapping:</strong>&nbsp;&nbsp;{{persona}}
                 <div class="table-responsive">
                 <table class="table table-bordered">
                     <!-- Activities Row --> 
@@ -490,10 +449,7 @@
                             {% with activity.activity_steps.all|filter_active|length as step_count %}
                                 {% if step_count > 0 %}
                                     <td colspan="{{ step_count }}" class="activity-header" style="border-left: 3px solid lightgrey;">
-                                        <div class="activity-card post-it activity-color"  id="activity-{{ activity.id }}"
-                                        ondblclick="makeEditable(this);"
-                                        onblur="save_element_text(this, '{{ activity.id }}', 'app_organization', 'Activity', 'name')"
-                                        >
+                                        <div class="step-item post-it activity-color" draggable="true" id="activity-{{ activity.id }}">
                                             {{ activity.name }} ({{ step_count }})
                                         </div>
                                     </td>
@@ -513,7 +469,7 @@
                             {% with activity.activity_steps.all|filter_active as steps %}
                                 {% for step in steps %}
                                     <td class="step-cell" style="border-left: {% if forloop.first %}3px solid lightgrey;{% else %}none;{% endif %}">
-                                        <div class="step-card post-it step-color" draggable="true" id="step-{{ step.id }}"
+                                        <div class="step-item post-it step-color" draggable="true" id="step-{{ step.id }}"
                                              ondblclick="makeEditable(this);"
                                              onblur="save_element_text(this, '{{ step.id }}', 'app_organization', 'Step', 'name')">
                                             {{ step.name }}
@@ -539,7 +495,6 @@
                                             data-iteration-id="{{ iteration.id }}"
                                             data-activity-id="{{ activity.id }}"
                                             data-step-id="{{ step.id }}"
-                                            
                                             ondragover="allowDrop(event)"
                                             ondrop="drop(event)"
                                             style="border-left: {% if forloop.first %}3px solid lightgrey;{% else %}none;{% endif %};">
@@ -549,11 +504,7 @@
                                                     <div class="step-item post-it card draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
                                                          ondblclick="makeEditable(this);" 
                                                          onblur="save_element_text(this, '{{ story_map.story_id }}', 'app_organization', 'Backlog', 'name')">
-                                                        {% for backlog_item in backlog %}
-                                                        {% if story_map.story_id == backlog_item.id %}
-                                                            {{ backlog_item.name }}
-                                                        {% endif %}
-                                                        {% endfor %}
+                                                        {{ story_map.story_name }}
                                                     </div>
                                                 {% endif %}
                                             {% endfor %}
@@ -682,8 +633,6 @@
     const activityId = dropZone.getAttribute('data-activity-id');
     const stepId = dropZone.getAttribute('data-step-id');
 
-
-
     // Optional: Visual feedback for successful drop
     dropZone.classList.add('dropped');
 
@@ -697,7 +646,6 @@
         activity_id: activityId,
         step_id: stepId,
         persona_id: {{ persona.id }},
-
     };
 
     // Send the AJAX request to the backend
@@ -730,7 +678,8 @@
                 
                 // Optionally, remove the element from the source container
                 draggedElement.remove();
-                
+                // Refresh the specific release row
+                refreshReleaseRows([releaseId]);
 
                 console.log('Backlog item successfully assigned to the release.');
             } else {
