@@ -1,0 +1,71 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<style>
+    .trash-icon {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      font-size: 24px;  /* Size of the icon */
+      cursor: pointer;
+      color: #707070;  /* Color of the icon */
+    }
+    .display_items {
+      font-size: 11px;
+      color: #707070;
+      display: inline-block;
+    
+    }
+</style>
+
+<form method="post">
+{% csrf_token %}
+<div class="content-wrapper">
+
+    {% include 'app_organization/mod_backlog/breadcrumb__backlogs.html' %}
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+    <table class="table">
+        <thead>
+            <tr>
+                <th id="header_type" width="2%" class="header_type">Type</th>
+                <th id="header_slno" width="2%" class="header_slno">#</th>
+                <th id="header_summary" width="63%" class="header_summary">Backlog Item</th>
+                <th id="header_parent" width="8%" class="header_parent">Parent</th>
+                <th id="header_release" width="10%" class="header_release">Release</th>
+                <th id="header_iteration" width="8%" class="header_iteration">Iteration</th>
+                <th id="header_size" width="2%" class="header_size">Size</th>
+                <th id="header_status" width="5%" class="header_status">Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td id="display_type" width="2%" class="display_type"></td>
+                <td id="display_slno" width="2%" class="display_slno"></td>
+                <td id="display_summary" width="63%" class="display_summary"></td>
+                <td id="display_parent" width="8%" class="display_parent"></td>
+                <td id="display_release" width="10%" class="display_release"></td>
+                <td id="display_iteration" width="8%" class="display_iteration"></td>
+                <td id="display_size" width="2%" class="display_size"></td>
+                <td id="display_status" width="5%" class="display_status"></td>
+            </tr>
+        </tbody>
+    </table>
+   
+     
+    </div>
+</div>
+
+{% endblock content %}
+
+

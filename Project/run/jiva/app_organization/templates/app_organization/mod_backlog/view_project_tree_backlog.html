@@ -442,7 +442,7 @@
         <div class="vertical-text-container">
             <a href="#" class="vertical-text vertical-text-top" id="collection-link"
             onclick="toggleCollectionPanel()"
-            >Epics</a>
+            >Collections</a>
             <a href="#" class="vertical-text" id="revision-link"
             onclick="toggleCollectionPanel()"
             >Release-Iterations</a>
@@ -456,7 +456,7 @@
         <!-- Sliding Panel -->
         <div id="collection-panel" class="collection-panel">
             <div class="collection-panel-header">
-                <h4>Epics</h4>
+                <h4>Collections</h4>
                 &nbsp;
                 <a href="{% url 'list_backlogs' project.id 0 %}" class="btn btn-sm btn-primary">Manage</a>
                
@@ -588,8 +588,19 @@
 
 
     <div class="contentbar mb-5" id="contentbar">
-        <div class="backlog_header"><b>Backlog</b>  &nbsp; <!-- HEADER of the backlog DISPLAY-->
-           <a href="{% url 'create_project_story_map' org_id project.id %}">Story Mapping</a>
+        <div class="backlog_header">
+            <!-- HEADER of the backlog DISPLAY-->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col col-md-6">
+                        <b>Backlog</b>
+                    </div>
+                    <div class="col col-md-6 ">
+                        <a href="{% url 'create_project_story_map' org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;"><b>Story Mapping</b></a>
+                    </div>
+                </div>
+            </div>
+            <!-- HEADER of the backlog DISPLAY-->           
         </div>
         <form action="" method="POST">
             {% csrf_token %}
@@ -601,7 +612,7 @@
                     <td id="input_summary" width="80%" class="input_summary la" colspan="8">
                         <div class="add-backlog-container">
                             <input type="text" id="backlog_summary" name="backlog_summary" placeholder="Enter backlog item" class="backlog-input me-2">
-                            <select name="type" id="type-select" class="form-select custom-select">                                
+                            <select name="type" id="type-select" class=" custom-select">                                
                                 {% for backlog_type in backlog_types %}
                                     <option value="{{ backlog_type.id }}"
                                         {% if backlog_type.name == 'User Story' %}selected{% endif %}
@@ -637,12 +648,12 @@
                 <th width="2%"><i class="bi bi-grip-vertical"></i></th>
                 <th id="header_slno" width="1%"style="text-align: center;">#</th>
                 <th id="header_type" width="2%" class="header_type ca">Type</th>                
-                <th id="header_summary" width="32%" class="header_summary la">Backlog Item 
+                <th id="header_summary" width="30%" class="header_summary la">Backlog Item 
                     <div class="display_backlog_count">{{backlog_items_count}} items</div></th>
                 <th id="header_parent" width="14%" class="header_parent la">Collection</th>
                 <th id="header_release" width="10%" class="header_release la">Release</th>
                 <th id="header_iteration" width="8%" class="header_iteration la">Iteration</th>
-                <th id="header_key" width="4%" class="header_key ra">ID</th>
+                <th id="header_key" width="6%" class="header_key ra">ID</th>
                 <th id="header_size" width="4%" class="header_size ca">Size</th>
                 <th id="header_status" width="8%" class="header_status ca">Status</th>
                 <th id="header_select" width="2%" class="header_select ca">
@@ -662,14 +673,14 @@
                 <td id="display_slno" width="1%" style="text-align: end;">{{forloop.counter}}</td>
                 <td id="display_type" width="2%" class="display_type ca" data-type="{{item.type}}">
                 </td>                
-                <td id="display_summary" width="32%" class="display_summary la"
+                <td id="display_summary" width="30%" class="display_summary la"
                 ondblclick="makeEditable(this);"
                 onblur="save_element_text(this, '{{id}}', 'app_organization', 'backlog', 'name');"
                 ><b class="summary_of_bi">{{item.name|display_if_not_none}}</b></td>
-                <td id="display_parent" width="14%" class="display_parent la">{{item.position}}: {{item.parent|display_if_not_none}}</td>
+                <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
-                <td id="display_key" width="4%" class="display_key ra">BI-{{item.id}}</td>
+                <td id="display_key" width="6%" class="display_key ra">BI-{{item.id}}</td>
                 <td id="display_size" width="4%" class="display_size ca">{% if item.size != '0'  and item.size != None %}{{item.size|display_if_not_none}}{% endif %}</td>
                 <td id="display_status" width="8%" class="display_status ca">
                     <button 

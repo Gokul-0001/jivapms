@@ -1,0 +1,252 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    #mpttTable {
+    counter-reset: level1;  /* Initial counter reset for the first level */
+    }
+
+    #mpttTable tr[data-level="1"] > td::before {
+        counter-reset: level2;  /* Each time a level 1 row is started, reset the second level counter */
+        counter-increment: level1;  /* Increment the level 1 counter */
+        content: counter(level1) ". ";  /* Display level 1 counter */
+    }
+
+    #mpttTable tr[data-level="2"] > td::before {
+        counter-reset: level3;  /* Reset the third level counter at each new level 2 row */
+        counter-increment: level2;  /* Increment level 2 counter */
+        content: counter(level1) "." counter(level2) ". ";  /* Display both level 1 and level 2 counters */
+    }
+
+    #mpttTable tr[data-level="3"] > td::before {
+        counter-increment: level3;  /* Increment the level 3 counter */
+        content: counter(level1) "." counter(level2) "." counter(level3) ". ";  /* Display full hierarchical numbering */
+    }
+</style>
+
+<style>
+     /* Styling the two-pane layout */
+     .left-pane {
+            width: 20%;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 2px solid #ddd;
+            padding: 15px;
+            background-color: #f8f9fa;
+            overflow-y: hidden; 
+            flex-shrink: 0;
+        }
+
+        .right-pane {
+            width: 80%;
+            height: 100vh;
+            padding: 15px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .story-item {
+            cursor: grab;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .dropzone {
+            min-height: 100px;
+            border: 2px dashed #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .dropzone:hover {
+            border-color: #007bff;
+            background-color: #e9ecef;
+        }
+
+        .table {
+            width: 100%;
+            text-align: center;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+        }
+
+        .sub-step-header {
+            font-size: 0.8rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .d-flex {
+    display: flex;
+    height: 100%; /* Ensure the layout takes full height */
+}
+
+.left-pane {
+    width: 20%;
+    height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Independent scrolling for the left pane */
+    border-right: 2px solid #ddd;
+    padding: 15px;
+    background-color: #f8f9fa;
+}
+
+.right-pane {
+    width: 80%;
+    height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Only one scrollbar for the right pane */
+    padding: 15px;
+}
+
+.table-responsive {
+    overflow-x: auto; /* Allow horizontal scrolling for wide tables */
+    overflow-y: visible; /* Ensure the table is fully visible */
+    display: block; /* Ensure proper layout for scrolling */
+}
+
+.table {
+    width: 100%;
+    text-align: center;
+}
+
+.table-responsive {
+    overflow-x: auto; /* Horizontal scroll for wide tables if needed */
+    overflow-y: visible; /* Ensure the table isn't clipped vertically */
+}
+</style>
+{% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
+<div class="content-wrapper">
+    <nav aria-label="breadcrumb" class="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
+        </ol>
+    </nav>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col col-md-8">
+                    <h2>Story Mapping Backlog</h2> 
+                </div>
+                <div class="col col-md-4 text-end">    
+                    <!-- Dropdown for switching styles -->
+                    
+                    <a href="{% url 'list_backlogs' pro_id ref_parent_id %}" class="btn btn-sm btn-primary"><b>List Backlog(s) </b></a>
+                   
+                </div>
+            </div>
+            
+            <!-- story mapping -->
+            <form action="" method="POST">
+            {% csrf_token %}        
+            <!-- add drag and drop -->
+            <div class="d-flex mb-5">
+                <!-- Left Pane: User Stories -->
+                <div class="left-pane">
+                    <h4>User Stories</h4>
+                    <ul id="story-list" class="list-group">
+                        {% for node, serial, parent_id in serialized_nodes %}
+
+                            {% if node.type.name == 'User Story' %}
+
+                            <li class="list-group-item story-item" draggable="true" data-story-id="{{ story.id }}">
+                                {{ node.name }}
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+            
+            <!-- Right Pane: Story Mapping Table -->
+            <div class="right-pane">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col col-md-4"><b class="h4">Story Mapping Exercise</b></div>
+                        <div class="col-md-4">
+                            <label for="personaSelector">Choose a Persona:</label>
+                            <select id="personaSelector" class="form-control">
+                                <option value="">-- Select Persona --</option>
+                                {% for persona in personae %}
+                                    <option value="{{ persona.id }}">{{ persona.name }}</option>
+                                {% endfor %}
+                            </select>
+                                      
+                        </div>
+                        <div class="col col-md-2"><a href="{% url 'list_personae' org_id %}">List Personas</a>
+                           
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Release/Iteration</th>
+                                <!-- Dynamically Generated Step Columns -->
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for release in releases %}
+                                {% for iteration in release.org_release_org_iterations.all|filter_active %}
+                                    <tr>
+                                        <td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>
+                                        <!-- Manually create dropzones for each potential step -->
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="1"></div>
+                                        </td>
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="2"></div>
+                                        </td>
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="3"></div>
+                                        </td>
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="4"></div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <!-- Drag-and-Drop Script -->
+   
+</div>
+
+{% endblock content %}

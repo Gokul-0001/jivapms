@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Roadmap</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #roadmap-container {
+            display: flex;
+            margin-top: 20px;
+        }
+        #epic-list {
+            width: 20%;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+        }
+        #gantt-chart-container {
+            width: 80%;
+            position: relative;
+        }
+        #timeline {
+            display: flex;
+            height: 50px;
+            border-bottom: 1px solid #ccc;
+        }
+        .timeline-month {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #ddd;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        #gantt-chart {
+            position: relative;
+            margin-top: 10px;
+        }
+        .gantt-row {
+            position: relative;
+            height: 30px;
+            margin: 5px 0;
+        }
+        .gantt-bar {
+            position: absolute;
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 5px;
+            cursor: move;
+        }
+        .gantt-bar .ui-resizable-e {
+            cursor: ew-resize;
+        }
+        .gantt-bar .ui-resizable-w {
+            cursor: ew-resize;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Roadmap</h1>
+    <div id="roadmap-container">
+        <div id="epic-list">
+            <h3>Epics</h3>
+            <!-- Epics will be dynamically loaded -->
+        </div>
+        <div id="gantt-chart-container">
+            <div id="timeline">
+                <!-- Timeline will be dynamically generated -->
+            </div>
+            <div id="gantt-chart">
+                <!-- Gantt rows will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Generate timeline dynamically based on the current month
+            const currentDate = new Date();
+            const timelineStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const timelineEnd = new Date(timelineStart.getFullYear() + 2, timelineStart.getMonth(), 1);
+
+            generateTimeline(timelineStart, timelineEnd);
+
+            // Sample epic data
+            const epics = [
+                { id: 1, name: "Epic 1", start_date: "2024-12-01", end_date: "2025-03-01" },
+                { id: 2, name: "Epic 2", start_date: "2025-01-15", end_date: "2025-06-15" },
+            ];
+
+            // Load epics into the list and Gantt chart
+            epics.forEach(epic => {
+                addEpicToList(epic);
+                addGanttRow(epic, timelineStart);
+            });
+
+            function generateTimeline(start, end) {
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                let current = new Date(start);
+
+                while (current <= end) {
+                    const monthName = months[current.getMonth()];
+                    const year = current.getFullYear();
+                    $('#timeline').append(`<div class="timeline-month">${monthName} ${year}</div>`);
+                    current.setMonth(current.getMonth() + 1);
+                }
+            }
+
+            function addEpicToList(epic) {
+                $('#epic-list').append(`
+                    <div class="epic" data-id="${epic.id}">
+                        <input type="text" value="${epic.name}" class="epic-name" data-id="${epic.id}" />
+                    </div>
+                `);
+
+                // Update epic name in the Gantt chart when edited
+                $(document).on('change', `.epic-name[data-id="${epic.id}"]`, function () {
+                    const newName = $(this).val();
+                    $(`.gantt-bar[data-id="${epic.id}"]`).text(newName);
+                });
+            }
+
+            function addGanttRow(epic, timelineStart) {
+                const start = new Date(epic.start_date);
+                const end = new Date(epic.end_date);
+                const daysFromStart = Math.floor((start - timelineStart) / (1000 * 60 * 60 * 24));
+                const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+
+                const ganttRow = `
+                    <div class="gantt-row">
+                        <div class="gantt-bar" data-id="${epic.id}" 
+                            style="left: ${daysFromStart * 2}px; width: ${totalDays * 2}px;">
+                            ${epic.name}
+                        </div>
+                    </div>
+                `;
+                $('#gantt-chart').append(ganttRow);
+
+                // Enable dragging and resizing
+                $(`.gantt-bar[data-id="${epic.id}"]`).draggable({
+                    axis: "x",
+                    grid: [2, 0],
+                    stop: function (event, ui) {
+                        const left = ui.position.left;
+                        const newStartDate = new Date(timelineStart);
+                        newStartDate.setDate(newStartDate.getDate() + left / 2);
+                        console.log(`Epic ${epic.id} new start date: ${newStartDate.toISOString().split('T')[0]}`);
+                    }
+                }).resizable({
+                    handles: "e, w",
+                    grid: [2, 0],
+                    stop: function (event, ui) {
+                        const width = ui.size.width;
+                        const newEndDate = new Date(timelineStart);
+                        newEndDate.setDate(newEndDate.getDate() + width / 2);
+                        console.log(`Epic ${epic.id} new end date: ${newEndDate.toISOString().split('T')[0]}`);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

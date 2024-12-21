@@ -1,0 +1,679 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    body {
+        font-size: 14px;
+    }
+    #mpttTable {
+    counter-reset: level1;  /* Initial counter reset for the first level */
+    }
+
+    #mpttTable tr[data-level="1"] > td::before {
+        counter-reset: level2;  /* Each time a level 1 row is started, reset the second level counter */
+        counter-increment: level1;  /* Increment the level 1 counter */
+        content: counter(level1) ". ";  /* Display level 1 counter */
+    }
+
+    #mpttTable tr[data-level="2"] > td::before {
+        counter-reset: level3;  /* Reset the third level counter at each new level 2 row */
+        counter-increment: level2;  /* Increment level 2 counter */
+        content: counter(level1) "." counter(level2) ". ";  /* Display both level 1 and level 2 counters */
+    }
+
+    #mpttTable tr[data-level="3"] > td::before {
+        counter-increment: level3;  /* Increment the level 3 counter */
+        content: counter(level1) "." counter(level2) "." counter(level3) ". ";  /* Display full hierarchical numbering */
+    }
+</style>
+
+<style>
+     /* Styling the two-pane layout */
+     .left-pane {
+            width: 20%;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 2px solid #ddd;
+            padding: 10px;
+            background-color: #f8f9fa;
+            overflow-y: hidden; 
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .right-pane {
+            width: 80%;
+            height: 100vh;
+            padding: 15px;
+            overflow-x: auto;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .story-item {
+            cursor: grab;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .dropzone,  #story-list {
+            min-height: 100px;
+            border: 2px dashed #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        #story-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dropzone:hover {
+            border-color: #007bff;
+            background-color: #e9ecef;
+        }
+
+        .table {
+            width: 100%;
+            text-align: center;
+        }
+
+        .table th, .table td {
+            vertical-align: top;
+        }
+
+        .sub-step-header {
+            font-size: 0.8rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .d-flex {
+    display: flex;
+    height: 100%; /* Ensure the layout takes full height */
+}
+
+.left-pane {
+    width: 20%;
+    height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Independent scrolling for the left pane */
+    border-right: 2px solid #ddd;
+    padding: 15px;
+    background-color: #f8f9fa;
+}
+
+.right-pane {
+    width: 80%;
+    height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Only one scrollbar for the right pane */
+    padding: 15px;
+}
+
+.table-responsive {
+    overflow-x: auto; /* Allow horizontal scrolling for wide tables */
+    overflow-y: visible; /* Ensure the table is fully visible */
+    display: block; /* Ensure proper layout for scrolling */
+}
+
+.table {
+    width: 100%;
+    text-align: center;
+    table-layout: auto;
+}
+
+</style>
+{% include 'app_organization/mod_backlog/new_excel_style_css.html' %}
+<div class="content-wrapper">
+    <nav aria-label="breadcrumb" class="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_organizations' %}">Organizations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'list_projects' project.org.id %}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project }}</li>
+        </ol>
+    </nav>
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col col-md-8">
+                    <h2>Story Mapping Backlog</h2> 
+                </div>
+                <div class="col col-md-4 text-end">    
+                    <!-- Dropdown for switching styles -->
+                    
+                    <a href="{% url 'list_backlogs' pro_id ref_parent_id %}" class="btn btn-sm btn-primary"><b>List Backlog(s) </b></a>
+                   
+                </div>
+            </div>
+            
+            <!-- story mapping -->
+            <form action="" method="POST">
+            {% csrf_token %}        
+            <!-- add drag and drop -->
+            <div class="d-flex mb-5">
+                <!-- Left Pane: User Stories -->
+                <div class="left-pane">
+                    <h4>User Stories</h4>
+                    <ul id="story-list" class="list-group dropzone story-list">
+                        {% for node, serial, parent_id in serialized_nodes %}
+                            {% if node.type.name == 'User Story' and node.id not in mapped_story_ids %}
+                            <li class="list-group-item story-item" draggable="true" data-story-id="{{ node.id }}">
+                                {{ node.name }}
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+            
+            <!-- Right Pane: Story Mapping Table -->
+            <div class="right-pane">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col col-md-4"><b class="h4">Story Mapping Exercise</b></div>
+                        <div class="col-md-4">
+                            <label for="personaSelector">Choose a Persona:</label>
+                            <select id="personaSelector" class="form-control">
+                                <option value="">-- Select Persona --</option>
+                                {% for persona in personae %}
+                                    <option value="{{ persona.id }}">{{ persona.name }}</option>
+                                {% endfor %}
+                            </select>
+                                      
+                        </div>
+                        <div class="col col-md-2"><a href="{% url 'list_personae' org_id %}">List Personas</a>
+                           
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <tr>
+                                    <th rowspan="2">Release/Iteration</th>
+                                  
+                                </tr>
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for release in releases %}
+                                {% for iteration in release.org_release_org_iterations.all|filter_active %}
+                                    <tr>
+                                        <td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>
+                                        <!-- Manually create dropzones for each potential step -->
+                                        <td>
+                                            <div class="dropzone" 
+                                                data-release-id="{{ release.id }}" 
+                                                data-iteration-id="{{ iteration.id }}" 
+                                                data-step-id="1"></div>
+                                        </td>
+                                       
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <!-- Drag-and-Drop Script -->
+   
+</div>
+</div>
+</form>
+<!-- Consolidated JavaScript Section -->
+<script>
+    // 1. Declare storyMappings using let to allow reassignment
+    let storyMappings = [
+        {% for mapping in mappings %}
+        {
+            storyName: "{{ mapping.story_name|escapejs }}",
+            storyId: {{ mapping.story_id }},
+            releaseId: {{ mapping.release_id|default:'null' }},
+            iterationId: {{ mapping.iteration_id|default:'null' }},
+            activityId: {{ mapping.activity_id|default:'null' }},
+            stepId: {{ mapping.step_id|default:'null' }},
+            personaId: {{ mapping.persona_id|default:'null' }}
+        },
+        {% endfor %}
+    ];
+
+    // 2. Function to update the "Done" state of a task
+    function updateDoneState(wslistId, isType) {
+        $.ajax({
+            url: '/common/common_ajax/ajax_update_task_done_state/',
+            type: 'POST',
+            data: {
+                'id': wslistId,
+                'done': isType,
+                'model_name': 'Backlog',
+                'app_name': 'app_organization',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Update successful!');
+                location.reload(); // Reload to reflect changes
+            },
+            error: function(xhr, status, error) {
+                console.log('An error occurred: ' + error);
+            }
+        });
+    }
+
+    // 3. Initialize sortable tables using jQuery UI
+    $(".sortable_table").find("tbody").sortable({
+        items: "> tr",
+        handle: ".drag-handle",
+        appendTo: "parent",
+        cancel: "[contenteditable]",
+        update: function(event, ui) {
+            var arrayOrder = $(this).sortable('toArray');
+            $.ajax({
+                url: '/common/common_ajax/ajax_update_model_list_sorted/',
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': "{{ csrf_token }}",
+                    'model_name': 'Backlog',
+                    'app_name': 'app_organization',
+                    'sorted_list_data': JSON.stringify(arrayOrder),
+                },
+                dataType: 'json',
+                success: function(data) {
+                    console.log('Sortable update response:', data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating sortable list:', error);
+                }
+            });
+        }
+    });
+
+    // 4. Functions to make table elements editable
+    function makeEditable(element) {
+        element.contentEditable = true;
+        element.focus();
+    }
+
+    function save_element_text(element, id, appName, modelName, fieldName) {
+        element.contentEditable = false;
+        $.ajax({
+            url: '/common/common_ajax/ajax_save_element_text/',
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'model_name': modelName,
+                'app_name': appName,
+                'field_name': fieldName,
+                'text': element.textContent, 
+                'id': id,
+            },
+            dataType: 'json',
+            success: function(data) {
+                console.log('Element text saved:', data);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error saving element text:', error);
+            }
+        });
+    }
+
+    // 5. AJAX call to fetch iterations based on selected release
+    $('#id_release').change(function() {
+        var releaseId = $(this).val();
+        var csrfToken = '{{ csrf_token }}';
+        console.log("Release selected:", releaseId);
+
+        if (releaseId) {
+            $.ajax({
+                url: '/org/backlog/ajax_get_iterations/' + releaseId + '/',
+                method: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': csrfToken,
+                },
+                success: function(data) {
+                    console.log("Iterations fetched:", data);
+                    $('#id_iteration').empty().append('<option value="">Select Iteration</option>');
+                    data.forEach(function(iteration) {
+                        $('#id_iteration').append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
+                    });
+                    $('#id_iteration').prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching iterations:", error);
+                    alert('Error fetching iterations');
+                }
+            });
+        } else {
+            $('#id_iteration').empty().append('<option value="">Select Iteration</option>').prop('disabled', true);
+        }
+    });
+
+    // 6. Event listener for persona selection change
+    document.getElementById('personaSelector').addEventListener('change', function() {
+        var personaId = this.value;
+        if (personaId) {
+            js_ajax_fetch_persona_activities(personaId);
+        }
+    });
+
+    // 7. Function to fetch activities and mappings based on selected persona
+    function js_ajax_fetch_persona_activities(personaId) {
+        $.ajax({
+            url: "{% url 'ajax_fetch_persona_activities' %}",
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'persona_id': personaId
+            },
+            dataType: 'json',
+            success: function(data) {
+                if (data.activities && data.mappings) {
+                    // Update storyMappings with new data
+                    storyMappings = data.mappings.map(mapping => ({
+                        storyName: mapping.story_name,
+                        storyId: mapping.story_id,
+                        releaseId: mapping.release_id || null,
+                        iterationId: mapping.iteration_id || null,
+                        activityId: mapping.activity_id || null,
+                        stepId: mapping.step_id || null,
+                        personaId: mapping.persona_id || null
+                    }));
+                    console.log('Updated storyMappings:', storyMappings);
+
+                    // Update the table headers and body
+                    updateStoryTable(data.activities);
+                    updateActivitiesAndSteps(data.activities);
+                } else {
+                    console.error('Error fetching activities or mappings:', data.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching persona activities:', error);
+            }
+        });
+    }
+
+    // 8. Function to update table headers based on activities
+    function updateStoryTable(activities) {
+        const tableHead = document.querySelector('.table thead');
+        const firstRow = tableHead.rows[0];
+        let secondRow = tableHead.rows[1] || tableHead.insertRow(1);
+
+        // Reset the content of the rows to ensure they start clean
+        firstRow.innerHTML = '<th rowspan="2">Release/Iteration</th>';
+        secondRow.innerHTML = '';
+
+        activities.forEach(activity => {
+            const stepCount = activity.steps.length;
+
+            if (stepCount > 0) {
+                firstRow.innerHTML += `<th colspan="${stepCount}">${activity.name}</th>`;
+                activity.steps.forEach(step => {
+                    secondRow.innerHTML += `<th>${step.name}</th>`;
+                });
+            } else {
+                firstRow.innerHTML += `<th>${activity.name}</th>`;
+                secondRow.innerHTML += `<th></th>`;
+            }
+        });
+
+        console.log('Table headers updated based on activities.');
+    }
+
+    // 9. Function to update table body based on activities and storyMappings
+    function updateActivitiesAndSteps(activities) {
+        const tableBody = document.querySelector('.table tbody');
+        tableBody.innerHTML = ''; // Clear existing rows
+
+        {% for release in releases %}
+        {% for iteration in release.org_release_org_iterations.all|filter_active %}
+            {
+                let row = document.createElement('tr');
+                row.innerHTML = `<td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>`;
+
+                activities.forEach(activity => {
+                    activity.steps.forEach(step => {
+                        // Filter storyMappings based on current activity, step, release, and iteration
+                        const mappedStories = storyMappings.filter(mapping =>
+                            mapping.activityId === activity.id &&
+                            mapping.stepId === step.id &&
+                            mapping.releaseId === {{ release.id }} &&
+                            mapping.iterationId === {{ iteration.id }}
+                        );
+
+                        let storyHtml = '';
+                        mappedStories.forEach(mappedStory => {
+                            storyHtml += `
+                                <div class="story-item" draggable="true" data-story-id="${mappedStory.storyId}">
+                                    ${mappedStory.storyName}
+                                </div>`;
+                        });
+
+                        // Render the dropzone with all stories
+                        row.innerHTML += `
+                            <td>
+                                <div class="dropzone" 
+                                    data-release-id="{{ release.id }}" 
+                                    data-iteration-id="{{ iteration.id }}"
+                                    data-activity-id="${activity.id}"
+                                    data-step-id="${step.id}">
+                                    ${storyHtml}
+                                </div>
+                            </td>`;
+                    });
+                });
+
+                tableBody.appendChild(row);
+            }
+        {% endfor %}
+        {% endfor %}
+
+        console.log('Table body updated based on activities and storyMappings.');
+        bindDragAndDrop(); // Rebind drag and drop events to new elements
+    }
+
+    // 10. Function to bind drag-and-drop events
+    function bindDragAndDrop() {
+        // Bind dragstart event to all story items
+        document.querySelectorAll('.story-item').forEach(story => {
+            story.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData('text/plain', this.dataset.storyId);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+        });
+
+        // Bind dragover and drop events to all dropzones and the story list
+        document.querySelectorAll('.dropzone, #story-list').forEach(dropzone => {
+            dropzone.addEventListener('dragover', function(e) {
+                e.preventDefault(); // Necessary to allow a drop
+                e.dataTransfer.dropEffect = 'move';
+            });
+
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const storyId = e.dataTransfer.getData('text/plain');
+                const story = document.querySelector(`[data-story-id="${storyId}"]`);
+
+                // Prevent duplication in the same dropzone
+                if (this.contains(story)) {
+                    console.log('Story already exists in this dropzone.');
+                    return;
+                }
+
+                if (story) {
+                    // Remove the story from its current parent
+                    if (story.parentNode) {
+                        story.parentNode.removeChild(story);
+                    }
+                    dropzone.appendChild(story); // Append the story to the new dropzone
+
+                    // Send the AJAX request only if it's a regular dropzone and not the story-list
+                    if (!dropzone.classList.contains('story-list')) {
+                        sendUpdateRequest(story.dataset.storyId, dropzone.dataset);
+                    }
+                }
+            });
+        });
+
+        console.log('Drag-and-drop events bound to dropzones and story items.');
+    }
+
+    // 11. Function to send update requests when a story is moved to a dropzone
+    function sendUpdateRequest(storyId, data) {
+        const url = "{% url 'ajax_recieve_story_mapped_details' %}";
+        console.log('Sending update request for StoryID:', storyId, 'with data:', data);
+
+        const payload = {
+            project_id: {{ project.id }},
+            story_id: storyId,
+            release_id: data.releaseId,
+            iteration_id: data.iterationId,
+            activity_id: data.activityId,
+            step_id: data.stepId,
+            persona_id: document.getElementById('personaSelector').value
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Update successful:', data);
+            // Optionally handle any follow-up actions here
+        })
+        .catch(error => console.error('Error updating story location:', error));
+    }
+
+    // 12. Event listener for dropping stories back to the story list
+    document.getElementById('story-list').addEventListener('drop', function(e) {
+        e.preventDefault();
+        const storyId = e.dataTransfer.getData('text/plain');
+        const story = document.querySelector(`[data-story-id="${storyId}"]`);
+
+        // Remove the story from its current location
+        if (story.parentNode) {
+            story.parentNode.removeChild(story);
+        }
+
+        if (story) {
+            this.appendChild(story); // Append the story back to the story list
+            resetStoryData(story); // Reset any specific data or attributes if necessary
+            updateServerForRemovedStory(storyId); // Inform the server about the removal
+        }
+    });
+
+    // 13. Function to reset story data when moved back to the list
+    function resetStoryData(story) {
+        // Example: Remove attributes related to dropzone placement
+        // story.removeAttribute('data-release-id');
+        // story.removeAttribute('data-iteration-id');
+        // story.removeAttribute('data-activity-id');
+        // story.removeAttribute('data-step-id');
+    }
+
+    // 14. Function to inform the server that a story has been moved back to the list
+    function updateServerForRemovedStory(storyId) {
+        const url = "{% url 'ajax_story_back_to_list' %}";
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                story_id: storyId,
+                // Add any other data needed for the server-side update
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Story removed from drop zone:', data);
+            // Optionally handle any follow-up actions here
+        })
+        .catch(error => console.error('Error removing story:', error));
+    }
+
+    // 15. Ensure drag-and-drop is initialized on page load
+    document.addEventListener("DOMContentLoaded", function() {
+        bindDragAndDrop();
+    });
+
+    // 16. Function to update the table body with proper scoping to avoid 'row' declaration errors
+    function updateActivitiesAndSteps(activities) {
+        const tableBody = document.querySelector('.table tbody');
+        tableBody.innerHTML = ''; // Clear existing rows
+
+        {% for release in releases %}
+        {% for iteration in release.org_release_org_iterations.all|filter_active %}
+            {
+                let row = document.createElement('tr'); // Scoped within the block
+                row.innerHTML = `<td><strong>{{ release.name }} - {{ iteration.name }}</strong></td>`;
+
+                activities.forEach(activity => {
+                    activity.steps.forEach(step => {
+                        // Filter storyMappings based on current activity, step, release, and iteration
+                        const mappedStories = storyMappings.filter(mapping =>
+                            mapping.activityId === activity.id &&
+                            mapping.stepId === step.id &&
+                            mapping.releaseId === {{ release.id }} &&
+                            mapping.iterationId === {{ iteration.id }}
+                        );
+
+                        let storyHtml = '';
+                        mappedStories.forEach(mappedStory => {
+                            storyHtml += `
+                                <div class="story-item" draggable="true" data-story-id="${mappedStory.storyId}">
+                                    ${mappedStory.storyName}
+                                </div>`;
+                        });
+
+                        // Render the dropzone with all stories
+                        row.innerHTML += `
+                            <td>
+                                <div class="dropzone" 
+                                    data-release-id="{{ release.id }}" 
+                                    data-iteration-id="{{ iteration.id }}"
+                                    data-activity-id="${activity.id}"
+                                    data-step-id="${step.id}">
+                                    ${storyHtml}
+                                </div>
+                            </td>`;
+                    });
+                });
+
+                tableBody.appendChild(row);
+            }
+        {% endfor %}
+        {% endfor %}
+
+        console.log('Table body updated based on activities and storyMappings.');
+        bindDragAndDrop(); // Rebind drag and drop events to new elements
+    }
+</script>
+
+            
+                    
+{% endblock content %}

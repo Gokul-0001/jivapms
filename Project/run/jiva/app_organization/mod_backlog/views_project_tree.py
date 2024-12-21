@@ -105,6 +105,7 @@ def view_project_tree_backlog(request, pro_id):
     member = get_object_or_404(Member, user=user)
     project = Project.objects.get(id=pro_id)
     
+    
     # IMPORTANT items
     # 1. Backlog Super Type
     # 2. Backlog Type
@@ -175,7 +176,8 @@ def view_project_tree_backlog(request, pro_id):
     feature_type_id = bt_tree_name_and_id.get("Feature")
     component_type_id = bt_tree_name_and_id.get("Component")
     capability_type_id = bt_tree_name_and_id.get("Capability")
-    include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]
+    include_types = [bug_type_id, story_type_id, tech_task_type_id]
+    include_collection_types = [feature_type_id, component_type_id, capability_type_id, epic_type_id]
 
     #backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog).exclude(type__in=exclude_types)
     backlog_epic_items = Backlog.objects.filter(pro=project, type__in=include_types, active=True)
@@ -185,9 +187,33 @@ def view_project_tree_backlog(request, pro_id):
 
 
     # 3.4 Get the epics of this backlog
-    epics_in_backlog = Backlog.objects.filter(pro=project, type=epic_type_id, active=True)
+    epics_in_backlog = Backlog.objects.filter(pro=project, type__in=include_collection_types, active=True)
     #epics_in_backlog = {epic.id: epic for epic in backlog_epic_items if epic.type.id == epic_type_id}
     #logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
+    
+    
+    # 3.5 Filter options
+    filters = {}
+    ## Adding the filter option
+    # Extract filter_by parameter
+    filter_by = request.GET.get('filter_by', '').strip()  # Default to empty string if not provided
+
+    # Handle "unmapped" case
+    if filter_by == 'unmapped':
+        filters['parent'] = project_backlog
+        logger.debug(f">>> === Filters unmapped: {filters} unmapped === <<<")
+    elif filter_by == 'deleted':
+        filters['active'] = False
+        logger.debug(f">>> === Filters deleted: {filters} deleted === <<<") 
+    elif filter_by == 'all_items':
+        filters = {}
+        logger.debug(f">>> === Filters allitems: {filters} all_items === <<<")
+    elif filter_by.startswith('filter_'):
+        # Extract the collection ID from the filter_by parameter
+        collection_id = filter_by.replace('filter_', '')
+        if collection_id.isdigit():  # Ensure it's a valid numeric ID
+            filters['parent_id'] = int(collection_id)
+            logger.debug(f">>> === Filters Collection: {filters} match === <<<")
     
     backlog_summary = request.POST.get('backlog_summary')
     add_action = request.POST.get('add_action')
@@ -197,7 +223,10 @@ def view_project_tree_backlog(request, pro_id):
     type_of_bi = request.POST.get("type")
     ajax_data = request.POST.get("seq_list_data")
     #logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
-    display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types).order_by('position')
+    if 'deleted' in filter_by:
+        display_backlog_items = Backlog.objects.filter(pro=project, type__in=include_types, **filters).order_by('position')
+    else:
+        display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types, **filters).order_by('position')
     #logger.debug(f">>> === DISPLAY DATA : {display_backlog_items} === <<<")
     test_display = None
     
@@ -293,6 +322,12 @@ def view_project_tree_backlog(request, pro_id):
     
     backlog_items_count = len(display_backlog_items)
     #logger.debug(f">>> === BACKLOG ITEMS COUNT: {display_backlog_items} === <<<")
+    
+    
+    
+    
+    
+    
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',

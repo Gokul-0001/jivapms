@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gantt Chart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #gantt {
+            margin: 20px auto;
+            max-width: 90%;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Gantt Chart with Frappe</h1>
+    <div id="status">
+        <p>Status updates will appear here.</p>
+    </div>
+    <div id="gantt"></div>
+
+    <script>
+        const tasks = [
+            {
+                id: "1",
+                name: "Epic 1",
+                start: "2024-12-01",
+                end: "2024-12-15",
+                progress: 50,
+                dependencies: ""
+            },
+            {
+                id: "2",
+                name: "Epic 2",
+                start: "2024-12-01",
+                end: "2024-12-15",
+                progress: 75,
+                dependencies: ""
+            },
+            {
+                id: "3",
+                name: "Release 1",
+                start: "2025-01-01",
+                end: "2025-01-30",
+                progress: 25,
+                dependencies: "1"
+            },
+            {
+                id: "4",
+                name: "Milestone 1",
+                start: "2025-03-01",
+                end: "2025-03-01",
+                progress: 100,
+                dependencies: "2"
+            }
+        ];
+
+        const gantt = new Gantt("#gantt", tasks, {
+            view_mode: "Day",
+            on_click: (task) => {
+                document.getElementById("status").innerHTML = `
+                    <p>Clicked on: ${task.name}</p>
+                    <p>Start: ${task.start}</p>
+                    <p>End: ${task.end}</p>
+                    <p>Progress: ${task.progress}%</p>
+                `;
+            },
+            on_date_change: (task, start, end) => {
+                document.getElementById("status").innerHTML = `
+                    <p>Task: ${task.name}</p>
+                    <p>Start Date Changed to: ${start}</p>
+                    <p>End Date Changed to: ${end}</p>
+                `;
+            },
+            on_progress_change: (task, progress) => {
+                document.getElementById("status").innerHTML = `
+                    <p>Task: ${task.name}</p>
+                    <p>Progress Updated to: ${progress}%</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
