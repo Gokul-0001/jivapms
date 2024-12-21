@@ -174,6 +174,7 @@ class StoryMapping(BaseModelTrackDateImpl):
                                        on_delete=models.SET_NULL, 
                                               null=True, blank=True, 
                                               related_name='project_story_mappings')
+    backlog_ref = models.ForeignKey(Backlog, on_delete=models.CASCADE, related_name='backlog_ref', null=True, blank=True)
     story_name = models.CharField(max_length=256, null=True, blank=True)
     story_id = models.PositiveIntegerField()  # ID of the story being mapped
     release_id = models.PositiveIntegerField()  # ID of the release

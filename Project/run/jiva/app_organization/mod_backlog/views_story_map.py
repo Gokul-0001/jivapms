@@ -20,14 +20,23 @@ module_path = f'mod_backlog'
 @login_required
 def create_story_map(request, org_id):    
     projects = Organization.objects.get(pk=org_id).org_projects.filter(active=True)
+    organization = Organization.objects.get(pk=org_id)
     project = None 
+    personae_count = 0
+    personae_count = Persona.objects.filter(organization_id=org_id, project=project).count()
     if request.method == 'POST':
         selected_project_id = request.POST.get('project')
         selected_story_map_option = request.POST.get('story_mapping_name')      
         project = Project.objects.get(pk=selected_project_id, active=True)
+        
+        story_maps = StoryMapping.objects.filter(pro_id=project.id, active=True)
+        story_maps_count = story_maps.count()
         #print(f"====> {selected_project_id} ===> {selected_story_map_option}")
+        
         if selected_story_map_option == '2':
             return redirect('create_story_map_from_backlog', pro_id=selected_project_id)
+            
+                
         else:           
             # create a persona and send the persona id 
             new_persona = Persona.objects.create(name='', organization_id=org_id, project=project) 
@@ -35,62 +44,81 @@ def create_story_map(request, org_id):
             request.session['default_activity_id'] = default_activity.id
             #print(f">>> === DEFAULT ACTIVITY {default_activity.id} === <<<")
             return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=new_persona.id)
+    if personae_count  > 0:
+        # Create the personae list for project 
+        return redirect('list_personae', organization_id=org_id)
+       
+        
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'list_backlogs',
         'org_id': org_id,
+       
+        'organization': organization,
+        'org': organization,
         'projects': projects,
         'page_title': f'Backlog List',
     }       
     template_file = f"{app_name}/{module_path}/story_map/create_story_map.html"
     return render(request, template_file, context)
 
-# @login_required
-# def create_backlog_from_story_map(request, pro_id, persona_id):
-#     pro = Project.objects.get(pk=pro_id)
-#     persona = Persona.objects.get(pk=persona_id)
-#     default_activity_id = request.session.pop('default_activity', None) 
-#     organizaton = pro.org
-#     releases = OrgRelease.objects.filter(org_id=pro.org_id, active=True)
-#     activities = Activity.objects.filter(persona_id=persona_id, active=True)
-#     backlog = Backlog.objects.filter(pro_id=pro_id, persona_id=persona_id, active=True) 
-#     if request.method == 'POST':
-#         if 'submit_activity' in request.POST:
-#             selected_project_id = request.POST.get('project_id')
-#             selected_persona_id = request.POST.get('persona_id')
-#             activity_input = request.POST.get('activity')            
-#             activity = Activity.objects.create(name=activity_input, persona_id=selected_persona_id)       
-#             print(f">>> === ACTIVITY {activity} === <<<")     
-#             return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=selected_persona_id)
-#         if 'submit_detail' in request.POST:
-#             selected_project_id = request.POST.get('project_id')
-#             selected_persona_id = request.POST.get('persona_id')
-#             detail_input = request.POST.get('detail')
-#             detail = Backlog.objects.create(name=detail_input, persona_id=selected_persona_id, pro_id=selected_project_id)
-#             print(f">>> === DETAIL {detail} === <<<")
-#             return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=selected_persona_id)
-    
-#     # send outputs info, template,
-#     context = {
-#         'parent_page': '___PARENTPAGE___',
-#         'page': 'create_backlog_from_story_map',
-#         'pro_id': pro_id,
-#         'pro': pro,
-#         'project': pro,
-#         'persona_id': persona_id,
-#         'persona': persona,
-#         'activities': activities,
-#         'default_activity_id': default_activity_id,
-#         'backlog': backlog,
-#         'releases': releases,
-#         'org': pro.org,
-#         'organization': pro.org,
-#         'org_id': pro.org_id,
-#         'page_title': f'Backlog from Story Map',
-#     }       
-#     template_file = f"{app_name}/{module_path}/story_map/create_backlog_from_story_map.html"
-#     return render(request, template_file, context)
+
+
+@login_required
+def create_project_story_map(request, org_id, project_id):    
+    projects = Organization.objects.get(pk=org_id).org_projects.filter(active=True)
+    organization = Organization.objects.get(pk=org_id)
+    project = None 
+    project = Project.objects.get(pk=project_id, active=True)
+    personae_count = 0
+    personae_count = Persona.objects.filter(organization_id=org_id, project=project).count()
+    logger.debug(f"====> {personae_count} ===> {project_id}")
+    if request.method == 'POST':
+        selected_project_id = request.POST.get('project')
+        selected_story_map_option = request.POST.get('story_mapping_name')      
+        project = Project.objects.get(pk=selected_project_id, active=True)
+        
+        story_maps = StoryMapping.objects.filter(pro_id=project.id, active=True)
+        story_maps_count = story_maps.count()
+        #print(f"====> {selected_project_id} ===> {selected_story_map_option}")
+        
+        if selected_story_map_option == '2':
+            return redirect('create_story_map_from_backlog', pro_id=selected_project_id)
+            
+                
+        else:           
+            # create a persona and send the persona id 
+            new_persona = Persona.objects.create(name='', organization_id=org_id, project=project) 
+            default_activity = Activity.objects.create(name='Default Activity', persona_id=new_persona.id)
+            request.session['default_activity_id'] = default_activity.id
+            #print(f">>> === DEFAULT ACTIVITY {default_activity.id} === <<<")
+            return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=new_persona.id)
+    if personae_count  > 0:
+        # Create the personae list for project 
+        return redirect('list_project_personae', organization_id=org_id, project_id=project_id)
+       
+        
+    # send outputs info, template,
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'list_backlogs',
+        'org_id': org_id,
+        'project_id': project_id,
+        'project': project,
+        'pro_id': project_id,
+        'organization': organization,
+        'org': organization,
+        'projects': projects,
+        'page_title': f'Backlog List',
+    }       
+    template_file = f"{app_name}/{module_path}/story_map/create_story_map.html"
+    return render(request, template_file, context)
+
+
+
+
+from app_organization.mod_backlog.views_project_tree import get_tree_name_id
 
 @login_required
 def create_backlog_from_story_map(request, pro_id, persona_id):
@@ -98,14 +126,29 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
     persona = get_object_or_404(Persona, pk=persona_id)
     default_activity_id = request.session.pop('default_activity', None)
     organization = pro.org
-    flat_backlog_root = Backlog.objects.filter(pro=pro, name=FLAT_BACKLOG_ROOT_NAME).first()
+    project_id_str = f"{pro_id}_PROJECT_TREE"
+    flat_backlog_root = Backlog.objects.filter(pro=pro, name=project_id_str).first()
     
     create_backlog_type = BacklogType.objects.filter(name='User Story').first()
     filters = {}
     releases = OrgRelease.objects.filter(org_id=pro.org_id, active=True)
     activities = Activity.objects.filter(persona_id=persona_id, active=True)
+    
+    project_id_str = f"{pro_id}_PROJECT_TREE"
+    root_project_type = BacklogType.objects.filter(name=project_id_str, active=True).first()
+    bt_tree_name_and_id = get_tree_name_id(root_project_type)
+    bug_type_id = bt_tree_name_and_id.get("Bug")
+    story_type_id = bt_tree_name_and_id.get("User Story")
+    tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+    feature_type_id = bt_tree_name_and_id.get("Feature")
+    component_type_id = bt_tree_name_and_id.get("Component")
+    capability_type_id = bt_tree_name_and_id.get("Capability")
+    include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]  
+    logger.debug(f"====> {include_types} ===> {persona_id}")  
+    initial_backlog = Backlog.objects.filter(pro=pro, type__in=include_types, active=True)
     backlog = Backlog.objects.filter(pro_id=pro_id, persona_id=persona_id, active=True)
     story_maps = StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id)
+    #StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id).delete()
     if default_activity_id is None:
         default_activity = Activity.objects.get(name='Default Activity', persona_id=persona_id)
         request.session['default_activity_id'] = default_activity.id
@@ -162,11 +205,13 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
         'pro_id': pro_id,
         'pro': pro,
         'project': pro,
+        'project_id_str': project_id_str,
         'persona_id': persona_id,
         'persona': persona,
         'activities': activities,
         'default_activity_id': default_activity_id,
         'story_maps': story_maps,
+        'initial_backlog': initial_backlog,
         'backlog': backlog,
         'releases': releases,
         'org': organization,

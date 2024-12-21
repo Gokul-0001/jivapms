@@ -51,17 +51,44 @@ def ajax_project_tree_sorted(request):
 
 
 # Sequence the backlog items for addition at top
-def seq_add_to_top(ajax_data):
+def seq_add_to_top_err1(ajax_data):
     seq = 2
     new_data = ajax_data.replace("[",'')
     new_data = new_data.replace("]",'')
     sorted_list = new_data.split(",")
+    logger.debug(f">>> === SEQ ADD TO TOP: {sorted_list} === <<<")
     for item in sorted_list:
         str = item.replace('"','')
         position = str.split('_')
         Backlog.objects.filter(pk=position[0]).update(position=seq)
         logger.debug(f">>> === SEQ ADD TO TOP: {position[0]} with {seq} === <<<")
         seq += 1
+        
+def seq_add_to_top(ajax_data):
+    seq = 2    
+    new_data = ajax_data.strip().replace("[", "").replace("]", "")
+    if not new_data:
+        logger.debug(">>> === SEQ ADD TO TOP: Empty data list, no processing required === <<<")
+        return
+
+    # Process the cleaned data
+    sorted_list = new_data.split(",")
+    logger.debug(f">>> === SEQ ADD TO TOP: {sorted_list} === <<<")
+    for item in sorted_list:
+        # Remove extra quotes and validate
+        item = item.strip().replace('"', '')        
+        if not item:  # Skip empty strings
+            continue
+        position = item.split('_')
+        # Ensure position is valid
+        if len(position) < 1 or not position[0].isdigit():
+            logger.debug(f">>> === Invalid position format: {item} === <<<")
+            continue
+        # Update backlog position
+        Backlog.objects.filter(pk=position[0]).update(position=seq)
+        logger.debug(f">>> === SEQ ADD TO TOP: {position[0]} with {seq} === <<<")
+        seq += 1
+
 
 @login_required
 def view_project_tree_backlog(request, pro_id):
@@ -149,6 +176,7 @@ def view_project_tree_backlog(request, pro_id):
     component_type_id = bt_tree_name_and_id.get("Component")
     capability_type_id = bt_tree_name_and_id.get("Capability")
     include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]
+
     #backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog).exclude(type__in=exclude_types)
     backlog_epic_items = Backlog.objects.filter(pro=project, type__in=include_types, active=True)
     #backlog_epic_items = Backlog.objects.filter(pro=project, parent=project_backlog)

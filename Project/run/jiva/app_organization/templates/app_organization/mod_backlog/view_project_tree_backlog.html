@@ -588,8 +588,8 @@
 
 
     <div class="contentbar mb-5" id="contentbar">
-        <div class="backlog_header"><b>Backlog</b>  &nbsp;
-           
+        <div class="backlog_header"><b>Backlog</b>  &nbsp; <!-- HEADER of the backlog DISPLAY-->
+           <a href="{% url 'create_project_story_map' org_id project.id %}">Story Mapping</a>
         </div>
         <form action="" method="POST">
             {% csrf_token %}

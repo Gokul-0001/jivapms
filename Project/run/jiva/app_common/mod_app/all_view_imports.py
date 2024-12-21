@@ -73,6 +73,8 @@ SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
 
 ##################################  CONSTANTS ##################################
 
+# 21/12/2024
+
 
 # 18/12/2024
 PROJECT_WBS_TREE_CONFIG = {

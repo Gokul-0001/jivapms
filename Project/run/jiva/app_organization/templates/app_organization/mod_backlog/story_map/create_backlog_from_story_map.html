@@ -415,8 +415,8 @@
                             </form>
                             <br>
                
-                            {% for backlog_item in backlog|filter_active %}
-                            {% if backlog_item.release_id == None  %}
+                            {% for backlog_item in initial_backlog|filter_active %}
+                            {% if backlog_item.release_id == None and backlog_item.name != project_id_str  %}
                             <div class="backlog-item post-it draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"
                             ondblclick="makeEditable(this);" 
                             onblur="save_element_text(this, '{{backlog_item.id}}',  'app_organization', 'Backlog', 'name')"    
@@ -498,6 +498,7 @@
                                             data-iteration-id="{{ iteration.id }}"
                                             data-activity-id="{{ activity.id }}"
                                             data-step-id="{{ step.id }}"
+                                            
                                             ondragover="allowDrop(event)"
                                             ondrop="drop(event)"
                                             style="border-left: {% if forloop.first %}3px solid lightgrey;{% else %}none;{% endif %};">
@@ -507,7 +508,11 @@
                                                     <div class="step-item post-it card draggable-backlog" draggable="true" id="backlog-{{ story_map.story_id }}"
                                                          ondblclick="makeEditable(this);" 
                                                          onblur="save_element_text(this, '{{ story_map.story_id }}', 'app_organization', 'Backlog', 'name')">
-                                                        {{ story_map.story_name }}
+                                                        {% for backlog_item in backlog %}
+                                                        {% if story_map.story_id == backlog_item.id %}
+                                                            {{ backlog_item.name }}
+                                                        {% endif %}
+                                                        {% endfor %}
                                                     </div>
                                                 {% endif %}
                                             {% endfor %}
@@ -636,6 +641,8 @@
     const activityId = dropZone.getAttribute('data-activity-id');
     const stepId = dropZone.getAttribute('data-step-id');
 
+
+
     // Optional: Visual feedback for successful drop
     dropZone.classList.add('dropped');
 
@@ -649,6 +656,7 @@
         activity_id: activityId,
         step_id: stepId,
         persona_id: {{ persona.id }},
+
     };
 
     // Send the AJAX request to the backend

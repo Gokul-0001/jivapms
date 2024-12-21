@@ -10,24 +10,27 @@
             <span>Organizations</span>
         </a>
         {% if project.org.id %}
-       
+        <a href="{% url 'project_homepage' project.org.id project.id  %}" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">home</i>
+            <span>Project Home</span>
+        </a> 
         <a href="{% url 'project_dvs' org_id project.id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">diamond</i>
             <span>Dev Value Stream</span>
         </a>
-        <a href="{% url 'project_homepage' project.org.id project.id  %}" class="nav-link" >
+            
+        <a href="{% url 'project_roadmap' project.org.id project.id  %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">map</i>
             <span>Roadmap</span>
-        </a>     
-       
+        </a> 
         <a href="{% url 'view_project_tree_backlog' project.id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">checklist</i>
-            <span>Exp Backlog</span>
+            <span>Backlog</span>
         </a>     
        
         <a href="{% url 'view_project_tree_board' project.id %}?project_id={{project.id}}" class="nav-link" >
             <i class="bi bi-kanban"></i>
-            <span>Exp Board</span>
+            <span>Board</span>
         </a>
         {% endif %}
         {% if org_id %} 

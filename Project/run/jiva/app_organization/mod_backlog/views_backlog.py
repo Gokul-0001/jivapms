@@ -1104,6 +1104,7 @@ def ajax_recieve_story_mapped_details(request):
             activity_id = data['activity_id']
             step_id = data['step_id']
             persona_id = data['persona_id']
+            
         except KeyError as e:
             missing_key = str(e)
             logger.error(f"Missing required parameter: {missing_key}")
@@ -1134,12 +1135,13 @@ def ajax_recieve_story_mapped_details(request):
                 # Save or update the story mapping
                 mapping, created = StoryMapping.objects.update_or_create(
                     story_id=story_id,
+                    backlog_ref=story_details,
                     defaults={
                         'pro_id': project_id,
                         'persona_id': persona_id,
                         'mapped_at': timezone.now(),
                         'active': True,
-                        'story_name': story_details.name,
+  
                         'release_id': release_id,
                         'iteration_id': iteration_id,
                         'activity_id': activity_id,
@@ -1159,16 +1161,26 @@ def ajax_recieve_story_mapped_details(request):
                 # print(f">>> === Backlog Types: {backlog_types} === <<<")
                 backlog_type = None
                 if BacklogType.objects.filter(pro=project, name='User Story').exists():
-                    backlog_type = BacklogType.objects.get(pro=project, name='User Story')
+                    project_id_str = f"{project.id}_PROJECT_TREE"
+                    backlog_type_root = BacklogType.objects.get(pro=project, parent__name=project_id_str)
+                    backlog_types = backlog_type_root.get_descendants(include_self=True)
+                    backlog_type = None
+                    for backlog_type_read in backlog_types:
+                        if backlog_type_read.name == 'User Story':
+                            backlog_type = backlog_type_read
+                            break
                     logger.debug(f">>> === Backlog Type: US {backlog_type} EXISTS for project: {project} {project.id}=== <<<")
                 else:
                     backlog_type = BacklogType.objects.create(pro=project, name='User Story', active=True)
                     logger.debug(f">>> === Backlog Type: US {backlog_type} created for project: {project} {project.id}=== <<<")
-                    
+                
+                
+                
                 story_details.type = backlog_type                
                 story_details.project = project
                 story_details.persona = persona                
                 story_details.release = release 
+                story_details.iteration_id = iteration_id
                 story_details.save()
                 logger.debug(f"Updated Backlog Release ID: {story_details.release_id}")
 

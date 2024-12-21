@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Roadmap</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        #roadmap-container {
+            display: flex;
+            margin-top: 20px;
+        }
+        #epic-list {
+            width: 30%;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+        }
+        #gantt-chart {
+            width: 70%;
+            padding: 10px;
+        }
+        .epic {
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .gantt-row {
+            position: relative;
+            height: 30px;
+            margin: 5px 0;
+        }
+        .gantt-bar {
+            position: absolute;
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 5px;
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Roadmap</h1>
+    <div id="roadmap-container">
+        <div id="epic-list">
+            <h3>Epics</h3>
+            <!-- Epics will be loaded dynamically -->
+        </div>
+        <div id="gantt-chart">
+            <h3>Gantt Chart</h3>
+            <!-- Gantt chart rows will be generated dynamically -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+    // Sample data for demonstration (replace with AJAX call)
+    const epics = [
+        { id: 1, name: "Epic 1", start_date: "2024-01-01", end_date: "2024-03-01" },
+        { id: 2, name: "Epic 2", start_date: "2024-02-15", end_date: "2024-04-15" }
+    ];
+
+    // Load epics into the list and Gantt chart
+    epics.forEach(epic => {
+        $('#epic-list').append(`<div class="epic" data-id="${epic.id}">${epic.name}</div>`);
+        addGanttRow(epic);
+    });
+
+    function addGanttRow(epic) {
+        // Calculate position and width based on dates (simplified example)
+        const start = new Date(epic.start_date).getTime();
+        const end = new Date(epic.end_date).getTime();
+        const totalDays = (end - start) / (1000 * 60 * 60 * 24);
+        const startOffset = (start - new Date("2024-01-01").getTime()) / (1000 * 60 * 60 * 24);
+
+        const ganttRow = `
+            <div class="gantt-row">
+                <div class="gantt-bar" data-id="${epic.id}" style="left: ${startOffset * 10}px; width: ${totalDays * 10}px;">
+                    ${epic.name}
+                </div>
+            </div>
+        `;
+        $('#gantt-chart').append(ganttRow);
+    }
+});
+$(document).on('mouseenter', '.gantt-bar', function () {
+    $(this).draggable({
+        axis: "x",
+        stop: function (event, ui) {
+            const id = $(this).data('id');
+            const left = ui.position.left;
+            // Calculate new start date based on position (simplified example)
+            const newStartDate = new Date("2024-01-01");
+            newStartDate.setDate(newStartDate.getDate() + left / 10);
+            console.log(`Epic ${id} new start date: ${newStartDate.toISOString().split('T')[0]}`);
+        }
+    }).resizable({
+        handles: "e, w",
+        stop: function (event, ui) {
+            const id = $(this).data('id');
+            const width = ui.size.width;
+            // Calculate new end date based on width (simplified example)
+            const newEndDate = new Date("2024-01-01");
+            newEndDate.setDate(newEndDate.getDate() + width / 10);
+            console.log(`Epic ${id} new end date: ${newEndDate.toISOString().split('T')[0]}`);
+        }
+    });
+});
+
+</script>
+</body>
+</html>

@@ -51,4 +51,7 @@ urlpatterns = [
     
     path('ajax_project_tree_sorted/', views_project_tree.ajax_project_tree_sorted, name='ajax_project_tree_sorted'),
     
+    # added
+    path('create_project_story_map/<int:org_id>/<int:project_id>/', views_story_map.create_project_story_map, name='create_project_story_map'),
+    
 ]

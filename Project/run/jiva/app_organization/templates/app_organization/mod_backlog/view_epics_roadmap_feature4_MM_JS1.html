@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Roadmap with Mermaid.js</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .mermaid {
+            margin-top: 20px;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Roadmap with Mermaid.js</h1>
+    <div id="status">
+        <p>Status updates will appear here.</p>
+    </div>
+
+    <!-- Mermaid Container -->
+    <div class="mermaid">
+        gantt
+        title Interactive Roadmap
+        dateFormat  YYYY-MM-DD
+        axisFormat  %d %b %Y
+        todayMarker stroke-width:2px,stroke:#ff0000,color:red
+        section Epics
+        Epic 1   :active, epic1, 2024-12-01, 15d
+        Epic 2   :done, epic2, 2024-12-01, 15d
+        section Releases
+        Release 1 :active, release1, 2025-01-01, 30d
+        Release 2 :milestone, release2, 2025-02-01, 1d
+        section Milestones
+        Milestone 1 :milestone, milestone1, 2025-03-01, 1d
+    </div>
+
+    <script>
+        // Initialize Mermaid.js
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

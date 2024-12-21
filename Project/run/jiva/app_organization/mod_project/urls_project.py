@@ -1,7 +1,7 @@
 
 from django.urls import path, include
 
-from app_organization.mod_project import views_project
+from app_organization.mod_project import views_project, views_project_roadmap
 
 
 urlpatterns = [
@@ -17,6 +17,8 @@ urlpatterns = [
     path('view_project/<int:org_id>/<int:project_id>/', views_project.view_project, name='view_project'),
     path('project_settings_page/<int:org_id>/<int:project_id>/', views_project.project_settings_page, name='project_settings_page'),
     path('project_dvs/<int:org_id>/<int:project_id>/', views_project.project_dvs, name='project_dvs'),
+    
+    path('project_roadmap/<int:org_id>/<int:project_id>/', views_project_roadmap.project_roadmap, name='project_roadmap'),
     
     
 ]
