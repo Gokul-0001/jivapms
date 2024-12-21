@@ -136,6 +136,7 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
     
     project_id_str = f"{pro_id}_PROJECT_TREE"
     root_project_type = BacklogType.objects.filter(name=project_id_str, active=True).first()
+    project_backlog_root = Backlog.objects.filter(pro=pro, name=project_id_str).first()
     bt_tree_name_and_id = get_tree_name_id(root_project_type)
     bug_type_id = bt_tree_name_and_id.get("Bug")
     story_type_id = bt_tree_name_and_id.get("User Story")
@@ -191,8 +192,8 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
                     persona_id=selected_persona_id,
                     pro_id=selected_project_id,
                     active=True,
-                    parent=flat_backlog_root,
-                    type=create_backlog_type,
+                    parent=project_backlog_root,
+                    type_id=story_type_id,
                     collection=None,
                 )
                 print(f">>> === DETAIL {detail} {selected_project_id} {selected_persona_id}=== <<<")
