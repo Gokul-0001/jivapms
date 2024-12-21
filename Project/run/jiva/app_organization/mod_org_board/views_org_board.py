@@ -469,6 +469,11 @@ def view_project_tree_board(request, project_id):
     epic_type_children = epic_type_node.get_active_children()
     backlog_types = epic_type_children
     backlog_types_count = backlog_types.count()
+    feature_type_id = bt_tree_name_and_id.get("Feature")
+    component_type_id = bt_tree_name_and_id.get("Component")
+    capability_type_id = bt_tree_name_and_id.get("Capability")
+    efcc_include_types = [epic_type_id, feature_type_id, component_type_id, capability_type_id] # meaning Epic, Feature, Component, Capability
+    efcc_backlog_items = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
   
     filters = {}
     # Get or create the default project board
@@ -533,6 +538,7 @@ def view_project_tree_board(request, project_id):
         'blocked_items': state_items.get('Blocked', []),
         'done_items': state_items.get('Done', []),
         'page_title': f'Project Board: {project.name}',
+        'efcc_backlog_items': efcc_backlog_items,
         
         #'chart_data': chart_data,
     }
