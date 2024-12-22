@@ -489,7 +489,7 @@
     }
 </style>
 
-{% if swimlane_flag == True %}
+
 
 <div class="content-wrapper">
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
@@ -501,7 +501,6 @@
                 <div class="dropdown">
                     <select id="parentFilter" >
                         <option value="">-- Select SwimLane --</option>
-                        <option value="0">-- All SwimLanes --</option>
                         {% for efcc in efcc_backlog_items %}
                             <option value="{{ efcc.id }}">{{ efcc }}</option>
                         {% endfor %}
@@ -514,9 +513,9 @@
             </div>
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
-                 <div class="kanban-column" data-id="0" id="backlog">
+                 <div class="kanban-column" data-id="0">
                     <h4>Backlog</h4>
-                    
+                    <div class="kanban-swimlane" id="backlog">
                         {% for item in backlog_items %}
                             {% if item.parent == efcc %}
                             <div class="kanban-card" data-id="{{ item.id }}">
@@ -535,16 +534,16 @@
                             </div>
                             {% endif %}
                         {% endfor %}
-                    
+                    </div>
                 </div>
                 {% for state in project_board_states %}
                     
                    
                     {% if state.name == 'ToDo' %}
                     <!-- To Do Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="todo">
+                    <div class="kanban-column" data-id="{{ state.id }}">
                         <h4>{{state.name}}</h4>
-                        
+                        <div class="kanban-swimlane" id="todo">
                             {% for item in todo_items %}
                                 {% if item.backlog.parent == efcc %}
                                 <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
@@ -560,14 +559,14 @@
                                 </div>
                                 {% endif %}
                             {% endfor %}
-                        
+                        </div>
                     </div>
                     {% endif %}
                     {% if state.name == 'In Progress' %}
                     <!-- In Progress Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
+                    <div class="kanban-column" data-id="{{ state.id }}">
                         <h4>{{state.name}}</h4>
-                        
+                        <div class="kanban-swimlane" id="in-progress">
                             {% for item in in_progress_items %}
                                 {% if item.backlog.parent == efcc %}
                                 <div class="kanban-card in-progress" data-id="{{ item.id }}">
@@ -586,14 +585,14 @@
                                 </div>
                                 {% endif %}
                             {% endfor %}
-                        
+                        </div>
                     </div>
                     {% endif %}
                     {% if state.name == 'Blocked' %}
                     <!-- Blocked Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="blocked">
+                    <div class="kanban-column" data-id="{{ state.id }}">
                         <h4>{{state.name}}</h4>
-                        
+                        <div class="kanban-swimlane" id="blocked">
                             {% for item in blocked_items %}
                                 {% if item.backlog.parent == efcc %}
                                 <div class="kanban-card blocked" data-id="{{ item.id }}">
@@ -609,14 +608,14 @@
                                 </div>
                                 {% endif %}
                             {% endfor %}
-                        
+                        </div>
                     </div>
                     {% endif %}
                     {% if state.name == 'Done' %}
                     <!-- Done Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="done">
+                    <div class="kanban-column" data-id="{{ state.id }}">
                         <h4>{{state.name}}</h4>
-                        
+                        <div class="kanban-swimlane" id="done">
                             {% for item in done_items %}
                                 {% if item.backlog.parent == efcc %}
                                 <div class="kanban-card done" data-id="{{ item.id }}">
@@ -632,7 +631,7 @@
                                 </div>
                                 {% endif %}
                             {% endfor %}
-                        
+                        </div>
                     </div>
                     {% endif %}
                 
@@ -642,161 +641,6 @@
         </div>
     </div>
 </div>
-
-{% else %}
-<!-- All swimlanes grouped -->
-
-
-<div class="content-wrapper">
-    {% include 'app_organization/mod_project/sidebar_menu.html' %}
-
-    <div class="contentbar mb-5" id="contentbar">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="display_topic"><b class="h3">Project Board: </b>{{ project }}</div>
-                <div class="dropdown">
-                    <select id="parentFilter" >
-                        <option value="">-- Select SwimLane --</option>
-                        {% for efcc in efcc_backlog_items %}
-                            <option value="{{ efcc.id }}">{{ efcc }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            
-         
-            <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
-                 <!-- Backlog Column -->
-                 <div class="kanban-column" data-id="0" id="backlog">
-                    <h4>Backlog</h4>
-                    
-                        {% for item in backlog_items %}
-                            
-                            <div class="kanban-card" data-id="{{ item.id }}">
-                                <div class="kanban-card-header">
-                                    <span class="priority priority-high">H</span>
-                                    <span>#{{item.id}}</span>
-                                </div>
-                                <b
-                               
-                                >{{ item }}</b>
-                                <p>{{ item.description | display_if_not_none }}</p>
-                                
-                                <div class="kanban-card-footer">
-                                    <div class="parent">{{item.parent}}</div>
-                                </div>
-                            </div>
-                            
-                        {% endfor %}
-                    
-                </div>
-                {% for state in project_board_states %}
-                    
-                   
-                    {% if state.name == 'ToDo' %}
-                    <!-- To Do Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="todo">
-                        <h4>{{state.name}}</h4>
-                        
-                            {% for item in todo_items %}
-                                
-                                <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
-                                    <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
-                                    </div>
-                                    <b>{{ item }}</b>
-                                    <p>{{ item.description | display_if_not_none }}</p>
-                                    <div class="kanban-card-footer">
-                                       <div class="parent">{{item.backlog.parent}}</div>
-                                    </div>
-                                </div>
-                                
-                            {% endfor %}
-                        
-                    </div>
-                    {% endif %}
-                    {% if state.name == 'In Progress' %}
-                    <!-- In Progress Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
-                        <h4>{{state.name}}</h4>
-                        
-                            {% for item in in_progress_items %}
-                                
-                                <div class="kanban-card in-progress" data-id="{{ item.id }}">
-                                    <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
-                                    </div>
-                                    <b>{{ item }}</b>
-                                    <p>{{ item.description | display_if_not_none }}</p>
-                                    <div class="kanban-card-footer">
-                                        <!-- <i class="action bi bi-pencil-square">Edit</i>
-                                        <i class="action bi bi-eye">View</i>
-                                        <i class="action bi bi-trash">Delete</i> -->
-                                        <div class="parent">{{item.backlog.parent}}</div>
-                                    </div>
-                                </div>
-                                
-                            {% endfor %}
-                        
-                    </div>
-                    {% endif %}
-                    {% if state.name == 'Blocked' %}
-                    <!-- Blocked Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="blocked">
-                        <h4>{{state.name}}</h4>
-                        
-                            {% for item in blocked_items %}
-                                
-                                <div class="kanban-card blocked" data-id="{{ item.id }}">
-                                    <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
-                                    </div>
-                                    <b>{{ item }}</b>
-                                    <p>{{ item.description | display_if_not_none }}</p>
-                                    <div class="kanban-card-footer">
-                                        <div class="parent">{{item.backlog.parent}}</div>
-                                    </div>
-                                </div>
-                                
-                            {% endfor %}
-                        
-                    </div>
-                    {% endif %}
-                    {% if state.name == 'Done' %}
-                    <!-- Done Column -->
-                    <div class="kanban-column" data-id="{{ state.id }}" id="done">
-                        <h4>{{state.name}}</h4>
-                        
-                            {% for item in done_items %}
-                                
-                                <div class="kanban-card done" data-id="{{ item.id }}">
-                                    <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
-                                    </div>
-                                    <b>{{ item }}</b>
-                                    <p>{{ item.description | display_if_not_none }}</p>
-                                    <div class="kanban-card-footer">
-                                        <div class="parent">{{item.backlog.parent}}</div>
-                                    </div>
-                                </div>
-                                
-                            {% endfor %}
-                       
-                    </div>
-                    {% endif %}
-                
-                {% endfor %}
-            </div>
-            
-        </div>
-    </div>
-</div>
-
-{% endif %}
 <div id="loading-spinner" style="
     display: none;
     position: fixed;
@@ -851,9 +695,70 @@
 
 </script>
 <script>
+//    $(function() {
+//     $(".kanban-swimlane").sortable({
+//         connectWith: ".kanban-swimlane",
+//         placeholder: "kanban-card-placeholder",
+
+//         // Capture the starting column's ID and text
+//         start: function(event, ui) {
+//             var fromColumn = ui.item.closest(".kanban-column");
+//             ui.item.data("start-state", fromColumn.data("id")); // State ID
+//             ui.item.data("from-column", fromColumn.find("h4").text().trim()); // Column Name
+//         },
+
+//         // When drag is complete
+//         stop: function(event, ui) {
+//             var projectId = {{ project.id }};
+//             var cardId = ui.item.data("id");
+//             var boardId = {{ project_board.id }};
+//             var fromStateId = ui.item.data("start-state"); // Initial state ID
+//             var fromColumn = ui.item.data("from-column");  // Initial column name
+
+//             var toColumn = ui.item.closest(".kanban-column"); // Target column
+//             var toStateId = toColumn.data("id"); // Target state ID
+//             var destColumn = toColumn.find("h4").text().trim(); // Target column name
+
+//             // Collect positions of cards in the target column
+//             var destPositions = [];
+//             toColumn.find(".kanban-card").each(function(index) {
+//                 var id = $(this).data("id");
+//                 destPositions.push({ card_id: id, position: index + 1 });
+//             });
+            
+
+//             // CLASS FOR COLOR
+//             const card = ui.item; // The card being moved
+//             // Remove all column color classes
+//             card.removeClass("todo in-progress blocked done");
+//             // Add the correct class based on the column name
+//             const newClass = columnColorMapping[destColumn] || "kanban-card";
+//             card.attr("class", newClass); // Replace classes dynamically
+//             // END COLORING
+
+
+//             console.log("Updated Positions:", destPositions);
+//             console.log("Card moved => From:", fromColumn, "To:", destColumn, "State:", fromStateId, "to", toStateId);
+
+//             // Call the backend to update the card state and positions
+//             updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
+
+//             // Clear and reset the data to avoid stale values
+//             ui.item.removeData("start-state").removeData("from-column");
+//             ui.item.data("start-state", toStateId);
+//             ui.item.data("from-column", destColumn);
+
+//             if (fromColumn == 'Backlog' || destColumn == 'Backlog') {
+//                 refreshKanbanBoard();
+//             }
+//         }
+//     }).disableSelection();
+// });
+
+
    $(function() {
-    $(".kanban-column").sortable({
-        connectWith: ".kanban-column",
+    $(".kanban-swimlane").sortable({
+        connectWith: ".kanban-swimlane",
         placeholder: "kanban-card-placeholder",
         tolerance: 'pointer', // Makes dragging more responsive
         scroll: true, // Enables scrolling if the list overflows

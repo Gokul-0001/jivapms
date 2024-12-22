@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kanban Board</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .board {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    .column {
+      width: 30%;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .column h2 {
+      text-align: center;
+    }
+
+    .task {
+      margin: 10px;
+      padding: 10px;
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      border-radius: 5px;
+      cursor: move;
+    }
+
+    .droppable {
+      min-height: 500px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <div class="column">
+      <h2>To Do</h2>
+      <div id="todo" class="droppable">
+        <!-- Tasks -->
+      </div>
+    </div>
+    <div class="column">
+      <h2>WIP</h2>
+      <div id="wip" class="droppable"></div>
+    </div>
+    <div class="column">
+      <h2>Done</h2>
+      <div id="done" class="droppable"></div>
+    </div>
+  </div>
+
+  <script>
+    const todoContainer = document.getElementById('todo');
+
+    // Create 25 tasks dynamically
+    for (let i = 1; i <= 25; i++) {
+      const task = document.createElement('div');
+      task.classList.add('task');
+      task.textContent = `Task ${i}`;
+      task.draggable = true;
+      task.id = `task-${i}`;
+
+      task.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', task.id);
+      });
+
+      todoContainer.appendChild(task);
+    }
+
+    // Enable drop for WIP and Done
+    const droppables = document.querySelectorAll('.droppable');
+
+    droppables.forEach((dropZone) => {
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const taskId = e.dataTransfer.getData('text/plain');
+        const task = document.getElementById(taskId);
+        dropZone.appendChild(task);
+      });
+    });
+  </script>
+</body>
+</html>

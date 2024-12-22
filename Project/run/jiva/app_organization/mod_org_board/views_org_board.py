@@ -469,12 +469,41 @@ def view_project_tree_board(request, project_id):
     epic_type_children = epic_type_node.get_active_children()
     backlog_types = epic_type_children
     backlog_types_count = backlog_types.count()
+    
+    bug_type_id = bt_tree_name_and_id.get("Bug")
+    story_type_id = bt_tree_name_and_id.get("User Story")
+    tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+    
     feature_type_id = bt_tree_name_and_id.get("Feature")
     component_type_id = bt_tree_name_and_id.get("Component")
     capability_type_id = bt_tree_name_and_id.get("Capability")
+    
+    include_types = [bug_type_id, story_type_id, tech_task_type_id]
     efcc_include_types = [epic_type_id, feature_type_id, component_type_id, capability_type_id] # meaning Epic, Feature, Component, Capability
     efcc_backlog_items = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
-  
+    efcc_backlog_items_swimlane = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
+    get_swimlane_id = request.GET.get('swimlane_id')  if request.GET.get('swimlane_id') else '0'
+    swimlane_flag = False
+    logger.debug(f">>> === CHECK: {efcc_include_types} === <<<")
+    logger.debug(f">>> === get_swimlane_id: {get_swimlane_id} === <<<" )
+    if get_swimlane_id != '0':  # Check if swimlane_id is provided
+        # Filter Backlog items based on swimlane_id
+        efcc_backlog_items_swimlane = Backlog.objects.filter(
+            pro_id=project.id,            
+            id=get_swimlane_id,
+            active=True
+        )
+        swimlane_flag = True
+    else:
+        # If no swimlane_id is provided, get all Backlog items
+        efcc_backlog_items_swimlane = Backlog.objects.filter(
+            pro_id=project.id,
+            type__in=efcc_include_types,
+            active=True
+        )
+        logger.debug(f">>> === efcc_backlog_items: {efcc_backlog_items} === <<<")
+        
+    logger.debug(f">>> === efcc_backlog_items_swimlane: {efcc_backlog_items_swimlane} === <<<")
     filters = {}
     # Get or create the default project board
     DEFAULT_BOARD_NAME = 'Default Board'
@@ -522,6 +551,7 @@ def view_project_tree_board(request, project_id):
             board=project_board,
             state=state,
             active=True,
+            backlog__type__in=include_types,
             backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
         ).select_related('backlog').order_by('position', '-created_at')
 
@@ -539,6 +569,8 @@ def view_project_tree_board(request, project_id):
         'done_items': state_items.get('Done', []),
         'page_title': f'Project Board: {project.name}',
         'efcc_backlog_items': efcc_backlog_items,
+        'swimlane_flag': swimlane_flag,
+        'efcc_backlog_items_swimlane': efcc_backlog_items_swimlane,
         
         #'chart_data': chart_data,
     }
