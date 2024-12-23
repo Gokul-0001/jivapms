@@ -44,9 +44,13 @@ def list_org_releases(request, org_id):
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = OrgRelease.objects.filter(name__icontains=search_query, 
-                                            org_id=org_id, **viewable_dict).order_by('position')
+                                            org_id=org_id, **viewable_dict).order_by('position').annotate(
+                                iteration_count=Count('org_release_org_iterations', filter=Q(org_release_org_iterations__active=True))
+                            )
     else:
-        tobjects = OrgRelease.objects.filter(active=True, org_id=org_id).order_by('position')
+        tobjects = OrgRelease.objects.filter(active=True, org_id=org_id).order_by('position').annotate(
+                            iteration_count=Count('org_release_org_iterations', filter=Q(org_release_org_iterations__active=True))
+                        )
         deleted = OrgRelease.objects.filter(active=False, deleted=False,
                                 org_id=org_id,
                                **viewable_dict).order_by('position')
@@ -98,6 +102,8 @@ def list_org_releases(request, org_id):
                     redirect('list_org_releases', org_id=org_id)
             return redirect('list_org_releases', org_id=org_id)
     
+    
+    # sending the iterations count 
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -279,6 +285,14 @@ def create_org_release(request, org_id):
             form.instance.end_date = end_date
 
             release = form.save()   
+            
+            
+            # Predecessors assignment
+            # Handle predecessors
+            predecessor_ids = request.POST.get('predecessors', '')
+            if predecessor_ids:
+                predecessor_ids = [int(id) for id in predecessor_ids.split(',')]
+                release.predecessors.set(predecessor_ids)
 
             if 'create_iterations' in request.POST:
                 no_of_iterations = int(request.POST.get('no_of_iterations', 5))
@@ -370,6 +384,12 @@ def edit_org_release(request, org_id, org_release_id):
             form.instance.end_date = end_date
 
             release = form.save()   
+             # Predecessors assignment
+            # Handle predecessors
+            predecessor_ids = request.POST.get('predecessors', '')
+            if predecessor_ids:
+                predecessor_ids = [int(id) for id in predecessor_ids.split(',')]
+                release.predecessors.set(predecessor_ids)
 
             if 'create_iterations' in request.POST:
                 no_of_iterations = int(request.POST.get('no_of_iterations', 5))
@@ -508,3 +528,27 @@ def view_org_release(request, org_id, org_release_id):
     return render(request, template_file, context)
 
 
+@login_required
+def ajax_search_org_release_predecessors(request):
+    if request.method == 'POST':
+        try:
+            # Parse JSON data from the request
+            data = json.loads(request.body)
+            query = data.get('query', '').strip()
+
+            # Filter predecessors based on the query
+            if query:
+                predecessors = OrgRelease.objects.filter(name__icontains=query, active=True)[:10]
+                result = [{'id': pred.id, 'name': pred.name, 'start_date': pred.start_date, 'end_date': pred.end_date} for pred in predecessors]
+            else:
+                result = []
+
+            # Return JSON response
+            return JsonResponse(result, safe=False)
+
+        except Exception as e:
+            # Return error response if something goes wrong
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        # If request is not POST, return bad request
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

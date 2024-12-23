@@ -14,4 +14,7 @@ urlpatterns = [
     path('permanent_deletion_org_release/<int:org_id>/<int:org_release_id>/', views_org_release.permanent_deletion_org_release, name='permanent_deletion_org_release'),
     path('restore_org_release/<int:org_id>/<int:org_release_id>/', views_org_release.restore_org_release, name='restore_org_release'),
     path('view_org_release/<int:org_id>/<int:org_release_id>/', views_org_release.view_org_release, name='view_org_release'),
+    
+    
+    path('ajax_search_org_release_predecessors/', views_org_release.ajax_search_org_release_predecessors, name='ajax_search_org_release_predecessors'),
 ]

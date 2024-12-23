@@ -144,7 +144,11 @@ org_id
                                         {% if tobject.end_date != None %}{{ tobject.end_date|date:"F j, Y" }}{% endif %}
                                     </td>
                                     <td width="10%">
+                                        {{tobject.iteration_count  }}&nbsp;&nbsp;
+                                        &nbsp;&nbsp;
                                     <a href="{% url 'list_org_iterations' tobject.id %}">Iteration/Sprint(s)</a>
+                                    
+
                                     </td>
                                     <td width="30%">
                                         <a href="{% url 'view_org_release' org_id  tobject.id  %}"

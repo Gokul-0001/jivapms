@@ -15,6 +15,8 @@ class OrgRelease(BaseModelTrackDateImpl):
     
     # 23/12/2024 for roadmapping
     no_of_iterations = models.IntegerField(default=5)
+    # New Predecessor Field (Multiple Dependencies)
+    predecessors = models.ManyToManyField('self', blank=True, related_name="successors")
     
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_org_releases")

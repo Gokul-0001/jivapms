@@ -267,33 +267,23 @@ function formatDate(date) {
 
 </script>
 
+
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('predecessor-search');
     const searchResults = document.getElementById('search-results');
     const selectedPredecessors = document.getElementById('selected-predecessors');
     const predecessorIds = document.getElementById('predecessor-ids');
-    const startDateInput = document.getElementById('id_start_date');
 
     let selectedIds = [];
-    let lastEndDate = '';
 
-    // Fetch search results using AJAX (POST request)
-    function fetchPredecessors(query) {
-        fetch("{% url 'ajax_search_org_release_predecessors' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(), // Fetch CSRF Token
-            },
-            body: JSON.stringify({ query: query }) // Send query as JSON
-        })
-        .then(response => response.json())
-        .then(data => {
-            renderResults(data);           
-        })
-        .catch(error => console.error('Error:', error));
-    }
+    // Mock data (Replace this with AJAX call to fetch predecessors)
+    const predecessors = [
+        { id: 1, name: 'Release 1' },
+        { id: 2, name: 'Release 2' },
+        { id: 3, name: 'Release 3' },
+        { id: 4, name: 'Release 4' }
+    ];
 
     function renderResults(results) {
         searchResults.innerHTML = '';
@@ -306,13 +296,13 @@ document.addEventListener('DOMContentLoaded', function () {
             li.className = 'list-group-item list-group-item-action';
             li.textContent = item.name;
             li.setAttribute('data-id', item.id);
-            li.onclick = () => addPredecessor(item.id, item.name, item.end_date);
+            li.onclick = () => addPredecessor(item.id, item.name);
             searchResults.appendChild(li);
         });
         searchResults.style.display = 'block';
     }
 
-    function addPredecessor(id, name, end_date) {
+    function addPredecessor(id, name) {
         if (!selectedIds.includes(id)) {
             selectedIds.push(id);
             const tag = document.createElement('span');
@@ -321,14 +311,6 @@ document.addEventListener('DOMContentLoaded', function () {
             tag.querySelector('button').onclick = () => removePredecessor(id, tag);
             selectedPredecessors.appendChild(tag);
             updateHiddenField();
-
-            // Calculate next day as start date
-            if (end_date) {
-                const nextDay = new Date(end_date);
-                nextDay.setDate(nextDay.getDate() + 1); // Add 1 day
-                const formattedDate = nextDay.toISOString().split('T')[0]; // Format to YYYY-MM-DD
-                startDateInput.value = formattedDate; // Set start date
-            }
         }
         searchInput.value = '';
         searchResults.style.display = 'none';
@@ -345,12 +327,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     searchInput.addEventListener('input', () => {
-        const query = searchInput.value.trim();
-        if (query.length > 2) { // Minimum 3 characters to search
-            fetchPredecessors(query);
-        } else {
-            searchResults.style.display = 'none';
-        }
+        const query = searchInput.value.toLowerCase();
+        const filtered = predecessors.filter(item => item.name.toLowerCase().includes(query));
+        renderResults(filtered);
     });
 
     document.addEventListener('click', (e) => {
@@ -358,23 +337,23 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResults.style.display = 'none';
         }
     });
-
-    // Get CSRF Token from cookies
-    function getCSRFToken() {
-        let cookieValue = null;
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.startsWith('csrftoken=')) {
-                cookieValue = cookie.substring('csrftoken='.length, cookie.length);
-                break;
-            }
-        }
-        return cookieValue;
-    }
 });
 
 </script>
 <!-- End: Content -->
 {% endblock content %}
 
+
+<!-- def save_org_release(request):
+    if request.method == 'POST':
+        form = OrgReleaseForm(request.POST)
+        if form.is_valid():
+            org_release = form.save()
+            predecessor_ids = request.POST.get('predecessors', '')
+            if predecessor_ids:
+                predecessor_ids = [int(id) for id in predecessor_ids.split(',')]
+                org_release.predecessors.set(predecessor_ids)
+            return redirect('success_page')
+    else:
+        form = OrgReleaseForm()
+    return render(request, 'org_release_form.html', {'form': form}) -->
