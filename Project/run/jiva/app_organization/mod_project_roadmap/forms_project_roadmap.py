@@ -3,6 +3,12 @@ from app_organization.mod_app.all_form_imports import *
 from app_organization.mod_project_roadmap.models_project_roadmap import *
 
 class ProjectRoadmapForm(forms.ModelForm):
+    start_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'})  # Enable HTML5 date picker
+    )
+    end_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'})  # Enable HTML5 date picker
+    )
     class Meta:
         model = ProjectRoadmap
         fields = ['section', 'task_name', 'status', 'start_date', 'end_date']

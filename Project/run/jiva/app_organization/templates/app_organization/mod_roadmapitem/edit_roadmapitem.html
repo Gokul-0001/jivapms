@@ -34,76 +34,83 @@
                         </div>
                     </div>
                 </div>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th colspan="2">
-                                <div class="container-fluid-width">
-                                    <div class="row">
-                                        <div class="col col-md-5">
-                                            {{page_title}}:: {{form.instance}}
-                                        </div>
-                                        <div class="col col-md-7">
-                                            <div class="text-end">
-                                                <a href="{% url 'view_roadmapitem' org_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
-                                                &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_roadmapitem' org_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
-                                                
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-6">
+                            <table class="table table-bordered" width="25%">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4">
+                                            <div class="container-fluid-width">
+                                                <div class="row">
+                                                    <div class="col col-md-5">
+                                                        {{page_title}}:: {{form.instance}}
+                                                    </div>
+                                                    <div class="col col-md-7">
+                                                        <div class="text-end">
+                                                            <a href="{% url 'view_roadmapitem' org_id form.instance.id %}" class="btn btn-sm btn-primary"><b>View</b></a>
+                                                            &nbsp;&nbsp;&nbsp;
+                                                            <a href="{% url 'delete_roadmapitem' org_id form.instance.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
+                                                            
+                                                        </div>
+                
+                                                    </div>
+                                                </div>
                                             </div>
-    
-                                        </div>
-                                    </div>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td width="15%">
-                                <strong>Section</strong>
-                            </td>
-                            <td>
-                                {{form.section|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td width="15%">
-                                <strong>Task Name</strong>
-                            </td>
-                            <td>
-                                {{form.task_name|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td width="15%">
-                                <strong>Status</strong>
-                            </td>
-                            <td>
-                                {{form.status|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td width="15%">
-                                <strong>Start Date</strong>
-                            </td>
-                            <td>
-                                {{form.start_date|as_crispy_field}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td width="15%">
-                                <strong>End Date</strong>
-                            </td>
-                            <td>
-                                {{form.end_date|as_crispy_field}}
-                            </td>
-                        </tr>
-                       <tr>
-                            <td colspan="2" class="text-center"><button type="submit"
-                                class="btn btn-sm btn-success">Save</button></td>
-                        </tr>
-                    </tbody>
-                </table>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Section</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.section|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Task Name</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.task_name|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Status</strong>
+                                        </td>
+                                        <td colspan="2">
+                                            {{form.status|as_crispy_field}}
+                                        </td>
+                                        <td>* Select the status of the roadmap item</td>
+                                    </tr>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Start Date</strong>
+                                        </td>
+                                        <td>
+                                            {{form.start_date|as_crispy_field}}
+                                        </td>
+                                   
+                                        <td width="15%">
+                                            <strong>End Date</strong>
+                                        </td>
+                                        <td>
+                                            {{form.end_date|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    
+                                   <tr>
+                                        <td colspan="4" class="text-center"><button type="submit"
+                                            class="btn btn-sm btn-success">Save</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                
             </div>
         </div>
     </div>

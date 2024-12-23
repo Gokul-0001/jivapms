@@ -156,8 +156,7 @@
                     endDate.setDate(0);
                 }
 
-                //const formattedEndDate = endDate.toISOString().split('T')[0];
-                const formattedEndDate = formatDate(endDate);
+                const formattedEndDate = endDate.toISOString().split('T')[0];
                 endDateInput.value = formattedEndDate;
             }
         }
@@ -171,7 +170,7 @@
                 const iterationEnd = new Date(startDate);
                 iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
 
-                iterationsTable.innerHTML += `<tr><td width='2%'>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
+                iterationsTable.innerHTML += `<tr><td>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
                 startDate.setDate(startDate.getDate() + (iterationLength * 7));
             }
             endDateInput.value = startDate.toISOString().split('T')[0];
@@ -213,17 +212,13 @@
 
             const releaseEnd = new Date(startDate);
             releaseEnd.setDate(startDate.getDate() + (iterationLength * 7 * noOfIterations));
-            //chartDefinition += `Release : ${startDate.toISOString().split('T')[0]}, ${releaseEnd.toISOString().split('T')[0]}\n`;
-            chartDefinition += `Release : ${formatDate(startDate)}, ${formatDate(releaseEnd)}\n`;
-
+            chartDefinition += `Release : ${startDate.toISOString().split('T')[0]}, ${releaseEnd.toISOString().split('T')[0]}\n`;
 
             chartDefinition += "    section Iterations\n";
             for (let count = 1; count <= noOfIterations; count++) {
                 const iterationEnd = new Date(startDate);
                 iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
-                //chartDefinition += `Iteration ${count} : ${startDate.toISOString().split('T')[0]}, ${iterationEnd.toISOString().split('T')[0]}\n`;
-                chartDefinition += `Iteration ${count} : ${formatDate(startDate)}, ${formatDate(iterationEnd)}\n`;
-
+                chartDefinition += `Iteration ${count} : ${startDate.toISOString().split('T')[0]}, ${iterationEnd.toISOString().split('T')[0]}\n`;
                 startDate.setDate(startDate.getDate() + (iterationLength * 7));
             }
 
@@ -242,14 +237,5 @@
     });
 </script>
 
-
-<script>
-function formatDate(date) {
-    return date.getFullYear() + '-' + 
-        String(date.getMonth() + 1).padStart(2, '0') + '-' +
-        String(date.getDate()).padStart(2, '0');
-}
-
-</script>
 <!-- End: Content -->
 {% endblock content %}

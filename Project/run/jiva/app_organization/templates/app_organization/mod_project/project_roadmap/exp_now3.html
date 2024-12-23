@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mermaid Gantt Chart Examples</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .timeline {
+      background-color: #f4f4f4;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mermaid Gantt Chart Examples</h1>
+
+    <!-- Example 1: Basic Gantt Chart with Tasks -->
+    <h2>1. Basic Gantt Chart with Tasks</h2>
+    <div class="timeline">
+      <div class="mermaid">
+        gantt
+            dateFormat  YYYY-MM-DD
+            title Basic Gantt Chart
+            section Project A
+            Task 1           :a1, 2024-01-01, 2024-01-10
+            Task 2           :a2, 2024-01-11, 2024-01-20
+            Task 3           :a3, 2024-01-21, 2024-01-31
+      </div>
+    </div>
+
+
+    <!-- Example 3: Gantt Chart with Dependencies -->
+    <h2>3. Gantt Chart with Dependencies</h2>
+    <div class="timeline">
+      <div class="mermaid">
+        gantt
+            dateFormat  YYYY-MM-DD
+            title Gantt with Dependencies
+            section Development
+            Task A :a1, 2024-01-01, 2024-01-10
+            Task B :after a1, 2024-01-11, 2024-01-20
+            Task C :after a2, 2024-01-21, 2024-01-31
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</body>
+</html>

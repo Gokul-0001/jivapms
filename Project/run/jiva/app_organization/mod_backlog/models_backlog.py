@@ -38,6 +38,8 @@ class Backlog(MPTTModel, BaseModelImpl):
     iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, 
                             related_name="backlog_iteration", null=True, blank=True)
      
+     
+    # refactor 15-22-2024
     flat_backlog_type = models.CharField(max_length=100, choices=FLAT_BACKLOG_TYPES.items(), default='USER STORY')
     size = models.CharField(max_length=100, choices=SIZE_CHOICES, default='0')
     status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='Backlog')
@@ -45,6 +47,17 @@ class Backlog(MPTTModel, BaseModelImpl):
                                       related_name="backlog_collections", null=True, blank=True)
     connected_to_hierarchy = models.BooleanField(default=False)
     connected_to_hierarchy_id = TreeForeignKey('self', null=True, blank=True, related_name='Tree', on_delete=models.CASCADE)
+    
+    
+    # roadmap
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)    
+    progress = models.FloatField(
+            default=0.0,
+            validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+        )
+    # end roadmap   
+    
     
     # for now label is a char field
     tag =  models.CharField(max_length=256,null=True, blank=True, default='')

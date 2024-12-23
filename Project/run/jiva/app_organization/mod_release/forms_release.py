@@ -3,6 +3,7 @@ from app_organization.mod_app.all_form_imports import *
 from app_organization.mod_release.models_release import *
 
 class ReleaseForm(forms.ModelForm):
+    
     start_date = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         label="Start Date"

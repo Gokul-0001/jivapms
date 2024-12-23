@@ -34,7 +34,6 @@
                 </div>
                 <div class="container-fluid">
                     <div class="row">
-                        <!-- Form Section -->
                         <div class="col col-md-6">
                             <table class="table table-bordered">
                                 <thead>
@@ -78,21 +77,6 @@
                                                     {{form.apply_release_iteration_length|as_crispy_field}}
                                                 </div>
                                                 <div class="col col-md-3">
-                                                    <strong>No of Iterations</strong><br>
-                                                    <select name="no_of_iterations" id="no_of_iterations">
-                                                        <option value="1">1</option>
-                                                        <option value="2">2</option>
-                                                        <option value="3">3</option>
-                                                        <option value="4">4</option>
-                                                        <option value="5" selected>5</option>
-                                                        <option value="6">6</option>
-                                                        <option value="7">7</option>
-                                                        <option value="8">8</option>
-                                                        <option value="9">9</option>
-                                                        <option value="10">10</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col col-md-3">
                                                     <strong>Create Iterations</strong><br>
                                                     <input type="checkbox" name="create_iterations" value="yes" id="create_iterations">
                                                 </div>
@@ -117,19 +101,12 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Gantt Chart Section -->
-                        <div class="col col-md-6">
-                            <h4>Release Timeline - Gantt Chart</h4>
-                            <div id="gantt-chart" class="border p-3"></div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </form>
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
 <script>
     focusField = document.getElementById('id_name');
     focusField.focus();
@@ -140,8 +117,8 @@
         const endDateInput = document.querySelector('[name="end_date"]');
         const createIterationsCheckbox = document.getElementById('create_iterations');
         const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
-        const noOfIterationsInput = document.getElementById('no_of_iterations');
         const iterationsTable = document.getElementById('iterations-table');
+
         function calculateEndDate() {
             const startDateValue = startDateInput.value;
             const releaseLengthValue = parseInt(releaseLengthInput.value, 10);
@@ -156,100 +133,48 @@
                     endDate.setDate(0);
                 }
 
-                //const formattedEndDate = endDate.toISOString().split('T')[0];
-                const formattedEndDate = formatDate(endDate);
+                const formattedEndDate = endDate.toISOString().split('T')[0];
                 endDateInput.value = formattedEndDate;
             }
         }
+
         function generateIterations() {
             iterationsTable.innerHTML = "";
             const startDate = new Date(startDateInput.value);
             const iterationLength = parseInt(iterationLengthInput.value, 10);
-            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
+            let count = 0;
 
-            for (let count = 1; count <= noOfIterations; count++) {
+            while (true) {
                 const iterationEnd = new Date(startDate);
                 iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
 
-                iterationsTable.innerHTML += `<tr><td width='2%'>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
+                iterationsTable.innerHTML += `<tr><td>${++count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
+                if (iterationEnd >= new Date(endDateInput.value)) {
+                    endDateInput.value = iterationEnd.toISOString().split('T')[0];
+                    break;
+                }
                 startDate.setDate(startDate.getDate() + (iterationLength * 7));
             }
-            endDateInput.value = startDate.toISOString().split('T')[0];
         }
 
         createIterationsCheckbox.addEventListener('change', function () {
             if (this.checked) {
                 generateIterations();
-
             } else {
                 iterationsTable.innerHTML = "";
                 endDateInput.value = "";
-                ganttChart.innerHTML = '';
                 setTimeout(() => calculateEndDate(), 0);
             }
+            
         });
+
+        startDateInput.addEventListener('change', calculateEndDate);
+        releaseLengthInput.addEventListener('change', calculateEndDate);
     });
-</script>
-<script>
-    mermaid.initialize({ startOnLoad: true });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const ganttChartContainer = document.getElementById('gantt-chart');
-        const createIterationsCheckbox = document.getElementById('create_iterations');
-        const startDateInput = document.querySelector('[name="start_date"]');
-        const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
-        const noOfIterationsInput = document.getElementById('no_of_iterations');
-
-        function updateGanttChart() {
-            if (!ganttChartContainer) {
-                console.error('Gantt chart container not found!');
-                return;
-            }
-
-            const startDate = new Date(startDateInput.value);
-            const iterationLength = parseInt(iterationLengthInput.value, 10);
-            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
-            let chartDefinition = `gantt\n    title Release Plan\n    dateFormat  YYYY-MM-DD\n    section Release\n`;
-
-            const releaseEnd = new Date(startDate);
-            releaseEnd.setDate(startDate.getDate() + (iterationLength * 7 * noOfIterations));
-            //chartDefinition += `Release : ${startDate.toISOString().split('T')[0]}, ${releaseEnd.toISOString().split('T')[0]}\n`;
-            chartDefinition += `Release : ${formatDate(startDate)}, ${formatDate(releaseEnd)}\n`;
-
-
-            chartDefinition += "    section Iterations\n";
-            for (let count = 1; count <= noOfIterations; count++) {
-                const iterationEnd = new Date(startDate);
-                iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
-                //chartDefinition += `Iteration ${count} : ${startDate.toISOString().split('T')[0]}, ${iterationEnd.toISOString().split('T')[0]}\n`;
-                chartDefinition += `Iteration ${count} : ${formatDate(startDate)}, ${formatDate(iterationEnd)}\n`;
-
-                startDate.setDate(startDate.getDate() + (iterationLength * 7));
-            }
-
-            ganttChartContainer.innerHTML = `<div class='mermaid'>${chartDefinition}</div>`;
-            mermaid.contentLoaded();
-        }
-
-        createIterationsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                updateGanttChart();
-            } else {
-                ganttChartContainer.innerHTML = '';
-                mermaid.contentLoaded();
-            }
-        });
-    });
+    
 </script>
 
 
-<script>
-function formatDate(date) {
-    return date.getFullYear() + '-' + 
-        String(date.getMonth() + 1).padStart(2, '0') + '-' +
-        String(date.getDate()).padStart(2, '0');
-}
-
-</script>
 <!-- End: Content -->
 {% endblock content %}

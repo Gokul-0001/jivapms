@@ -482,7 +482,17 @@ def org_homepage(request,  org_id):
     logger.debug(f">>> === USER: {user} is an ORG ADMIN {is_org_admin} === <<<")
     if is_org_admin:
         projects = Project.objects.filter(org_id=org_id, active=True)
+    #roadmap_items = organization.roadmap_items.all().delete()
     roadmap_items = organization.roadmap_items.order_by('start_date').filter(active=True)
+    logger.debug(f">>> === roadmap_items: {roadmap_items} === <<<")
+    
+    # Show all active records
+    active_items = organization.roadmap_items.filter(active=True)
+    print(active_items.values('id', 'active'))
+
+    # Show all inactive records
+    inactive_items = organization.roadmap_items.filter(active=False)
+    print(inactive_items.values('id', 'active'))
 
     # Create a dynamic Gantt chart string for Mermaid.js
     roadmap_str = "gantt\n    title Organizational Roadmap\n    dateFormat  YYYY-MM-DD\n"
@@ -490,6 +500,7 @@ def org_homepage(request,  org_id):
     current_section = ""
     
     for item in roadmap_items:
+
         if item.section != current_section:
             roadmap_str += f"    section {item.section}\n"
             current_section = item.section

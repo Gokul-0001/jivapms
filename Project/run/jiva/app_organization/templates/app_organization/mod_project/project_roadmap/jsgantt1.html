@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frappe Timeline Chart</title>
+  <!-- Frappe Charts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/frappe-charts/dist/frappe-charts.min.iife.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-charts/dist/frappe-charts.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    #chart {
+      width: 100%;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Frappe Timeline Chart</h1>
+  <div id="chart"></div>
+
+  <script>
+    // Sample data for tasks with custom colors
+    const data = {
+      labels: ["Feature Development", "Testing", "Deployment", "Bug Fixing"],
+      datasets: [
+        {
+          values: [10, 5, 3, 7], // Task durations in days
+          colors: ["#4caf50", "#2196f3", "#ff9800", "#f44336"], // Custom colors
+        },
+      ],
+    };
+
+    // Render Chart
+    const chart = new frappe.Chart("#chart", {
+      title: "Project Timeline",
+      data: data,
+      type: "bar", // Use bar chart for timeline visualization
+      height: 400,
+      colors: ["#4caf50", "#2196f3", "#ff9800", "#f44336"], // Colors for bars
+      axisOptions: {
+        xIsSeries: true, // Make X-axis time-based
+      },
+      barOptions: {
+        spaceRatio: 0.5,
+      },
+      tooltipOptions: {
+        formatTooltipY: (d) => `${d} Days`, // Custom tooltip format
+      },
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frappe Gantt Example</title>
+
+    <!-- Frappe Gantt CSS & JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #release-summary {
+            padding: 10px;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        #gantt-toolbar {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+
+        #gantt-toolbar button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        #gantt-toolbar button:hover {
+            background-color: #0056b3;
+        }
+
+        .gantt-task-icon {
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Frappe Gantt Example with Tasks and Subtasks</h1>
+
+    <!-- Release Summary -->
+    <div id="release-summary"></div>
+
+    <!-- Gantt Chart Container -->
+    <div id="gantt"></div>
+
+    <!-- Toolbar for View Modes -->
+    <div id="gantt-toolbar">
+        <button onclick="changeViewMode('Day')">Day</button>
+        <button onclick="changeViewMode('Week')">Week</button>
+        <button onclick="changeViewMode('Month')">Month</button>
+        <button onclick="changeViewMode('Year')">Year</button>
+        <button onclick="changeViewMode('Quarter')">Quarter</button>
+    </div>
+
+    <script>
+        // Sample tasks with subtasks and dependencies
+        const tasks = [];
+        const releaseStart = new Date("2024-01-01");
+        const releaseEnd = new Date("2024-06-31");
+        const iterationLength = 2; // weeks
+
+        // Calculate number of iterations
+        const totalDays = (releaseEnd - releaseStart) / (1000 * 60 * 60 * 24);
+        const iterations = Math.ceil(totalDays / (iterationLength * 7));
+
+        let startDate = new Date(releaseStart);
+
+        // Add release task
+        tasks.push({
+            id: "1",
+            name: "Release 1",
+            start: releaseStart.toISOString().split('T')[0],
+            end: releaseEnd.toISOString().split('T')[0],
+            progress: 50,
+            dependencies: "",
+            type: "Release"
+        });
+
+        // Generate iterations and milestones
+        for (let i = 1; i <= iterations; i++) {
+            let iterationEnd = new Date(startDate);
+            iterationEnd.setDate(startDate.getDate() + 13);
+
+            tasks.push({
+                id: `2.${i}`,
+                name: `Iteration ${i}`,
+                start: startDate.toISOString().split('T')[0],
+                end: iterationEnd.toISOString().split('T')[0],
+                progress: 100,
+                dependencies: "",
+                type: "Iteration"
+            });
+
+            tasks.push({
+                id: `2.${i}.m`,
+                name: `Milestone ${i}`,
+                start: iterationEnd.toISOString().split('T')[0],
+                end: iterationEnd.toISOString().split('T')[0],
+                progress: 0,
+                dependencies: `2.${i}`,
+                type: "Milestone"
+            });
+
+            if (i % 4 === 0) {
+                tasks.push({
+                    id: `2.${i}.r`,
+                    name: `Release ${i / 4}`,
+                    start: iterationEnd.toISOString().split('T')[0],
+                    end: iterationEnd.toISOString().split('T')[0],
+                    progress: 0,
+                    dependencies: `2.${i}`,
+                    type: "Release"
+                });
+            }
+
+            startDate = new Date(iterationEnd);
+            startDate.setDate(startDate.getDate() + 1);
+        }
+
+        document.getElementById('release-summary').innerHTML = `
+            <h3>Release Summary</h3>
+            <p><strong>Release Name:</strong> Release 1</p>
+            <p><strong>Start Date:</strong> ${releaseStart.toISOString().split('T')[0]}</p>
+            <p><strong>End Date:</strong> ${releaseEnd.toISOString().split('T')[0]}</p>
+            <p><strong>Total Weeks:</strong> ${Math.ceil(totalDays / 7)}</p>
+            <p><strong>Iteration Length:</strong> ${iterationLength} weeks</p>
+            <p><strong>Total Iterations:</strong> ${iterations}</p>
+        `;
+
+        let gantt;
+
+        function initializeGanttChart() {
+            gantt = new Gantt("#gantt", tasks, {
+                view_mode: "Month",
+                custom_popup_html: (task) => {
+                    const icon = task.type === "Release" ? "📦" : task.type === "Milestone" ? "♦" : "";
+                    return `
+                    <div>
+                        <h5><span class='gantt-task-icon'>${icon}</span>${task.name}</h5>
+                        <p>Start: ${task.start}</p>
+                        <p>End: ${task.end}</p>
+                        <p>Progress: ${task.progress}%</p>
+                        <p>Dependencies: ${task.dependencies || 'None'}</p>
+                    </div>
+                `;
+                }
+            });
+        }
+
+        function changeViewMode(mode) {
+            gantt.change_view_mode(mode);
+        }
+
+        initializeGanttChart();
+    </script>
+</body>
+</html>

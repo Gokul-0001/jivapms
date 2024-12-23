@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Release, Epic, and Iteration Timeline</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .timeline {
+      background-color: #f4f4f4;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Release, Epic, and Iteration Timeline</h1>
+    <div class="timeline">
+      <div class="mermaid">
+        gantt
+          dateFormat  YYYY-MM-DD
+          title Project Timeline
+          %% Releases
+          section Release 1.0
+          Release 1.0 : milestone, r1, 2024-01-01, 2024-02-28
+
+          %% Epics under Release 1.0
+          section Epic A
+          Epic A Planning :active, a1, 2024-01-01, 2024-01-15
+          Epic A Development : a2, 2024-01-16, 2024-01-31
+
+          section Epic B
+          Epic B Analysis : b1, 2024-01-10, 2024-01-20
+          Epic B Testing : b2, 2024-01-21, 2024-02-05
+
+          %% Iterations (Sprints)
+          section Iterations
+          Sprint 1 : s1, 2024-01-01, 2024-01-14
+          Sprint 2 : s2, 2024-01-15, 2024-01-28
+          Sprint 3 : s3, 2024-01-29, 2024-02-11
+          Sprint 4 : s4, 2024-02-12, 2024-02-25
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</body>
+</html>

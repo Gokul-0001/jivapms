@@ -227,7 +227,7 @@ def view_project_tree_backlog(request, pro_id):
         display_backlog_items = Backlog.objects.filter(pro=project, type__in=include_types, **filters).order_by('position')
     else:
         display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types, **filters).order_by('position')
-    #logger.debug(f">>> === DISPLAY DATA : {display_backlog_items} === <<<")
+    logger.debug(f">>> === DISPLAY DATA : {display_backlog_items} === <<<")
     test_display = None
     
     if action == 'assign':
@@ -313,8 +313,6 @@ def view_project_tree_backlog(request, pro_id):
             # Regenerate display_backlog_items
             #logger.debug(f">>> === ADD TO BOTTOM: {create_backlog_item} {create_backlog_item.id} === <<<")
             return redirect("view_project_tree_backlog", pro_id=pro_id)
-
-
     
     # test
     #logger.debug(f">>> === EPICS IN THIS BACKLOG: {epics_in_backlog} === <<<")
@@ -322,10 +320,6 @@ def view_project_tree_backlog(request, pro_id):
     
     backlog_items_count = len(display_backlog_items)
     #logger.debug(f">>> === BACKLOG ITEMS COUNT: {display_backlog_items} === <<<")
-    
-    
-    
-    
     
     
     # send outputs (info, template,

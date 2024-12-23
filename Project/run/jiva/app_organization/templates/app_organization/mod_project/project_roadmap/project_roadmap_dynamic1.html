@@ -1,27 +1,17 @@
-{% extends 'app_common/common_files/base_template.html' %}
-{% load static %}
-{% load crispy_forms_tags %}
-{% load custom_tags %}
-{% load app_web_my_filters %}
-{% load markdown_extras  %}
-{% block content %}
-
-{% include 'app_common/common_files/navbar.html' %}
-{% include 'app_jivapms/mod_web/common_files/css.html' %}
-<style>
-  .trash-icon {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    font-size: 24px;  /* Size of the icon */
-    cursor: pointer;
-    color: #707070;  /* Color of the icon */
-  }
-</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{page_title}}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
     <style>
-       
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
         #status-bar {
             margin: 20px;
@@ -44,12 +34,12 @@
         
         th {
             text-align: left;
-            padding: 17px;
+            padding: 20px;
             border: 1px solid #ddd;
         }
         td {
             text-align: left;
-            padding: 9px;
+            padding: 12px;
             border: 1px solid #ddd;
         }
 
@@ -76,7 +66,10 @@
             flex-direction: column;
             justify-content: center;
         }
+    </style>
 
+    
+<style>
     .left_gantt_row {
         background-color: #f4f4f4;
         font-size: 12px;
@@ -90,86 +83,45 @@
         border: 1px solid #ccc;
         background-color: #f9f9f9;
     }
-
-
-    .gantt-bar-epic {
-        fill: #007bff !important; /* Blue for Epics */
-    }
-
-    .gantt-bar-release {
-        fill: #28a745 !important; /* Green for Releases */
-    }
-
-    .gantt-bar-milestone {
-        fill: #ffc107 !important; /* Yellow for Milestones */
-    }
-
-    .gantt-bar-default {
-        fill: #6c757d !important; /* Gray for unspecified types */
-    }
 </style>
+</head>
+<body>
+    <h1>Project: {{project}} Roadmap</h1>
 
-<div class="content-wrapper">
-    
-    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    <!-- Status Bar -->
+    <!-- <div id="status-bar">
+        <strong>Selected Task:</strong>
+        <div id="task-details">
+            <p>Click or edit a task to see details here.</p>
+        </div>
+    </div> -->
+    <form action="" method="POST">
+        {% csrf_token %}
+    <!-- Roadmap Container -->
+    <div id="roadmap-container">
+        <!-- Left Table -->
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Roadmap Item</th>
+                    </tr>
+                </thead>
+                <tbody id="task-rows">
+                    <!-- Dynamic rows populated here -->
+                </tbody>
+            </table>
+        </div>
 
-    <div class="contentbar mb-5" id="contentbar">
-            
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col col-md-12">   
-                    
-                    
-                    <h1>Project: {{project}} Roadmap</h1>
-
-                    <!-- Status Bar -->
-                    <!-- <div id="status-bar">
-                        <strong>Selected Task:</strong>
-                        <div id="task-details">
-                            <p>Click or edit a task to see details here.</p>
-                        </div>
-                    </div> -->
-                    <form action="" method="POST">
-                        {% csrf_token %}
-                    <!-- Roadmap Container -->
-                    <div id="roadmap-container">
-                        <!-- Left Table -->
-                        <div>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Roadmap Item</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="task-rows">
-                                    <!-- Dynamic rows populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Right Gantt Chart -->
-                        <div id="gantt" class="gantt-container"></div>
-                    </div>
-                    </form>
-
-
-
-
-
-
-                </div>
-            </div>
-        </div>  
+        <!-- Right Gantt Chart -->
+        <div id="gantt" class="gantt-container"></div>
     </div>
-</div>
-
+    </form>
 <script>
 
         // Use the tasks_json variable from the backend
 const tasks = JSON.parse('{{ tasks_json|safe }}');
-
-
 
 // Define colors based on type
 const typeColors = {
@@ -276,17 +228,16 @@ function updateTaskOnServer(id, start, end, progress) {
 }
 
 
-// Update Gantt Chart Colors using custom classes
-function updateGanttColors() {
-    const ganttBars = document.querySelectorAll(".bar"); // Select all Gantt bars
-    ganttBars.forEach(bar => {
-        const taskId = bar.getAttribute("data-id"); // Get the task ID from the bar
-        const task = tasks.find(t => t.id === taskId); // Find the task object in the tasks array
 
-        // Apply custom class based on task type
-        if (task) {
-            const customClass = `gantt-bar-${task.type.toLowerCase()}`; // e.g., 'gantt-bar-epic'
-            bar.classList.add(customClass); // Add the class to the bar
+// Update Gantt Chart Colors
+function updateGanttColors() {
+    const ganttBars = document.querySelectorAll(".bar");
+    ganttBars.forEach(bar => {
+        const taskId = bar.getAttribute("data-id");
+        const task = tasks.find(t => t.id === taskId);
+
+        if (task && typeColors[task.type]) {
+            bar.style.fill = typeColors[task.type];
         }
     });
 }
@@ -295,22 +246,22 @@ function updateGanttColors() {
 initializeTableRows();
 initializeGanttChart();
 
-</script>
+    </script>
 
-<script>
+    <script>
+        
 
+        function updateStatusBar(task) {
+            const details = `
+                <p><strong>Task:</strong> ${task.name}</p>
+                <p><strong>Start:</strong> ${task.start}</p>
+                <p><strong>End:</strong> ${task.end}</p>
+                <p><strong>Progress:</strong> ${task.progress}%</p>
+            `;
+            //document.getElementById("task-details").innerHTML = details;
+        }
 
-function updateStatusBar(task) {
-    const details = `
-        <p><strong>Task:</strong> ${task.name}</p>
-        <p><strong>Start:</strong> ${task.start}</p>
-        <p><strong>End:</strong> ${task.end}</p>
-        <p><strong>Progress:</strong> ${task.progress}%</p>
-    `;
-    //document.getElementById("task-details").innerHTML = details;
-}
-
-
-</script>
-<!-- End: Content -->
-{% endblock content %}
+     
+    </script>
+</body>
+</html>

@@ -7,6 +7,8 @@ from app_organization.mod_organization.models_organization import *
 
 from app_common.mod_common.models_common import *
 
+from app_common.mod_app.all_view_imports import *
+from app_jivapms.mod_app.all_view_imports import *
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -283,7 +285,8 @@ def delete_roadmapitem(request, org_id, roadmapitem_id):
         object.active = False
         object.save()
         return redirect('list_roadmapitems', org_id=org_id)
-
+    check_deleted = organization.roadmap_items.filter(active=False)
+    logger.debug(f">>> === check_deleted: {check_deleted} === <<<")
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'delete_roadmapitem',

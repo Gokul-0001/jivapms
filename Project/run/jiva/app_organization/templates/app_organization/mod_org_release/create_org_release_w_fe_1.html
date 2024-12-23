@@ -34,7 +34,6 @@
                 </div>
                 <div class="container-fluid">
                     <div class="row">
-                        <!-- Form Section -->
                         <div class="col col-md-6">
                             <table class="table table-bordered">
                                 <thead>
@@ -117,19 +116,12 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Gantt Chart Section -->
-                        <div class="col col-md-6">
-                            <h4>Release Timeline - Gantt Chart</h4>
-                            <div id="gantt-chart" class="border p-3"></div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </form>
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
 <script>
     focusField = document.getElementById('id_name');
     focusField.focus();
@@ -156,8 +148,7 @@
                     endDate.setDate(0);
                 }
 
-                //const formattedEndDate = endDate.toISOString().split('T')[0];
-                const formattedEndDate = formatDate(endDate);
+                const formattedEndDate = endDate.toISOString().split('T')[0];
                 endDateInput.value = formattedEndDate;
             }
         }
@@ -171,7 +162,7 @@
                 const iterationEnd = new Date(startDate);
                 iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
 
-                iterationsTable.innerHTML += `<tr><td width='2%'>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
+                iterationsTable.innerHTML += `<tr><td>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
                 startDate.setDate(startDate.getDate() + (iterationLength * 7));
             }
             endDateInput.value = startDate.toISOString().split('T')[0];
@@ -180,76 +171,13 @@
         createIterationsCheckbox.addEventListener('change', function () {
             if (this.checked) {
                 generateIterations();
-
             } else {
                 iterationsTable.innerHTML = "";
                 endDateInput.value = "";
-                ganttChart.innerHTML = '';
                 setTimeout(() => calculateEndDate(), 0);
             }
         });
     });
-</script>
-<script>
-    mermaid.initialize({ startOnLoad: true });
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const ganttChartContainer = document.getElementById('gantt-chart');
-        const createIterationsCheckbox = document.getElementById('create_iterations');
-        const startDateInput = document.querySelector('[name="start_date"]');
-        const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
-        const noOfIterationsInput = document.getElementById('no_of_iterations');
-
-        function updateGanttChart() {
-            if (!ganttChartContainer) {
-                console.error('Gantt chart container not found!');
-                return;
-            }
-
-            const startDate = new Date(startDateInput.value);
-            const iterationLength = parseInt(iterationLengthInput.value, 10);
-            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
-            let chartDefinition = `gantt\n    title Release Plan\n    dateFormat  YYYY-MM-DD\n    section Release\n`;
-
-            const releaseEnd = new Date(startDate);
-            releaseEnd.setDate(startDate.getDate() + (iterationLength * 7 * noOfIterations));
-            //chartDefinition += `Release : ${startDate.toISOString().split('T')[0]}, ${releaseEnd.toISOString().split('T')[0]}\n`;
-            chartDefinition += `Release : ${formatDate(startDate)}, ${formatDate(releaseEnd)}\n`;
-
-
-            chartDefinition += "    section Iterations\n";
-            for (let count = 1; count <= noOfIterations; count++) {
-                const iterationEnd = new Date(startDate);
-                iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
-                //chartDefinition += `Iteration ${count} : ${startDate.toISOString().split('T')[0]}, ${iterationEnd.toISOString().split('T')[0]}\n`;
-                chartDefinition += `Iteration ${count} : ${formatDate(startDate)}, ${formatDate(iterationEnd)}\n`;
-
-                startDate.setDate(startDate.getDate() + (iterationLength * 7));
-            }
-
-            ganttChartContainer.innerHTML = `<div class='mermaid'>${chartDefinition}</div>`;
-            mermaid.contentLoaded();
-        }
-
-        createIterationsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                updateGanttChart();
-            } else {
-                ganttChartContainer.innerHTML = '';
-                mermaid.contentLoaded();
-            }
-        });
-    });
-</script>
-
-
-<script>
-function formatDate(date) {
-    return date.getFullYear() + '-' + 
-        String(date.getMonth() + 1).padStart(2, '0') + '-' +
-        String(date.getDate()).padStart(2, '0');
-}
-
 </script>
 <!-- End: Content -->
 {% endblock content %}

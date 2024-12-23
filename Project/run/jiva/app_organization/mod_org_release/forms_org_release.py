@@ -41,7 +41,7 @@ class OrgReleaseForm(forms.ModelForm):
     
     class Meta:
         model = OrgRelease
-        fields = ['name', 'description', 'start_date', 'end_date', 'release_length', 'apply_release_iteration_length']
+        fields = ['name', 'description', 'start_date', 'end_date', 'release_length', 'apply_release_iteration_length', 'no_of_iterations']
     def __init__(self, *args, **kwargs):
         super(OrgReleaseForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()  # Note: No need to pass 'self' here

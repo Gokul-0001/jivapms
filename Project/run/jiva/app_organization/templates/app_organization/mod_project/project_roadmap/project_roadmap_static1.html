@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{page_title}}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #status-bar {
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+
+        #roadmap-container {
+            display: grid;
+            grid-template-columns: 20% 80%; /* Left Table and Gantt Chart */
+            gap: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        
+        th {
+            text-align: left;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        td {
+            text-align: left;
+            padding: 9px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        th:nth-child(1) { width: 2%; }
+        th:nth-child(2) { width: 5%; }
+        th:nth-child(3) { width: 13%; }
+
+        /* Ensure rows in the table align with Gantt rows */
+        tbody tr {
+            height: 50px; /* Adjust to match Frappe Gantt row height */
+        }
+
+        #gantt {
+            height: auto;
+            overflow: hidden;
+        }
+
+        .gantt-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    </style>
+
+    
+<style>
+    .left_gantt_row {
+        background-color: #f4f4f4;
+        font-size: 12px;
+        height: 14px;
+    }
+
+    #status-bar {
+        min-height: 300px;
+        margin: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+    }
+</style>
+</head>
+<body>
+    <h1>Project: {{project}} Roadmap</h1>
+
+    <!-- Status Bar -->
+    <!-- <div id="status-bar">
+        <strong>Selected Task:</strong>
+        <div id="task-details">
+            <p>Click or edit a task to see details here.</p>
+        </div>
+    </div> -->
+
+    <!-- Roadmap Container -->
+    <div id="roadmap-container">
+        <!-- Left Table -->
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Roadmap Item</th>
+                    </tr>
+                </thead>
+                <tbody id="task-rows">
+                    <!-- Dynamic rows populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right Gantt Chart -->
+        <div id="gantt" class="gantt-container"></div>
+    </div>
+
+    <script>
+        const tasks = [
+            { id: "1", name: "Epic 1", start: "2024-12-01", end: "2024-12-15", progress: 50, type: "Epic" },
+            { id: "2", name: "Milestone 1", start: "2024-12-01", end: "2024-12-15", progress: 75, type: "Milestone" },
+            { id: "3", name: "Release 1", start: "2024-12-01", end: "2024-12-15", progress: 50, type: "Release", dependencies: ["2"] },
+            { id: "4", name: "Epic 2", start: "2024-12-01", end: "2024-12-15", progress: 75, type: "Epic" }
+        ];
+
+        const typeColors = {
+            "Epic": "#007bff",       // Blue
+            "Release": "#28a745",   // Green
+            "Milestone": "#ffc107"  // Yellow
+        };
+
+        function updateStatusBar(task) {
+            const details = `
+                <p><strong>Task:</strong> ${task.name}</p>
+                <p><strong>Start:</strong> ${task.start}</p>
+                <p><strong>End:</strong> ${task.end}</p>
+                <p><strong>Progress:</strong> ${task.progress}%</p>
+            `;
+            //document.getElementById("task-details").innerHTML = details;
+        }
+
+        function initializeTableRows() {
+            const tbody = document.getElementById("task-rows");
+            tbody.innerHTML = ""; // Clear existing rows
+
+            tasks.forEach((task, index) => {
+                const row = document.createElement("tr");
+                row.className = "left_gantt_row";
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <select data-id="${task.id}" class="type-selector">
+                            <option value="Epic" ${task.type === "Epic" ? "selected" : ""}>Epic</option>
+                            <option value="Release" ${task.type === "Release" ? "selected" : ""}>Release</option>
+                            <option value="Milestone" ${task.type === "Milestone" ? "selected" : ""}>Milestone</option>
+                        </select>
+                    </td>
+                    <td>${task.name}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            // Attach event listeners for type change
+            document.querySelectorAll(".type-selector").forEach(selector => {
+                selector.addEventListener("change", (event) => {
+                    const taskId = event.target.getAttribute("data-id");
+                    const selectedType = event.target.value;
+                    const task = tasks.find(task => task.id === taskId);
+
+                    if (task) {
+                        task.type = selectedType;
+                        updateGanttColors();
+                        updateStatusBar(task);
+                    }
+                });
+            });
+        }
+
+        function initializeGanttChart() {
+            const gantt = new Gantt("#gantt", tasks, {
+                view_mode: "Month",
+                custom_popup_html: (task) => `
+                    <div>
+                        <h5>${task.name}</h5>
+                        <p>Start: ${task.start}</p>
+                        <p>End: ${task.end}</p>
+                        <p>Progress: ${task.progress}%</p>
+                    </div>
+                `,
+                on_date_change: (task, start, end) => {
+                    const updatedTask = tasks.find(t => t.id === task.id);
+                    if (updatedTask) {
+                        updatedTask.start = start;
+                        updatedTask.end = end;
+                        updateStatusBar(updatedTask);
+                        alert(`Task ${task.name} dates updated: ${start} - ${end}`);
+                    }
+                },
+                on_progress_change: (task, progress) => {
+                    const updatedTask = tasks.find(t => t.id === task.id);
+                    if (updatedTask) {
+                        updatedTask.progress = progress;
+                        updateStatusBar(updatedTask);
+                    }
+                }
+            });
+
+            updateGanttColors();
+        }
+
+        function updateGanttColors() {
+            const ganttBars = document.querySelectorAll(".bar");
+            ganttBars.forEach(bar => {
+                const taskId = bar.getAttribute("data-id");
+                const task = tasks.find(t => t.id === taskId);
+
+                if (task && typeColors[task.type]) {
+                    bar.style.fill = typeColors[task.type];
+                }
+            });
+        }
+
+        // Initialize the table and Gantt chart
+        initializeTableRows();
+        initializeGanttChart();
+    </script>
+</body>
+</html>

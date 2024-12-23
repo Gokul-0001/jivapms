@@ -4,6 +4,9 @@ from app_organization.mod_org_release.models_org_release import *
 from app_organization.mod_org_release.forms_org_release import *
 
 from app_organization.mod_organization.models_organization import *
+from app_organization.mod_org_iteration.models_org_iteration import *
+
+from app_organization.mod_app.all_view_imports import *
 
 from app_common.mod_common.models_common import *
 
@@ -201,7 +204,41 @@ def list_deleted_org_releases(request, org_id):
 
 
 
+# # Create View
+# @login_required
+# def create_org_release(request, org_id):
+#     user = request.user
+#     organization = Organization.objects.get(id=org_id, active=True, 
+#                                                 **first_viewable_dict)
+    
+#     if request.method == 'POST':
+#         form = OrgReleaseForm(request.POST)
+#         if form.is_valid():
+#             form.instance.author = user
+#             form.instance.org_id = org_id
+#             form.save()
+#         else:
+#             print(f">>> === form.errors: {form.errors} === <<<")
+#         return redirect('list_org_releases', org_id=org_id)
+#     else:
+#         form = OrgReleaseForm()
+
+#     context = {
+#         'parent_page': '___PARENTPAGE___',
+#         'page': 'create_org_release',
+#         'organization': organization,
+#         'org_id': org_id,
+        
+#         'module_path': module_path,
+#         'form': form,
+#         'page_title': f'Create Org Release',
+#     }
+#     template_file = f"{app_name}/{module_path}/create_org_release.html"
+#     return render(request, template_file, context)
+
 # Create View
+from datetime import datetime, time, timedelta
+import pytz
 @login_required
 def create_org_release(request, org_id):
     user = request.user
@@ -213,7 +250,65 @@ def create_org_release(request, org_id):
         if form.is_valid():
             form.instance.author = user
             form.instance.org_id = org_id
-            form.save()
+            
+            # Set the time to 9:00 AM IST
+            ist = pytz.timezone('Asia/Kolkata')
+
+            # Handle start_date
+            start_date = form.cleaned_data['start_date']
+            if isinstance(start_date, datetime):
+                # Already datetime, just add time and set timezone
+                start_date = start_date.replace(hour=9, minute=0, second=0, tzinfo=ist)
+            else:
+                # Convert to datetime with 9 AM time and set timezone
+                start_date = datetime.combine(start_date, time(9, 0))
+                start_date = ist.localize(start_date)  # Make it timezone-aware
+
+            # Handle end_date
+            end_date = form.cleaned_data['end_date']
+            if isinstance(end_date, datetime):
+                # Already datetime, just add time and set timezone
+                end_date = end_date.replace(hour=9, minute=0, second=0, tzinfo=ist)
+            else:
+                # Convert to datetime with 9 AM time and set timezone
+                end_date = datetime.combine(end_date, time(9, 0))
+                end_date = ist.localize(end_date)  # Make it timezone-aware
+
+            # Assign updated values to the form
+            form.instance.start_date = start_date
+            form.instance.end_date = end_date
+
+            release = form.save()   
+
+            if 'create_iterations' in request.POST:
+                no_of_iterations = int(request.POST.get('no_of_iterations', 5))
+                iteration_length = int(form.cleaned_data['apply_release_iteration_length'])
+                start_date = form.cleaned_data['start_date']
+
+                # Set the default time to 9:00 AM IST
+                ist = pytz.timezone('Asia/Kolkata')
+                start_date = datetime.combine(start_date, time(9, 0))  # Add 9 AM time
+                start_date = ist.localize(start_date)  # Make it timezone-aware
+
+                # Clear old iterations
+                OrgIteration.objects.filter(org_release=release).update(active=False, deleted=True)
+
+                for i in range(no_of_iterations):
+                    # Calculate iteration end date
+                    iteration_end = start_date + timedelta(weeks=iteration_length)
+
+                    # Create iteration
+                    OrgIteration.objects.create(
+                        org_release=release,
+                        name=f"Iteration {i + 1}",
+                        start_date=start_date,  # Already has 9:00 AM IST
+                        end_date=iteration_end  # Already has 9:00 AM IST
+                    )
+
+                    # Move to next start date
+                    start_date = iteration_end
+
+            messages.success(request, 'Release saved successfully!')
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('list_org_releases', org_id=org_id)
@@ -234,8 +329,6 @@ def create_org_release(request, org_id):
     return render(request, template_file, context)
 
 
-
-
 # Edit
 @login_required
 def edit_org_release(request, org_id, org_release_id):
@@ -249,6 +342,64 @@ def edit_org_release(request, org_id, org_release_id):
         if form.is_valid():
             form.instance.author = user
             form.instance.org_id = org_id
+              # Set the time to 9:00 AM IST
+            ist = pytz.timezone('Asia/Kolkata')
+
+            # Handle start_date
+            start_date = form.cleaned_data['start_date']
+            if isinstance(start_date, datetime):
+                # Already datetime, just add time and set timezone
+                start_date = start_date.replace(hour=9, minute=0, second=0, tzinfo=ist)
+            else:
+                # Convert to datetime with 9 AM time and set timezone
+                start_date = datetime.combine(start_date, time(9, 0))
+                start_date = ist.localize(start_date)  # Make it timezone-aware
+
+            # Handle end_date
+            end_date = form.cleaned_data['end_date']
+            if isinstance(end_date, datetime):
+                # Already datetime, just add time and set timezone
+                end_date = end_date.replace(hour=9, minute=0, second=0, tzinfo=ist)
+            else:
+                # Convert to datetime with 9 AM time and set timezone
+                end_date = datetime.combine(end_date, time(9, 0))
+                end_date = ist.localize(end_date)  # Make it timezone-aware
+
+            # Assign updated values to the form
+            form.instance.start_date = start_date
+            form.instance.end_date = end_date
+
+            release = form.save()   
+
+            if 'create_iterations' in request.POST:
+                no_of_iterations = int(request.POST.get('no_of_iterations', 5))
+                iteration_length = int(form.cleaned_data['apply_release_iteration_length'])
+                start_date = form.cleaned_data['start_date']
+
+                # Set the default time to 9:00 AM IST
+                ist = pytz.timezone('Asia/Kolkata')
+                start_date = datetime.combine(start_date, time(9, 0))  # Add 9 AM time
+                start_date = ist.localize(start_date)  # Make it timezone-aware
+
+                # Clear old iterations
+                OrgIteration.objects.filter(org_release=release).update(active=False, deleted=True)
+
+                for i in range(no_of_iterations):
+                    # Calculate iteration end date
+                    iteration_end = start_date + timedelta(weeks=iteration_length)
+
+                    # Create iteration
+                    OrgIteration.objects.create(
+                        org_release=release,
+                        name=f"Iteration {i + 1}",
+                        start_date=start_date,  # Already has 9:00 AM IST
+                        end_date=iteration_end  # Already has 9:00 AM IST
+                    )
+
+                    # Move to next start date
+                    start_date = iteration_end
+
+            messages.success(request, 'Release saved successfully!')
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")

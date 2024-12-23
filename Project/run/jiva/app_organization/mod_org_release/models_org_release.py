@@ -13,6 +13,9 @@ class OrgRelease(BaseModelTrackDateImpl):
     
     apply_release_iteration_length = models.PositiveIntegerField(default=2)
     
+    # 23/12/2024 for roadmapping
+    no_of_iterations = models.IntegerField(default=5)
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_org_releases")
    

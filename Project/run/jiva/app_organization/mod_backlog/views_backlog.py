@@ -276,6 +276,7 @@ def create_backlog(request, pro_id, parent_id):
     # connect with connect id
     pro = get_object_or_404(Project, pk=pro_id, **viewable_dict)
     stored_selected_id = None
+    form = None
     if request.method == 'POST':
         action = request.POST.get('action', None)
         if action == 'select_id':

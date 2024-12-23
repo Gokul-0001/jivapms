@@ -22,7 +22,7 @@ app_version = 'v1'
 
 module_name = 'projects'
 module_path = f'mod_project'
-
+from app_organization.mod_backlog.views_project_tree import  get_tree_name_id
 @login_required
 def project_roadmap(request, org_id, project_id):
     user = request.user
@@ -32,6 +32,41 @@ def project_roadmap(request, org_id, project_id):
     project = Project.objects.get(pk=project_id)
     project_roadmap = ProjectRoadmap.objects.get_or_create(pro=project)
     
+    project_id_str = f"{project_id}_PROJECT_TREE"
+    BACKLOG_TYPE_NODE_OBJ = BacklogType.objects.get(name=project_id_str)
+    bt_tree_name_and_id = get_tree_name_id(BACKLOG_TYPE_NODE_OBJ)
+    #logger.debug(f">>> === TEST: PROJECT ROADMAP: {bt_tree_name_and_id} === <<<")
+    epic_type_id = bt_tree_name_and_id.get("Epic")
+    epic_type_node = BacklogType.objects.get(id=epic_type_id)    
+    
+    bug_type_id = bt_tree_name_and_id.get("Bug")
+    story_type_id = bt_tree_name_and_id.get("User Story")
+    tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+    
+    feature_type_id = bt_tree_name_and_id.get("Feature")
+    component_type_id = bt_tree_name_and_id.get("Component")
+    capability_type_id = bt_tree_name_and_id.get("Capability")
+    
+    # display roadmap
+    display_roadmap = Backlog.objects.filter(pro=project, type=epic_type_node)
+    
+    # Prepare tasks for Gantt chart
+    tasks = []
+    for idx, item in enumerate(display_roadmap):   
+            tasks.append({
+                "id": str(item.id),
+                "name": item.name,
+                # Default start date as today if missing
+                "start": item.start_date.strftime("%Y-%m-%d") if item.start_date else date.today().strftime("%Y-%m-%d"),
+                # Default end date as start_date + 2 days if end_date is missing
+                "end": (item.end_date if item.end_date else (
+                    item.start_date if item.start_date else date.today()) + timedelta(days=5)
+                ).strftime("%Y-%m-%d"),
+                "progress": item.progress if item.progress is not None else 10,  # Default progress is 0%
+                "type": item.type.name,
+                "custom_class": "gantt-bar-" + item.type.name.lower().replace(" ", "-")  # Generates class like 'gantt-bar-epic'
+            })
+
     # Prepare the context for the template
     context = {
         'parent_page': 'Projects',
@@ -42,6 +77,9 @@ def project_roadmap(request, org_id, project_id):
         'user': user,
         'project': project,
         'project_roadmap': project_roadmap,
+        'display_roadmap': display_roadmap,
+        'tasks': tasks,
+        'tasks_json': json.dumps(tasks),
         
         'page_title': f"{project.name} Roadmap",
     }
@@ -49,3 +87,37 @@ def project_roadmap(request, org_id, project_id):
     template_file = f"{app_name}/{module_path}/project_roadmap/project_roadmap.html"
     return render(request, template_file, context)
     
+    
+@login_required
+def ajax_update_project_roadmap(request):
+    if request.method == "POST":
+        try:
+            # Parse JSON data from request
+            data = json.loads(request.body)
+            task_id = data.get('id')
+            start = data.get('start')
+            end = data.get('end')
+            progress = data.get('progress')
+
+            # Fetch task from database
+            task = Backlog.objects.get(id=task_id)
+            
+            # Parse ISO 8601 datetime strings, ignoring time part
+            start_date = datetime.fromisoformat(start.replace('Z', '')).date()  # Converts to date
+            end_date = datetime.fromisoformat(end.replace('Z', '')).date()
+
+
+            # Update fields
+            task.start_date = start_date
+            task.end_date = end_date
+            task.progress = progress
+            task.save()  # Save changes
+
+            # Return success response
+            return JsonResponse({"status": "success", "message": "Task updated successfully."})
+        except Backlog.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Task not found."}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Invalid request."}, status=400)

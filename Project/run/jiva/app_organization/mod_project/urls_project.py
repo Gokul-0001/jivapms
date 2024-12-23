@@ -19,6 +19,7 @@ urlpatterns = [
     path('project_dvs/<int:org_id>/<int:project_id>/', views_project.project_dvs, name='project_dvs'),
     
     path('project_roadmap/<int:org_id>/<int:project_id>/', views_project_roadmap.project_roadmap, name='project_roadmap'),
+    path('ajax_update_project_roadmap/', views_project_roadmap.ajax_update_project_roadmap, name='ajax_update_project_roadmap'),
     
     
 ]

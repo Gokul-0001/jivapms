@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gantt Chart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.11/interact.min.css">
+    <style>
+        .gantt-container {
+            position: relative;
+            height: 500px;
+            width: 100%;
+            border: 1px solid #ddd;
+        }
+
+        .gantt-bar-item {
+            position: absolute;
+            border: 1px solid #aaa;
+            cursor: move;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            padding: 0 5px;
+        }
+
+        .gantt-bar-release {
+            background-color: #007bff;
+        }
+
+        .gantt-bar-iteration {
+            background-color: #28a745;
+        }
+
+        .gantt-bar-milestone {
+            background-color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div id="gantt" class="gantt-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.11/interact.min.js"></script>
+    <script>
+        const ganttContainer = document.getElementById('gantt');
+
+        // Sample tasks with parent-child hierarchy
+        const tasks = [
+            { id: 'release1', name: 'Release 1.0', start: '2024-01-01', end: '2024-03-31', type: 'release' },
+            { id: 'iter1', parent: 'release1', name: 'Iteration 1', start: '2024-01-01', end: '2024-01-15', type: 'iteration' },
+            { id: 'iter2', parent: 'release1', name: 'Iteration 2', start: '2024-01-16', end: '2024-01-31', type: 'iteration' },
+            { id: 'milestone1', parent: 'release1', name: 'Milestone', start: '2024-02-15', end: '2024-02-15', type: 'milestone' },
+        ];
+
+        // Render Gantt Bars
+        function renderGantt() {
+            ganttContainer.innerHTML = '';
+
+            tasks.forEach(task => {
+                const bar = document.createElement('div');
+                bar.classList.add('gantt-bar-item');
+
+                // Apply specific colors based on type
+                if (task.type === 'release') {
+                    bar.classList.add('gantt-bar-release');
+                } else if (task.type === 'iteration') {
+                    bar.classList.add('gantt-bar-iteration');
+                } else if (task.type === 'milestone') {
+                    bar.classList.add('gantt-bar-milestone');
+                }
+
+                // Position and size the bar
+                bar.style.left = `${(new Date(task.start) - new Date('2024-01-01')) / (1000 * 60 * 60 * 24) * 10}px`;
+                bar.style.width = `${(new Date(task.end) - new Date(task.start)) / (1000 * 60 * 60 * 24) * 10}px`;
+
+                bar.innerHTML = `<span>${task.name}</span>`;
+                bar.dataset.id = task.id;
+
+                // Append to the parent container
+                ganttContainer.appendChild(bar);
+
+                // Make draggable and resizable
+                makeInteractive(bar);
+            });
+        }
+
+        // Make bars interactive
+        function makeInteractive(bar) {
+            interact(bar)
+                .draggable({
+                    listeners: {
+                        move(event) {
+                            const target = event.target;
+                            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+
+                            target.style.left = `${x}px`;
+                            target.setAttribute('data-x', x);
+                        }
+                    }
+                })
+                .resizable({
+                    edges: { left: true, right: true },
+                    listeners: {
+                        move(event) {
+                            let target = event.target;
+                            let x = parseFloat(target.getAttribute('data-x')) || 0;
+
+                            target.style.width = `${event.rect.width}px`;
+                            target.style.left = `${x}px`;
+                        }
+                    }
+                });
+        }
+
+        // Initialize Gantt rendering
+        renderGantt();
+    </script>
+</body>
+</html>

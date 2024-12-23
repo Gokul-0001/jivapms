@@ -44,9 +44,9 @@ def create_story_map(request, org_id):
             request.session['default_activity_id'] = default_activity.id
             #print(f">>> === DEFAULT ACTIVITY {default_activity.id} === <<<")
             return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=new_persona.id)
-    if personae_count  > 0:
-        # Create the personae list for project 
-        return redirect('list_personae', organization_id=org_id)
+    # if personae_count  > 0:
+    #     # Create the personae list for project 
+    #     return redirect('list_personae', organization_id=org_id)
        
         
     # send outputs info, template,
@@ -94,9 +94,9 @@ def create_project_story_map(request, org_id, project_id):
             request.session['default_activity_id'] = default_activity.id
             #print(f">>> === DEFAULT ACTIVITY {default_activity.id} === <<<")
             return redirect('create_backlog_from_story_map', pro_id=selected_project_id, persona_id=new_persona.id)
-    if personae_count  > 0:
-        # Create the personae list for project 
-        return redirect('list_project_personae', organization_id=org_id, project_id=project_id)
+    # if personae_count  > 0:
+    #     # Create the personae list for project 
+    #     return redirect('list_project_personae', organization_id=org_id, project_id=project_id)
        
         
     # send outputs info, template,
@@ -146,7 +146,7 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
     capability_type_id = bt_tree_name_and_id.get("Capability")
     include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]  
     logger.debug(f"====> {include_types} ===> {persona_id}")  
-    initial_backlog = Backlog.objects.filter(pro=pro, type__in=include_types, active=True)
+    initial_backlog = Backlog.objects.filter(pro=pro,  persona_id=persona_id, type__in=include_types, active=True)
     backlog = Backlog.objects.filter(pro_id=pro_id, persona_id=persona_id, active=True)
     story_maps = StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id)
     #StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id).delete()

@@ -98,8 +98,8 @@ org_id
                                                             &nbsp;&nbsp;{% if org_release.end_date != None %}
                                                             <span id="release_end_date_{{org_release_id}}">{{org_release.end_date|date:'d-m-Y'}}</span>
                                                             {% endif %}
-                                                            <!-- &nbsp;&nbsp;&nbsp;&nbsp;
-                                                            Planning Buffer: {{ org_release.planning_buffer }} Days -->
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;
+                                                            Planning Buffer: {{ org_release.planning_buffer }} Days
                                                         </div>
                                                     </div>
                                                    
@@ -393,9 +393,8 @@ org_id
       
               // Add the planning buffer to the release start date for the first iteration
               let currentStartDate = new Date(releaseDate);
-              //currentStartDate.setDate(releaseDate.getDate() + planningBuffer);
-              currentStartDate.setDate(releaseDate.getDate());
-
+              currentStartDate.setDate(releaseDate.getDate() + planningBuffer);
+      
               iterationRows.forEach((iteration, index) => {
                   const iterationId = iteration.id.split("_")[2]; // Extract the iteration ID
                   const iterationLengthElement = document.getElementById(`iteration_length_${iterationId}`);
@@ -415,7 +414,7 @@ org_id
                   if (iterationLengthValue && !isNaN(iterationLengthValue)) {
                       // Calculate the end date based on the iteration length
                       const currentEndDate = new Date(currentStartDate);
-                      currentEndDate.setDate(currentStartDate.getDate() + iterationLengthValue * 7 );
+                      currentEndDate.setDate(currentStartDate.getDate() + iterationLengthValue * 7 - 1);
                       endDateInput.value = formatDateYYYYMMDD(currentEndDate); // End date in YYYY-MM-DD
       
                       // Move to the next iteration's start date

@@ -103,4 +103,43 @@ class BaseModelTrackDateImpl(models.Model):
         ordering = ['position']
         abstract = True
 
+
+class BaseModelTrackDateWOTImpl(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    description = models.CharField(max_length=200, null=True, blank=True)
+    # position for sequence
+    position = models.PositiveIntegerField(default=1000)
+    
+    # date details
+    created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True,null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # active or deleted
+    active = models.BooleanField(default=True)
+    deleted = models.BooleanField(default=False)
+    
+    # blocked
+    blocked = models.BooleanField(default=False)
+    blocked_count = models.PositiveIntegerField(default=0)
+    
+    # done and at time
+    done = models.BooleanField(default=False)
+    done_at = models.DateTimeField(null=True, blank=True)
+    
+    approved = models.BooleanField(default=False)
+    
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    
+    actual_start_date = models.DateTimeField(null=True, blank=True)
+    actual_end_date = models.DateTimeField(null=True, blank=True)
+    
+    est_duration = models.PositiveIntegerField(default=0)
+    total_duration = models.PositiveIntegerField(default=0)
+    
+    
+    class Meta:
+        ordering = ['position']
+        abstract = True
     
