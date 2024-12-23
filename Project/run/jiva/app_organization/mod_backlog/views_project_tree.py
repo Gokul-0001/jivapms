@@ -222,6 +222,12 @@ def view_project_tree_backlog(request, pro_id):
     selected_items = request.POST.get("selected_items", "").split(",")
     type_of_bi = request.POST.get("type")
     ajax_data = request.POST.get("seq_list_data")
+    
+    version_action = request.POST.get('read_version_action', '').strip().lower()
+    version_id = request.POST.get("version_id")
+    selected_version_items = request.POST.get("selected_version_items", "").split(",")
+    logger.debug(f">>> === VERSION ACTION: {version_action} === <<<")   
+    
     #logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
     if 'deleted' in filter_by:
         display_backlog_items = Backlog.objects.filter(pro=project, type__in=include_types, **filters).order_by('position')
@@ -259,7 +265,36 @@ def view_project_tree_backlog(request, pro_id):
         return redirect("view_project_tree_backlog", pro_id=pro_id)
     else:        
         logger.debug(f">>> === Invalid action: {action} === <<<")
-            
+    
+    
+    
+    if version_action == 'assign':
+        logger.debug(f">>> === Assigning Items: {selected_version_items} to Version: {version_id} === <<<")
+        for each_item in selected_version_items:
+            backlog_item = Backlog.objects.get(id=each_item)
+            if version_id == "Others":
+                backlog_item.release_id = None
+            elif version_id == "deleted":
+                backlog_item.active = False
+            else:
+                backlog_item.release = OrgRelease.objects.get(id=version_id)
+            backlog_item.save() 
+      
+        #logger.debug(f">>> === Items {selected_items} assigned to collection {collection_id} successfully! === <<<")
+        return redirect("view_project_tree_backlog", pro_id=pro_id)
+       
+    elif version_action == "unassign":
+        logger.debug(f">>> === UnAssigning Items: {selected_version_items} from Version: {collection_id} === <<<")
+        for each_item in selected_version_items:
+            backlog_item = Backlog.objects.get(id=each_item)
+            backlog_item.release_id = None
+            if version_id == "deleted":
+                backlog_item.active = False
+            backlog_item.save()
+        #display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
+        #logger.debug(f">>> === Items {selected_items} unassigned from collection {collection_id} successfully! === <<<")
+        
+        return redirect("view_project_tree_backlog", pro_id=pro_id)
     
     
     if add_action == 'add':
@@ -322,6 +357,9 @@ def view_project_tree_backlog(request, pro_id):
     #logger.debug(f">>> === BACKLOG ITEMS COUNT: {display_backlog_items} === <<<")
     
     
+    # Organization Releases from OrgReleases
+    org_releases = OrgRelease.objects.filter(org=project.org, active=True)
+    
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
@@ -347,6 +385,7 @@ def view_project_tree_backlog(request, pro_id):
         'epics_in_backlog': epics_in_backlog,
         'epic_type_parent': epic_type_parent,
 
+        'org_releases': org_releases,
         
         'project_backlog_super_type_url': f"/org/backlog_super_type/list_backlog_super_types/{pro_id}/",
         'project_backlog_type_url': f"/org/backlog_type/list_backlog_types/{pro_id}/{project_backlog_type.id}/",

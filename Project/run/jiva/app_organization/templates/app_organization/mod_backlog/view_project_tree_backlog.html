@@ -443,12 +443,9 @@
             <a href="#" class="vertical-text vertical-text-top" id="collection-link"
             onclick="toggleCollectionPanel()"
             >Collections</a>
-            <a href="#" class="vertical-text" id="revision-link"
-            onclick="toggleCollectionPanel()"
-            >Release-Iterations</a>
-            <a href="#" class="vertical-text" id="versions-link"
-            onclick="toggleCollectionPanel()"
-            >Release-Versions</a>
+            <a href="#" class="vertical-text" id="version-link"
+            onclick="toggleVersionPanel()"
+            >Release-Versions-Iterations</a>           
         </div>
 
         
@@ -521,18 +518,18 @@
         </div>
 
         <!-- Sliding Panel -->
-        <div id="version-panel" class="vesion-panel">
+        <div id="version-panel" class="version-panel">
             <div class="version-panel-header">
-                <h4>Versions</h4>
+                <h4>Release Versions</h4>
                 &nbsp;
-                <a href="{% url 'list_collections' project.id %}" class="btn btn-sm btn-primary">Setup</a>
+                <a href="{% url 'list_org_releases' org_id %}" class="btn btn-sm btn-primary">Setup</a>
                
-                <button onclick="toggleCollectionPanel()">Close</button>
+                <button onclick="toggleVersionPanel()">Close</button>
             </div>
             <ul class="version-list">
                 <li>
                     <div class="version-item">
-                        <span id="filter_unmapped" onclick="filterBacklog('all_items')">All Versions</span>
+                        <span id="filter_unmapped" onclick="filterBacklog('all_items')">All Release Versions</span>
                        
                     </div>
                     <div id="others" class="details hidden">
@@ -541,13 +538,13 @@
                 </li>
 
                 <!-- COLLECTION FOR BACKLOG -->
-                {% for collection in collections %}
+                {% for collection in org_releases %}
                 <li>
                     <div class="collection-item">
                         <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.id}}')">{{collection.name}}</span>
                         <div class="action-buttons">
-                            <button class="small-btn assign-btn" onclick="assignToCollection('{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
-                            <button class="small-btn unassign-btn me-2" onclick="unassignFromCollection('{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
+                            <button class="small-btn assign-btn" onclick="assignToVersion('{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
+                            <button class="small-btn unassign-btn me-2" onclick="unassignFromVersion('{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
                             <button class="dropdown-btn" onclick="toggleDetails('{{collection.id}}-details')">▼</button>
                         </div>
                     </div>
@@ -561,8 +558,8 @@
                     <div class="collection-item">
                         <span id="filter_unmapped" onclick="filterBacklog('unmapped')">Unmapped Items</span>
                         <div class="action-buttons">
-                            <button class="small-btn assign-btn" onclick="assignToCollection('Others')">&lt;&lt; &nbsp; Map</button>
-                            <button class="small-btn unassign-btn" onclick="unassignFromCollection('Others')">Unmap &nbsp; &gt;&gt;</button>
+                            <button class="small-btn assign-btn" onclick="assignToVersion('Others')">&lt;&lt; &nbsp; Map</button>
+                            <button class="small-btn unassign-btn" onclick="unassignFromVersion('Others')">Unmap &nbsp; &gt;&gt;</button>
                             <button class="dropdown-btn" onclick="toggleDetails('Others')">▼</button>
                         </div>
                     </div>
@@ -574,8 +571,8 @@
                     <div class="collection-item">
                         <span id="filter_deleted" onclick="filterBacklog('deleted')">Deleted Items</span>
                         <div class="action-buttons">
-                            <button class="small-btn assign-btn" onclick="assignToCollection('deleted')">&lt;&lt; &nbsp; Delete</button>
-                            <button class="small-btn unassign-btn" onclick="unassignFromCollection('deleted')">Restore &nbsp; &gt;&gt;</button>
+                            <button class="small-btn assign-btn" onclick="assignToVersion('deleted')">&lt;&lt; &nbsp; Delete</button>
+                            <button class="small-btn unassign-btn" onclick="unassignFromVersion('deleted')">Restore &nbsp; &gt;&gt;</button>
                             <button class="dropdown-btn" onclick="toggleDetails('deleted')">▼</button>
                         </div>
                     </div>
@@ -711,7 +708,13 @@
     <input type="hidden" name="read_action" id="form-action">
     <input type="hidden" name="collection_id" id="form-collection-id">
     <input type="hidden" name="selected_items" id="form-selected-items">
+</form>
 
+<form id="dynamic-form-version" method="POST" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="read_version_action" id="form-version-action">
+    <input type="hidden" name="version_id" id="form-version-id">
+    <input type="hidden" name="selected_version_items" id="form-selected-version-items">
 </form>
 </div>
 <script>
@@ -824,8 +827,6 @@ function filterBacklog(collectionId) {
         panel.classList.add('open');
         contentbar.classList.add('shifted');
     }
-
-
     
 }
 
@@ -1043,6 +1044,81 @@ FLAT_BACKLOG_NAME_ICONS = {
 
 </script>
 
+
+<!-- VERSION RELATED js -->
+<script>
+    function toggleVersionPanel() {
+      const panel = document.getElementById('version-panel');
+      const contentbar = document.getElementById('contentbar');
+      const isOpen = panel.classList.contains('open');
+  
+      if (isOpen) {  
+          panel.classList.remove('open');
+          contentbar.classList.remove('shifted');
+      } else {
+  
+          const collectionLink = document.getElementById('version-link');
+          const linkRect = collectionLink.getBoundingClientRect();
+  
+          panel.style.top = `${linkRect.top}px`;
+          panel.style.left = `${linkRect.right}px`;
+          panel.classList.add('open');
+          contentbar.classList.add('shifted');
+      }
+      
+  }
+  
+  function assignToVersion(collectionId) {
+      if (selectedItems.size === 0) {
+          //alert("No items selected!");
+          return;
+      }
+  
+      // Convert selected items to an array for display
+      const selectedItemsArray = Array.from(selectedItems);
+  
+      // Log or alert the assignment for simulation
+      console.log(`Assigned items: ${selectedItemsArray.join(', ')} to ${collectionId}`);
+      //alert(`Assigned items: ${selectedItemsArray.join(', ')} to ${collectionName}`);
+  
+      // Populate form data
+      const form = document.getElementById('dynamic-form-version');
+      document.getElementById('form-version-action').value = 'assign';
+      document.getElementById('form-version-id').value = collectionId;
+      document.getElementById('form-selected-version-items').value = Array.from(selectedItems).join(',');      
+  
+      // Submit the form
+      form.submit();     
+  
+      // // Close the panel
+      toggleVersionPanel();  
+      // // Clear selection (optional)
+      // clearSelection();
+  
+  }
+  
+  
+  function unassignFromVersion(collectionId) {
+      //alert(`Unassigned from ${collectionId}`);
+      if (selectedItems.size === 0) {
+          //alert("No items selected!");
+          return;
+      }
+  
+      // Populate form data
+      const form = document.getElementById('dynamic-form-version');
+      document.getElementById('form-version-action').value = 'unassign';
+      document.getElementById('form-version-id').value = collectionId;
+      document.getElementById('form-selected-version-items').value = Array.from(selectedItems).join(',');
+  
+      // Submit the form
+      
+      form.submit();
+      
+  }
+  
+  
+  </script>
 
 {% endblock content %}
 
