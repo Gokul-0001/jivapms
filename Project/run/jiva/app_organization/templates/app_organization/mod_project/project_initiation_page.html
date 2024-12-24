@@ -3,7 +3,7 @@
 {% csrf_token %}
 <div class="contentbar mb-5" id="contentbar">
     <div class="container mt-5">
-        <h1 class="text-center">Project: {{ project }} {{project_administration.project_state}}</h1>
+        <h1 class="text-center">Project: {{ project }} State: {{project_administration.project_state}}</h1>
             <table class="table table-bordered">
                 <tbody>
                     <tr><td><b>Org Name</b></td><td>{{project.org}}</td></tr>
