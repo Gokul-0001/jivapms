@@ -72,7 +72,7 @@ org_id
                             </div>
                             <form action="" method="POST">
                             {% csrf_token %}
-                            <table class="table table-bordered sortable_table">
+                            <table class="new_excel table table-bordered sortable_table">
                                 <thead>
                                     <tr>
                                         <td colspan="10">
@@ -83,8 +83,8 @@ org_id
                                                         <div >
                                                             
                                                             <a href="{% url 'edit_org_release' org_release.org.id org_release.id %}?back_to=list_org_iterations&rel_id={{rel_id}}">Release Start Date:</a>
-                                                            &nbsp;&nbsp;{% if org_release.start_date != None %}
-                                                            <span id="release_start_date_{{org_release_id}}">{{org_release.start_date|date:'d-m-Y'}}</span>
+                                                            &nbsp;&nbsp;{% if org_release.release_start_date != None %}
+                                                            <span id="release_start_date_{{org_release_id}}">{{org_release.release_start_date|date:'d-m-Y'}}</span>
                                                             {% endif %}</div>
         
                                                             <!-- <span>
@@ -95,8 +95,8 @@ org_id
                                                     </div>
                                                     <div class="col col-md-4 text-begin">
                                                         <div>Release End Date:
-                                                            &nbsp;&nbsp;{% if org_release.end_date != None %}
-                                                            <span id="release_end_date_{{org_release_id}}">{{org_release.end_date|date:'d-m-Y'}}</span>
+                                                            &nbsp;&nbsp;{% if org_release.release_end_date != None %}
+                                                            <span id="release_end_date_{{org_release_id}}">{{org_release.release_end_date|date:'d-m-Y'}}</span>
                                                             {% endif %}
                                                             <!-- &nbsp;&nbsp;&nbsp;&nbsp;
                                                             Planning Buffer: {{ org_release.planning_buffer }} Days -->
@@ -115,7 +115,8 @@ org_id
                                             <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                         </th>                                
                                         <th width="2%">#</th>
-                                        <th>Org Iteration</th>
+                                        <th width="10%">Org Iteration</th>
+                                        <th width="5%">Version</th>
                                         <th width="20%">Description</th>
                                         <th width="8%">Start Date</th>
                                         <th width="8%">Iteration Length</th>
@@ -160,19 +161,23 @@ org_id
                                         <td width="20%" ondblclick="makeEditable(this)"
                                          onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgIteration', 'name')"
                                         ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
+                                        <td width="5%">
+                                            {% if tobject.version != None %}{{org_release.major_version}}.{{org_release.version}}.{{ tobject.version }}{% endif %}
+                                        </td>
                                         <td width="" ondblclick="makeEditable(this)"
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgIteration', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                        <!-- Start Date with Date Picker -->
                                        <td width="8%">
                                         <input type="date" id="start_date_{{ tobject.id }}" 
-                                        value="{% if tobject.start_date %}{{ tobject.start_date|date:'Y-m-d' }}{% endif %}" 
+                                        value="{% if tobject.iteration_start_date %}{{ tobject.iteration_start_date|date:'Y-m-d' }}{% endif %}" 
                                             onchange="updateEndDate('{{ tobject.id }}')">
                                         </td>
                                         <td width="8%">
                                             <span id="iteration_length_{{ tobject.id }}">
-                                                {% if release.apply_release_iteration_length > 0 %}
-                                                    {{ release.apply_release_iteration_length }}
+                                                
+                                                {% if org_release.apply_release_iteration_length > 0 %}
+                                                    {{ org_release.apply_release_iteration_length }}
                                                 {% else %}
                                                     {% if tobject.iteration_length != None %}{{tobject.iteration_length}}{% endif %}
                                                 {% endif %}
@@ -182,7 +187,7 @@ org_id
                                         <!-- End Date with Date Picker -->
                                         <td width="8%">
                                             <input type="date" id="end_date_{{ tobject.id }}"
-                                                value="{% if tobject.end_date %}{{ tobject.end_date|date:'Y-m-d' }}{% endif %}" 
+                                                value="{% if tobject.iteration_end_date %}{{ tobject.iteration_end_date|date:'Y-m-d' }}{% endif %}" 
                                                 onchange="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Iteration', 'end_date')">
                                         </td>
                                     

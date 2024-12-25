@@ -24,8 +24,7 @@ org_id
       color: #707070;  /* Color of the icon */
     }
   </style>
-<form method="post">
-{% csrf_token %}
+
 <div class="content-wrapper">
     {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
     
@@ -40,7 +39,7 @@ org_id
                     <div class="col col-md-12">
                         <div class="container-fluid-width">
                             <div class="row pb-2">
-                                <div class="col col-md-5">
+                                <div class="col col-md-3">
                                     <b class="h3">
                                         <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
                                             {{organization}}
@@ -50,7 +49,7 @@ org_id
                                     Org Release List
                                    
                                 </div>
-                                <div class="col col-md-4">
+                                <div class="col col-md-3">
                                     <form method="get">
                                         <input type="text" name="search" placeholder="Search" value="{{ search }}">
                                         &nbsp;&nbsp;  
@@ -59,8 +58,11 @@ org_id
                                         <button type="submit" class="btn btn-sm btn-info">Clear</button>   
                                     </form>
                                 </div>
-                                <div class="col col-md-3 text-end">
+                                <div class="col col-md-5 text-end">
                                     <span class="display_count">{{objects_count}} org_release(s)</span>
+                                    &nbsp;&nbsp;
+                                    <a href="{% url 'create_org_global_release' org_id  %}" 
+                                    class="btn btn-sm btn-warning"><b>+ Create Global Release</b></a>
                                     &nbsp;&nbsp;
                                     <a href="{% url 'create_org_release' org_id  %}" 
                                     class="btn btn-sm btn-success"><b>+ Create Org Release</b></a>
@@ -86,6 +88,7 @@ org_id
                                     </th>                                
                                     <th width="2%">#</th>
                                     <th width="10%">Org Release</th>
+                                    <th width="5%">Version</th>
                                     <th width="20%">Description</th>
                                     <th width="8%">Start Date</th>
                                     <th width="8%">Release Length</th>
@@ -130,18 +133,21 @@ org_id
                                     <td width="20%" ondblclick="makeEditable(this)"
                                      onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgRelease', 'name')"
                                     ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
+                                    <td width="5%">
+                                        {% if tobject.version != None %}{{ tobject.version }}{% endif %}
+                                    </td>
                                     <td width="" ondblclick="makeEditable(this)"
                                     onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgRelease', 'description')"
                                     >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                     <td width="8%">
-                                        {% if tobject.start_date != None %}{{ tobject.start_date|date:"F j, Y" }}{% endif %}
+                                        {% if tobject.release_start_date != None %}{{ tobject.release_start_date|date:"F j, Y" }}{% endif %}
                                     </td>
                                     <td width="8%">
                                         {% if tobject.release_length != None %}{{tobject.release_length}}
                                         &nbsp;month(s){% endif %}
                                     </td>
                                     <td width="8%">
-                                        {% if tobject.end_date != None %}{{ tobject.end_date|date:"F j, Y" }}{% endif %}
+                                        {% if tobject.release_end_date != None %}{{ tobject.release_end_date|date:"F j, Y" }}{% endif %}
                                     </td>
                                     <td width="10%">
                                         {{tobject.iteration_count  }}&nbsp;&nbsp;

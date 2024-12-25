@@ -8,6 +8,7 @@ class ProjectRoadmap(BaseModelTrackImpl):
         ('done', 'Completed'),
         ('active', 'In Progress'),
         ('crit', 'Critical'),
+        ('init', 'Initiated'),
         ('', ''),
     ]
     pro = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
@@ -16,7 +17,7 @@ class ProjectRoadmap(BaseModelTrackImpl):
     
     section = models.CharField(max_length=255)  # e.g., "Year 1 - Foundations"
     task_name = models.CharField(max_length=255)  # e.g., "Define strategy"
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='init')
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     

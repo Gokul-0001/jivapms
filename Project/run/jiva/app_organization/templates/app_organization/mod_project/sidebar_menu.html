@@ -18,7 +18,10 @@
             <i class="material-icons" style="font-size: 18px;">diamond</i>
             <span>Dev Value Stream</span>
         </a>
-            
+        <a href="{% url 'list_impact_mappings' org_id  %}" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">create</i>
+            <span>Impact Mapping</span>
+        </a>
         <a href="{% url 'project_roadmap' project.org.id project.id  %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">map</i>
             <span>Roadmap</span>

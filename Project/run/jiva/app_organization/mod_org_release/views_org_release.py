@@ -10,6 +10,8 @@ from app_organization.mod_app.all_view_imports import *
 
 from app_common.mod_common.models_common import *
 
+from app_jivapms.mod_app.all_view_imports import *
+
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -539,7 +541,7 @@ def ajax_search_org_release_predecessors(request):
             # Filter predecessors based on the query
             if query:
                 predecessors = OrgRelease.objects.filter(name__icontains=query, active=True)[:10]
-                result = [{'id': pred.id, 'name': pred.name, 'start_date': pred.start_date, 'end_date': pred.end_date} for pred in predecessors]
+                result = [{'id': pred.id, 'name': pred.name, 'release_start_date': pred.release_start_date, 'release_end_date': pred.release_end_date} for pred in predecessors]
             else:
                 result = []
 
@@ -552,3 +554,102 @@ def ajax_search_org_release_predecessors(request):
     else:
         # If request is not POST, return bad request
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    
+@login_required
+def create_org_global_release(request, org_id):
+    user = request.user
+    organization = Organization.objects.get(id=org_id, active=True, 
+                                                **first_viewable_dict)
+    form = OrgReleaseForm()
+    
+    if request.method == 'POST':
+        # Read and parse release data from POST request
+        release_data = json.loads(request.POST.get('release_data'))
+
+        # Extract fields from release_data
+        year = release_data['year']
+        iteration_length = release_data['iterationLength']
+        start_date = release_data['startDate']
+        releases = release_data['releases']
+        
+        logger.debug(f"Year: {year}")
+        logger.debug(f"Iteration Length: {iteration_length}")
+        logger.debug(f"Start Date: {start_date}")
+        logger.debug(f"Release Data: {release_data}")
+        
+        
+        # Check if releases already exist for the given year
+        existing_releases = OrgRelease.objects.filter(year=year, org_id=org_id, active=True)
+        logger.debug(f"Checking if releases already exist for year {year} for org {org_id}")
+        logger.debug(f"Existing releases: {existing_releases}")
+        if existing_releases.exists():
+            #return JsonResponse({'error': 'Releases already exist for this year.'}, status=400)
+            error_details = 'Releases already exist for this year.'
+            logger.debug(f"Releases already exist for year {year} for org {org_id}")
+        else:
+            try:
+                with transaction.atomic():
+                    release_counter = 1
+                    logger.debug(f"Creating global releases for year {year} for org {org_id}")
+                    for release_info in releases:
+                        logger.debug(f"TEST Release info: {release_info}")
+                        # Create the release
+                        release_name = f'{organization}-{year}-Release{release_counter}'
+                        
+                        quarter = release_info['quarter']
+                        release_number = release_info['releaseNumber']
+                        logger.debug(f"Creating release {release_name}")
+                        logger.debug(f"Creating release {release_number}")
+                        logger.debug(f"Creating release {quarter}")
+                        major_version = str(year)[-2:]
+                        release = OrgRelease.objects.create(
+                            org_id=org_id,
+                            name=f"{major_version}-Rel-{release_number}",
+                            release_official_name=release_name,
+                            quarter=release_info['quarter'],
+                            year=year,                            
+                            major_version=major_version,                            
+                            release_start_date=release_info['startDate'],
+                            release_end_date=release_info['endDate'],
+                            apply_release_iteration_length=iteration_length,
+                            version=f"{release_number}",
+                        )
+                        logger.debug(f"Release {release_name} {release.release_start_date} created successfully")
+
+                        # Create iterations under the release
+                        for iteration in release_info['iterations']:
+                            iteration_number = iteration['iteration']
+                            OrgIteration.objects.create(
+                                org_release=release,
+                                quarter=iteration['quarter'],
+                                name = f'Iteration {iteration["iteration"]}',
+                                iteration_number=iteration['iteration'],
+                                iteration_start_date=iteration['startDate'],
+                                iteration_end_date=iteration['startDate'],
+                                start_day = iteration['startDay'],
+                                end_day = iteration['endDay'],
+                                version=f"{iteration_number}",
+                            )
+
+                        release_counter += 1
+                return redirect('list_org_releases', org_id=org_id)
+            except Exception as e:
+                error_details = str(e)
+                logger.error(f"Error creating global releases: {error_details}")
+        
+    else:
+        form = OrgReleaseForm()
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'create_org_release',
+        'organization': organization,
+        'org_id': org_id,
+        
+        'module_path': module_path,
+        'form': form,
+        'page_title': f'Create Org Release',
+    }
+    template_file = f"{app_name}/{module_path}/create_org_global_release.html"
+    return render(request, template_file, context)

@@ -1,0 +1,194 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
+                                Release for Organization</h2>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_org_releases' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List Org Release(s)</b></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Form Section -->
+                        <div class="col col-md-6">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4">{{page_title}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Release Name</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.name|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Description</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.description|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Iteration Length (Weeks)</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.apply_release_iteration_length|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Start Date</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            <input type="date" id="id_start_date" name="start_date" value="">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <button type="submit" class="btn btn-sm btn-success">Save</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Iteration Schedule Section -->
+                        <div class="col col-md-6">
+                            <h4>Release Timeline - Iterations</h4>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Quarter</th>
+                                        <th>Release</th>
+                                        <th>Iteration</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="iterations-table">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const iterationsTable = document.getElementById('iterations-table');
+        const iterationLength = {{ form.apply_release_iteration_length.value|default:2 }};
+
+        let year = 2025;
+        let startDate = new Date(year, 0, 1);
+        while (startDate.getDay() === 0 || startDate.getDay() === 6) {
+            startDate.setDate(startDate.getDate() + 1);
+        }
+
+        let plannedStartDate = startDate.getFullYear() + '-' +
+                               String(startDate.getMonth() + 1).padStart(2, '0') + '-' +
+                               String(startDate.getDate()).padStart(2, '0');
+
+        document.getElementById('id_start_date').value = plannedStartDate;
+
+        let iterationStart = new Date(plannedStartDate);
+        let endDate = new Date(year, 11, 31);
+
+        let iterationCount = 1;
+        let quarter = 1;
+        let release = 1;
+
+        let releaseData = [];
+        let currentRelease = { startDate: iterationStart, endDate: null, iterations: [] };
+
+        while (iterationStart <= endDate) {
+            let iterationEnd = new Date(iterationStart);
+            iterationEnd.setDate(iterationStart.getDate() + (iterationLength * 7) - 1);
+
+            while (iterationEnd.getDay() === 0 || iterationEnd.getDay() === 6) {
+                iterationEnd.setDate(iterationEnd.getDate() - 1);
+            }
+
+            if (iterationEnd > endDate) {
+                iterationEnd = endDate;
+            }
+
+            let currentQuarter = Math.floor(iterationStart.getMonth() / 3) + 1;
+            if (currentQuarter !== quarter) {
+                releaseData.push(currentRelease);
+                quarter = currentQuarter;
+                release++;
+                iterationCount = 1;
+                currentRelease = { startDate: iterationStart, endDate: null, iterations: [] };
+            }
+
+            currentRelease.iterations.push({
+                quarter: quarter,
+                release: release,
+                iteration: iterationCount,
+                startDate: iterationStart.toISOString().split('T')[0],
+                endDate: iterationEnd.toISOString().split('T')[0]
+            });
+
+            currentRelease.endDate = iterationEnd;
+            iterationCount++;
+            iterationStart = new Date(iterationEnd);
+            iterationStart.setDate(iterationStart.getDate() + 1);
+
+            while (iterationStart.getDay() === 0 || iterationStart.getDay() === 6) {
+                iterationStart.setDate(iterationStart.getDate() + 1);
+            }
+        }
+        releaseData.push(currentRelease);
+
+        releaseData.forEach(release => {
+            iterationsTable.innerHTML += `<tr style="font-weight: bold;">
+                <td colspan="2">Release${release.release} Summary</td>
+                <td colspan="2">Start: ${release.startDate.toISOString().split('T')[0]}</td>
+                <td>End: ${release.endDate.toISOString().split('T')[0]}</td>
+            </tr>`;
+            release.iterations.forEach(iteration => {
+                iterationsTable.innerHTML += `<tr>
+                    <td>Q${iteration.quarter}</td>
+                    <td>Release${iteration.release}</td>
+                    <td>${iteration.iteration}</td>
+                    <td>${iteration.startDate}</td>
+                    <td>${iteration.endDate}</td>
+                </tr>`;
+            });
+        });
+    });
+</script>
+{% endblock content %}

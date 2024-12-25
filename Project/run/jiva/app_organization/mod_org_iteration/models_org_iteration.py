@@ -9,6 +9,19 @@ class OrgIteration(BaseModelTrackDateImpl):
     
     iteration_length = models.PositiveIntegerField(default=2)
     
+    quarter = models.PositiveIntegerField(default=1)
+    iteration_number = models.PositiveIntegerField(default=0)
+    
+    iteration_start_date = models.DateField(null=True, blank=True)
+    iteration_end_date = models.DateField(null=True, blank=True)
+    
+    start_day = models.CharField(max_length=15, null=True, blank=True)
+    end_day = models.CharField(max_length=15, null=True, blank=True)
+    
+   
+    version = models.CharField(max_length=50, null=True, blank=True)
+    build_no = models.CharField(max_length=50, null=True, blank=True)
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_org_iterations")
    

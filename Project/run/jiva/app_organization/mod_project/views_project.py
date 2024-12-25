@@ -525,6 +525,25 @@ def project_homepage(request, org_id, project_id):
             project_administration.project_state = 'Started'
             project_administration.save()
             form.save()
+            # pr_start_date = form.instance.start_date
+            # pr_end_date = form.instance.end_date
+            # project_roadmap, created = ProjectRoadmap.objects.get_or_create(
+            #     pro=project, 
+            #     active=True
+            # )
+            # Initiation 
+            backlog_project_type_root, create = BacklogType.objects.get_or_create(name=f"{project_id}_PROJECT_TREE")
+            
+            # # Roadmap, self entry
+            # project_roadmap.section = f"{project.name} Project Roadmap"
+            # project_roadmap.task_name = f"{project.name} Project"
+            # project_roadmap.status = 'init'
+            # project_roadmap.start_date = pr_start_date
+            # project_roadmap.end_date = pr_end_date,
+            # project_roadmap.author = user
+            # project_roadmap.active = True
+            # project_roadmap.save()
+
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('project_homepage', org_id=org_id, project_id=project_id)

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GIST Model</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .idea { background-color: #2196F3; color: white; }
+    .step { background-color: #FFC107; color: black; }
+    .task { background-color: #F44336; color: white; }
+  </style>
+</head>
+<body>
+  <h1>GIST Model</h1>
+  <table>
+    <!-- Goal Row -->
+    <tr>
+      <th colspan="14">Goal 1</th>
+    </tr>
+
+    <!-- Ideas Row -->
+    <tr>
+      <td class="idea" colspan="7">Idea 1</td>
+      <td class="idea" colspan="7">Idea 2</td>
+    </tr>
+
+    <!-- Steps Row for Idea 1 -->
+    <tr>
+      <td class="step" colspan="2">Step 1</td>
+      <td class="step" colspan="3">Step 2</td>
+      <td class="step" colspan="2">Step 3</td>
+
+      <!-- Steps Row for Idea 2 -->
+      <td class="step" colspan="3">Step 1</td>
+      <td class="step" colspan="4">Step 2</td>
+    </tr>
+
+    <!-- Tasks Row for Idea 1 -->
+    <tr>
+      <td class="task">Task 1</td>
+      <td class="task">Task 2</td>
+      <td class="task">Task 3</td>
+      <td class="task">Task 4</td>
+      <td class="task">Task 5</td>
+      <td class="task">Task 6</td>
+      <td class="task">Task 7</td>
+
+      <!-- Tasks Row for Idea 2 -->
+      <td class="task">Task 8</td>
+      <td class="task">Task 9</td>
+      <td class="task">Task 10</td>
+      <td class="task">Task 11</td>
+      <td class="task">Task 12</td>
+      <td class="task">Task 13</td>
+      <td class="task">Task 14</td>
+    </tr>
+  </table>
+</body>
+</html>

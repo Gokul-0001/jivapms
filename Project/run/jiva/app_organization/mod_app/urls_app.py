@@ -27,6 +27,7 @@ urlpatterns = [
     path('org_image_map/', include('app_organization.mod_org_image_map.urls_org_image_map')),
     path('org_iteration/', include('app_organization.mod_org_iteration.urls_org_iteration')),
     path('org_metric/', include('app_organization.mod_org_metric.urls_org_metric')),
+    path('org_practice_event/', include('app_organization.mod_org_practice_event.urls_org_practice_event')),
     path('org_release/', include('app_organization.mod_org_release.urls_org_release')),
     path('org_team/', include('app_organization.mod_org_team.urls_org_team')),
     path('org_work_flow/', include('app_organization.mod_org_work_flow.urls_org_work_flow')),

@@ -124,7 +124,7 @@ org_id
                                 onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgEvent', 'description')"
                                 >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                 <td width="20%">
-                                
+                                <a href="{% url 'list_org_practice_events' tobject.id %}">Events</a>
                                 </td>
                                 <td width="50%">
                                     <a href="{% url 'view_org_event' org_id  tobject.id  %}"

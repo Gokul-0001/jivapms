@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Release Model</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .iteration { background-color: #2196F3; color: white; }
+    .user-story { background-color: #FFC107; color: black; }
+    .task { background-color: #F44336; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Release Model</h1>
+  <table>
+    <!-- Release Row -->
+    <tr>
+      <th colspan="14">Release 1</th>
+    </tr>
+
+    <!-- Iterations Row -->
+    <tr>
+      <td class="iteration" colspan="7">Iteration 1</td>
+      <td class="iteration" colspan="7">Iteration 2</td>
+    </tr>
+
+    <!-- User Stories Row for Iteration 1 -->
+    <tr>
+      <td class="user-story" colspan="2">User Story 1</td>
+      <td class="user-story" colspan="3">User Story 2</td>
+      <td class="user-story" colspan="2">User Story 3</td>
+
+      <!-- User Stories Row for Iteration 2 -->
+      <td class="user-story" colspan="3">User Story 1</td>
+      <td class="user-story" colspan="4">User Story 2</td>
+    </tr>
+
+    <!-- Tasks Row for Iteration 1 -->
+    <tr>
+      <td class="task">Task 1</td>
+      <td class="task">Task 2</td>
+      <td class="task">Task 3</td>
+      <td class="task">Task 4</td>
+      <td class="task">Task 5</td>
+      <td class="task">Task 6</td>
+      <td class="task">Task 7</td>
+
+      <!-- Tasks Row for Iteration 2 -->
+      <td class="task">Task 8</td>
+      <td class="task">Task 9</td>
+      <td class="task">Task 10</td>
+      <td class="task">Task 11</td>
+      <td class="task">Task 12</td>
+      <td class="task">Task 13</td>
+      <td class="task">Task 14</td>
+    </tr>
+  </table>
+</body>
+</html>

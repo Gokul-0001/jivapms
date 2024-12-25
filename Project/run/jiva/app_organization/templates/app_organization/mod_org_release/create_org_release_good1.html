@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
             li.className = 'list-group-item list-group-item-action';
             li.textContent = item.name;
             li.setAttribute('data-id', item.id);
-            li.onclick = () => addPredecessor(item.id, item.name, item.release_end_date);
+            li.onclick = () => addPredecessor(item.id, item.name, item.end_date);
             searchResults.appendChild(li);
         });
         searchResults.style.display = 'block';
@@ -378,3 +378,17 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- End: Content -->
 {% endblock content %}
 
+
+<!-- def save_org_release(request):
+    if request.method == 'POST':
+        form = OrgReleaseForm(request.POST)
+        if form.is_valid():
+            org_release = form.save()
+            predecessor_ids = request.POST.get('predecessors', '')
+            if predecessor_ids:
+                predecessor_ids = [int(id) for id in predecessor_ids.split(',')]
+                org_release.predecessors.set(predecessor_ids)
+            return redirect('success_page')
+    else:
+        form = OrgReleaseForm()
+    return render(request, 'org_release_form.html', {'form': form}) -->

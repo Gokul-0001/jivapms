@@ -1,0 +1,246 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<div class="container-fluid">
+    <div class="row">  
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
+                                Release for Organization</h2>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_org_releases' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List Org Release(s)</b></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Form Section -->
+                        <div class="col col-md-6">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4">{{page_title}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>Organization</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            Create Org Release for Year 
+                                            <select name="year" id="rel_year">
+                                                <option value="">-- Select a Year --</option>
+                                                <option value="2024">2024</option>
+                                                <option value="2025" selected>2025</option>
+                                                <option value="2026">2026</option>
+                                                <option value="2027">2027</option>
+                                                <option value="2027">2028</option>
+                                                <option value="2027">2029</option>
+                                            </select>
+                                        </td>
+                                    <tr>
+                                        <td>
+                                            <strong>Iteration Length (Weeks)</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            <select name="iteration_length" id="iter_length">
+                                                <option value="1">1</option>
+                                                <option value="2" selected>2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Planned Start Date</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            <input type="text" name="start_date" id="id_start_date" 
+                                                class="form-control" readonly>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <button type="button" id="create-release" class="btn btn-sm btn-success">Create</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Iteration Schedule Section -->
+                        <div class="col col-md-6">
+                            <h4>Release Timeline - Iterations</h4>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Quarter</th>
+                                        <th>Release</th>
+                                        <th>Iteration</th>
+                                        <th>Start Date</th>
+                                        <th>Start Day</th>
+                                        <th>End Date</th>
+                                        <th>End Day</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="iterations-table">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('create-release').addEventListener('click', function () {
+        const iterationsTable = document.getElementById('iterations-table');
+        iterationsTable.innerHTML = '';
+
+        const year = parseInt(document.getElementById('rel_year').value);
+        const iterationLength = parseInt(document.getElementById('iter_length').value);
+
+        // Define holidays (YYYY-MM-DD format)
+        const holidays = [
+            `${year}-01-01`, // New Year
+            `${year}-01-18`, // Example: Martin Luther King Jr. Day
+            `${year}-02-15`, // Example: Presidents' Day
+            `${year}-04-09`,
+            `${year}-05-31`, // Example: Memorial Day
+            `${year}-07-05`, // Example: Independence Day (Observed)
+            `${year}-09-06`, // Example: Labor Day
+            `${year}-10-11`, // Example: Columbus Day
+            `${year}-12-25`, // Christmas
+            `${year}-07-04`,  // Example: Independence Day
+            `${year}-11-11`,  // Example: Veterans Day
+            `${year}-11-26`,  // Example: Thanksgiving
+            `${year}-12-31`,  // Example: New Year's Eve
+
+        ];
+
+        function isHoliday(date) {
+            const dateString = date.toISOString().split('T')[0];
+            return holidays.includes(dateString);
+        }
+
+        let startDate = new Date(year, 0, 1);
+        while (startDate.getDay() === 0 || startDate.getDay() === 6 || isHoliday(startDate)) {
+            startDate.setDate(startDate.getDate() + 1);
+        }
+
+        let plannedStartDate = startDate.getFullYear() + '-' +
+                               String(startDate.getMonth() + 1).padStart(2, '0') + '-' +
+                               String(startDate.getDate()).padStart(2, '0');
+
+        document.getElementById('id_start_date').value = plannedStartDate;
+
+        let iterationStart = new Date(plannedStartDate);
+        let endDate = new Date(year, 11, 31);
+
+        let iterationCount = 1;
+        let quarter = 1;
+        let release = 1;
+
+        let releaseData = [];
+        let currentRelease = { 
+                releaseNumber: release, 
+                expRelease: release, 
+                startDate: iterationStart, 
+                endDate: null, 
+                iterations: [] 
+            };
+
+        while (iterationStart <= endDate) {
+            let iterationEnd = new Date(iterationStart);
+            iterationEnd.setDate(iterationStart.getDate() + (iterationLength * 7) - 1);
+
+            while (iterationEnd.getDay() === 0 || iterationEnd.getDay() === 6 || isHoliday(iterationEnd)) {
+                iterationEnd.setDate(iterationEnd.getDate() - 1);
+            }
+
+            if (iterationEnd > endDate) {
+                iterationEnd = endDate;
+            }
+
+            let currentQuarter = Math.floor(iterationStart.getMonth() / 3) + 1;
+            if (currentQuarter !== quarter) {
+                releaseData.push(currentRelease);
+                quarter = currentQuarter;
+                release++;
+                iterationCount = 1;
+                currentRelease = { 
+                        releaseNumber: release, 
+                        expRelease: release, 
+                        startDate: iterationStart, 
+                        endDate: null, 
+                        iterations: [] 
+                    };
+            }
+
+            currentRelease.iterations.push({
+                quarter: quarter,
+                release: release,
+                iteration: iterationCount,
+                startDate: iterationStart.toISOString().split('T')[0],
+                startDay: iterationStart.toLocaleDateString('en-US', { weekday: 'long' }),
+                endDate: iterationEnd.toISOString().split('T')[0],
+                endDay: iterationEnd.toLocaleDateString('en-US', { weekday: 'long' })
+            });
+
+            currentRelease.endDate = iterationEnd;
+            iterationCount++;
+            iterationStart = new Date(iterationEnd);
+            iterationStart.setDate(iterationStart.getDate() + 1);
+
+            while (iterationStart.getDay() === 0 || iterationStart.getDay() === 6 || isHoliday(iterationStart)) {
+                iterationStart.setDate(iterationStart.getDate() + 1);
+            }
+        }
+        releaseData.push(currentRelease);
+
+        releaseData.forEach(rel => {
+            iterationsTable.innerHTML += `<tr style="font-weight: bold;">
+                <td colspan="2">Release${rel.expRelease} Summary</td>
+                <td colspan="2">Start: ${rel.startDate.toISOString().split('T')[0]}</td>
+                <td>End: ${rel.endDate.toISOString().split('T')[0]}</td>
+            </tr>`;
+            rel.iterations.forEach(iteration => {
+                iterationsTable.innerHTML += `<tr>
+                    <td>Q${iteration.quarter}</td>
+                    <td>Release${iteration.release}</td>
+                    <td>${iteration.iteration}</td>
+                    <td>${iteration.startDate}</td>
+                    <td>${iteration.startDay}</td>
+                    <td>${iteration.endDate}</td>
+                    <td>${iteration.endDay}</td>
+                </tr>`;
+            });
+        });
+    });
+});
+
+</script>
+{% endblock content %}

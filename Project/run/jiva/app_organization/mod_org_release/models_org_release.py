@@ -18,6 +18,14 @@ class OrgRelease(BaseModelTrackDateImpl):
     # New Predecessor Field (Multiple Dependencies)
     predecessors = models.ManyToManyField('self', blank=True, related_name="successors")
     
+    quarter = models.PositiveIntegerField(default=0)
+    year = models.PositiveIntegerField(default=0)
+    release_official_name = models.CharField(max_length=150, null=True, blank=True)
+    release_start_date = models.DateField(null=True, blank=True)
+    release_end_date = models.DateField(null=True, blank=True)
+    version = models.CharField(max_length=50, null=True, blank=True)
+    major_version = models.CharField(max_length=50, null=True, blank=True)
+    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_org_releases")
    
