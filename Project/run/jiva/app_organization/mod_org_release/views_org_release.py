@@ -7,7 +7,7 @@ from app_organization.mod_organization.models_organization import *
 from app_organization.mod_org_iteration.models_org_iteration import *
 
 from app_organization.mod_app.all_view_imports import *
-
+from app_organization.mod_project.models_project import *
 from app_common.mod_common.models_common import *
 
 from app_jivapms.mod_app.all_view_imports import *
@@ -42,7 +42,11 @@ def list_org_releases(request, org_id):
     deleted_count = 0
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = OrgRelease.objects.filter(name__icontains=search_query, 
@@ -125,6 +129,10 @@ def list_org_releases(request, org_id):
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Org_release List',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }       
     template_file = f"{app_name}/{module_path}/list_org_releases.html"
     return render(request, template_file, context)
@@ -146,7 +154,11 @@ def list_deleted_org_releases(request, org_id):
     selected_bulk_operations = None
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = OrgRelease.objects.filter(name__icontains=search_query, 
@@ -206,6 +218,10 @@ def list_deleted_org_releases(request, org_id):
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Org_release List',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }       
     template_file = f"{app_name}/{module_path}/list_deleted_org_releases.html"
     return render(request, template_file, context)
@@ -252,7 +268,11 @@ def create_org_release(request, org_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     if request.method == 'POST':
         form = OrgReleaseForm(request.POST)
         if form.is_valid():
@@ -340,6 +360,10 @@ def create_org_release(request, org_id):
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Org Release',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/create_org_release.html"
     return render(request, template_file, context)
@@ -351,7 +375,11 @@ def edit_org_release(request, org_id, org_release_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(OrgRelease, pk=org_release_id, active=True,**viewable_dict)
     if request.method == 'POST':
         form = OrgReleaseForm(request.POST, instance=object)
@@ -439,6 +467,10 @@ def edit_org_release(request, org_id, org_release_id):
         'form': form,
         'object': object,
         'page_title': f'Edit Org Release',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/edit_org_release.html"
     return render(request, template_file, context)
@@ -450,7 +482,11 @@ def delete_org_release(request, org_id, org_release_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(OrgRelease, pk=org_release_id, active=True,**viewable_dict)
     if request.method == 'POST':
         object.active = False
@@ -466,6 +502,10 @@ def delete_org_release(request, org_id, org_release_id):
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Org Release',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/delete_org_release.html"
     return render(request, template_file, context)
@@ -493,6 +533,10 @@ def permanent_deletion_org_release(request, org_id, org_release_id):
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Org Release',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/permanent_deletion_org_release.html"
     return render(request, template_file, context)
@@ -513,7 +557,11 @@ def view_org_release(request, org_id, org_release_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(OrgRelease, pk=org_release_id, active=True,**viewable_dict)    
 
     context = {
@@ -525,6 +573,10 @@ def view_org_release(request, org_id, org_release_id):
         'module_path': module_path,
         'object': object,
         'page_title': f'View Org Release',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/view_org_release.html"
     return render(request, template_file, context)
@@ -561,6 +613,11 @@ def create_org_global_release(request, org_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     form = OrgReleaseForm()
     
     if request.method == 'POST':
@@ -650,6 +707,9 @@ def create_org_global_release(request, org_id):
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Org Release',
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/create_org_global_release.html"
     return render(request, template_file, context)

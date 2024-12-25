@@ -4,6 +4,7 @@ from app_organization.mod_impact_mapping.models_impact_mapping import *
 from app_organization.mod_impact_mapping.forms_impact_mapping import *
 
 from app_organization.mod_organization.models_organization import *
+from app_organization.mod_project.models_project import *
 
 from app_common.mod_common.models_common import *
 
@@ -35,6 +36,11 @@ def list_impact_mappings(request, organization_id):
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
     deleted_count = 0
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     organization = Organization.objects.get(id=organization_id, active=True, 
                                                 **first_viewable_dict)
     
@@ -111,6 +117,10 @@ def list_impact_mappings(request, organization_id):
         'deleted_count': deleted_count,
         'show_all': show_all,
         
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
+        
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Impact_mapping List',
@@ -135,6 +145,11 @@ def list_deleted_impact_mappings(request, organization_id):
     selected_bulk_operations = None
     organization = Organization.objects.get(id=organization_id, active=True, 
                                                 **first_viewable_dict)
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     
     search_query = request.GET.get('search', '')
     if search_query:
@@ -195,6 +210,10 @@ def list_deleted_impact_mappings(request, organization_id):
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Impact_mapping List',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }       
     template_file = f"{app_name}/{module_path}/list_deleted_impact_mappings.html"
     return render(request, template_file, context)
@@ -207,6 +226,11 @@ def create_impact_mapping(request, organization_id):
     user = request.user
     organization = Organization.objects.get(id=organization_id, active=True, 
                                                 **first_viewable_dict)
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     
     if request.method == 'POST':
         form = ImpactMappingForm(request.POST)
@@ -229,6 +253,10 @@ def create_impact_mapping(request, organization_id):
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Impact Mapping',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/create_impact_mapping.html"
     return render(request, template_file, context)
@@ -242,6 +270,11 @@ def edit_impact_mapping(request, organization_id, impact_mapping_id):
     user = request.user
     organization = Organization.objects.get(id=organization_id, active=True, 
                                                 **first_viewable_dict)
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     
     object = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True,**viewable_dict)
     if request.method == 'POST':
@@ -266,6 +299,10 @@ def edit_impact_mapping(request, organization_id, impact_mapping_id):
         'form': form,
         'object': object,
         'page_title': f'Edit Impact Mapping',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/edit_impact_mapping.html"
     return render(request, template_file, context)
@@ -277,6 +314,11 @@ def delete_impact_mapping(request, organization_id, impact_mapping_id):
     user = request.user
     organization = Organization.objects.get(id=organization_id, active=True, 
                                                 **first_viewable_dict)
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     
     object = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True,**viewable_dict)
     if request.method == 'POST':
@@ -293,6 +335,10 @@ def delete_impact_mapping(request, organization_id, impact_mapping_id):
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Impact Mapping',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/delete_impact_mapping.html"
     return render(request, template_file, context)
@@ -303,7 +349,11 @@ def permanent_deletion_impact_mapping(request, organization_id, impact_mapping_i
     user = request.user
     organization = Organization.objects.get(id=organization_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=False, deleted=False, **viewable_dict)
     if request.method == 'POST':
         object.active = False
@@ -320,6 +370,10 @@ def permanent_deletion_impact_mapping(request, organization_id, impact_mapping_i
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Impact Mapping',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/permanent_deletion_impact_mapping.html"
     return render(request, template_file, context)
@@ -340,7 +394,11 @@ def view_impact_mapping(request, organization_id, impact_mapping_id):
     user = request.user
     organization = Organization.objects.get(id=organization_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True,**viewable_dict)    
 
     context = {
@@ -352,6 +410,10 @@ def view_impact_mapping(request, organization_id, impact_mapping_id):
         'module_path': module_path,
         'object': object,
         'page_title': f'View Impact Mapping',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/view_impact_mapping.html"
     return render(request, template_file, context)
@@ -362,7 +424,11 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
 
     # Validate Organization
     organization = Organization.objects.get(id=organization_id, active=True, **first_viewable_dict)
-
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     # Validate ImpactMapping
     impact_mapping = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True, **viewable_dict)
 
@@ -412,6 +478,10 @@ def editor_impact_mapping(request, organization_id, impact_mapping_id):
         'module_path': module_path,
         'object': impact_mapping,
         'page_title': f'Editor Impact Mapping',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
 
     template_file = f"{app_name}/{module_path}/editor_impact_mapping.html"
@@ -477,7 +547,11 @@ def view_tree_table_mapping(request, organization_id, impact_mapping_id):
 
     # Validate Organization
     organization = Organization.objects.get(id=organization_id, active=True, **first_viewable_dict)
-
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     # Validate ImpactMapping
     impact_mapping = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True, **viewable_dict)
 
@@ -527,6 +601,10 @@ def view_tree_table_mapping(request, organization_id, impact_mapping_id):
         'module_path': module_path,
         'object': impact_mapping,
         'page_title': f'Tree Table Impact Mapping',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
 
     template_file = f"{app_name}/{module_path}/view_tree_table_mapping.html"

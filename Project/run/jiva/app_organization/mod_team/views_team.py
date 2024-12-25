@@ -40,7 +40,11 @@ def list_teams(request, org_id):
     deleted_count = 0
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     member = Member.objects.get(user=user, active=True)
     user_roles = MemberOrganizationRole.objects.filter(member=member)    
     relevant_admin = user_roles.filter(role__name__in=[org_admin_str, project_admin_str]).exists()
@@ -132,6 +136,10 @@ def list_teams(request, org_id):
         'relevant_admin': relevant_admin,
         'user_roles': user_roles,
         'user_memberships': user_memberships,
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }       
     template_file = f"{app_name}/{module_path}/list_teams.html"
     return render(request, template_file, context)
@@ -154,7 +162,11 @@ def list_deleted_teams(request, org_id):
     selected_bulk_operations = None
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = Team.objects.filter(name__icontains=search_query, 
@@ -214,6 +226,10 @@ def list_deleted_teams(request, org_id):
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Team List',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }       
     template_file = f"{app_name}/{module_path}/list_deleted_teams.html"
     return render(request, template_file, context)
@@ -227,7 +243,11 @@ def create_team(request, org_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     if request.method == 'POST':
         form = TeamForm(request.POST)
         if form.is_valid():
@@ -249,6 +269,10 @@ def create_team(request, org_id):
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Team',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/create_team.html"
     return render(request, template_file, context)
@@ -263,7 +287,11 @@ def edit_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(Team, pk=team_id, active=True,**viewable_dict)
     if request.method == 'POST':
         form = TeamForm(request.POST, instance=object)
@@ -287,6 +315,10 @@ def edit_team(request, org_id, team_id):
         'form': form,
         'object': object,
         'page_title': f'Edit Team',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/edit_team.html"
     return render(request, template_file, context)
@@ -299,7 +331,11 @@ def delete_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(Team, pk=team_id, active=True,**viewable_dict)
     if request.method == 'POST':
         object.active = False
@@ -315,6 +351,10 @@ def delete_team(request, org_id, team_id):
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Team',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/delete_team.html"
     return render(request, template_file, context)
@@ -326,7 +366,11 @@ def permanent_deletion_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(Team, pk=team_id, active=False, deleted=False, **viewable_dict)
     if request.method == 'POST':
         object.active = False
@@ -343,6 +387,10 @@ def permanent_deletion_team(request, org_id, team_id):
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Team',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/permanent_deletion_team.html"
     return render(request, template_file, context)
@@ -365,7 +413,11 @@ def view_team(request, org_id, team_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(Team, pk=team_id, active=True,**viewable_dict)    
 
     context = {
@@ -377,6 +429,10 @@ def view_team(request, org_id, team_id):
         'module_path': module_path,
         'object': object,
         'page_title': f'View Team',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/view_team.html"
     return render(request, template_file, context)

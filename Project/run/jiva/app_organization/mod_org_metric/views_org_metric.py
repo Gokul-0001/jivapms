@@ -4,7 +4,9 @@ from app_organization.mod_org_metric.models_org_metric import *
 from app_organization.mod_org_metric.forms_org_metric import *
 
 from app_organization.mod_organization.models_organization import *
+from app_organization.mod_project.models_project import *
 
+from app_common.mod_app.all_view_imports import *
 from app_common.mod_common.models_common import *
 
 app_name = 'app_organization'
@@ -37,7 +39,11 @@ def list_org_metrics(request, org_id):
     deleted_count = 0
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = OrgMetric.objects.filter(name__icontains=search_query, 
@@ -114,6 +120,10 @@ def list_org_metrics(request, org_id):
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Org_metric List',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }       
     template_file = f"{app_name}/{module_path}/list_org_metrics.html"
     return render(request, template_file, context)
@@ -135,7 +145,11 @@ def list_deleted_org_metrics(request, org_id):
     selected_bulk_operations = None
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = OrgMetric.objects.filter(name__icontains=search_query, 
@@ -195,6 +209,10 @@ def list_deleted_org_metrics(request, org_id):
         'pagination_options': pagination_options,
         'selected_bulk_operations': selected_bulk_operations,
         'page_title': f'Org_metric List',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }       
     template_file = f"{app_name}/{module_path}/list_deleted_org_metrics.html"
     return render(request, template_file, context)
@@ -207,7 +225,11 @@ def create_org_metric(request, org_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     if request.method == 'POST':
         form = OrgMetricForm(request.POST)
         if form.is_valid():
@@ -229,6 +251,10 @@ def create_org_metric(request, org_id):
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Org Metric',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/create_org_metric.html"
     return render(request, template_file, context)
@@ -242,7 +268,11 @@ def edit_org_metric(request, org_id, org_metric_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(OrgMetric, pk=org_metric_id, active=True,**viewable_dict)
     if request.method == 'POST':
         form = OrgMetricForm(request.POST, instance=object)
@@ -266,6 +296,10 @@ def edit_org_metric(request, org_id, org_metric_id):
         'form': form,
         'object': object,
         'page_title': f'Edit Org Metric',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/edit_org_metric.html"
     return render(request, template_file, context)
@@ -277,7 +311,11 @@ def delete_org_metric(request, org_id, org_metric_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(OrgMetric, pk=org_metric_id, active=True,**viewable_dict)
     if request.method == 'POST':
         object.active = False
@@ -293,6 +331,10 @@ def delete_org_metric(request, org_id, org_metric_id):
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Org Metric',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/delete_org_metric.html"
     return render(request, template_file, context)
@@ -303,7 +345,11 @@ def permanent_deletion_org_metric(request, org_id, org_metric_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(OrgMetric, pk=org_metric_id, active=False, deleted=False, **viewable_dict)
     if request.method == 'POST':
         object.active = False
@@ -320,6 +366,10 @@ def permanent_deletion_org_metric(request, org_id, org_metric_id):
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Org Metric',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/permanent_deletion_org_metric.html"
     return render(request, template_file, context)
@@ -340,7 +390,11 @@ def view_org_metric(request, org_id, org_metric_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project = None
+    project_id = None
+    if 'project_id' in request.GET:
+        project_id = request.GET.get('project_id')
+        project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
     object = get_object_or_404(OrgMetric, pk=org_metric_id, active=True,**viewable_dict)    
 
     context = {
@@ -352,6 +406,10 @@ def view_org_metric(request, org_id, org_metric_id):
         'module_path': module_path,
         'object': object,
         'page_title': f'View Org Metric',
+        
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
     }
     template_file = f"{app_name}/{module_path}/view_org_metric.html"
     return render(request, template_file, context)

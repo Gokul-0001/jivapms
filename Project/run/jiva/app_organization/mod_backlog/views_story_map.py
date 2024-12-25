@@ -146,7 +146,7 @@ def create_backlog_from_story_map(request, pro_id, persona_id):
     capability_type_id = bt_tree_name_and_id.get("Capability")
     include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]  
     logger.debug(f"====> {include_types} ===> {persona_id}")  
-    initial_backlog = Backlog.objects.filter(pro=pro,  persona_id=persona_id, type__in=include_types, active=True)
+    initial_backlog = Backlog.objects.filter(pro=pro,   type__in=include_types, active=True)
     backlog = Backlog.objects.filter(pro_id=pro_id, persona_id=persona_id, active=True)
     story_maps = StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id)
     #StoryMapping.objects.filter(pro_id=pro_id, persona_id=persona_id).delete()
