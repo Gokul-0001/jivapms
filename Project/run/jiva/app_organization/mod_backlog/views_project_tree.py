@@ -274,6 +274,7 @@ def view_project_tree_backlog(request, pro_id):
             backlog_item = Backlog.objects.get(id=each_item)
             if version_id == "Others":
                 backlog_item.release_id = None
+                backlog_item.iteration_id = None
             elif version_id == "deleted":
                 backlog_item.active = False
             else:
@@ -288,6 +289,7 @@ def view_project_tree_backlog(request, pro_id):
         for each_item in selected_version_items:
             backlog_item = Backlog.objects.get(id=each_item)
             backlog_item.release_id = None
+            backlog_item.iteration_id = None
             if version_id == "deleted":
                 backlog_item.active = False
             backlog_item.save()
