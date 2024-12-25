@@ -7,6 +7,9 @@ class OrgRelease(BaseModelTrackDateImpl):
     org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="org_org_releases", null=True, blank=True)
     
+    project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE,
+                                related_name="project_org_releases", null=True, blank=True)
+    
     release_length = models.PositiveIntegerField(default=3)
     
     planning_buffer = models.PositiveIntegerField(default=2)

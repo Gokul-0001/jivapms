@@ -7,6 +7,9 @@ class OrgIteration(BaseModelTrackDateImpl):
     org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, 
                             related_name="org_release_org_iterations", null=True, blank=True)
     
+    project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE,
+                                related_name="project_org_iterations", null=True, blank=True)
+    
     iteration_length = models.PositiveIntegerField(default=2)
     
     quarter = models.PositiveIntegerField(default=1)
@@ -21,6 +24,7 @@ class OrgIteration(BaseModelTrackDateImpl):
    
     version = models.CharField(max_length=50, null=True, blank=True)
     build_no = models.CharField(max_length=50, null=True, blank=True)
+    hotfix = models.CharField(max_length=50, null=True, blank=True)
     
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_org_iterations")

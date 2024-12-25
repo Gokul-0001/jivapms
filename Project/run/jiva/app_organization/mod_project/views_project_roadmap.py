@@ -30,7 +30,10 @@ def project_roadmap(request, org_id, project_id):
     project_id = int(project_id)
     org = Organization.objects.get(pk=org_id)
     project = Project.objects.get(pk=project_id)
-    project_roadmap = ProjectRoadmap.objects.get_or_create(pro=project)
+    #project_roadmaps = ProjectRoadmap.objects.filter(pro=project, roadmap_name="HIGH-LEVEL-ROADMAP").delete()
+    #logger.debug(f">>> === TEST: PROJECT ROADMAP: {project_roadmaps} === <<<")
+    
+    project_roadmap = ProjectRoadmap.objects.get_or_create(pro=project, roadmap_name="HIGH-LEVEL-ROADMAP", active=True)
     
     project_id_str = f"{project_id}_PROJECT_TREE"
     BACKLOG_TYPE_NODE_OBJ = BacklogType.objects.get(name=project_id_str)
@@ -48,14 +51,16 @@ def project_roadmap(request, org_id, project_id):
     capability_type_id = bt_tree_name_and_id.get("Capability")
     
     # display roadmap
-    display_roadmap = Backlog.objects.filter(pro=project, type=epic_type_node)
+    # display_roadmap = Backlog.objects.filter(pro=project, type=epic_type_node, active=True)
+    include_roadmap_items = [epic_type_node,  feature_type_id, component_type_id, capability_type_id]
+    display_roadmap = Backlog.objects.filter(pro=project, type__in=include_roadmap_items, active=True)
     
     # Prepare tasks for Gantt chart
     tasks = []
     for idx, item in enumerate(display_roadmap):   
             tasks.append({
                 "id": str(item.id),
-                "name": item.name,
+                "name": f"{item.type.name}: {item.name}",
                 # Default start date as today if missing
                 "start": item.start_date.strftime("%Y-%m-%d") if item.start_date else date.today().strftime("%Y-%m-%d"),
                 # Default end date as start_date + 2 days if end_date is missing

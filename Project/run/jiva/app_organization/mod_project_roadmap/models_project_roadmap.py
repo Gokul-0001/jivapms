@@ -14,7 +14,7 @@ class ProjectRoadmap(BaseModelTrackImpl):
     pro = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
                             related_name="project_roadmap_items", null=True, blank=True)
     
-    
+    roadmap_name = models.CharField(max_length=255, null=True, blank=True)
     section = models.CharField(max_length=255)  # e.g., "Year 1 - Foundations"
     task_name = models.CharField(max_length=255)  # e.g., "Define strategy"
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='init')
