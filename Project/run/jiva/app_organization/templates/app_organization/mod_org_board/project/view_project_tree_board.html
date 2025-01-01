@@ -636,6 +636,7 @@
                 <div class="dropdown">
                     <select id="parentFilter" >
                         <option value="">-- Select SwimLane --</option>
+                        <option value="0">-- All SwimLanes --</option>
                         {% for efcc in efcc_backlog_items %}
                             <option value="{{ efcc.id }}">{{ efcc }}</option>
                         {% endfor %}

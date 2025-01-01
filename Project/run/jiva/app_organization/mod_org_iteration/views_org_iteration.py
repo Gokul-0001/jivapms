@@ -544,6 +544,24 @@ def view_iteration_kanban(request, org_id, project_id):
     week_positions = [(i / 52) * 100 for i in range(1, 53)]
 
 
+    if 'edit_map_project_release' in request.GET:
+        project.project_release_mapped_flag = False
+        project.save()
+        return redirect('view_iteration_kanban', org_id=org_id, project_id=project_id)
+    if request.method == 'POST':
+        iteration_id = request.POST.get('map_project_release')
+        if iteration_id:  
+            try:
+                iteration = OrgIteration.objects.get(id=iteration_id, active=True)
+                project.project_release_mapped_flag = True
+                project.project_iteration = iteration
+                project.project_release = iteration.org_release
+                project.save()
+
+            except OrgIteration.DoesNotExist:
+                return HttpResponse("Invalid selection!", status=400)
+
+
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'view_iteration_kanban',

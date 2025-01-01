@@ -483,7 +483,7 @@ def view_project_tree_board(request, project_id):
     efcc_backlog_items = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
     efcc_backlog_items_swimlane = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
     get_swimlane_id = request.GET.get('swimlane_id')  if request.GET.get('swimlane_id') else '0'
-    swimlane_flag = False
+    swimlane_flag = True
     logger.debug(f">>> === CHECK: {efcc_include_types} === <<<")
     logger.debug(f">>> === get_swimlane_id: {get_swimlane_id} === <<<" )
     if get_swimlane_id != '0':  # Check if swimlane_id is provided
@@ -501,7 +501,7 @@ def view_project_tree_board(request, project_id):
             type__in=efcc_include_types,
             active=True
         )
-        logger.debug(f">>> === efcc_backlog_items: {efcc_backlog_items} === <<<")
+        logger.debug(f">>> === efcc_backlog_items (else): {efcc_backlog_items} === <<<")
         
     logger.debug(f">>> === efcc_backlog_items_swimlane: {efcc_backlog_items_swimlane} === <<<")
     filters = {}

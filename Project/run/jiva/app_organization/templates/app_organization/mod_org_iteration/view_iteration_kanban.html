@@ -498,10 +498,36 @@
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center">
-                <div class="display_topic"><b class="h3">Project Board: </b>{{ project }}</div>
+                <div class="display_topic"><b class="h3">Project Release/Iteration Planning: </b>{{ project }}</div>
                 
             </div>
-            
+            <div class="container-fluid-width">
+                <div class="row">
+                    <div class="col col-md-6">
+                        {% if project.project_release_mapped_flag %}
+                        <b>This Project has been mapped to start with Release/Iteration: {{project.project_release}}/{{project.project_iteration}}</b>
+                        &nbsp;&nbsp;
+                        <a href="?edit_map_project_release=yes" class="btn btn-warning btn-sm">Edit</a>
+                        {% else %}
+                        <b>The Project is not mapped to any Release</b>
+                        <p>Please map using the nearest release or the list of releases.</p>
+                        <form action="" method="POST" id="releaseForm">
+                            {% csrf_token %}
+                        <select name="map_project_release" id="map_project_release" onchange="document.getElementById('releaseForm').submit();">
+                            <option value="">-- Select a Release --</option>
+                            {% for release in releases.all|filter_active %}
+                                {% for iteration in release.org_release_org_iterations.all|filter_active %}
+                                <option value="{{ iteration.id }}"
+                                {% if project.project_release == release and project.project_iteration == iteration %} selected {% endif %}
+                                >{{ iteration.org_release }}:{{ iteration }}</option>
+                                {% endfor %}
+                            {% endfor %}
+                        </select>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
          
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
