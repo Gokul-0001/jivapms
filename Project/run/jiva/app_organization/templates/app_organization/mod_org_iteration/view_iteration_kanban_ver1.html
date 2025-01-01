@@ -1,0 +1,213 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .timeline-container {
+        margin: 20px 0;
+        padding: 10px;
+    }
+
+    .timeline-bar {
+        position: relative;
+        height: 50px;
+        width: 100%;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    /* Release Marker */
+    .release-marker {
+        position: absolute;
+        width: 6px;
+        height: 70px;
+        background-color: green;
+        top: -10px;
+    }
+
+    .release-marker i {
+        position: absolute;
+        top: -25px;
+        left: -10px;
+        font-size: 18px;
+        color: green;
+    }
+
+    .release-label {
+        position: absolute;
+        top: 60px;
+        transform: translateX(-50%);
+        font-size: 12px;
+        font-weight: bold;
+        color: green;
+    }
+
+    /* Iteration Marker */
+    .iteration-marker {
+        position: absolute;
+        width: 3px;
+        height: 40px;
+        background-color: blue;
+        top: 5px;
+        cursor: pointer;
+    }
+
+    .iteration-label {
+        position: absolute;
+        top: 45px;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: blue;
+        cursor: pointer;
+    }
+
+    .iteration-marker.active {
+        background-color: red;
+    }
+</style>
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>View Iterations</h3>
+           <form method="post">
+            {% csrf_token %}
+
+            <!-- VIEW ITERATION KANBAN -->
+            <h2>Project Release Mapping</h2>
+            {% if project.project_release_mapped_flag %}
+            <b>The Project is mapped to a Release: {{project_release}}/{{project_iteration}}</b>
+            {% else %}
+            <b>The Project is not mapped to any Release</b>
+            <p>Please map using the nearest release or the list of releases.</p>
+            {% endif %}
+
+
+            <h1>Nearest Release</h1>
+            {% if release %}
+                <p><strong>Release Name:</strong> {{ release.name }}</p>
+                <p><strong>Start Date:</strong> {{ release.release_start_date }}</p>
+                <p><strong>End Date:</strong> {{ release.release_end_date }}</p>
+            {% else %}
+                <p>No upcoming releases found.</p>
+            {% endif %}
+            <div class="container mt-4">
+                <h1>Release Timeline</h1>
+                {% for release in release_data %}
+                <div class="timeline-container mb-5">
+                    <b>{{ release.name }} ({{ release.release_start_date }} - {{ release.release_end_date }})</b>
+                    <!-- Timeline Bar -->
+                    <div class="timeline-bar">
+                        <!-- Release Marker -->
+                        <div class="release-marker" style="left: 0%;">
+                            <i class="bi bi-box"></i> <!-- Product Box Icon -->
+                        </div>
+                        <div class="release-label" style="left: 0%;">{{ release.release_start_date }}</div>
+        
+                        <div class="release-marker" style="left: 100%;">
+                            <i class="bi bi-box"></i>
+                        </div>
+                        <div class="release-label" style="left: 100%;">{{ release.release_end_date }}</div>
+        
+                        <!-- Iterations -->
+                        {% for iteration in release.iterations %}
+                        <div class="iteration-marker" 
+                             id="iteration-{{ iteration.id }}"
+                             style="left: {{ iteration.position }}%;"
+                             data-id="{{ iteration.id }}"
+                             data-name="{{ iteration.name }}"
+                             data-start="{{ iteration.iteration_start_date }}"
+                             data-end="{{ iteration.iteration_end_date }}">
+                        </div>
+                        <div class="iteration-label" 
+                             style="left: {{ iteration.position }}%;"
+                             onclick="selectIteration('{{ iteration.id }}', '{{ iteration.name }}', '{{ iteration.iteration_start_date }}', '{{ iteration.iteration_end_date }}')">
+                            {{ iteration.name }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        
+            <script>
+                function selectIteration(id, name, start, end) {
+                    // Remove active class from all markers
+                    $('.iteration-marker').removeClass('active');
+        
+                    // Highlight the selected marker
+                    $('#iteration-' + id).addClass('active');
+        
+                    // Show details in alert
+                    alert(`Selected Iteration: ${name}\nStart: ${start}\nEnd: ${end}`);
+                }
+            </script>
+            <h1>Release List</h1>
+            <table class="table table-bordered" width="60%">
+                <thead>
+                    <tr>
+                        <th width="2%">#</th>
+                        <th>Release Name</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for release in releases %}
+                    <tr>
+                        <td width="2%">{{forloop.counter}}</td>
+                        <td>{{ release.name }}</td>
+                        <td>{{ release.release_start_date }}</td>
+                        <td>{{ release.release_end_date }}</td>
+                        <td>
+                            <a href="" class="btn btn-primary">Map</a>
+                        </td>
+                    </tr>
+                    
+
+                     <!-- Iterations for each Release -->
+                    {% for iteration in release.org_release_org_iterations.all|filter_active %}
+                    {% if iteration %}
+                        <tr class="iteration-row">
+                            <td></td>
+                            <td>&nbsp;&nbsp;&nbsp;<i>Iteration:</i> {{ iteration.name }}</td>
+                            <td>{{ iteration.iteration_start_date }}</td>
+                            <td>{{ iteration.iteration_end_date }}</td>
+                            <td>
+                                <a href="#" class="btn btn-secondary btn-sm">Details</a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No releases or iterations found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+            <!-- VIEW ITERATION KANBAN -->
+
+            </form> 
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

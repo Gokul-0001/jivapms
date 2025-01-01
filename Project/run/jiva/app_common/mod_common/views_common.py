@@ -335,3 +335,18 @@ def ajax_update_row_task_done_state(request):
                 return JsonResponse({'success': True, 'row_id': row_id})      
 
     return JsonResponse({'success': False})
+
+@login_required
+def COMMON_set_project_id(request, context):
+    # Check if 'project_id' exists in GET and is not None or empty
+    project_id = request.GET.get('project_id') or request.session.get('project_id')
+    if project_id:
+        context['project_id'] = project_id
+    else:
+        context['project_id'] = None
+        # Update the session with the project_id if found
+        request.session['project_id'] = context['project_id']
+    
+@login_required
+def COMMON_get_project_id_from_session(request):
+    return request.session.get('project_id', None)

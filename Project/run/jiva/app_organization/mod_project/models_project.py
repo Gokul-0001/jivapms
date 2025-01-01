@@ -12,6 +12,13 @@ class Project(BaseModelImpl):
     
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_projects")
+    
+    project_release_mapped_flag = models.BooleanField(default=False)
+    project_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name="project_releases")
+    project_iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name="project_iterations")
+    project_release_start_date = models.DateField(null=True, blank=True)
    
     owner = models.ForeignKey('app_memberprofilerole.Member', on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name="owner_projects")

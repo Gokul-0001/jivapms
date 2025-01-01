@@ -48,6 +48,7 @@ class Backlog(MPTTModel, BaseModelImpl):
     connected_to_hierarchy = models.BooleanField(default=False)
     connected_to_hierarchy_id = TreeForeignKey('self', null=True, blank=True, related_name='Tree', on_delete=models.CASCADE)
     
+   
     
     # roadmap
     start_date = models.DateField(null=True, blank=True)
@@ -221,3 +222,26 @@ class SubTasks(BaseModelTrackDateImpl):
 
     def __str__(self):
         return self.name
+    
+class ReadyDoneFlags(BaseModelTrackDateImpl):
+    backlog_item = models.OneToOneField('app_organization.Backlog', on_delete=models.CASCADE)
+    
+    # Readiness Flags
+    business_ready = models.BooleanField(default=False)
+    tech_ready = models.BooleanField(default=False)
+    qa_ready = models.BooleanField(default=False)
+    ops_ready = models.BooleanField(default=False)
+
+    # Done Flags
+    business_done = models.BooleanField(default=False)
+    tech_done = models.BooleanField(default=False)
+    qa_done = models.BooleanField(default=False)
+    ops_done = models.BooleanField(default=False)
+
+    # Summary Flags
+    all_ready = models.BooleanField(default=False)
+    all_done = models.BooleanField(default=False)
+
+    # Track Changes
+    updated_at = models.DateTimeField(auto_now=True)
+    comments = models.TextField(blank=True, null=True)

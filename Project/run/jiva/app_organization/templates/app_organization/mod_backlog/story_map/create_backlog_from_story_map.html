@@ -455,7 +455,7 @@
                                 <input type="text" name="detail" id="detail" >
                             </form>
                             <br>
-               
+                            
                             {% for backlog_item in initial_backlog|filter_active %}
                             {% if backlog_item.release_id == None and backlog_item.name != project_id_str  %}
                             <div class="backlog-item post-it draggable-backlog"  draggable="true" id="backlog-{{ backlog_item.id }}"

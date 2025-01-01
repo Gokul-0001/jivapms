@@ -419,7 +419,6 @@ def view_iteration_kanban(request, org_id, project_id):
     component_type_id = bt_tree_name_and_id.get("Component")
     capability_type_id = bt_tree_name_and_id.get("Capability")
     include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]  
-    display_backlog_items = Backlog.objects.filter(pro=pro, active=True, type__in=include_types).order_by('position')
     
     # Prepare the include types
     
@@ -430,72 +429,58 @@ def view_iteration_kanban(request, org_id, project_id):
     # Send the next iteration details 
     
     today = date.today()
+
   
     # Query for the nearest release
     nearest_release = OrgRelease.objects.filter(
         Q(release_start_date__gte=today, active=True)  # Start date is today or in the future
     ).order_by('release_start_date').first()  # Get the nearest release by start date
-    
-    
-    # prepare for Backlog, two iteration kanban
-    if nearest_release:
-        iterations = OrgIteration.objects.filter(
-            org_release=nearest_release  # Filter iterations by release
-        ).order_by('iteration_start_date')[:2]  # Get the first two iterations
-
-    # Backlog items NOT linked to any release or iteration
-    unassigned_backlog = Backlog.objects.filter(
-        Q(release__isnull=True) & Q(iteration__isnull=True) & Q(pro=project)
-    )
-
-    # Backlog items linked to the nearest release or first two iterations
-    if iterations.exists():
-        backlog_in_iterations = Backlog.objects.filter(
-            Q(release=nearest_release) &
-            Q(iteration__in=iterations)
-        )
-    else:
-        backlog_in_iterations = Backlog.objects.filter(
-            Q(release=nearest_release)
-        )
-
-    # Backlog items NOT linked to the nearest release or its first two iterations
-    display_backlog_items = Backlog.objects.exclude(
-        Q(release=nearest_release) & Q(iteration__in=iterations)  # Exclude items in the nearest release and first two iterations
-    ).filter(pro=pro, active=True, type__in=include_types).order_by('position')
-        
-    
-    
-    
     # Check all releases ordered by start date
     releases = OrgRelease.objects.filter(active=True).order_by('release_start_date')
     for r in releases:
         logger.debug(f">>> === {r.name}, Start: {r.release_start_date}, Active: {r.active} === <<<")
-   
+        
+    #  # Query all releases starting after today
+    # releases = OrgRelease.objects.filter(
+    #     release_start_date__gte=today,  # Start date is today or later
+    #     active=True,
+    # ).order_by('position')  # Order by start date ascending
+
+
+    # # Prepare data for template
+    # release_data = []
+    # for release in releases:
+    #     total_days = (release.release_end_date - release.release_start_date).days
+    #     iterations = []
+    #     rel_iterations = release.org_release_org_iterations.filter(active=True).order_by('position')
+    #     logger.debug(f">>> === rel_iterations: {rel_iterations} === <<<")
+    #     for iteration in rel_iterations:
+    #         if iteration.active:
+    #             # Calculate position in percentage
+    #             logger.debug(f">>> === iteration: {iteration} === <<<")
+    #             iter_days = (iteration.iteration_start_date - release.release_start_date).days
+    #             position = (iter_days / total_days) * 100 if total_days > 0 else 0
+    #             iterations.append({
+    #                 'id': iteration.id,
+    #                 'name': iteration.name,
+    #                 'iteration_start_date': iteration.iteration_start_date,
+    #                 'iteration_end_date': iteration.iteration_end_date,
+    #                 'position': position
+    #             })
+    #             logger.debug(f">>> === iterations: {iterations} === <<<")
+
+    #     release_data.append({
+    #         'id': release.id,
+    #         'name': release.name,
+    #         'release_start_date': release.release_start_date,
+    #         'release_end_date': release.release_end_date,
+    #         'iterations': iterations
+    #     })
+    
     # Fetch all releases and prefetch iterations
     releases = OrgRelease.objects.prefetch_related('org_release_org_iterations').order_by('release_start_date', 'position')
-    org_releases = releases
-    current_iteration = None
-    next_iteration = None
-    # Fetch related OrgIterations within active OrgReleases
-    org_release_org_iterations = (
-        OrgIteration.objects.filter(
-            org_release__in=org_releases,  # Filter by releases linked to OrgIterations
-            iteration_start_date__lte=today,
-            iteration_end_date__gte=today,
-            active=True  # Ensure only active iterations
-        ).select_related('org_release')  # Optimize queries with joins
-    )
-    logger.debug(f">>> === ORG RELEASE ORG ITERATIONS: {org_release_org_iterations} === <<<")
-    current_iteration = org_release_org_iterations.first()
-    next_iteration = OrgIteration.objects.filter(
-        org_release__in=org_releases,  # Filter by releases linked to OrgIterations
-        iteration_start_date__gt=today,
-        active=True  # Ensure only active iterations
-    ).order_by('iteration_start_date').first()
-    project_backlog = Backlog.objects.filter(pro=pro, active=True).order_by('position')
 
-   # Group releases by year and calculate positions
+    # Group releases by year and calculate positions
     year_data = {}
     for release in releases:
         year = release.release_start_date.year
@@ -512,22 +497,21 @@ def view_iteration_kanban(request, org_id, project_id):
         # Calculate position of release as a percentage within the year
         release_days_from_start = (release.release_start_date - year_start).days
         release_position = (release_days_from_start / total_year_days) * 100
-        release_position = max(0, min(release_position, 100))  # Clamp to 0-100%
 
         # Handle iterations within the release
         total_release_days = (release.release_end_date - release.release_start_date).days
         iterations = []
-        for iteration in release.org_release_org_iterations.filter(active=True):
-            iter_days_from_start = (iteration.iteration_start_date - release.release_start_date).days
-            iter_position = (iter_days_from_start / total_release_days) * 100 if total_release_days > 0 else 0
-            iter_position = max(0, min(iter_position, 100))  # Clamp to 0-100%
-            iterations.append({
-                'id': iteration.id,
-                'name': iteration.name,
-                'start_date': iteration.iteration_start_date,
-                'end_date': iteration.iteration_end_date,
-                'position': iter_position
-            })
+        for iteration in release.org_release_org_iterations.all():
+            if iteration.active:
+                iter_days_from_start = (iteration.iteration_start_date - release.release_start_date).days
+                iter_position = (iter_days_from_start / total_release_days) * 100 if total_release_days > 0 else 0
+                iterations.append({
+                    'id': iteration.id,
+                    'name': iteration.name,
+                    'start_date': iteration.iteration_start_date,
+                    'end_date': iteration.iteration_end_date,
+                    'position': iter_position
+                })
 
         # Append release data
         year_data[year].append({
@@ -538,11 +522,9 @@ def view_iteration_kanban(request, org_id, project_id):
             'release_position': release_position,
             'iterations': iterations
         })
-
-    # Calculate positions for markers
+     # Calculate positions for markers
     month_positions = [(i / 12) * 100 for i in range(1, 13)]
     week_positions = [(i / 52) * 100 for i in range(1, 53)]
-
 
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -563,81 +545,9 @@ def view_iteration_kanban(request, org_id, project_id):
         'month_positions': month_positions,
         'week_positions': week_positions,
         
-        'current_iteration': current_iteration,
-        'next_iteration': next_iteration,
-        
-        'display_backlog_items': display_backlog_items,
-        'project_backlog': project_backlog,
-        
-        
         'module_path': module_path,
         'object': object,
         'page_title': f'View Iteration Kanban',
     }
     template_file = f"{app_name}/{module_path}/view_iteration_kanban.html"
     return render(request, template_file, context)
-
-
-@login_required
-def ajax_backlog_iteration_planning_update(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        card_id = data.get('card_id')
-        from_state_id = data.get('from_state_id')
-        to_state_id = data.get('to_state_id')
-
-        # position 
-        positions = data.get('positions')
-        from_column = data.get('from_column')
-        dest_column = data.get('dest_column')
-        project_id = data.get('project_id')
-
-        
-        logger.debug(f">>> === card_id: {card_id}, from_state_id: {from_state_id}, to_state_id: {to_state_id} === <<<")
-        logger.debug(f">>> === positions: {positions}, from_column: {from_column}, dest_column: {dest_column} === <<<")
-        logger.debug(f">>> === project_id: {project_id} === <<<")
-        
-        if from_state_id != 0 and to_state_id == 0:
-            # This is from iteration to backlog
-            backlog = Backlog.objects.get(id=card_id)
-            backlog.iteration = None
-            backlog.release = None
-            backlog.save()
-            store_backlog_positions(request, positions)
-        elif from_state_id == 0 and to_state_id != 0:
-            # This is from backlog to iteration
-            iteration = OrgIteration.objects.get(id=to_state_id)
-            backlog = Backlog.objects.get(id=card_id)
-            backlog.iteration = iteration
-            backlog.release = iteration.org_release
-            backlog.save()
-            store_backlog_positions(request, positions)
-        elif from_state_id != 0 and to_state_id != 0:
-            # This is from iteration to iteration
-            iteration = OrgIteration.objects.get(id=to_state_id)
-            backlog = Backlog.objects.get(id=card_id)
-            backlog.iteration = iteration
-            backlog.release = iteration.org_release           
-            backlog.save()
-            store_backlog_positions(request, positions)
-        elif from_state_id == 0 and to_state_id == 0:
-            # This is from backlog to backlog
-            # update the positions
-            for i, card_id in enumerate(positions):
-                backlog = Backlog.objects.get(id=card_id)
-                backlog.position = i
-                backlog.save()
-        else:
-            pass
-        
-        return JsonResponse({'message': 'success'}, status=200)
-    
-def store_backlog_positions(request, positions):
-    for i, card in enumerate(positions):
-        card_id = card.get('card_id')
-        backlog = Backlog.objects.get(id=card_id)
-        backlog.position = i
-        backlog.save()
-        
-    return True
-    

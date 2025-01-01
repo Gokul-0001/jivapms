@@ -541,7 +541,7 @@
                 {% for state in project_board_states %}
                     
                    
-                    {% if state.name == 'To Do' %}
+                    {% if state.name == 'ToDo' %}
                     <!-- To Do Column -->
                     <div class="kanban-column" data-id="{{ state.id }}" id="todo">
                         <h4>{{state.name}}</h4>
@@ -564,7 +564,7 @@
                         
                     </div>
                     {% endif %}
-                    {% if state.name == 'WIP' %}
+                    {% if state.name == 'In Progress' %}
                     <!-- In Progress Column -->
                     <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
                         <h4>{{state.name}}</h4>
@@ -590,7 +590,29 @@
                         
                     </div>
                     {% endif %}
-                    
+                    {% if state.name == 'Blocked' %}
+                    <!-- Blocked Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="blocked">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in blocked_items %}
+                                {% if item.backlog.parent == efcc %}
+                                <div class="kanban-card blocked" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-high">H</span>
+                                        <span>#{{item.backlog.id}}</span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
                     {% if state.name == 'Done' %}
                     <!-- Done Column -->
                     <div class="kanban-column" data-id="{{ state.id }}" id="done">
@@ -672,7 +694,7 @@
                 {% for state in project_board_states %}
                     
                    
-                    {% if state.name == 'To Do' %}
+                    {% if state.name == 'ToDo' %}
                     <!-- To Do Column -->
                     <div class="kanban-column" data-id="{{ state.id }}" id="todo">
                         <h4>{{state.name}}</h4>
@@ -695,7 +717,7 @@
                         
                     </div>
                     {% endif %}
-                    {% if state.name == 'WIP' %}
+                    {% if state.name == 'In Progress' %}
                     <!-- In Progress Column -->
                     <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
                         <h4>{{state.name}}</h4>
@@ -721,7 +743,29 @@
                         
                     </div>
                     {% endif %}
-                    
+                    {% if state.name == 'Blocked' %}
+                    <!-- Blocked Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="blocked">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in blocked_items %}
+                                
+                                <div class="kanban-card blocked" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-high">H</span>
+                                        <span>#{{item.backlog.id}}</span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
                     {% if state.name == 'Done' %}
                     <!-- Done Column -->
                     <div class="kanban-column" data-id="{{ state.id }}" id="done">

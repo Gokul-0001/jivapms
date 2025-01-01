@@ -211,7 +211,14 @@ def view_project_tree_backlog(request, pro_id):
     elif filter_by.startswith('filter_'):
         # Extract the collection ID from the filter_by parameter
         collection_id = filter_by.replace('filter_', '')
-        if collection_id.isdigit():  # Ensure it's a valid numeric ID
+        
+        if "|" in collection_id:  # Ensure it's a valid numeric ID
+            release_id, iteration_id = collection_id.split("|")
+            filters['release_id'] = int(release_id)
+            filters['iteration_id'] = int(iteration_id)
+            logger.debug(f">>> === Release, Iteration Filters Collection: {filters} match === <<<")
+        
+        elif collection_id.isdigit():  # Ensure it's a valid numeric ID
             filters['parent_id'] = int(collection_id)
             logger.debug(f">>> === Filters Collection: {filters} match === <<<")
     
@@ -225,6 +232,10 @@ def view_project_tree_backlog(request, pro_id):
     
     version_action = request.POST.get('read_version_action', '').strip().lower()
     version_id = request.POST.get("version_id")
+    input_release_id = None
+    input_iteration_id = None
+    if version_id:
+        input_release_id, input_iteration_id = version_id.split("|")
     selected_version_items = request.POST.get("selected_version_items", "").split(",")
     logger.debug(f">>> === VERSION ACTION: {version_action} === <<<")   
     
@@ -278,7 +289,8 @@ def view_project_tree_backlog(request, pro_id):
             elif version_id == "deleted":
                 backlog_item.active = False
             else:
-                backlog_item.release = OrgRelease.objects.get(id=version_id)
+                backlog_item.release = OrgRelease.objects.get(id=input_release_id)
+                backlog_item.iteration = OrgIteration.objects.get(id=input_iteration_id)
             backlog_item.save() 
       
         #logger.debug(f">>> === Items {selected_items} assigned to collection {collection_id} successfully! === <<<")
@@ -362,6 +374,27 @@ def view_project_tree_backlog(request, pro_id):
     # Organization Releases from OrgReleases
     org_releases = OrgRelease.objects.filter(org=project.org, active=True)
     
+     # Fetch current and next iterations based on dates
+    today = date.today()
+    current_iteration = None
+    next_iteration = None
+    # Fetch related OrgIterations within active OrgReleases
+    org_release_org_iterations = (
+        OrgIteration.objects.filter(
+            org_release__in=org_releases,  # Filter by releases linked to OrgIterations
+            iteration_start_date__lte=today,
+            iteration_end_date__gte=today,
+            active=True  # Ensure only active iterations
+        ).select_related('org_release')  # Optimize queries with joins
+    )
+    logger.debug(f">>> === ORG RELEASE ORG ITERATIONS: {org_release_org_iterations} === <<<")
+    current_iteration = org_release_org_iterations.first()
+    next_iteration = OrgIteration.objects.filter(
+        org_release__in=org_releases,  # Filter by releases linked to OrgIterations
+        iteration_start_date__gt=today,
+        active=True  # Ensure only active iterations
+    ).order_by('iteration_start_date').first()
+    logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
@@ -392,6 +425,9 @@ def view_project_tree_backlog(request, pro_id):
         'project_backlog_super_type_url': f"/org/backlog_super_type/list_backlog_super_types/{pro_id}/",
         'project_backlog_type_url': f"/org/backlog_type/list_backlog_types/{pro_id}/{project_backlog_type.id}/",
         'project_backlog_url': f"/org/backlog/list_backlogs/{pro_id}/{project_backlog.id}/",
+        
+        'current_iteration': current_iteration,
+        'next_iteration': next_iteration,
         
         'page_title': f'View Project Tree Backlog',
         "STATUS_CHOICES": STATUS_CHOICES,
@@ -542,3 +578,26 @@ def create_tree_from_config(config, model_name, parent=None, project=None):
 
 
 # create an ajax function to edit, move, delete, add backlog item
+
+
+
+
+def map_nearest_iteration(request):
+    from datetime import date
+
+    # Get current date
+    today = date.today()
+
+    # Fetch current and next iterations based on dates
+    current_iteration = OrgIteration.objects.filter(iteration_start_date__lte=today, iteration_end_date__gte=today, active=True).first()
+    next_iteration = OrgIteration.objects.filter(iteration_start_date__gt=today, active=True).order_by('iteration_start_date').first()
+
+    # Fetch backlog items
+    backlog_items = Backlog.objects.filter(status='pending')
+
+    context = {
+        'current_iteration': current_iteration,
+        'next_iteration': next_iteration,
+        'backlog_items': backlog_items,
+    }
+    return render(request, 'backlog_iteration_view.html', context)

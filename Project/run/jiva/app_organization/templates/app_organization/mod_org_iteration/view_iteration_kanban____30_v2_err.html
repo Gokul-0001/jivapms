@@ -1,0 +1,151 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    .kanban-container {
+        display: flex;
+        flex-wrap: nowrap;
+        height: calc(100vh - 150px);
+        overflow-x: auto;
+    }
+    .kanban-column.fixed-column {
+        flex: 0 0 300px; /* Fixed width for backlog */
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background-color: #f4f5f7;
+        height: calc(100vh - 150px); /* Full height */
+        overflow-y: auto;
+    }
+    .kanban-column {
+        flex: 0 0 300px; /* Fixed width for iterations */
+        margin-right: 10px;
+        background-color: #f4f5f7;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        height: calc(100vh - 150px); /* Full height */
+        overflow-y: auto;
+        z-index: 201;
+    }
+    .kanban-header {
+        font-weight: bold;
+        text-align: center;
+        padding: 10px;
+    }
+    .kanban-items {
+        height: calc(100% - 50px); /* Adjust height to fit within column */
+        padding: 10px;
+        overflow-y: auto;
+    }
+    .kanban-item {
+        background-color: white;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: move;
+       z-index: 1050; /* Ensure item appears above other elements while dragging */
+       position: relative;
+
+    }
+    .release-header {
+        background-color: #007bff;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        font-weight: bold;
+    }
+</style>
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<div class="content-wrapper">   
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <b class="h4">Iteration Planning</b>
+           <form method="post">
+            {% csrf_token %}
+            <div class="kanban-container d-flex flex-row overflow-auto">
+                <!-- Backlog Column -->
+                <div class="kanban-column fixed-column">
+                    <div class="kanban-header bg-secondary text-white p-2">Backlog</div>
+                    <div class="kanban-items" id="backlog">
+                        {% for item in display_backlog_items %}
+                        <div class="kanban-item" data-id="{{ item.id }}">{{ item.name }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Iterations with Release Rows -->
+                {% for release in releases.all|filter_active %}
+                <div class="kanban-column" style="flex: 0 0 calc(300px * {{ release.org_release_org_iterations.all|filter_active|length }});">
+                    <div class="release-header">{{ release.name }}</div>
+                    <div class="d-flex">
+                        {% for iteration in release.org_release_org_iterations.all|filter_active %}
+                        <div class="kanban-column iteration-column">
+                            <div class="kanban-header bg-primary text-white p-2">
+                                {{ iteration.name }}<br>
+                                <small>{{ iteration.release_date }}</small>
+                            </div>
+                            <div class="kanban-items" id="iteration-{{ iteration.id }}">
+                                <!-- Dynamically load iteration items -->
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            </form> 
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+    $('.kanban-items').sortable({
+        connectWith: '.kanban-items',
+        placeholder: 'kanban-placeholder',
+        start: function (event, ui) {
+            ui.helper.css('z-index', 1000); // Raise z-index of dragged item
+        },
+        update: function (event, ui) {
+            let itemId = ui.item.data('id');
+            let newIterationId = $(this).attr('id').replace('iteration-', '');
+            updateItemIteration(itemId, newIterationId);
+        }
+    }).disableSelection();
+
+    function updateItemIteration(itemId, iterationId) {
+        $.ajax({
+            url: '/update_item_iteration/',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            contentType: 'application/json',
+            data: JSON.stringify({
+                item_id: itemId,
+                iteration_id: iterationId
+            }),
+            success: function (response) {
+                if (response.success) {
+                    console.log('Item updated successfully');
+                } else {
+                    console.log('Failed to update item.');
+                }
+            },
+            error: function () {
+                console.log('Error occurred while updating item.');
+            }
+        });
+    }
+});
+</script>
+{% endblock content %}

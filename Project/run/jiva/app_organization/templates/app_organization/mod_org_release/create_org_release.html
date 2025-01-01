@@ -1,3 +1,4 @@
+
 {% extends 'app_common/common_files/base_template.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
@@ -24,7 +25,7 @@
                     <div class="row">
                         <div class="col col-md-8">
                             <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
-                                Release/Version for Organization</h2>
+                               Release</h2>
                         </div>
                         <div class="col col-md-4 text-end">
                             <a href="{% url 'list_org_releases' org_id %}"
@@ -34,30 +35,14 @@
                 </div>
                 <div class="container-fluid">
                     <div class="row">
-                        <!-- Form Section -->
                         <div class="col col-md-6">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th colspan="4">{{page_title}}</th>
+                                        <td colspan="4">Create general release that can be applied to all projects</td>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <strong>Predecessors</strong>
-                                        </td>
-                                        <td colspan="3">
-                                            <!-- Selected predecessors as tags -->
-                                            <div id="selected-predecessors" class="">
-                                                <!-- Dynamically added predecessor tags -->
-                                            </div>
-                                            <!-- Search box for adding predecessors -->
-                                            <input type="text" id="predecessor-search" class="form-control" placeholder="Search and add predecessors...">
-                                            <ul id="search-results" class="list-group mt-2" style="display:none; position:absolute; z-index:1000;"></ul>
-                                            <input type="hidden" id="predecessor-ids" name="predecessors" value="">
-                                        </td>
-                                    </tr>
                                     <tr>
                                         <td width="15%">
                                             <strong>Org Release</strong>
@@ -92,39 +77,16 @@
                                                     <strong>Set Iteration Length</strong><br>
                                                     {{form.apply_release_iteration_length|as_crispy_field}}
                                                 </div>
-                                                <div class="col col-md-3">
-                                                    <strong>No of Iterations</strong><br>
-                                                    <select name="no_of_iterations" id="no_of_iterations">
-                                                        <option value="1">1</option>
-                                                        <option value="2">2</option>
-                                                        <option value="3">3</option>
-                                                        <option value="4">4</option>
-                                                        <option value="5" selected>5</option>
-                                                        <option value="6">6</option>
-                                                        <option value="7">7</option>
-                                                        <option value="8">8</option>
-                                                        <option value="9">9</option>
-                                                        <option value="10">10</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col col-md-3">
-                                                    <strong>Create Iterations</strong><br>
-                                                    <input type="checkbox" name="create_iterations" value="yes" id="create_iterations">
-                                                </div>
+                                              
                                                 <div class="col col-md-3">
                                                     <strong>End Date</strong><br>
                                                     {{form.end_date|as_crispy_field}}
                                                 </div>
+                                                
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="4">
-                                            <strong>Iterations</strong>
-                                        </td>
-                                    </tr>
-                                    <tbody id="iterations-table">
-                                    </tbody>
+                                
                                    <tr>
                                         <td colspan="4" class="text-center"><button type="submit"
                                             class="btn btn-sm btn-success">Save</button></td>
@@ -132,249 +94,48 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Gantt Chart Section -->
-                        <div class="col col-md-6">
-                            <h4>Release Timeline - Gantt Chart</h4>
-                            <div id="gantt-chart" class="border p-3"></div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </form>
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
 <script>
     focusField = document.getElementById('id_name');
     focusField.focus();
-
+</script>
+<script>
     document.addEventListener('DOMContentLoaded', function () {
-        const startDateInput = document.querySelector('[name="start_date"]');
-        const releaseLengthInput = document.querySelector('[name="release_length"]');
-        const endDateInput = document.querySelector('[name="end_date"]');
-        const createIterationsCheckbox = document.getElementById('create_iterations');
-        const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
-        const noOfIterationsInput = document.getElementById('no_of_iterations');
-        const iterationsTable = document.getElementById('iterations-table');
-        function calculateEndDate() {
-            const startDateValue = startDateInput.value;
-            const releaseLengthValue = parseInt(releaseLengthInput.value, 10);
+    const startDateInput = document.querySelector('[name="start_date"]');
+    const releaseLengthInput = document.querySelector('[name="release_length"]');
+    const endDateInput = document.querySelector('[name="end_date"]');
 
-            if (startDateValue && releaseLengthValue) {
-                const startDate = new Date(startDateValue);
-                const endDate = new Date(startDate);
+    function calculateEndDate() {
+        const startDateValue = startDateInput.value;
+        const releaseLengthValue = parseInt(releaseLengthInput.value, 10);
 
-                endDate.setMonth(startDate.getMonth() + releaseLengthValue);
+        if (startDateValue && releaseLengthValue) {
+            const startDate = new Date(startDateValue);
+            const endDate = new Date(startDate);
 
-                if (endDate.getDate() !== startDate.getDate()) {
-                    endDate.setDate(0);
-                }
+            // Add months to the start date
+            endDate.setMonth(startDate.getMonth() + releaseLengthValue);
 
-                //const formattedEndDate = endDate.toISOString().split('T')[0];
-                const formattedEndDate = formatDate(endDate);
-                endDateInput.value = formattedEndDate;
+            // Adjust for months where the resulting day exceeds the last day of the month
+            if (endDate.getDate() !== startDate.getDate()) {
+                endDate.setDate(0); // Set to the last day of the previous month
             }
+
+            // Format the end date to 'YYYY-MM-DD'
+            const formattedEndDate = endDate.toISOString().split('T')[0];
+            endDateInput.value = formattedEndDate;
         }
-        function generateIterations() {
-            iterationsTable.innerHTML = "";
-            const startDate = new Date(startDateInput.value);
-            const iterationLength = parseInt(iterationLengthInput.value, 10);
-            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
-
-            for (let count = 1; count <= noOfIterations; count++) {
-                const iterationEnd = new Date(startDate);
-                iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
-
-                iterationsTable.innerHTML += `<tr><td width='2%'>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
-                startDate.setDate(startDate.getDate() + (iterationLength * 7));
-            }
-            endDateInput.value = startDate.toISOString().split('T')[0];
-        }
-
-        createIterationsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                generateIterations();
-
-            } else {
-                iterationsTable.innerHTML = "";
-                endDateInput.value = "";
-                ganttChart.innerHTML = '';
-                setTimeout(() => calculateEndDate(), 0);
-            }
-        });
-    });
-</script>
-<script>
-    mermaid.initialize({ startOnLoad: true });
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const ganttChartContainer = document.getElementById('gantt-chart');
-        const createIterationsCheckbox = document.getElementById('create_iterations');
-        const startDateInput = document.querySelector('[name="start_date"]');
-        const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
-        const noOfIterationsInput = document.getElementById('no_of_iterations');
-
-        function updateGanttChart() {
-            if (!ganttChartContainer) {
-                console.error('Gantt chart container not found!');
-                return;
-            }
-
-            const startDate = new Date(startDateInput.value);
-            const iterationLength = parseInt(iterationLengthInput.value, 10);
-            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
-            let chartDefinition = `gantt\n    title Release Plan\n    dateFormat  YYYY-MM-DD\n    section Release\n`;
-
-            const releaseEnd = new Date(startDate);
-            releaseEnd.setDate(startDate.getDate() + (iterationLength * 7 * noOfIterations));
-            //chartDefinition += `Release : ${startDate.toISOString().split('T')[0]}, ${releaseEnd.toISOString().split('T')[0]}\n`;
-            chartDefinition += `Release : ${formatDate(startDate)}, ${formatDate(releaseEnd)}\n`;
-
-
-            chartDefinition += "    section Iterations\n";
-            for (let count = 1; count <= noOfIterations; count++) {
-                const iterationEnd = new Date(startDate);
-                iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
-                //chartDefinition += `Iteration ${count} : ${startDate.toISOString().split('T')[0]}, ${iterationEnd.toISOString().split('T')[0]}\n`;
-                chartDefinition += `Iteration ${count} : ${formatDate(startDate)}, ${formatDate(iterationEnd)}\n`;
-
-                startDate.setDate(startDate.getDate() + (iterationLength * 7));
-            }
-
-            ganttChartContainer.innerHTML = `<div class='mermaid'>${chartDefinition}</div>`;
-            mermaid.contentLoaded();
-        }
-
-        createIterationsCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                updateGanttChart();
-            } else {
-                ganttChartContainer.innerHTML = '';
-                mermaid.contentLoaded();
-            }
-        });
-    });
-</script>
-
-
-<script>
-function formatDate(date) {
-    return date.getFullYear() + '-' + 
-        String(date.getMonth() + 1).padStart(2, '0') + '-' +
-        String(date.getDate()).padStart(2, '0');
-}
-
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.getElementById('predecessor-search');
-    const searchResults = document.getElementById('search-results');
-    const selectedPredecessors = document.getElementById('selected-predecessors');
-    const predecessorIds = document.getElementById('predecessor-ids');
-    const startDateInput = document.getElementById('id_start_date');
-
-    let selectedIds = [];
-    let lastEndDate = '';
-
-    // Fetch search results using AJAX (POST request)
-    function fetchPredecessors(query) {
-        fetch("{% url 'ajax_search_org_release_predecessors' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(), // Fetch CSRF Token
-            },
-            body: JSON.stringify({ query: query }) // Send query as JSON
-        })
-        .then(response => response.json())
-        .then(data => {
-            renderResults(data);           
-        })
-        .catch(error => console.error('Error:', error));
     }
 
-    function renderResults(results) {
-        searchResults.innerHTML = '';
-        if (results.length === 0) {
-            searchResults.style.display = 'none';
-            return;
-        }
-        results.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item list-group-item-action';
-            li.textContent = item.name;
-            li.setAttribute('data-id', item.id);
-            li.onclick = () => addPredecessor(item.id, item.name, item.release_end_date);
-            searchResults.appendChild(li);
-        });
-        searchResults.style.display = 'block';
-    }
-
-    function addPredecessor(id, name, end_date) {
-        if (!selectedIds.includes(id)) {
-            selectedIds.push(id);
-            const tag = document.createElement('span');
-            tag.className = 'badge bg-primary text-white me-2';
-            tag.innerHTML = `${name} <button type="button" class="btn-close btn-close-white ms-1" aria-label="Remove"></button>`;
-            tag.querySelector('button').onclick = () => removePredecessor(id, tag);
-            selectedPredecessors.appendChild(tag);
-            updateHiddenField();
-
-            // Calculate next day as start date
-            if (end_date) {
-                const nextDay = new Date(end_date);
-                nextDay.setDate(nextDay.getDate() + 1); // Add 1 day
-                const formattedDate = nextDay.toISOString().split('T')[0]; // Format to YYYY-MM-DD
-                startDateInput.value = formattedDate; // Set start date
-            }
-        }
-        searchInput.value = '';
-        searchResults.style.display = 'none';
-    }
-
-    function removePredecessor(id, tag) {
-        selectedIds = selectedIds.filter(val => val !== id);
-        tag.remove();
-        updateHiddenField();
-    }
-
-    function updateHiddenField() {
-        predecessorIds.value = selectedIds.join(',');
-    }
-
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.trim();
-        if (query.length > 2) { // Minimum 3 characters to search
-            fetchPredecessors(query);
-        } else {
-            searchResults.style.display = 'none';
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!searchResults.contains(e.target) && e.target !== searchInput) {
-            searchResults.style.display = 'none';
-        }
-    });
-
-    // Get CSRF Token from cookies
-    function getCSRFToken() {
-        let cookieValue = null;
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.startsWith('csrftoken=')) {
-                cookieValue = cookie.substring('csrftoken='.length, cookie.length);
-                break;
-            }
-        }
-        return cookieValue;
-    }
+    startDateInput.addEventListener('change', calculateEndDate);
+    releaseLengthInput.addEventListener('change', calculateEndDate);
 });
 
 </script>
 <!-- End: Content -->
 {% endblock content %}
-

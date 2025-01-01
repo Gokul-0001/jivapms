@@ -59,27 +59,13 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <strong>Start and End Date</strong>
-                            </td>
-                            <td colspan="1">
-                                <div class="container-fluid-width">
-                                    <div class="row">
-                                        <div class="col col-md-2">
-                                            <strong>Start Date</strong>
-                                     
-                                            {{ form.start_date|as_crispy_field }}
-                                        </div>
-                                        <div class="col col-md-2">
-                                            <strong>End Date</strong>
-                                        
-                                            {{ form.end_date|as_crispy_field }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
+                            <td><strong>Start Date</strong></td>
+                            <td>{{ form.start_date|as_crispy_field }}</td>
                         </tr>
-                       
+                        <tr>
+                            <td><strong>End Date</strong></td>
+                            <td>{{ form.end_date|as_crispy_field }}</td>
+                        </tr>
                         <tr>
                             <td><strong>Iteration Length</strong></td>
                             <td>

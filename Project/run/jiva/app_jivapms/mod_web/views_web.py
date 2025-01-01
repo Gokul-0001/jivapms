@@ -360,3 +360,50 @@ def about(request):
     template_url = f"app_common/common_files/specific/about.html"
     return render(request, template_url, context)   
 
+
+
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def JIVAPMS_set_project_id(request, context):
+    # Get 'project_id' from GET or session
+    project_id = request.GET.get('project_id') or request.session.get('project_id')
+    # logger.debug(f">>> === JIVAPMS_set_project_id: project_id={project_id} === <<<")
+    # If project_id exists, validate it
+    if project_id:
+        try:
+            # Fetch the project and organization, ensuring it's active
+            project = get_object_or_404(Project, id=project_id, active=True)
+            org = project.org
+
+            # Update context
+            context.update({
+                'project': project,
+                'org': org,
+                'org_id': org.id,
+                'organization': org,
+                'organization_id': org.id,
+                'project_id': project_id,
+                'pro_id': project_id
+            })
+
+            # Update session
+            request.session['project_id'] = project_id
+        except Project.DoesNotExist:
+            # Handle invalid project_id
+            context['project_id'] = None
+            request.session['project_id'] = None
+    else:
+        # No valid project_id provided
+        context['project_id'] = None
+        request.session['project_id'] = None
+
+    # Return the updated context
+    return context
+
+
+@login_required
+def JIVAPMS_get_project_id_from_session(request):
+    # Fetch project_id directly from session
+    return request.session.get('project_id', None)

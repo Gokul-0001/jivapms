@@ -414,53 +414,6 @@
     }
 </style>
 
-<style>
-.bi-id-display {
-    font-size: 9px;
-    color: #707070;
-}
-
-.bi-size-display {
-    font-size: 9px;
-    font-weight: bold;
-    color: #707070;
-    background-color: #f1f1f1;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-.small-font-display {
-    font-size: 9px;
-    color: #707070;
-    background-color: #f1f1f1;
-}
-</style>
-
-
-<style>
-.info-display-current-iteration {
-    font-size: 10px;
-    color: #707070;
-
-}
-.info-display-next-iteration {
-    font-size: 10px;
-    color: #707070;
-
-}
-.display-current-iteration {
-    font-size: 10px;
-    color: #707070;
-    background-color: #f1f1f1;
-    border-radius: 5px;
-}
-.display-next-iteration {
-    font-size: 10px;
-    color: #707070;
-    background-color: #f1f1f1;
-    border-radius: 5px;
-}
-</style>
-
 <div class="content-wrapper mb-5">
 
     <div class="breadcrumb">
@@ -578,8 +531,7 @@
             <ul class="version-list">
                 <li>
                     <div class="version-item">
-                        <span id="filter_unmapped" onclick="filterBacklog('all_items')">All Release Versions <p>
-                             </p></span>
+                        <span id="filter_unmapped" onclick="filterBacklog('all_items')">All Release Versions <p>{{current_iteration}} -- {{next_iteration}} </p></span>
                        
                     </div>
                     <div id="others" class="details hidden">
@@ -589,24 +541,20 @@
                 </li>
 
                 <!-- COLLECTION FOR BACKLOG -->
-                {% for release in org_releases %}
-                {% for collection in release.org_release_org_iterations.all|filter_active %}
-                {% if collection.org_release != None %}
+                {% for collection in org_releases %}
                 <li>
                     <div class="collection-item">
-                        <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.org_release.id}}|{{collection.id}}')">{{collection.org_release}}:{{collection.version}}</span>
+                        <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.id}}')">{{collection.name}}</span>
                         <div class="action-buttons">
-                            <button class="small-btn assign-btn" onclick="assignToVersion('{{collection.org_release.id}}|{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
-                            <button class="small-btn unassign-btn me-2" onclick="unassignFromVersion('{{collection.org_release.id}}|{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
-                            <button class="dropdown-btn" onclick="toggleDetails('{{collection.org_release.id}}|{{collection.id}}-details')">▼</button>
+                            <button class="small-btn assign-btn" onclick="assignToVersion('{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
+                            <button class="small-btn unassign-btn me-2" onclick="unassignFromVersion('{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
+                            <button class="dropdown-btn" onclick="toggleDetails('{{collection.id}}-details')">▼</button>
                         </div>
                     </div>
                     <div id="{{collection.id}}-details" class="details hidden">
                         <p class="display_details_small_text">{{collection.description|display_if_not_none}}</p>
                     </div>
                 </li>
-                {% endif %}
-                {% endfor %}
                 {% endfor %}
                 
                 <li>
@@ -645,38 +593,12 @@
             <!-- HEADER of the backlog DISPLAY-->
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col col-md-3">
+                    <div class="col col-md-6">
                         <b>Backlog</b>
                     </div>
-                    <div class="col col-md-4 text-end">
-                       <div class="container-fluid-width">
-                        <div class="row">
-                            <div class="col col-md-4 text-end">
-                                <div class="info-display-next-iteration">&nbsp;</div>
-                                <a href="{% url 'create_project_story_map' org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;"><b>Story Mapping</b></a>
-                            </div>
-                            <div class="col col-md-4 text-end">                                
-                                {% if current_iteration != None %}
-                                <div class="info-display-current-iteration">Current Iteration</div>
-                                <a href="{% url 'view_iteration_kanban'  org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;">
-                                    <b class="bi-size-display display-current-iteration">{{current_iteration.org_release}}.{{current_iteration}}</b></a>
-                                {% endif %}
-                            </div>
-                            <div class="col col-md-4 text-end">
-                                {% if next_iteration != None %}
-                                <div class="info-display-next-iteration">Next Iteration</div>
-                                <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;">
-                                    <b class="bi-size-display display-next-iteration">{{next_iteration.org_release}}.{{next_iteration}}</b></a>
-                                {% endif %}
-                            </div>
-                        </div>
-                       </div>
+                    <div class="col col-md-6 ">
+                        <a href="{% url 'create_project_story_map' org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;"><b>Story Mapping</b></a>
                     </div>
-                    <div class="col col-md-5">
-                       
-                    </div>
-                  
-                   
                 </div>
             </div>
             <!-- HEADER of the backlog DISPLAY-->           
@@ -754,20 +676,17 @@
                 </td>                
                 <td id="display_summary" width="30%" class="display_summary la"
                 ondblclick="makeEditable(this);"
-                onblur="save_element_text(this, '{{item.id}}', 'app_organization', 'backlog', 'name');"
+                onblur="save_element_text(this, '{{id}}', 'app_organization', 'backlog', 'name');"
                 ><b class="summary_of_bi">{{item.name|display_if_not_none}}</b></td>
                 <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
-                <td id="display_key" width="6%" class="display_key ra bi-id-display">BI-{{item.id}}</td>
-                <td id="display_size" width="4%" class="display_size ca "> <div class="bi-size-display"
-                ondblclick="makeEditable(this);"
-                onblur="save_element_text(this, '{{item.id}}', 'app_organization', 'Backlog', 'size');"
-                >{% if item.size != '0'  and item.size != None %}{{item.size|display_if_not_none}}{% endif %}&nbsp;</div></td>
+                <td id="display_key" width="6%" class="display_key ra">BI-{{item.id}}</td>
+                <td id="display_size" width="4%" class="display_size ca">{% if item.size != '0'  and item.size != None %}{{item.size|display_if_not_none}}{% endif %}</td>
                 <td id="display_status" width="8%" class="display_status ca">
                     <button 
-                    {% if item.status == 'To Do' or item.status == 'ToDo' %}class="btn btn-sm btn-primary" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
-                    {% elif item.status == 'WIP' or item.status == 'In Progress' %}class="btn btn-sm btn-warning" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
+                    {% if item.status == 'ToDo' %}class="btn btn-sm btn-primary" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
+                    {% elif item.status == 'In Progress' %}class="btn btn-sm btn-warning" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
                     {% elif item.status == 'Blocked' %}class="btn btn-sm btn-danger" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
                     {% elif item.status == 'Done' %}class="btn btn-sm btn-success" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
                     {% elif item.status == 'Backlog' %}class="btn btn-sm btn-secondary" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
@@ -1065,8 +984,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function save_element_text(element, id,  appName, modelName, fieldName) {
         element.contentEditable = false;
-        check1 = element.textContent.trim();
-        alert(`>>${check1}<<`);
         $.ajax({
             url: '/common/common_ajax/ajax_save_element_text/',
             type: 'POST',
@@ -1075,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'model_name': modelName,
             'app_name': appName,
             'field_name': fieldName,
-            'text': check1, 
+            'text': element.textContent, 
             'id': id,
             },
             dataType: 'json',

@@ -19,4 +19,7 @@ urlpatterns = [
     path('ajax_search_org_release_predecessors/', views_org_release.ajax_search_org_release_predecessors, name='ajax_search_org_release_predecessors'),
     
     path('create_org_global_release/<int:org_id>/', views_org_release.create_org_global_release, name='create_org_global_release'),
+    path('create_org_release_with_iterations/<int:org_id>/', views_org_release.create_org_release_with_iterations, name='create_org_release_with_iterations'),
+    
+    
 ]

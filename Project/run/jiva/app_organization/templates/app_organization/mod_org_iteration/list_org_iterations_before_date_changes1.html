@@ -169,7 +169,9 @@ org_id
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                        <!-- Start Date with Date Picker -->
                                        <td width="8%">
-                                        {{tobject.iteration_start_date|date:'d-m-Y'}}
+                                        <input type="date" id="start_date_{{ tobject.id }}" 
+                                        value="{% if tobject.iteration_start_date %}{{ tobject.iteration_start_date|date:'Y-m-d' }}{% endif %}" 
+                                            onchange="updateEndDate('{{ tobject.id }}')">
                                         </td>
                                         <td width="8%">
                                             <span id="iteration_length_{{ tobject.id }}">
@@ -184,7 +186,9 @@ org_id
                                         </td>
                                         <!-- End Date with Date Picker -->
                                         <td width="8%">
-                                            {{tobject.iteration_end_date|date:'d-m-Y'}}
+                                            <input type="date" id="end_date_{{ tobject.id }}"
+                                                value="{% if tobject.iteration_end_date %}{{ tobject.iteration_end_date|date:'Y-m-d' }}{% endif %}" 
+                                                onchange="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'Iteration', 'end_date')">
                                         </td>
                                     
                                         <td width="10%">
@@ -330,7 +334,107 @@ org_id
             })
         }
     
-       
-    </script>
+        function updateEndDate(id) {
+            const startDateInput = document.getElementById(`start_date_${id}`);
+            const iterationLengthElement = document.getElementById(`iteration_length_${id}`);
+            const endDateInput = document.getElementById(`end_date_${id}`);
     
+            const startDateValue = startDateInput.value;
+            const iterationLengthValue = parseInt(iterationLengthElement.textContent.trim(), 10);
+    
+            // Check if start date is valid and iteration length is available
+            if (startDateValue && iterationLengthValue) {
+                const startDate = new Date(startDateValue);
+                const endDate = new Date(startDate);
+    
+                // Add the iteration length (in weeks) to the start date
+                endDate.setDate(startDate.getDate() + iterationLengthValue * 7);
+    
+                // Format the end date to 'YYYY-MM-DD'
+                const formattedEndDate = endDate.toISOString().split('T')[0];
+                endDateInput.value = formattedEndDate;
+    
+                // Optionally trigger a save if needed
+                save_element_text(endDateInput, id, 'app_organization', 'Iteration', 'end_date');
+            }
+        }
+    
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const releaseStartDateElement = document.getElementById(`release_start_date_{{org_release_id}}`);
+          const releaseStartDateText = releaseStartDateElement ? releaseStartDateElement.textContent.trim() : null;
+          // const planningBuffer = 5; // Days
+          const planningBuffer = parseInt("{{ org_release.planning_buffer }}", 10);
+          const iterationRows = document.querySelectorAll('[id^="start_date_"]'); // Select all iteration start date fields
+      
+          // Function to parse d-m-Y into a JavaScript Date object
+          function parseDateDMY(dateStr) {
+              const [day, month, year] = dateStr.split('-').map(num => parseInt(num, 10));
+              return new Date(year, month - 1, day); // JavaScript months are 0-based
+          }
+      
+          // Function to format a Date object to YYYY-MM-DD (for input fields)
+          function formatDateYYYYMMDD(date) {
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+              const day = String(date.getDate()).padStart(2, '0');
+              return `${year}-${month}-${day}`;
+          }
+      
+          // Calculate the start and end dates for iterations
+          function calculateIterations() {
+              if (!releaseStartDateText) {
+                  console.error("Release Start Date is missing or invalid.");
+                  return;
+              }
+      
+              const releaseDate = parseDateDMY(releaseStartDateText);
+      
+              if (isNaN(releaseDate)) {
+                  console.error("Release Start Date is not a valid date:", releaseStartDateText);
+                  return;
+              }
+      
+              // Add the planning buffer to the release start date for the first iteration
+              let currentStartDate = new Date(releaseDate);
+              //currentStartDate.setDate(releaseDate.getDate() + planningBuffer);
+              currentStartDate.setDate(releaseDate.getDate());
+
+              iterationRows.forEach((iteration, index) => {
+                  const iterationId = iteration.id.split("_")[2]; // Extract the iteration ID
+                  const iterationLengthElement = document.getElementById(`iteration_length_${iterationId}`);
+                  const endDateInput = document.getElementById(`end_date_${iterationId}`);
+      
+                  if (!iterationLengthElement) {
+                      console.warn(`Iteration length element not found for iteration ${iterationId}`);
+                      return;
+                  }
+      
+                  // Set the start date for the current iteration
+                  iteration.value = formatDateYYYYMMDD(currentStartDate); // Start date in YYYY-MM-DD
+      
+                  // Get the iteration length (in weeks) from the span or div
+                  const iterationLengthValue = parseInt(iterationLengthElement.textContent.trim(), 10);
+      
+                  if (iterationLengthValue && !isNaN(iterationLengthValue)) {
+                      // Calculate the end date based on the iteration length
+                      const currentEndDate = new Date(currentStartDate);
+                      currentEndDate.setDate(currentStartDate.getDate() + iterationLengthValue * 7 );
+                      endDateInput.value = formatDateYYYYMMDD(currentEndDate); // End date in YYYY-MM-DD
+      
+                      // Move to the next iteration's start date
+                      currentStartDate = new Date(currentEndDate);
+                      currentStartDate.setDate(currentStartDate.getDate() + 1); // Next start date
+                  } else {
+                      console.warn(`Iteration length missing or invalid for iteration ${iterationId}`);
+                  }
+              });
+          }
+      
+          // Initial calculation for all iterations
+          calculateIterations();
+      });
+      
+      </script>
 {% endblock content %}

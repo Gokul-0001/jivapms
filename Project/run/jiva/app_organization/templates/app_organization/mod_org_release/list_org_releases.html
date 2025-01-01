@@ -62,11 +62,14 @@ org_id
                                     <span class="display_count">{{objects_count}} org_release(s)</span>
                                     &nbsp;&nbsp;
                                     <a href="{% url 'create_org_global_release' org_id  %}" 
-                                    class="btn btn-sm btn-warning"><b>+ Create Global Release</b></a>
-                                    &nbsp;&nbsp;
+                                    class="btn btn-sm btn-warning"><b>+ Global Release</b></a>
+                                    &nbsp;&nbsp;&nbsp;
+                                    <a href="{% url 'create_org_release_with_iterations' org_id  %}" 
+                                    class="btn btn-sm btn-success"><b>+  Release w/ Iterations</b></a>
+                                    &nbsp;&nbsp;&nbsp;
                                     <a href="{% url 'create_org_release' org_id  %}" 
-                                    class="btn btn-sm btn-success"><b>+ Create Org Release</b></a>
-                                    &nbsp;&nbsp;
+                                    class="btn btn-sm btn-success"><b>+  Release</b></a>
+                                    &nbsp;&nbsp;&nbsp;
                                     <a href="{% url 'list_organizations' %}" class="btn btn-primary">
                                         <i class="bi bi-arrow-left"></i>
                                     </a>
@@ -134,7 +137,7 @@ org_id
                                      onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgRelease', 'name')"
                                     ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
                                     <td width="5%">
-                                        {% if tobject.version != None %}{{ tobject.version }}{% endif %}
+                                        {% if tobject.version != None %}{{tobject.major_version}}.{{ tobject.version }}{% endif %}
                                     </td>
                                     <td width="" ondblclick="makeEditable(this)"
                                     onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgRelease', 'description')"
@@ -152,7 +155,7 @@ org_id
                                     <td width="10%">
                                         {{tobject.iteration_count  }}&nbsp;&nbsp;
                                         &nbsp;&nbsp;
-                                    <a href="{% url 'list_org_iterations' tobject.id %}">Iteration/Sprint(s)</a>
+                                    <a href="{% url 'list_org_iterations' tobject.id %}?project_id={{pro_id}}">Iteration/Sprint(s)</a>
                                     
 
                                     </td>

@@ -1,0 +1,241 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .timeline-container {
+        margin: 10px 0;
+        padding: 5px;
+    }
+
+    /* Timeline Bar */
+    .timeline-bar {
+        position: relative;
+        height: 25px;
+        width: 100%;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+    }
+
+    /* Year, Month, Week Lines */
+    .marker {
+        position: absolute;
+        background-color: gray;
+    }
+
+    .year-marker {
+        width: 2px;
+        height: 40px;
+    }
+
+    .month-marker {
+        width: 2px;
+        height: 30px;
+    }
+
+    .week-marker {
+        width: 1px;
+        height: 20px;
+    }
+
+    /* Release Marker */
+    .release-marker {
+        position: absolute;
+        width: 3px;
+        height: 45px;
+        background-color: lightgreen;
+    }
+
+    .release-label {
+        position: absolute;
+        font-size: 10px;
+        text-align: center;
+        transform: translateX(-50%);
+    }
+
+    /* Iteration Marker */
+    .iteration-marker {
+        position: absolute;
+        top: 125px;
+        width: 2px;
+        height: 35px;
+        background-color: lightblue;
+    }
+
+    .iteration-label {
+        position: absolute;
+        font-size: 10px;
+        transform: translateX(-50%);
+        text-align: center;
+        cursor: pointer;
+    }
+
+     /* Marker Labels */
+     .marker-label {
+            position: absolute;
+            top: 45px; /* Position below the timeline bar */
+            font-size: 9px;
+            text-align: center;
+            white-space: nowrap;
+            transform: translateX(-50%);
+        }
+
+        /* Marker Labels */
+     .marker-label-month {
+            position: absolute;
+            top: 35px; /* Position below the timeline bar */
+            font-size: 9px;
+            text-align: center;
+            white-space: nowrap;
+            transform: translateX(-50%);
+        }
+
+        /* Year Label */
+        .year-label {
+            top: 45px; /* Slightly lower for year label */
+            font-size: 10px;
+            font-weight: bold;
+            color: orange;
+        }
+
+        .year_title {
+            font-size: 10px;
+            font-weight: bold;
+            color: orange;
+        }
+</style>
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>View Iterations</h3>
+           <form method="post">
+            {% csrf_token %}
+
+            <!-- VIEW ITERATION KANBAN -->
+            <h2>Project Release Mapping</h2>
+            {% if project.project_release_mapped_flag %}
+            <b>The Project is mapped to a Release: {{project_release}}/{{project_iteration}}</b>
+            {% else %}
+            <b>The Project is not mapped to any Release</b>
+            <p>Please map using the nearest release or the list of releases.</p>
+            {% endif %}
+
+
+            <h1>Nearest Release</h1>
+            {% if release %}
+                <p><strong>Release Name:</strong> {{ release.name }}</p>
+                <p><strong>Start Date:</strong> {{ release.release_start_date }}</p>
+                <p><strong>End Date:</strong> {{ release.release_end_date }}</p>
+            {% else %}
+                <p>No upcoming releases found.</p>
+            {% endif %}
+            <div class="container">
+                <h1>Timeline View</h1>
+                {% for year, releases in years.items %}
+                <div class="timeline-container">
+                    <b class="year_title">{{year}}</b>
+                    <!-- Timeline Bar -->
+                    <div class="timeline-bar">
+                        <!-- Year Marker -->
+                        <div class="marker year-marker" style="left: 0%;"></div>
+                        <div class="marker-label year-label" style="left: 0%;"></div>
+        
+                        <!-- Month Markers with Labels -->
+                        {% for month_pos in month_positions %}
+                        <div class="marker month-marker" style="left: {{ month_pos }}%;"></div>
+                        <div class="marker-label" style="left: {{ month_pos }}%;">
+                            {{ forloop.counter }}
+                        </div>
+                        {% endfor %}
+        
+                        <!-- Week Markers with Labels -->
+                        {% for week_pos in week_positions %}
+                        <div class="marker week-marker" style="left: {{ week_pos }}%;"></div>
+                        <div class="marker-label-month" style="left: {{ week_pos }}%;">
+                            W{{ forloop.counter }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+               
+            </div>
+        
+            <script>
+                function selectIteration(id, name, start, end) {
+                    $('.iteration-marker').removeClass('active');
+                    $('#iteration-' + id).addClass('active');
+                    alert(`Selected Iteration: ${name}\nStart: ${start}\nEnd: ${end}`);
+                }
+            </script>
+            <h1>Release List</h1>
+            <table class="table table-bordered" width="60%">
+                <thead>
+                    <tr>
+                        <th width="2%">#</th>
+                        <th>Release Name</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for release in releases %}
+                    <tr>
+                        <td width="2%">{{forloop.counter}}</td>
+                        <td>{{ release.name }}</td>
+                        <td>{{ release.release_start_date }}</td>
+                        <td>{{ release.release_end_date }}</td>
+                        <td>
+                            <a href="" class="btn btn-primary">Map</a>
+                        </td>
+                    </tr>
+                    
+
+                     <!-- Iterations for each Release -->
+                    {% for iteration in release.org_release_org_iterations.all|filter_active %}
+                    {% if iteration %}
+                        <tr class="iteration-row">
+                            <td></td>
+                            <td>&nbsp;&nbsp;&nbsp;<i>Iteration:</i> {{ iteration.name }}</td>
+                            <td>{{ iteration.iteration_start_date }}</td>
+                            <td>{{ iteration.iteration_end_date }}</td>
+                            <td>
+                                <a href="#" class="btn btn-secondary btn-sm">Details</a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No releases or iterations found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+            <!-- VIEW ITERATION KANBAN -->
+
+            </form> 
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

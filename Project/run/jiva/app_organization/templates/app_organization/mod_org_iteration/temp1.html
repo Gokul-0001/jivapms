@@ -1,0 +1,171 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+body {
+    font-family: Arial, sans-serif;
+}
+
+.timeline-container {
+    margin: 10px 0;
+    padding: 5px;
+}
+
+/* Timeline Bar */
+.timeline-bar {
+    position: relative;
+    height: 25px;
+    width: 100%;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+/* Year, Month, Week Lines */
+.marker {
+    position: absolute;
+    background-color: gray;
+}
+
+.year-marker {
+    width: 2px;
+    height: 40px;
+}
+
+.month-marker {
+    width: 2px;
+    height: 30px;
+}
+
+.week-marker {
+    width: 1px;
+    height: 20px;
+}
+
+/* Release Marker */
+.release-marker {
+    position: absolute;
+    width: 3px;
+    height: 45px;
+    background-color: lightgreen;
+}
+
+.release-label {
+    position: absolute;
+    font-size: 10px;
+    text-align: center;
+    transform: translateX(-50%);
+}
+
+.release-label-vertical {
+    top: -120px;
+    position: absolute;
+    font-size: 10px;
+    text-align: center;
+    transform: translateX(-50%);
+}
+
+/* Iteration Marker */
+.iteration-marker {
+    position: absolute;
+    width: 2px;
+    height: 35px;
+    background-color: lightblue;
+}
+
+.iteration-label {
+    top: -70px;
+    position: absolute;
+    font-size: 10px;
+    transform: translateX(-50%)  rotate(-90deg);
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Marker Labels */
+.marker-label {
+    position: absolute;
+    top: 45px; /* Position below the timeline bar */
+    font-size: 9px;
+    text-align: center;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+/* Marker Labels */
+.marker-label-month {
+    position: absolute;
+    top: 35px; /* Position below the timeline bar */
+    font-size: 9px;
+    text-align: center;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+/* Year Label */
+.year-label {
+    top: 45px; /* Slightly lower for year label */
+    font-size: 10px;
+    font-weight: bold;
+    color: orange;
+}
+
+.year_title {
+    font-size: 10px;
+    font-weight: bold;
+    color: orange;
+}
+
+.iteration-date-display {
+    font-size: 8px;
+    color: gray;
+    transform: rotate(-360deg);
+}
+</style>
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>View Iterations</h3>
+           <form method="post">
+            {% csrf_token %}
+
+            <!-- VIEW ITERATION KANBAN -->
+            <h2>Project Release Mapping</h2>
+            {% if project.project_release_mapped_flag %}
+            <b>The Project is mapped to a Release: {{project_release}}/{{project_iteration}}</b>
+            {% else %}
+            <b>The Project is not mapped to any Release</b>
+            <p>Please map using the nearest release or the list of releases.</p>
+            {% endif %}
+
+
+            <h1>Nearest Release</h1>
+            {{current_iteration}} {{next_iteration}}
+            <br>
+            {{current_iteration.org_release}} {{next_iteration.org_release}}
+           
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-col-md-6">Backlog</div>
+                    <div class="col-col-md-6">Iteration</div>
+                </div>
+            </div>
+            <!-- VIEW ITERATION KANBAN -->
+
+            </form> 
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

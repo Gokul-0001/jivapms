@@ -14,4 +14,10 @@ urlpatterns = [
     path('permanent_deletion_org_iteration/<int:org_release_id>/<int:org_iteration_id>/', views_org_iteration.permanent_deletion_org_iteration, name='permanent_deletion_org_iteration'),
     path('restore_org_iteration/<int:org_release_id>/<int:org_iteration_id>/', views_org_iteration.restore_org_iteration, name='restore_org_iteration'),
     path('view_org_iteration/<int:org_release_id>/<int:org_iteration_id>/', views_org_iteration.view_org_iteration, name='view_org_iteration'),
+    
+    # added
+    path('view_iteration_kanban/<int:org_id>/<int:project_id>/', views_org_iteration.view_iteration_kanban, name='view_iteration_kanban'),
+    
+    # ajax    
+    path('ajax_backlog_iteration_planning_update/', views_org_iteration.ajax_backlog_iteration_planning_update, name='ajax_backlog_iteration_planning_update'),
 ]

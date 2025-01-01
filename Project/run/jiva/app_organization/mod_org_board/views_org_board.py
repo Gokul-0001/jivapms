@@ -393,7 +393,7 @@ def view_project_board(request, project_id):
     board_name = ProjectBoard.objects.get(project=project, active=True, name=DEFAULT_BOARD_NAME)
 
     # Ensure the default columns exist or create them
-    DEFAULT_BOARD_COLUMNS = ['ToDo', 'In Progress', 'Blocked', 'Done']
+    DEFAULT_BOARD_COLUMNS = ['To Do', 'WIP', 'Done']
     #ProjectBoardState.objects.all().delete()
     backlog_state = None  # To store the "Backlog" state reference
     for position, column_name in enumerate(DEFAULT_BOARD_COLUMNS):
@@ -439,7 +439,7 @@ def view_project_board(request, project_id):
         'project_board': project_board,
         'project_board_states': project_board_states,
         'backlog_items': actual_project_backlog_items,
-        'todo_items': state_items.get('ToDo', []),
+        'todo_items': state_items.get('To Do', []),
         'in_progress_items': state_items.get('In Progress', []),
         'blocked_items': state_items.get('Blocked', []),
         'done_items': state_items.get('Done', []),
@@ -516,7 +516,7 @@ def view_project_tree_board(request, project_id):
     board_name = ProjectBoard.objects.get(project=project, active=True, name=DEFAULT_BOARD_NAME)
 
     # Ensure the default columns exist or create them
-    DEFAULT_BOARD_COLUMNS = ['ToDo', 'In Progress', 'Blocked', 'Done']
+    DEFAULT_BOARD_COLUMNS = ['To Do', 'WIP', 'Done']
     #ProjectBoardState.objects.all().delete()
     backlog_state = None  # To store the "Backlog" state reference
     for position, column_name in enumerate(DEFAULT_BOARD_COLUMNS):
@@ -544,7 +544,7 @@ def view_project_tree_board(request, project_id):
     
     # Fetch the project backlog items state
     state_items = {state.name: [] for state in project_board.board_states.filter(active=True)}
-   
+    #logger.debug(f">>> === state_items: {state_items} === <<<")
     # Get the card / backlog item from the ProjectBoardStateTransition
     for state in project_board_states:
         state_items[state.name] = ProjectBoardCard.objects.filter(
@@ -554,7 +554,7 @@ def view_project_tree_board(request, project_id):
             backlog__type__in=include_types,
             backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
         ).select_related('backlog').order_by('position', '-created_at')
-
+    logger.debug(f">>> === state_items: {project_board_states} === <<<")
     context = {
         'organization': organization,
         'org_id': org_id,
@@ -563,9 +563,8 @@ def view_project_tree_board(request, project_id):
         'project_board': project_board,
         'project_board_states': project_board_states,
         'backlog_items': actual_project_backlog_items,
-        'todo_items': state_items.get('ToDo', []),
-        'in_progress_items': state_items.get('In Progress', []),
-        'blocked_items': state_items.get('Blocked', []),
+        'todo_items': state_items.get('To Do', []),
+        'in_progress_items': state_items.get('WIP', []),
         'done_items': state_items.get('Done', []),
         'page_title': f'Project Board: {project.name}',
         'efcc_backlog_items': efcc_backlog_items,

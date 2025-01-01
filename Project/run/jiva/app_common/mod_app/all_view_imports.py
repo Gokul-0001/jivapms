@@ -88,6 +88,16 @@ PROJECT_WBS_TREE_CONFIG = {
                 {
                     "name": "Epic",
                     "children": [
+                        {"name": "Retrospective",
+                         "children": [
+                                {
+                                    "name": "Task",
+                                    "children": [
+                                        {"name": "Sub Task"}
+                                    ]
+                                }
+                            ]
+                         },
                         {"name": "Bug",
                          "children": [
                                 {
