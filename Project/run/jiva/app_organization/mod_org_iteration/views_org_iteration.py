@@ -509,8 +509,11 @@ def view_iteration_kanban(request, org_id, project_id):
         year_end = date(year, 12, 31)
         total_year_days = (year_end - year_start).days
 
+        # Normalize release_start_date to a date type
+        release_start_date = release.release_start_date.date()
+
         # Calculate position of release as a percentage within the year
-        release_days_from_start = (release.release_start_date - year_start).days
+        release_days_from_start = (release_start_date - year_start).days
         release_position = (release_days_from_start / total_year_days) * 100
         release_position = max(0, min(release_position, 100))  # Clamp to 0-100%
 
@@ -560,6 +563,11 @@ def view_iteration_kanban(request, org_id, project_id):
 
             except OrgIteration.DoesNotExist:
                 return HttpResponse("Invalid selection!", status=400)
+        else:
+            project.project_release_mapped_flag = False
+            project.project_iteration = None
+            project.project_release = None
+            project.save()
 
 
     context = {
@@ -575,7 +583,8 @@ def view_iteration_kanban(request, org_id, project_id):
         'org_id': org_id,
         'pro_id': project_id,
         
-        'release': nearest_release,        
+        'release': nearest_release,   
+        'nearest_release': nearest_release,    
         'releases': releases,        
         'years': year_data,
         'month_positions': month_positions,

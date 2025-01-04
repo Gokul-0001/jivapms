@@ -48,7 +48,7 @@ class Backlog(MPTTModel, BaseModelImpl):
     connected_to_hierarchy = models.BooleanField(default=False)
     connected_to_hierarchy_id = TreeForeignKey('self', null=True, blank=True, related_name='Tree', on_delete=models.CASCADE)
     
-   
+    committed_to_iteration = models.BooleanField(default=False)
     
     # roadmap
     start_date = models.DateField(null=True, blank=True)
@@ -245,3 +245,14 @@ class ReadyDoneFlags(BaseModelTrackDateImpl):
     # Track Changes
     updated_at = models.DateTimeField(auto_now=True)
     comments = models.TextField(blank=True, null=True)
+    
+# JAN 2025
+# check this 
+# Check if t+1 days have passed
+    # if now().date() > iteration.start_date + timedelta(days=1):
+    #     # Commit items to the plan
+    #     BacklogItem.objects.filter(
+    #         project=project,
+    #         iteration=iteration,
+    #         committed=False
+    #     ).update(committed=True)

@@ -738,3 +738,101 @@ def create_org_global_release(request, org_id):
     context.update(updated_context)
     template_file = f"{app_name}/{module_path}/create_org_global_release.html"
     return render(request, template_file, context)
+
+
+#
+#
+#
+#
+#@login_required
+def create_org_release_with_time(request, org_id):
+    user = request.user
+    organization = Organization.objects.get(id=org_id, active=True, 
+                                            **first_viewable_dict)
+    updated_context = {}
+    updated_context = JIVAPMS_set_project_id(request, updated_context)
+
+    if request.method == 'POST':
+        # Print raw POST data received in the view
+        logger.debug(f">>> === Raw POST Data: {request.POST} === <<<")
+
+        # Print the specific field inputs received
+        logger.debug(f">>> === release_start_date: {request.POST.get('release_start_date')} === <<<")
+        logger.debug(f">>> === release_end_date: {request.POST.get('release_end_date')} === <<<")
+        logger.debug(f">>> === iterations_data: {request.POST.get('iterations_data')} === <<<")
+        logger.debug(f">>> === release_data: {request.POST.get('release_data')} === <<<")
+
+        # Bind form with POST data
+        form = OrgReleaseWithTimeForm(request.POST)
+        if form.is_valid():
+            form.instance.author = user
+            form.instance.org_id = org_id
+
+            # Set timezone to IST
+            ist = pytz.timezone('Asia/Kolkata')
+
+            # Handle start_date
+            start_date = form.cleaned_data['release_start_date']
+            start_date = start_date.astimezone(ist)  # Ensure timezone-aware
+
+            # Handle end_date
+            end_date = form.cleaned_data['release_end_date']
+            end_date = end_date.astimezone(ist)  # Ensure timezone-aware
+
+            # Assign updated values
+            form.instance.release_start_date = start_date
+            form.instance.release_end_date = end_date
+
+            logger.debug(f">>> === RELEASE START_DATE:{start_date} and END_DATE {end_date} === <<<")
+
+            # Save the release
+            release = form.save()
+
+            # Process release data
+            release_data = json.loads(request.POST.get('release_data', '{}'))
+            logger.debug(f">>> === Processed release_data: {release_data} === <<<")
+
+            # Process iteration data
+            iterations_data = json.loads(request.POST.get('iterations_data', '[]'))
+            logger.debug(f">>> === Processed iterations_data: {iterations_data} === <<<")
+
+            # Clear old iterations
+            OrgIteration.objects.filter(org_release=release).update(active=False, deleted=True)
+
+            # Create iterations
+            for i, iteration in enumerate(iterations_data):
+                start = datetime.fromisoformat(iteration['start']).astimezone(ist)
+                end = datetime.fromisoformat(iteration['end']).astimezone(ist)
+
+                OrgIteration.objects.create(
+                    org_release=release,
+                    name=f"Iteration {i + 1}",
+                    iteration_start_date=start,
+                    iteration_end_date=end
+                )
+
+            messages.success(request, 'Release saved successfully!')
+            return redirect('list_org_releases', org_id=org_id)
+
+        else:
+            # Log form errors for debugging
+            print(f">>> === form.errors: {form.errors} === <<<")
+            messages.error(request, 'There were errors in the form. Please correct them.')
+
+    else:
+        # For GET requests, display empty form
+        form = OrgReleaseWithTimeForm()
+
+    # Render template with errors if any
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'create_org_release_with_time',
+        'organization': organization,
+        'org_id': org_id,
+        'module_path': module_path,
+        'form': form,
+        'page_title': 'Create Org Release with Time',
+    }
+    context.update(updated_context)
+    template_file = f"{app_name}/{module_path}/create_org_release_with_time.html"
+    return render(request, template_file, context)

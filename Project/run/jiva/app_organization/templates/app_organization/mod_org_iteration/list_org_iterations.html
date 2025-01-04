@@ -168,23 +168,35 @@ org_id
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'OrgIteration', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                        <!-- Start Date with Date Picker -->
-                                       <td width="8%">
-                                        {{tobject.iteration_start_date|date:'d-m-Y'}}
+                                       <td width="8%">                                        
+                                        {% if org_release.iteration_length_in_mins > 0 %}
+                                            {{tobject.iteration_start_date}}
+                                        {% else %}
+                                            {{tobject.iteration_start_date|date:'d-m-Y'}}
+                                        {% endif %}
                                         </td>
                                         <td width="8%">
-                                            <span id="iteration_length_{{ tobject.id }}">
-                                                
+
+                                            {% if org_release.iteration_length_in_mins > 0 %}
+                                                {{ org_release.iteration_length_in_mins|display_if_not_none }}mins
+                                            {% else %}
+                                            <span id="iteration_length_{{ tobject.id }}">                                                
                                                 {% if org_release.apply_release_iteration_length > 0 %}
                                                     {{ org_release.apply_release_iteration_length }}
                                                 {% else %}
                                                     {% if tobject.iteration_length != None %}{{tobject.iteration_length}}{% endif %}
                                                 {% endif %}
                                                 Week(s)
-                                            </span>                                        
+                                            </span>      
+                                            {% endif %}                                  
                                         </td>
                                         <!-- End Date with Date Picker -->
                                         <td width="8%">
-                                            {{tobject.iteration_end_date|date:'d-m-Y'}}
+                                            {% if org_release.iteration_length_in_mins > 0 %}
+                                                {{tobject.iteration_end_date}}
+                                            {% else %}
+                                                {{tobject.iteration_end_date|date:'d-m-Y'}}
+                                            {% endif %}                                            
                                         </td>
                                     
                                         <td width="10%">

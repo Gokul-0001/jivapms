@@ -1,0 +1,229 @@
+
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
+                               Release</h2>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_org_releases' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List Org Release(s)</b></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col col-md-6">
+                            {% if form.errors %}
+                                <div class="alert alert-danger">
+                                    <ul>
+                                        {% for field, errors in form.errors.items %}
+                                            {% for error in errors %}
+                                                <li>{{ field|title }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <td colspan="4">Create general release that can be applied to all projects</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Org Release</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.name|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Description</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.description|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Start Date-Time</strong></td>
+                                        <td><input type="datetime-local" name="release_start_date" value="2025-01-02T10:00" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Release Length (Minutes)</strong></td>
+                                        <td><input type="number" name="release_length_in_mins" value="10" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Iteration Length (Minutes)</strong></td>
+                                        <td><input type="number" name="iteration_length_in_mins" value="2" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>End Date-Time</strong></td>
+                                        <td><input type="text" name="release_end_date" readonly /></td>
+                                    </tr>
+                                    
+                                   <tr>
+                                        <td colspan="4" class="text-center"><button type="submit"
+                                            class="btn btn-sm btn-success">Save</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+                    <div class="draw-mermaid" id="draw-mermaid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+</form>
+<script>
+    focusField = document.getElementById('id_name');
+    focusField.focus();
+</script>
+<script>
+    mermaid.initialize({ startOnLoad: false }); // Initialize Mermaid but don't load immediately
+
+    document.addEventListener('DOMContentLoaded', function () {
+    // Clear Gantt chart on page load
+    const chartContainer = document.getElementById('draw-mermaid');
+    chartContainer.innerHTML = ''; // Ensure no invalid syntax is loaded initially
+
+    // Select input fields
+    const startDateInput = document.querySelector('[name="release_start_date"]');
+    const releaseLengthInput = document.querySelector('[name="release_length_in_mins"]');
+    const iterationLengthInput = document.querySelector('[name="iteration_length_in_mins"]');
+    const endDateInput = document.querySelector('[name="release_end_date"]');
+
+    // Function to format date as 'YYYY-MM-DDTHH:MM' (HTML5 datetime-local format)
+    function formatDateTime(date) {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const dd = String(date.getDate()).padStart(2, '0');
+        const hh = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}`; // HTML5 format
+    }
+
+    // Function to calculate and update end date-time and iterations
+    function calculateEndDateTime() {
+        const startDateValue = startDateInput.value.trim(); // Start date-time input
+        const releaseLength = parseInt(releaseLengthInput.value.trim(), 10); // Release length in minutes
+        const iterationLength = parseInt(iterationLengthInput.value.trim(), 10); // Iteration length in minutes
+
+        // Check for valid inputs
+        if (!startDateValue || isNaN(releaseLength) || isNaN(iterationLength)) {
+            endDateInput.value = ''; // Clear end date if inputs are invalid
+            chartContainer.innerHTML = ''; // Clear Gantt chart
+            return; // Exit the function
+        }
+
+        try {
+            // Parse the start date-time (HTML5 format: 'YYYY-MM-DDTHH:MM')
+            const startDateTime = new Date(startDateValue);
+
+            // Calculate end date-time for the release
+            const releaseEndDateTime = new Date(startDateTime.getTime() + releaseLength * 60000); // Add release length in minutes
+            endDateInput.value = formatDateTime(releaseEndDateTime); // Update end date field
+
+            // Initialize Gantt chart
+            let ganttChart = 'gantt\n    title Iteration Schedule\n    dateFormat  YYYY-MM-DDTHH:mm\n    axisFormat %H:%M\n    todayMarker on\n';
+
+            // Add release bar
+            ganttChart += `    section Release\n    Release Period :active, ${formatDateTime(startDateTime)}, ${formatDateTime(releaseEndDateTime)}\n`;
+
+            // Calculate iterations dynamically (for UI)
+            let iterationStart = new Date(startDateTime);
+            for (let i = 0; i < Math.ceil(releaseLength / iterationLength); i++) {
+                const iterationEnd = new Date(iterationStart.getTime() + iterationLength * 60000);
+                ganttChart += `    section Iteration ${i + 1}\n    Iteration ${i + 1} :active, ${formatDateTime(iterationStart)}, ${formatDateTime(iterationEnd)}\n`;
+                iterationStart = iterationEnd; // Move to next iteration
+            }
+
+            // Render Mermaid chart dynamically only if valid syntax is generated
+            chartContainer.innerHTML = `<pre class='mermaid'>${ganttChart}</pre>`;
+            mermaid.init(undefined, chartContainer.querySelectorAll('.mermaid'));
+
+        } catch (error) {
+            console.error('Error parsing input:', error); // Debugging purpose
+            endDateInput.value = ''; // Clear end date on error
+            chartContainer.innerHTML = ''; // Clear Gantt chart on error
+        }
+    }
+
+    // Attach event listeners for instant updates
+    [startDateInput, releaseLengthInput, iterationLengthInput].forEach(input => {
+        input.addEventListener('input', calculateEndDateTime); // Trigger calculation on any input change
+    });
+
+    // Prepare data for submission
+    document.querySelector('form').addEventListener('submit', function (event) {
+        const iterationsData = [];
+        const startDateValue = startDateInput.value.trim();
+        const releaseLength = parseInt(releaseLengthInput.value.trim(), 10);
+        const iterationLength = parseInt(iterationLengthInput.value.trim(), 10);
+
+        // Collect release data
+        const releaseData = {
+            start: formatDateTime(new Date(startDateValue)),
+            end: formatDateTime(new Date(new Date(startDateValue).getTime() + releaseLength * 60000))
+        };
+
+        let iterationStart = new Date(startDateValue);
+        for (let i = 0; i < Math.ceil(releaseLength / iterationLength); i++) {
+            const iterationEnd = new Date(iterationStart.getTime() + iterationLength * 60000);
+            iterationsData.push({
+                start: formatDateTime(iterationStart),
+                end: formatDateTime(iterationEnd)
+            });
+            iterationStart = iterationEnd; // Move to next iteration
+        }
+
+        // Append release data as a hidden input field
+        const releaseField = document.createElement('input');
+        releaseField.type = 'hidden';
+        releaseField.name = 'release_data';
+        releaseField.value = JSON.stringify(releaseData);
+        this.appendChild(releaseField);
+
+        // Append iteration data as a hidden input field
+        const iterationsField = document.createElement('input');
+        iterationsField.type = 'hidden';
+        iterationsField.name = 'iterations_data';
+        iterationsField.value = JSON.stringify(iterationsData);
+        this.appendChild(iterationsField);
+    });
+});
+</script>
+
+
+
+<!-- End: Content -->
+{% endblock content %}

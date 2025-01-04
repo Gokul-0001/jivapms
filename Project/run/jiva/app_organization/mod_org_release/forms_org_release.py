@@ -96,3 +96,51 @@ class OrgReleaseForm(forms.ModelForm):
         self.helper = FormHelper()  # Note: No need to pass 'self' here
         self.helper.form_show_labels = False
 
+
+
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit
+
+
+class OrgReleaseWithTimeForm(forms.ModelForm):
+    # Use DateTimeField with the correct format and input widget
+    release_start_date = forms.DateTimeField(
+        widget=forms.DateTimeInput(
+            attrs={'type': 'datetime-local', 'class': 'form-control'}
+        ),
+        label="Start Date-Time",
+        input_formats=['%Y-%m-%dT%H:%M']  # Matches 'datetime-local' input
+    )
+    release_end_date = forms.DateTimeField(
+        widget=forms.DateTimeInput(
+            attrs={'type': 'datetime-local', 'class': 'form-control'}
+        ),
+        label="End Date-Time",
+        input_formats=['%Y-%m-%dT%H:%M']  # Matches 'datetime-local' input
+    )
+
+    class Meta:
+        model = OrgRelease
+        fields = [
+            'name',
+            'description',
+            'release_start_date',
+            'release_end_date',
+            'release_length_in_mins',
+            'iteration_length_in_mins'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super(OrgReleaseWithTimeForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            'name',
+            'description',
+            'release_start_date',
+            'release_length_in_mins',
+            'iteration_length_in_mins',
+            'release_end_date',
+            Submit('submit', 'Save')
+        )

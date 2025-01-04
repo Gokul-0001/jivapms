@@ -67,6 +67,9 @@ org_id
                                     <a href="{% url 'create_org_release_with_iterations' org_id  %}" 
                                     class="btn btn-sm btn-success"><b>+  Release w/ Iterations</b></a>
                                     &nbsp;&nbsp;&nbsp;
+                                    <a href="{% url 'create_org_release_with_time' org_id  %}" 
+                                    class="btn btn-sm btn-success"><b>+  Rel w/ Time</b></a>
+                                    &nbsp;&nbsp;&nbsp;
                                     <a href="{% url 'create_org_release' org_id  %}" 
                                     class="btn btn-sm btn-success"><b>+  Release</b></a>
                                     &nbsp;&nbsp;&nbsp;
@@ -146,8 +149,11 @@ org_id
                                         {% if tobject.release_start_date != None %}{{ tobject.release_start_date|date:"F j, Y" }}{% endif %}
                                     </td>
                                     <td width="8%">
+                                        {% if tobject.release_length_in_mins > 0  %}{{tobject.release_length_in_mins|display_if_not_none}}mins 
+                                        {% else %}
                                         {% if tobject.release_length != None %}{{tobject.release_length}}
                                         &nbsp;month(s){% endif %}
+                                        {% endif %}
                                     </td>
                                     <td width="8%">
                                         {% if tobject.release_end_date != None %}{{ tobject.release_end_date|date:"F j, Y" }}{% endif %}

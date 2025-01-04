@@ -1,0 +1,179 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
+                                Release for Organization</h2>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_org_releases' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List Org Release(s)</b></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Form Section -->
+                        <div class="col col-md-6">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4">{{page_title}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Release Name</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.name|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Description</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.description|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Iteration Length (Weeks)</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.apply_release_iteration_length|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Start Date</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            <input type="date" id="id_start_date" name="start_date" value="">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <button type="submit" class="btn btn-sm btn-success">Save</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Iteration Schedule Section -->
+                        <div class="col col-md-6">
+                            <h4>Release Timeline - Iterations</h4>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Quarter</th>
+                                        <th>Iteration</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="iterations-table">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const iterationsTable = document.getElementById('iterations-table');
+        const iterationLength = {{ form.apply_release_iteration_length.value|default:2 }};
+
+        // Fix year to 2025 explicitly
+        let year = 2025;
+
+        // Calculate start date as the first weekday of January 2025
+        let startDate = new Date(year, 0, 1);
+        while (startDate.getDay() === 0 || startDate.getDay() === 6) {
+            startDate.setDate(startDate.getDate() + 1);
+        }
+
+        // Format the date manually to avoid timezone issues
+        let plannedStartDate = startDate.getFullYear() + '-' +
+                               String(startDate.getMonth() + 1).padStart(2, '0') + '-' +
+                               String(startDate.getDate()).padStart(2, '0');
+
+        // Update the form field with the calculated start date
+        document.getElementById('id_start_date').value = plannedStartDate;
+        console.log('Planned Start Date:', plannedStartDate);
+
+        let iterationStart = new Date(plannedStartDate); // Use plannedStartDate as the start for iterations
+        let endDate = new Date(year, 11, 31); // End date set to December 31, 2025
+
+        let iterationCount = 1;
+        let quarter = 1;
+
+        while (iterationStart <= endDate) {
+            let iterationEnd = new Date(iterationStart);
+            iterationEnd.setDate(iterationStart.getDate() + (iterationLength * 7) - 1);
+
+            // Adjust iteration end to avoid weekends
+            while (iterationEnd.getDay() === 0 || iterationEnd.getDay() === 6) {
+                iterationEnd.setDate(iterationEnd.getDate() - 1);
+            }
+
+            // Stop if iteration exceeds end date
+            if (iterationEnd > endDate) {
+                iterationEnd = endDate;
+            }
+
+            // Determine quarter based on date
+            if (iterationStart.getMonth() >= 0 && iterationStart.getMonth() <= 2) {
+                quarter = 1;
+            } else if (iterationStart.getMonth() >= 3 && iterationStart.getMonth() <= 5) {
+                quarter = 2;
+            } else if (iterationStart.getMonth() >= 6 && iterationStart.getMonth() <= 8) {
+                quarter = 3;
+            } else {
+                quarter = 4;
+            }
+
+            iterationsTable.innerHTML += `<tr>
+                <td>Q${quarter}</td>
+                <td>${iterationCount}</td>
+                <td>${iterationStart.toISOString().split('T')[0]}</td>
+                <td>${iterationEnd.toISOString().split('T')[0]}</td>
+            </tr>`;
+
+            iterationCount++;
+            iterationStart = new Date(iterationEnd);
+            iterationStart.setDate(iterationStart.getDate() + 1);
+
+            while (iterationStart.getDay() === 0 || iterationStart.getDay() === 6) {
+                iterationStart.setDate(iterationStart.getDate() + 1);
+            }
+        }
+    });
+</script>
+{% endblock content %}

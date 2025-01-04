@@ -1,0 +1,241 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            {% include 'app_organization/mod_org_release/breadcrumb_org_releases.html' %}
+        </div>
+    </div>
+</div>
+<!-- Begin: Content -->
+<form method="post">
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-md-12">
+                <div class="container-fluid-width">
+                    <div class="row">
+                        <div class="col col-md-8">
+                            <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} 
+                                Release/Version for Organization</h2>
+                        </div>
+                        <div class="col col-md-4 text-end">
+                            <a href="{% url 'list_org_releases' org_id %}"
+                             class="btn btn-sm btn-primary"><b>List Org Release(s)</b></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Form Section -->
+                        <div class="col col-md-6">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4">{{page_title}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td width="15%">
+                                            <strong>Org Release</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.name|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Description</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            {{form.description|as_crispy_field}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Configure Schedule</strong>
+                                        </td>
+                                        <td colspan="3">
+                                            <div class="row">
+                                                <div class="col col-md-3">
+                                                    <strong>Start Date</strong><br>
+                                                    {{form.start_date|as_crispy_field}}
+                                                </div>
+                                                <div class="col col-md-3">
+                                                    <strong>Release Length</strong><br>
+                                                    {{form.release_length|as_crispy_field}}
+                                                </div>
+                                                <div class="col col-md-3">
+                                                    <strong>Set Iteration Length</strong><br>
+                                                    {{form.apply_release_iteration_length|as_crispy_field}}
+                                                </div>
+                                                <div class="col col-md-3">
+                                                    <strong>No of Iterations</strong><br>
+                                                    <select name="no_of_iterations" id="no_of_iterations">
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5" selected>5</option>
+                                                        <option value="6">6</option>
+                                                        <option value="7">7</option>
+                                                        <option value="8">8</option>
+                                                        <option value="9">9</option>
+                                                        <option value="10">10</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col col-md-3">
+                                                    <strong>Create Iterations</strong><br>
+                                                    <input type="checkbox" name="create_iterations" value="yes" id="create_iterations">
+                                                </div>
+                                                <div class="col col-md-3">
+                                                    <strong>End Date</strong><br>
+                                                    {{form.end_date|as_crispy_field}}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4">
+                                            <strong>Iterations</strong>
+                                        </td>
+                                    </tr>
+                                    <tbody id="iterations-table">
+                                    </tbody>
+                                   <tr>
+                                        <td colspan="4" class="text-center"><button type="submit"
+                                            class="btn btn-sm btn-success">Save</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Gantt Chart Section -->
+                        <div class="col col-md-6">
+                            <h4>Release Timeline - Gantt Chart</h4>
+                            <div id="gantt-chart" class="border p-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script>
+    focusField = document.getElementById('id_name');
+    focusField.focus();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const startDateInput = document.querySelector('[name="start_date"]');
+        const releaseLengthInput = document.querySelector('[name="release_length"]');
+        const endDateInput = document.querySelector('[name="end_date"]');
+        const createIterationsCheckbox = document.getElementById('create_iterations');
+        const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
+        const noOfIterationsInput = document.getElementById('no_of_iterations');
+        const iterationsTable = document.getElementById('iterations-table');
+        function calculateEndDate() {
+            const startDateValue = startDateInput.value;
+            const releaseLengthValue = parseInt(releaseLengthInput.value, 10);
+
+            if (startDateValue && releaseLengthValue) {
+                const startDate = new Date(startDateValue);
+                const endDate = new Date(startDate);
+
+                endDate.setMonth(startDate.getMonth() + releaseLengthValue);
+
+                if (endDate.getDate() !== startDate.getDate()) {
+                    endDate.setDate(0);
+                }
+
+                const formattedEndDate = endDate.toISOString().split('T')[0];
+                endDateInput.value = formattedEndDate;
+            }
+        }
+        function generateIterations() {
+            iterationsTable.innerHTML = "";
+            const startDate = new Date(startDateInput.value);
+            const iterationLength = parseInt(iterationLengthInput.value, 10);
+            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
+
+            for (let count = 1; count <= noOfIterations; count++) {
+                const iterationEnd = new Date(startDate);
+                iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
+
+                iterationsTable.innerHTML += `<tr><td>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
+                startDate.setDate(startDate.getDate() + (iterationLength * 7));
+            }
+            endDateInput.value = startDate.toISOString().split('T')[0];
+        }
+
+        createIterationsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                generateIterations();
+
+            } else {
+                iterationsTable.innerHTML = "";
+                endDateInput.value = "";
+                ganttChart.innerHTML = '';
+                setTimeout(() => calculateEndDate(), 0);
+            }
+        });
+    });
+</script>
+<script>
+    mermaid.initialize({ startOnLoad: true });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const ganttChartContainer = document.getElementById('gantt-chart');
+        const createIterationsCheckbox = document.getElementById('create_iterations');
+        const startDateInput = document.querySelector('[name="start_date"]');
+        const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
+        const noOfIterationsInput = document.getElementById('no_of_iterations');
+
+        function updateGanttChart() {
+            if (!ganttChartContainer) {
+                console.error('Gantt chart container not found!');
+                return;
+            }
+
+            const startDate = new Date(startDateInput.value);
+            const iterationLength = parseInt(iterationLengthInput.value, 10);
+            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
+            let chartDefinition = `gantt\n    title Release Plan\n    dateFormat  YYYY-MM-DD\n    section Release\n`;
+
+            const releaseEnd = new Date(startDate);
+            releaseEnd.setDate(startDate.getDate() + (iterationLength * 7 * noOfIterations));
+            chartDefinition += `Release : ${startDate.toISOString().split('T')[0]}, ${releaseEnd.toISOString().split('T')[0]}\n`;
+
+            chartDefinition += "    section Iterations\n";
+            for (let count = 1; count <= noOfIterations; count++) {
+                const iterationEnd = new Date(startDate);
+                iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
+                chartDefinition += `Iteration ${count} : ${startDate.toISOString().split('T')[0]}, ${iterationEnd.toISOString().split('T')[0]}\n`;
+                startDate.setDate(startDate.getDate() + (iterationLength * 7));
+            }
+
+            ganttChartContainer.innerHTML = `<div class='mermaid'>${chartDefinition}</div>`;
+            mermaid.contentLoaded();
+        }
+
+        createIterationsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                updateGanttChart();
+            } else {
+                ganttChartContainer.innerHTML = '';
+                mermaid.contentLoaded();
+            }
+        });
+    });
+</script>
+
+<!-- End: Content -->
+{% endblock content %}

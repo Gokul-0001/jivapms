@@ -670,8 +670,12 @@
                                         <b class="bi-size-display display-next-iteration">Iteration Planning</b></a>   
                                     {% else %}        
 
+                                    <!-- Project has Next Iteration Planning -->
+                                    {% if next_iteration != None %}                                            
                                     <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
-                                        <b class="bi-size-display display-next-iteration">{{project.project_release}}/{{project.project_iteration}}</b></a>   
+                                        <b class="bi-size-display display-next-iteration">{{next_iteration.org_release}}.{{next_iteration}}</b></a>
+                                    {% endif %}        
+                                   
                                     {% endif %}
                                 </div>
                                 

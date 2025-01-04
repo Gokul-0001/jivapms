@@ -34,7 +34,7 @@
 
 /* General table styling */
 .backlog_table {
-    width: 100%;
+    width: 60%;
     font-family: 'Lato', sans-serif;
     font-size: 12px;
     border-collapse: collapse;
@@ -644,48 +644,40 @@
         <div class="backlog_header">
             <!-- HEADER of the backlog DISPLAY-->
             <div class="container-fluid">
-
                 <div class="row">
-                    <div class="col col-md-12">
-                        <!-- Header section -->
-                        <div class="container-fluid-width">
-                            <div class="row">
-                                <div class="col col-md-3">
-                                    
-                                    <b>Backlog</b>
-                                </div>
-                                <div class="col col-md-3 text-end">
-                                    
-                                    
-                                </div>
-
-                                
-                                <div class="col col-md-6 text-end">   
-                                    <!-- Story Mapping -->
-                                    <a href="{% url 'create_project_story_map' org_id project.id %}" 
-                                    class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;"><b>Story Mapping</b></a>  
-                                      
-                                    {% if project.project_release_mapped_flag == False %}               
-                                        <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
-                                        <b class="bi-size-display display-next-iteration">Iteration Planning</b></a>   
-                                    {% else %}        
-
-                                    <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
-                                        <b class="bi-size-display display-next-iteration">{{project.project_release}}/{{project.project_iteration}}</b></a>   
-                                    {% endif %}
-                                </div>
-                                
+                    <div class="col col-md-3">
+                        <b>Backlog</b>
+                    </div>
+                    <div class="col col-md-4 text-end">
+                       <div class="container-fluid-width">
+                        <div class="row">
+                            <div class="col col-md-4 text-end">
+                                <div class="info-display-next-iteration">&nbsp;</div>
+                                <a href="{% url 'create_project_story_map' org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;"><b>Story Mapping</b></a>
+                            </div>
+                            <div class="col col-md-4 text-end">                                
+                                {% if current_iteration != None %}
+                                <div class="info-display-current-iteration">Current Iteration</div>
+                                <a href="{% url 'view_iteration_kanban'  org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;">
+                                    <b class="bi-size-display display-current-iteration">{{current_iteration.org_release}}.{{current_iteration}}</b></a>
+                                {% endif %}
+                            </div>
+                            <div class="col col-md-4 text-end">
+                                {% if next_iteration != None %}
+                                <div class="info-display-next-iteration">Next Iteration</div>
+                                <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary" style="font-size: 12px;">
+                                    <b class="bi-size-display display-next-iteration">{{next_iteration.org_release}}.{{next_iteration}}</b></a>
+                                {% endif %}
                             </div>
                         </div>
-
-                        <!-- Header section -->
+                       </div>
                     </div>
+                    <div class="col col-md-5">
+                       
+                    </div>
+                  
+                   
                 </div>
-
-
-
-
-               
             </div>
             <!-- HEADER of the backlog DISPLAY-->           
         </div>
@@ -767,7 +759,7 @@
                 <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
-                <td id="display_key" width="6%" class="display_key ra bi-id-display me-2">BI-{{item.id}}&nbsp;&nbsp;</td>
+                <td id="display_key" width="6%" class="display_key ra bi-id-display">BI-{{item.id}}</td>
                 <td id="display_size" width="4%" class="display_size ca "> <div class="bi-size-display"
                 ondblclick="makeEditable(this);"
                 onblur="save_element_text(this, '{{item.id}}', 'app_organization', 'Backlog', 'size');"
