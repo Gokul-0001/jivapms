@@ -14,4 +14,7 @@ urlpatterns = [
     path('permanent_deletion_org_metric/<int:org_id>/<int:org_metric_id>/', views_org_metric.permanent_deletion_org_metric, name='permanent_deletion_org_metric'),
     path('restore_org_metric/<int:org_id>/<int:org_metric_id>/', views_org_metric.restore_org_metric, name='restore_org_metric'),
     path('view_org_metric/<int:org_id>/<int:org_metric_id>/', views_org_metric.view_org_metric, name='view_org_metric'),
+    
+    # added
+    path('view_project_metrics/<int:project_id>/', views_org_metric.view_project_metrics, name='view_project_metrics'),
 ]

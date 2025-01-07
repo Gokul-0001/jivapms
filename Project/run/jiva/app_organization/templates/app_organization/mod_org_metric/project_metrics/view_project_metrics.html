@@ -1,0 +1,147 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>Project Metrics: {{project}}</h3>
+           <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+               <li class="nav-item">
+                   <a class="nav-link active" id="backlog-tab" data-bs-toggle="tab" href="#backlog" role="tab" aria-controls="backlog" aria-selected="true">Backlog</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="iteration-tab" data-bs-toggle="tab" href="#iteration" role="tab" aria-controls="iteration" aria-selected="false">Iteration</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="quality-tab" data-bs-toggle="tab" href="#quality" role="tab" aria-controls="quality" aria-selected="false">Quality</a>
+               </li>
+           </ul>
+
+           <div class="tab-content mt-3" id="projectTabsContent">
+               <div class="tab-pane fade show active" id="backlog" role="tabpanel" aria-labelledby="backlog-tab">
+                   <div class="d-flex align-items-start">
+                       <div class="me-3">
+                           <div class="form-check">
+                               <input class="form-check-input" type="radio" name="chartType" id="line" value="line" checked>
+                               <label class="form-check-label" for="line">Line</label>
+                           </div>
+                           <div class="form-check">
+                               <input class="form-check-input" type="radio" name="chartType" id="bar" value="bar">
+                               <label class="form-check-label" for="bar">Bar</label>
+                           </div>
+                           <div class="form-check">
+                               <input class="form-check-input" type="radio" name="chartType" id="pie" value="pie">
+                               <label class="form-check-label" for="pie">Pie</label>
+                           </div>
+                           <div class="form-check">
+                               <input class="form-check-input" type="radio" name="chartType" id="doughnut" value="doughnut">
+                               <label class="form-check-label" for="doughnut">Doughnut</label>
+                           </div>
+                       </div>
+                       <div>
+                           <canvas id="backlogChart" style="width: 400px; height: 300px;"></canvas>
+                       </div>
+                   </div>
+               </div>
+               <div class="tab-pane fade" id="iteration" role="tabpanel" aria-labelledby="iteration-tab">
+                   <p>Iteration content goes here...</p>
+               </div>
+               <div class="tab-pane fade" id="quality" role="tabpanel" aria-labelledby="quality-tab">
+                   <p>Quality content goes here...</p>
+               </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ labels|safe }};
+const data = {{ data|safe }};
+const cumulativeData = {{ cumulative_data|safe }};
+
+const ctx = document.getElementById('backlogChart').getContext('2d');
+let chartType = 'line';
+
+let backlogChart = new Chart(ctx, {
+    type: chartType,
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Daily Backlog Items',
+                data: data,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 1
+            },
+            {
+                label: 'Cumulative Backlog Items',
+                data: cumulativeData,
+                borderColor: 'rgba(192, 75, 75, 1)',
+                backgroundColor: 'rgba(192, 75, 75, 0.2)',
+                borderWidth: 1,
+                fill: true  // Fill the area under the curve
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+document.querySelectorAll('input[name="chartType"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        chartType = this.value;
+        backlogChart.destroy();
+        backlogChart = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Daily Backlog Items',
+                        data: data,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Cumulative Backlog Items',
+                        data: cumulativeData,
+                        borderColor: 'rgba(192, 75, 75, 1)',
+                        backgroundColor: 'rgba(192, 75, 75, 0.2)',
+                        borderWidth: 1,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+});
+
+</script>
+{% endblock content %}

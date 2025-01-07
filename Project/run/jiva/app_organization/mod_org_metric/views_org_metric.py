@@ -9,6 +9,9 @@ from app_organization.mod_project.models_project import *
 from app_common.mod_app.all_view_imports import *
 from app_common.mod_common.models_common import *
 
+from app_jivapms.mod_web.views_web import *
+from app_common.mod_app.all_view_imports import *
+
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -414,4 +417,66 @@ def view_org_metric(request, org_id, org_metric_id):
     template_file = f"{app_name}/{module_path}/view_org_metric.html"
     return render(request, template_file, context)
 
+
+from app_organization.mod_backlog.models_backlog import *
+from app_organization.mod_backlog.views_project_tree import jivapms_mod_backlog_helper_get_backlog_details
+@login_required
+def view_project_metrics(request, project_id):
+    user = request.user
+    project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
+    organization = project.org
+    org_id = organization.id
+    
+    # get the backlog details
+    backlog_details = jivapms_mod_backlog_helper_get_backlog_details(request, project_id)
+    include_types = backlog_details['include_types']
+    
+    end_date = now()
+    start_date = end_date - timedelta(days=90)  # Last 3 months
+
+    # Query backlog data
+    backlog_check = Backlog.objects.filter(pro=project, active=True, deleted=False, type__in=include_types)
+    backlog_count = backlog_check.count()
+    logger.debug(f">>> === backlog_count: {backlog_count} === <<<")
+    backlog_data = (
+        Backlog.objects
+        .filter(pro=project, created_at__range=(start_date, end_date), active=True, deleted=False, type__in=include_types)
+        .extra({'created_date': "date(created_at)"})
+        .values('created_date')
+        .annotate(count=models.Count('id'))
+        .order_by('created_date')
+    )
+
+    # Prepare data for Chart.js
+    labels = [item['created_date'] for item in backlog_data]
+    daily_counts = [item['count'] for item in backlog_data]
+
+    # Compute cumulative counts
+    cumulative_counts = []
+    total = 0
+    for count in daily_counts:
+        total += count
+        cumulative_counts.append(total)
+
+    
+
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_project_metrics',
+        'organization': organization,
+        'org_id': org_id,
+        
+        'module_path': module_path,
+        
+        'page_title': f'View Project Metrics',
+        'labels': labels,
+        'data': daily_counts,
+        'cumulative_data': cumulative_counts,
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
+    }
+    
+    template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics.html"
+    return render(request, template_file, context)
 

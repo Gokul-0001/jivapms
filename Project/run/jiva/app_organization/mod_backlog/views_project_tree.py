@@ -89,7 +89,57 @@ def seq_add_to_top(ajax_data):
         logger.debug(f">>> === SEQ ADD TO TOP: {position[0]} with {seq} === <<<")
         seq += 1
 
-
+# GENERAL-HELPER-METHOD
+def jivapms_mod_backlog_helper_get_backlog_details(request, project_id):
+    # Automate this further
+    user = request.user
+    member = get_object_or_404(Member, user=user)
+    project = Project.objects.get(id=project_id)
+    
+    # 1. Backlog Super Type
+    pbst_name = f"{project.id}_PROJECT_TREE"
+    project_backlog_super_type, created = BacklogSuperType.objects.get_or_create(pro=project, name=pbst_name)
+    # 2. Backlog Type
+    pbst_name = f"{project.id}_PROJECT_TREE"
+    project_backlog_type, created = BacklogType.objects.get_or_create(pro=project, name=pbst_name)
+    config = PROJECT_WBS_TREE_CONFIG
+    created_node = create_or_update_tree_from_config(config, model_name="app_organization.BacklogType", 
+                                                     parent=project_backlog_type, project=project)
+    tree_structure = list_tree_structure(created_node)
+    bt_tree_name_and_id = get_tree_name_id(created_node)
+    
+    epic_type_id = bt_tree_name_and_id.get("Epic")
+    epic_type_node = BacklogType.objects.get(id=epic_type_id, active=True)
+    epic_type_parent = epic_type_node.parent
+    epic_type_children = epic_type_node.get_active_children()
+    backlog_types = epic_type_children
+    backlog_types_count = backlog_types.count()
+    pb_name = f"{project.id}_PROJECT_TREE"
+    project_backlog, created = Backlog.objects.get_or_create(pro=project, name=pb_name, type=project_backlog_type)
+    strategic_theme_id = bt_tree_name_and_id.get("Strategic Theme")
+    initiative_id = bt_tree_name_and_id.get("Initiative")
+    exclude_types = [strategic_theme_id, initiative_id]
+    bug_type_id = bt_tree_name_and_id.get("Bug")
+    story_type_id = bt_tree_name_and_id.get("User Story")
+    tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+    feature_type_id = bt_tree_name_and_id.get("Feature")
+    component_type_id = bt_tree_name_and_id.get("Component")
+    capability_type_id = bt_tree_name_and_id.get("Capability")
+    include_types = [bug_type_id, story_type_id, tech_task_type_id]
+    include_collection_types = [feature_type_id, component_type_id, capability_type_id, epic_type_id]
+    regular_items_in_backlog = Backlog.objects.filter(pro=project, type__in=include_types, active=True)
+    collections_in_backlog = Backlog.objects.filter(pro=project, type__in=include_collection_types, active=True)
+    
+    send_data = {}
+    send_data["include_types"] = include_types
+    send_data["include_collection_types"] = include_collection_types
+    send_data["count_regular_items_in_backlog"] = regular_items_in_backlog.count()
+    send_data["count_collections_in_backlog"] = collections_in_backlog.count()
+    send_data["regular_items_in_backlog"] = regular_items_in_backlog
+    send_data["count_collections_in_backlog"] = collections_in_backlog.count()
+    send_data["collections_in_backlog"] = collections_in_backlog
+    return send_data
+    
 @login_required
 def view_project_tree_backlog(request, pro_id):
         
