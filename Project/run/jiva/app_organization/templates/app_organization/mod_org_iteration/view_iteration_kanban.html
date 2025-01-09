@@ -491,6 +491,11 @@
             font-size: 0.55rem;
         }
     }
+
+    .display_title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
 </style>
 
 
@@ -565,7 +570,7 @@
                     {% for iteration in project.project_release.org_release_org_iterations.all|filter_active %}
                     {% if not forloop.counter > 2 %}
                     <div class="kanban-column" data-id="{{ iteration.id }}" id="{{iteration.id}}">
-                        <b class="h4">{{iteration.org_release.name}}/{{iteration}}</b>                  
+                        <b class="display_title">{{iteration.org_release.name}}/{{iteration}}</b>                  
                         <div class="small-font-display">{{iteration.iteration_start_date}} to {{iteration.iteration_end_date}} </div>  
                         <hr>     
                             {% for item in project_backlog %}    

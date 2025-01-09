@@ -23,6 +23,7 @@ class OrgBoard(BaseModelImpl):
 
 
 class ProjectBoard(BaseModelTrackDateImpl):
+    # ref as of 08012025 DEFAULT_BOARD_COLUMNS = ['To Do', 'WIP', 'Done']
     org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="project_org_boards", null=True, blank=True)
     

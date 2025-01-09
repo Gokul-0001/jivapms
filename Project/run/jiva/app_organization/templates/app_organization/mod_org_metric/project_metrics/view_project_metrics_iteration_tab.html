@@ -1,0 +1,12 @@
+<h2>ITERATION TAB</h2>
+{{project}}
+{{project.id}}
+{% if release_mismatch_flag %}
+    <p>The current date/time is not matching with the Project mapped Release/Iteartions: {{project.project_release}}</p>
+    <b>Solution:</b>
+    <p>Set the Project with the Release from the Backlog/Release Planning <a href="{% url 'view_iteration_kanban' org_id project.id %}">here</a></p>
+{% else %}
+    <p>Current Mapped: Release  {{current_release}} and its active iteration {{current_iteration}}</p>
+{% endif %}
+
+

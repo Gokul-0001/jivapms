@@ -481,7 +481,7 @@ def view_project_tree_board(request, project_id):
     include_types = [bug_type_id, story_type_id, tech_task_type_id]
     efcc_include_types = [epic_type_id, feature_type_id, component_type_id, capability_type_id] # meaning Epic, Feature, Component, Capability
     efcc_backlog_items = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
-    efcc_backlog_items_swimlane = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
+    efcc_backlog_items_swimlane = Backlog.objects.filter(pro_id=project.id, active=True)
     get_swimlane_id = request.GET.get('swimlane_id')  if request.GET.get('swimlane_id') else '0'
     swimlane_flag = True
     logger.debug(f">>> === CHECK: {efcc_include_types} === <<<")
@@ -501,6 +501,10 @@ def view_project_tree_board(request, project_id):
             type__in=efcc_include_types,
             active=True
         )
+        efcc_backlog_with_no_epic = Backlog.objects.filter(
+            pro_id=project.id,
+            active=True
+        ).exclude(type__in=efcc_include_types)
         logger.debug(f">>> === efcc_backlog_items (else): {efcc_backlog_items} === <<<")
         
     logger.debug(f">>> === efcc_backlog_items_swimlane: {efcc_backlog_items_swimlane} === <<<")
@@ -568,6 +572,7 @@ def view_project_tree_board(request, project_id):
         'done_items': state_items.get('Done', []),
         'page_title': f'Project Board: {project.name}',
         'efcc_backlog_items': efcc_backlog_items,
+        'efcc_backlog_with_no_epic': efcc_backlog_with_no_epic,
         'swimlane_flag': swimlane_flag,
         'efcc_backlog_items_swimlane': efcc_backlog_items_swimlane,
         

@@ -665,6 +665,10 @@
                                     <a href="{% url 'create_project_story_map' org_id project.id %}" 
                                     class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;"><b>Story Mapping</b></a>  
                                       
+
+                                    <!-- display project template -->
+                                     <span class="small-font" style="font-size: 12px;"><b>{{project_detail.template}}</b></span>
+
                                     {% if project.project_release_mapped_flag == False %}               
                                         <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
                                         <b class="bi-size-display display-next-iteration">Iteration Planning</b></a>   

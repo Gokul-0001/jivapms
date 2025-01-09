@@ -57,6 +57,7 @@ from collections import OrderedDict
 from datetime import date
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime, time
+from django.utils.timezone import now, localtime
 import traceback
 
 import base64

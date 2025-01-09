@@ -291,6 +291,16 @@
         background-color: #fff59d; /* Light Yellow */
         color: #f57f17 !important; /* Dark Yellow Text */
     }
+    /* In Progress Column */
+    .kanban-card.WIP {
+        background-color: #fff59d; /* Light Yellow */
+        color: #f57f17 !important; /* Dark Yellow Text */
+    }
+
+    .kanban-card.wip {
+        background-color: #fff59d; /* Light Yellow */
+        color: #f57f17 !important; /* Dark Yellow Text */
+    }
 
     /* Blocked Column */
     .kanban-card.blocked {
@@ -571,7 +581,7 @@
                         
                             {% for item in in_progress_items %}
                                 {% if item.backlog.parent == efcc %}
-                                <div class="kanban-card in-progress" data-id="{{ item.id }}">
+                                <div class="kanban-card wip WIP in-progress" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-high">H</span>
                                         <span>#{{item.backlog.id}}</span>
@@ -618,6 +628,12 @@
                 {% endfor %}
             </div>
             {% endfor %}
+
+
+
+
+
+            
         </div>
     </div>
 </div>
@@ -703,7 +719,7 @@
                         
                             {% for item in in_progress_items %}
                                 
-                                <div class="kanban-card in-progress" data-id="{{ item.id }}">
+                                <div class="kanban-card in-progress WIP wip" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-high">H</span>
                                         <span>#{{item.backlog.id}}</span>
@@ -749,7 +765,7 @@
                 
                 {% endfor %}
             </div>
-            
+            <b>{{efcc_backlog_with_no_epic.all|filter_active}}</b>
         </div>
     </div>
 </div>
@@ -802,7 +818,8 @@
     const columnColorMapping = {
     "Backlog": "kanban-card",          // Default grey
     "ToDo": "kanban-card todo",       // Light Blue
-    "In Progress": "kanban-card in-progress", // Light Yellow
+    "In Progress": "kanban-card WIP", // Light Yellow
+    "WIP": "kanban-card WIP", // Light Yellow
     "Blocked": "kanban-card blocked",  // Red with white font
     "Done": "kanban-card done"         // Light Green
 };
@@ -858,7 +875,7 @@
             // CLASS FOR COLOR
             const card = ui.item; // The card being moved
             // Remove all column color classes
-            card.removeClass("todo in-progress blocked done");
+            card.removeClass("todo wip blocked done");
             // Add the correct class based on the column name
             const newClass = columnColorMapping[destColumn] || "kanban-card";
             card.attr("class", newClass); // Replace classes dynamically

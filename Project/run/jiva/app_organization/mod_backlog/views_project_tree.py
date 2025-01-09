@@ -8,6 +8,8 @@ from app_organization.mod_persona.models_persona import *
 from app_organization.mod_activity.models_activity import *
 from app_organization.mod_collection.models_collection import *
 
+from app_organization.mod_project_detail.models_project_detail import *
+
 from app_organization.mod_step.models_step import *
 from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
@@ -445,6 +447,15 @@ def view_project_tree_backlog(request, pro_id):
         active=True  # Ensure only active iterations
     ).order_by('iteration_start_date').first()
     logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
+    
+    
+    ########## ADDING PROJECT TEMPLATE DETAILS ##########
+    project_detail = project.project_details.first()
+    logger.debug(f">>> === PROJECT DETAIL: {project_detail}, PROJECT_DETAILS: {project_detail.template} === <<<")
+    
+    
+    
+    
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
@@ -454,6 +465,7 @@ def view_project_tree_backlog(request, pro_id):
         'pro': project,
         'project': project,
         'pro_id': pro_id,
+        'project_detail': project_detail,
         'org': project.org,
         'org_id': project.org_id,
         

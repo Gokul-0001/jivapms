@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFD with Editable Table</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        input {
+            width: 50px;
+            text-align: center;
+        }
+        .chart-container {
+            width: 80%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Editable Table -->
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Backlog</th>
+                    <th>Todo</th>
+                    <th>InProgress</th>
+                    <th>Review</th>
+                    <th>Done</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Rows dynamically added -->
+            </tbody>
+        </table>
+
+        <!-- CFD Chart -->
+        <div class="chart-container">
+            <canvas id="cfdChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data
+        const data = [
+            { date: 'May 21', backlog: 5, todo: 1, inProgress: 0, review: 0, done: 0 },
+            { date: 'May 22', backlog: 5, todo: 2, inProgress: 1, review: 0, done: 0 },
+            { date: 'May 23', backlog: 7, todo: 3, inProgress: 2, review: 1, done: 0 },
+            { date: 'May 24', backlog: 9, todo: 4, inProgress: 3, review: 2, done: 1 },
+            { date: 'May 25', backlog: 15, todo: 5, inProgress: 4, review: 3, done: 2 },
+        ];
+
+        // Create the table rows dynamically
+        const tableBody = document.getElementById('tableBody');
+        data.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.date}</td>
+                <td><input type="number" value="${row.backlog}" onchange="updateData(${index}, 'backlog', this.value)"></td>
+                <td><input type="number" value="${row.todo}" onchange="updateData(${index}, 'todo', this.value)"></td>
+                <td><input type="number" value="${row.inProgress}" onchange="updateData(${index}, 'inProgress', this.value)"></td>
+                <td><input type="number" value="${row.review}" onchange="updateData(${index}, 'review', this.value)"></td>
+                <td><input type="number" value="${row.done}" onchange="updateData(${index}, 'done', this.value)"></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        // Initialize CFD Chart
+        const ctx = document.getElementById('cfdChart').getContext('2d');
+        let cfdChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(row => row.date),
+                datasets: [
+                    {
+                        label: 'Backlog',
+                        data: data.map(row => row.backlog),
+                        borderColor: '#FF9F40',
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderWidth: 1,
+                        fill: true,
+                    },
+                    {
+                        label: 'Todo',
+                        data: data.map(row => row.todo),
+                        borderColor: '#3668DB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.3)',
+                        borderWidth: 1,
+                        fill: true,
+                    },
+                    {
+                        label: 'InProgress',
+                        data: data.map(row => row.inProgress),
+                        borderColor: '#4BC0C0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.4)',
+                        borderWidth: 1,
+                        fill: true,
+                    },
+                    {
+                        label: 'Review',
+                        data: data.map(row => row.review),
+                        borderColor: '#9966FF',
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                        borderWidth: 1,
+                        fill: true,
+                    },
+                    {
+                        label: 'Done',
+                        data: data.map(row => row.done),
+                        borderColor: '#FF6396',
+                        backgroundColor: 'rgba(255, 99, 100, 0.6)',
+                        borderWidth: 1,
+                        fill: true,
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    }
+                }
+            }
+        });
+
+        // Update Data and Chart
+        function updateData(index, field, value) {
+            data[index][field] = parseInt(value) || 0;
+
+            // Update chart datasets
+            cfdChart.data.datasets[0].data = data.map(row => row.backlog);
+            cfdChart.data.datasets[1].data = data.map(row => row.todo);
+            cfdChart.data.datasets[2].data = data.map(row => row.inProgress);
+            cfdChart.data.datasets[3].data = data.map(row => row.review);
+            cfdChart.data.datasets[4].data = data.map(row => row.done);
+
+            cfdChart.update(); // Refresh chart
+        }
+    </script>
+</body>
+</html>
