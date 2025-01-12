@@ -37,6 +37,7 @@ def project_roadmap(request, org_id, project_id):
     
     project_id_str = f"{project_id}_PROJECT_TREE"
     BACKLOG_TYPE_NODE_OBJ = BacklogType.objects.get(name=project_id_str)
+    logger.debug(f">>> === TEST: PROJECT ROADMAP: {BACKLOG_TYPE_NODE_OBJ} === <<<")
     bt_tree_name_and_id = get_tree_name_id(BACKLOG_TYPE_NODE_OBJ)
     #logger.debug(f">>> === TEST: PROJECT ROADMAP: {bt_tree_name_and_id} === <<<")
     epic_type_id = bt_tree_name_and_id.get("Epic")

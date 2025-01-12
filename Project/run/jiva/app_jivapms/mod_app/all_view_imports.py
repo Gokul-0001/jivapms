@@ -64,3 +64,13 @@ import re
 logger = logging.getLogger(__name__)
 SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
 
+
+
+def check_model_rec_count(mark, model, name):
+    check_query = model.objects.filter(name=name)
+    check_query_count = check_query.count()
+    logger.debug(f">>>> === {mark} CHECK_QUERY [[ {check_query} ]] === <<<")
+    logger.debug(f">>>> === {mark} CHECK_QUERY_COUNT [[ {check_query_count} ]] === <<<")
+    
+    return True
+    

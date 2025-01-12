@@ -431,12 +431,13 @@ def view_iteration_kanban(request, org_id, project_id):
     
     today = date.today()
   
-    # Query for the nearest release
+    # Query for the nearest release where today is between the start and end date
     nearest_release = OrgRelease.objects.filter(
-        Q(release_start_date__gte=today, active=True)  # Start date is today or in the future
-    ).order_by('release_start_date').first()  # Get the nearest release by start date
-    
-    
+        Q(release_start_date__lte=today) &  # Start date is on or before today
+        Q(release_end_date__gte=today) &    # End date is on or after today
+        Q(active=True)                      # Release is active
+    ).order_by('release_start_date').first()
+        
     # prepare for Backlog, two iteration kanban
     if nearest_release:
         iterations = OrgIteration.objects.filter(
@@ -460,12 +461,19 @@ def view_iteration_kanban(request, org_id, project_id):
         )
 
     # Backlog items NOT linked to the nearest release or its first two iterations
-    display_backlog_items = Backlog.objects.exclude(
-        Q(release=nearest_release) & Q(iteration__in=iterations)  # Exclude items in the nearest release and first two iterations
-    ).filter(pro=pro, active=True, type__in=include_types).order_by('position')
+    display_backlog_items = Backlog.objects.filter(
+        pro=pro, 
+        active=True, 
+        type__in=include_types
+    ).exclude(
+        Q(release=nearest_release) & Q(iteration__in=iterations)
+    ).order_by('position')
+
+    # Debugging the results
+    for item in display_backlog_items:
+        logger.debug(f">>> === DISPLAY BACKLOG ITEM: Release: {item.release}, Iteration: {item.iteration} === <<<")
+
         
-    
-    
     
     # Check all releases ordered by start date
     releases = OrgRelease.objects.filter(active=True).order_by('release_start_date')

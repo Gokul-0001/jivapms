@@ -784,7 +784,9 @@
                     {% elif item.status == 'Done' %}class="btn btn-sm btn-success" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
                     {% elif item.status == 'Backlog' %}class="btn btn-sm btn-secondary" style="margin: 0; padding: 0; font-size:10px; max-height: 15px;"
                     {% endif %}
-                    >{{item.status|display_if_not_none}}</button>
+                    >{{item.status|display_if_not_none}} 
+                  
+                </button>
                 </td>
                 <th id="display_select" width="2%" class="display_select ca">
                     <input type="checkbox" name="selected_items" value="{{item.id}}" class="select-item-checkbox">
@@ -1078,7 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function save_element_text(element, id,  appName, modelName, fieldName) {
         element.contentEditable = false;
         check1 = element.textContent.trim();
-        alert(`>>${check1}<<`);
+        //alert(`>>${check1}<<`);
         $.ajax({
             url: '/common/common_ajax/ajax_save_element_text/',
             type: 'POST',

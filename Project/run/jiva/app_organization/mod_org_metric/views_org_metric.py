@@ -802,6 +802,18 @@ def view_project_metrics(request, project_id):
     return render(request, template_file, context)
 
 
+# Filter valid numeric sizes and sum them
+def calculate_story_points(backlog_items):
+    total_story_points = 0
+    for item in backlog_items:
+        size = item.size.strip() if isinstance(item.size, str) else item.size
+        try:
+            # Try converting size to float
+            total_story_points += float(size)
+        except (ValueError, TypeError):
+            # Ignore non-numeric values for now
+            continue
+    return total_story_points
 
 @login_required
 def view_project_metrics_iteration_tab(request, project_id):
@@ -810,7 +822,7 @@ def view_project_metrics_iteration_tab(request, project_id):
     project = get_object_or_404(Project, pk=project_id, active=True)
     organization = project.org
     org_id = organization.id
-     
+    iteration_backlog_items = None
     logger.debug(f">>> === project: {project} {project.project_release} === <<<")
  
     
@@ -833,6 +845,10 @@ def view_project_metrics_iteration_tab(request, project_id):
         else:
             release_mismatch_flag = True
     # Step 2: Check Project Iteration
+    total_story_points = 0
+    todo_story_points = 0
+    wip_story_points = 0
+    done_story_points = 0
     if project.project_iteration:
         # Use datetime comparison for both start and end dates
         current_datetime = now().replace(microsecond=0)
@@ -842,12 +858,113 @@ def view_project_metrics_iteration_tab(request, project_id):
             iteration_end_date__gte=current_datetime
         ).order_by("-iteration_start_date").first()
 
+        from django.db.models import Sum
+
         if current_iteration:
             logger.debug(f">>> === current_iteration: {current_iteration} {current_iteration.iteration_start_date} === <<<")
+
+            # Filter backlog items for the current iteration
+            iteration_backlog_items = Backlog.objects.filter(
+                pro=project, 
+                active=True, 
+                deleted=False, 
+                iteration=current_iteration
+            )
+            logger.debug(f">>> === iteration_backlog_items: {iteration_backlog_items} === <<<")
+
+            # Calculate total story points
+            total_story_points = iteration_backlog_items.aggregate(total=Sum('size'))['total'] or 0
+            # CHECK THE PROJECT BOARD CARD details MODEL
+            project_board = ProjectBoard.objects.filter(project=project, org_release=current_release, org_iteration=current_iteration, active=True).first()
+            logger.debug(f">>> === project_board: {project_board} === <<<")
+            
+            
+            # # Calculate story points by status
+            # todo_story_points = iteration_backlog_items.filter(status="ToDo").aggregate(total=Sum('size'))['total'] or 0
+            # wip_story_points = iteration_backlog_items.filter(status="WIP").aggregate(total=Sum('size'))['total'] or 0
+            # done_story_points = iteration_backlog_items.filter(status="Done").aggregate(total=Sum('size'))['total'] or 0
+            # Fetch the states for each status from ProjectBoardCardState
+            # Fetch the states for ToDo, WIP, and Done from ProjectBoardState
+           
+            # Fetch states by their names
+            todo_states = ProjectBoardState.objects.filter(name="ToDo", active=True).values_list('id', flat=True)
+            wip_states = ProjectBoardState.objects.filter(name="WIP", active=True).values_list('id', flat=True)
+            done_states = ProjectBoardState.objects.filter(name="Done", active=True).values_list('id', flat=True)
+
+            logger.debug(f"ToDo States: {list(todo_states)}")
+            logger.debug(f"WIP States: {list(wip_states)}")
+            logger.debug(f"Done States: {list(done_states)}")
+
+            # Fetch ProjectBoardCards linked to these states
+            todo_cards_objects = ProjectBoardCard.objects.filter(board=project_board, state_id__in=todo_states, active=True)
+            wip_cards_objects = ProjectBoardCard.objects.filter(board=project_board, state_id__in=wip_states, active=True)
+            done_cards_objects = ProjectBoardCard.objects.filter(board=project_board, state_id__in=done_states, active=True)
+
+            # Log card counts and details
+            logger.debug(f"ToDo Cards Count: {todo_cards_objects.count()}")
+            logger.debug(f"WIP Cards Count: {wip_cards_objects.count()}")
+            logger.debug(f"Done Cards Count: {done_cards_objects.count()}")
+
+            # Extract backlog IDs from cards
+            todo_cards = todo_cards_objects.values_list('backlog_id', flat=True)
+            wip_cards = wip_cards_objects.values_list('backlog_id', flat=True)
+            done_cards = done_cards_objects.values_list('backlog_id', flat=True)
+
+            logger.debug(f"ToDo Backlog IDs: {list(todo_cards)}")
+            logger.debug(f"WIP Backlog IDs: {list(wip_cards)}")
+            logger.debug(f"Done Backlog IDs: {list(done_cards)}")
+
+            # Verify matching backlog items
+            todo_items = iteration_backlog_items.filter(id__in=todo_cards)
+            wip_items = iteration_backlog_items.filter(id__in=wip_cards)
+            done_items = iteration_backlog_items.filter(id__in=done_cards)
+
+            logger.debug(f"ToDo Items Count: {todo_items.count()}")
+            logger.debug(f"WIP Items Count: {wip_items.count()}")
+            logger.debug(f"Done Items Count: {done_items.count()}")
+
+            # Helper function to calculate numeric story points
+            def get_numeric_story_points(backlog_items):
+                total_points = 0
+                for item in backlog_items:
+                    size = item.size
+                    # Check if size is numeric or a valid integer-like string
+                    if isinstance(size, (int, float)):
+                        total_points += size
+                    elif isinstance(size, str):
+                        size = size.strip()
+                        if size.isdigit():
+                            total_points += int(size)
+                        else:
+                            logger.warning(f"Invalid size value: {size}")
+                    else:
+                        logger.warning(f"Unsupported size type: {type(size)}")
+                return total_points
+
+            # Calculate story points using the helper function
+            todo_story_points = get_numeric_story_points(todo_items)
+            wip_story_points = get_numeric_story_points(wip_items)
+            done_story_points = get_numeric_story_points(done_items)
+
+            logger.debug(f"ToDo Story Points: {todo_story_points}")
+            logger.debug(f"WIP Story Points: {wip_story_points}")
+            logger.debug(f"Done Story Points: {done_story_points}")
+
+        
+            # Log the results
+            logger.debug(f"Total Story Points: {total_story_points}")
+            logger.debug(f"ToDo Story Points: {todo_story_points}")
+            logger.debug(f"WIP Story Points: {wip_story_points}")
+            logger.debug(f"Done Story Points: {done_story_points}")
+            
+            
+           
+            
         else:
             iteration_mismatch_flag = True
 
-    
+    # Set the Iteration backlog items count
+    iteration_backlog_items_count = iteration_backlog_items.count() if iteration_backlog_items else 0
     
     # Prepare context for rendering template
     context = {
@@ -862,6 +979,12 @@ def view_project_metrics_iteration_tab(request, project_id):
         'current_iteration': current_iteration,
         'release_mismatch_flag': release_mismatch_flag,
         'iteration_mismatch_flag': iteration_mismatch_flag,
+        'iteration_backlog_items': iteration_backlog_items,
+        'iteration_backlog_items_count': iteration_backlog_items_count,
+        'total_story_points': total_story_points,
+        'todo_story_points': todo_story_points,
+        'wip_story_points': wip_story_points,
+        'done_story_points': done_story_points,
     }
 
     # Render template

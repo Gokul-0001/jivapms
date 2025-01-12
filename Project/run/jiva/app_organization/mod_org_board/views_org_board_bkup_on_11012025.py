@@ -502,46 +502,46 @@ def view_project_tree_board(request, project_id):
         project_iteration = project.project_iteration
         project_release = project.project_release
         project_iteration_flag = True
-        if project.project_release and project.project_iteration:
-            # Get the current Release
-            current_release = OrgRelease.objects.filter(
-                id=project.project_release.id,
-                release_start_date__lte=current_datetime,
-                release_end_date__gte=current_datetime,            
-            ).order_by("-release_start_date").first()      
-            current_iteration = OrgIteration.objects.filter(
-                org_release=current_release,
-                iteration_start_date__lte=current_datetime,
-                iteration_end_date__gte=current_datetime
-            ).order_by("-iteration_start_date").first()
-            # Check the Project Release_Iteration Board exists, if not create it
-            project_release_iteration_board, created = ProjectBoard.objects.get_or_create(
-                project=project,
-                name=f"{project.name} Release_Iteration Board",
-                org_release=current_release,
-                org_iteration=current_iteration,
-                defaults={'author': user}
-            )
-            USE_DEFAULT_PROJECT_BOARD_FLAG = False
-            BOARD_NAME = project_release_iteration_board.name
-            BOARD_ID = project_release_iteration_board.id
-            message = ""
-            if created:
-                message="Project Release_Iteration Board created successfully"
-            logger.debug(f">>> === project_release_iteration_board: {project_release_iteration_board} === <<<")
-            logger.debug(f">>> === current_release: {current_release} === <<<")
-            logger.debug(f">>> === current_iteration: {current_iteration} === <<<")
-            logger.debug(f">>> === project_iteration: {project_iteration} === <<<")
-            logger.debug(f">>> === project_release: {project_release} === <<<")
-            logger.debug(f">>> === current_datetime: {current_datetime} === <<<")
-            logger.debug(f">>> === project: {project} {message}=== <<<")
-            efcc_backlog_items_swimlane = Backlog.objects.filter(
-                pro_id=project.id,
-                type__in=efcc_include_types,
-                active=True,            
-            )
-        else:
-            logger.debug(f">>> === ***ALERT*** PROJECT RELEASE AND ITERATION NOT MAPPED YET === <<<")
+        
+        # Get the current Release
+        current_release = OrgRelease.objects.filter(
+            id=project.project_release.id,
+            release_start_date__lte=current_datetime,
+            release_end_date__gte=current_datetime,            
+        ).order_by("-release_start_date").first()      
+        current_iteration = OrgIteration.objects.filter(
+            org_release=current_release,
+            iteration_start_date__lte=current_datetime,
+            iteration_end_date__gte=current_datetime
+        ).order_by("-iteration_start_date").first()
+        # Check the Project Release_Iteration Board exists, if not create it
+        project_release_iteration_board, created = ProjectBoard.objects.get_or_create(
+            project=project,
+            name=f"{project.name} Release_Iteration Board",
+            org_release=current_release,
+            org_iteration=current_iteration,
+            defaults={'author': user}
+        )
+        USE_DEFAULT_PROJECT_BOARD_FLAG = False
+        BOARD_NAME = project_release_iteration_board.name
+        BOARD_ID = project_release_iteration_board.id
+        message = ""
+        if created:
+            message="Project Release_Iteration Board created successfully"
+        logger.debug(f">>> === project_release_iteration_board: {project_release_iteration_board} === <<<")
+        logger.debug(f">>> === current_release: {current_release} === <<<")
+        logger.debug(f">>> === current_iteration: {current_iteration} === <<<")
+        logger.debug(f">>> === project_iteration: {project_iteration} === <<<")
+        logger.debug(f">>> === project_release: {project_release} === <<<")
+        logger.debug(f">>> === current_datetime: {current_datetime} === <<<")
+        logger.debug(f">>> === project: {project} {message}=== <<<")
+        efcc_backlog_items_swimlane = Backlog.objects.filter(
+            pro_id=project.id,
+            type__in=efcc_include_types,
+            active=True,
+            
+        )
+    
     elif get_swimlane_id == '0':  # Check if swimlane_id is provided   
         # If no swimlane_id is provided, get all Backlog items
         efcc_backlog_items_swimlane = Backlog.objects.filter(
@@ -679,7 +679,7 @@ def view_project_tree_board(request, project_id):
         'project_board': project_board,
         'project_board_states': project_board_states,
         'backlog_items': actual_project_backlog_items,
-        'todo_items': state_items.get('ToDo', []),
+        'todo_items': state_items.get('To Do', []),
         'in_progress_items': state_items.get('WIP', []),
         'done_items': state_items.get('Done', []),
         'page_title': f'Project Board: {project.name}',
@@ -724,7 +724,7 @@ def column_to_column_update(positions, board_id, card_id, from_column, from_stat
     for pos in positions:
         card_id = pos.get('card_id')
         position = pos.get('position')      
-        ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id, board_id=board_id)     
+        ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id)        
     update_project_board_state_transition(pbc, from_state_id, to_state_id)
     return JsonResponse({"success": True})
 
@@ -759,8 +759,7 @@ def column_to_backlog_update(positions, board_id, this_card_id, from_column, fro
 
 
 
-def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):
-    logger.debug(f">>> === BACKLOG_TO_COLUMN: {positions} {board_id} {this_card_id} {from_column} {from_state_id} {dest_column} {to_state_id}=== <<<") 
+def backlog_to_column_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id): 
     try:
         # Fetch or create the ProjectBoardCard for the backlog item
         card, created = ProjectBoardCard.objects.get_or_create(
@@ -776,14 +775,10 @@ def backlog_to_column_update(positions, board_id, this_card_id, from_column, fro
             position = pos.get('position')            
             if card_id == this_card_id:
                 # Update the moved card
-                ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(position=position, state_id=to_state_id, board_id=board_id)
-                updated_pbc = ProjectBoardCard.objects.get(backlog_id=card_id)
-                logger.debug(f">>> === BACKLOG_TO_COLUMN_UPDATED: {updated_pbc} {updated_pbc.board}=== <<<")
+                ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(position=position, state_id=to_state_id)
             else:
                 # Update other cards in the column
-                ProjectBoardCard.objects.filter(id=card_id).update(position=position, board_id=board_id)      
-                updated_pbc = ProjectBoardCard.objects.get(id=card_id)
-                logger.debug(f">>> === BACKLOG_TO_COLUMN_UPDATED: {updated_pbc} {updated_pbc.board}=== <<<") 
+                ProjectBoardCard.objects.filter(id=card_id).update(position=position)       
         update_project_board_state_transition(card, from_state_id, to_state_id)
         return JsonResponse({"success": True})
 
@@ -796,7 +791,7 @@ def within_column_update(positions, board_id, card_id, dest_column, to_state_id)
     for pos in positions:
         card_id = pos.get('card_id')
         position = pos.get('position')     
-        ProjectBoardCard.objects.filter(id=card_id).update(position=position, board_id=board_id)       
+        ProjectBoardCard.objects.filter(id=card_id).update(position=position)       
     return JsonResponse({"success": True})
 
 def within_backlog_update(positions, board_id, card_id):  

@@ -541,15 +541,15 @@
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
                  <div class="kanban-column" data-id="0" id="backlog">
-                    <b class="h4">Backlog</b>
+                    <b class="">Backlog</b>
                     <div class="small-font-display">&nbsp;</div>
                     <hr>
                         {% for item in display_backlog_items %}
-                            
+                            {% if item.release != project.project_release %}
                             <div class="kanban-card" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
                                     <span class="priority priority-high">H</span>
-                                    <span>#{{item.id}}</span>
+                                    <span>#{{item.id}} {{item.size}}</span>
                                 </div>
                                 <b
                                
@@ -560,7 +560,7 @@
                                     <div class="parent">{{item.parent}}</div>
                                 </div>
                             </div>
-                            
+                            {% endif %}
                         {% endfor %}
                     
                 </div>
@@ -578,7 +578,7 @@
                             <div class="kanban-card" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
                                     <span class="priority priority-high">H</span>
-                                    <span>#{{item.id}}</span>
+                                    <span>#{{item.id}} {{item.size}}</span>
                                 </div>
                                 
                                
@@ -601,7 +601,7 @@
                 {% for iteration in nearest_release.org_release_org_iterations.all|filter_active %}  
                 {% if not forloop.counter > 2 %}
                 <div class="kanban-column" data-id="{{ iteration.id }}" id="{{iteration.id}}">
-                    <b class="h4">{{nearest_release.name}}/{{iteration}}</b>                  
+                    <b class="">{{nearest_release.name}}/{{iteration}}</b>                  
                     <div class="small-font-display">{{iteration.iteration_start_date}} to {{iteration.iteration_end_date}} </div>  
                     <hr>     
                         {% for item in project_backlog %}    
@@ -609,7 +609,7 @@
                         <div class="kanban-card" data-id="{{ item.id }}">
                             <div class="kanban-card-header">
                                 <span class="priority priority-high">H</span>
-                                <span>#{{item.id}}</span>
+                                <span>#{{item.id}} {{item.size}}</span>
                             </div>
                             
                            

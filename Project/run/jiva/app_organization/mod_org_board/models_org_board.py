@@ -4,6 +4,8 @@ from app_organization.mod_organization.models_organization import *
 from app_organization.mod_project.models_project import *   
 from app_common.mod_common.models_common import *
 
+from app_jivapms.mod_app.all_view_imports import *
+
 class OrgBoard(BaseModelImpl):
     org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
                             related_name="org_boards", null=True, blank=True)
@@ -30,6 +32,9 @@ class ProjectBoard(BaseModelTrackDateImpl):
     project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
                                 related_name="project_boards", null=True, blank=True)
     
+    org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, related_name="org_release_boards", null=True, blank=True)
+    org_iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, related_name="org_iteration_boards", null=True, blank=True)
+    
 
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_project_boards")
@@ -43,6 +48,7 @@ class ProjectBoard(BaseModelTrackDateImpl):
 
 
 class ProjectBoardState(BaseModelTrackDateImpl):
+    
     board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE,
                                 related_name="board_states", null=True, blank=True)
     
@@ -88,7 +94,7 @@ class ProjectBoardStateTransition(BaseModelTrackDateImpl):
 
 
 class ProjectBoardCard(BaseModelTrackDateImpl):
-    backlog = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE, related_name="board_cards", null=True, blank=True)
+    backlog = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE, related_name="board_cards", null=True, blank=True)    
     board = models.ForeignKey(ProjectBoard, on_delete=models.CASCADE, related_name="board_cards", null=True, blank=True)
     state = models.ForeignKey(ProjectBoardState, on_delete=models.CASCADE, related_name="state_cards", null=True, blank=True)
     swimlane = models.ForeignKey(
@@ -117,3 +123,43 @@ class ProjectBoardSwimLane(BaseModelTrackDateImpl):
             return self.name
         else:
             return str(self.id)
+
+
+
+
+class ProjectBoardCardManager(models.Manager):
+    def calculate_story_points(self, board, state_names, iteration_backlog_items):
+        # Fetch states by their names
+        states = {}
+        for name in state_names:
+            states[name] = ProjectBoardState.objects.filter(name=name, active=True).values_list('id', flat=True)
+
+        # Log states for debugging
+        logger.debug(f"States: {states}")
+
+        # Fetch ProjectBoardCards linked to these states
+        backlog_ids = {state: ProjectBoardCard.objects.filter(
+            board=board, state_id__in=states[state], active=True
+        ).values_list('backlog_id', flat=True) for state in state_names}
+
+        # Log backlog IDs for debugging
+        logger.debug(f"Backlog IDs: {backlog_ids}")
+
+        # Check done cards for non-numeric or invalid sizes
+        if "Done" in backlog_ids:
+            done_cards = ProjectBoardCard.objects.filter(board=board, state_id__in=states["Done"], active=True)
+            for card in done_cards:
+                if card.backlog and isinstance(card.backlog.size, int):
+                    logger.debug(f"Done Card: {card.backlog.id} {card.backlog.size}")
+                else:
+                    logger.debug(f"Done Card: {card.backlog.id} {card.backlog.size} {type(card.backlog.size)}")
+
+        # Calculate story points for each state
+        story_points = {}
+        for state, ids in backlog_ids.items():
+            story_points[state] = iteration_backlog_items.filter(id__in=ids).aggregate(total=Sum('size'))['total'] or 0
+
+        # Log calculated story points
+        logger.debug(f"Story Points: {story_points}")
+
+        return story_points

@@ -103,7 +103,7 @@ def jivapms_mod_backlog_helper_get_backlog_details(request, project_id):
     project_backlog_super_type, created = BacklogSuperType.objects.get_or_create(pro=project, name=pbst_name)
     # 2. Backlog Type
     pbst_name = f"{project.id}_PROJECT_TREE"
-    project_backlog_type, created = BacklogType.objects.get_or_create(pro=project, name=pbst_name)
+    project_backlog_type = BacklogType.objects.get(pro=project, name=pbst_name)
     config = PROJECT_WBS_TREE_CONFIG
     created_node = create_or_update_tree_from_config(config, model_name="app_organization.BacklogType", 
                                                      parent=project_backlog_type, project=project)
@@ -169,17 +169,21 @@ def view_project_tree_backlog(request, pro_id):
     logger.debug(f">>> === BACKLOG SUPER TYPE: {project_backlog_super_type} {project_backlog_super_type.id} === <<<")
     
     # 2. Backlog Type
+    check_model_rec_count("*** TreeBacklog: Step1a***", BacklogType, pbst_name)
     pbst_name = f"{project.id}_PROJECT_TREE"
     project_backlog_type, created = BacklogType.objects.get_or_create(pro=project, name=pbst_name)
-    logger.debug(f">>> === BACKLOG TYPE: {project_backlog_type} {project_backlog_type.id} === <<<")
+    check_model_rec_count("*** TreeBacklog: Step1b***", BacklogType, pbst_name)
     
     # 2.1 Create the Backlog Type from the Config as a Schema
     # 2.1.1 Get the Config
     config = PROJECT_WBS_TREE_CONFIG
     
     # 2.1.2 Create the Backlog Type from the Config as a Schema
+    check_model_rec_count("*** TreeBacklog: Step2a***", BacklogType, pbst_name)
     created_node = create_or_update_tree_from_config(config, model_name="app_organization.BacklogType", parent=project_backlog_type, project=project)
-    
+    project_backlog_type = BacklogType.objects.get(pro=project, name=pbst_name)
+    check_model_rec_count("*** TreeBacklog: Step2b***", BacklogType, pbst_name)
+    logger.debug(f">>> === **** TEST AGAIN **** BACKLOG TYPE: {project_backlog_type} {project_backlog_type.id} === <<<")
     # 2.1.3 Get the Backlog Types
     # Display the structure of the created node
     tree_structure = list_tree_structure(created_node)
@@ -291,13 +295,33 @@ def view_project_tree_backlog(request, pro_id):
     selected_version_items = request.POST.get("selected_version_items", "").split(",")
     logger.debug(f">>> === VERSION ACTION: {version_action} === <<<")   
     
-    #logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
+    from app_organization.mod_org_board.models_org_board import ProjectBoardCard
+    
+    # WORKING PREVIOUS VERSION
+    # #logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
     if 'deleted' in filter_by:
-        display_backlog_items = Backlog.objects.filter(pro=project, type__in=include_types, **filters).order_by('position')
+        display_backlog_items = Backlog.objects.filter(pro=project, type__in=include_types, **filters).prefetch_related(
+            Prefetch(
+                'board_cards',
+                queryset=ProjectBoardCard.objects.filter(active=True).select_related('state', 'board', 'swimlane'),
+                to_attr='prefetched_card'  # Use singular as it will contain only one card
+            )
+        ).order_by('position').order_by('position')
     else:
-        display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types, **filters).order_by('position')
+        display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types, **filters).prefetch_related(
+                Prefetch(
+                    'board_cards',
+                    queryset=ProjectBoardCard.objects.filter(active=True).select_related('state', 'board', 'swimlane'),
+                    to_attr='prefetched_card'  # Use singular as it will contain only one card
+                )
+            ).order_by('position').order_by('position')
     logger.debug(f">>> === DISPLAY DATA : {display_backlog_items} === <<<")
-    test_display = None
+    
+    for item in display_backlog_items:
+        for card in item.prefetched_card:
+            logger.debug(f"Backlog: {item.name}, State: {card.state.name if card.state else 'No State'}")
+    # test_display = None
+    
     
     if action == 'assign':
         #logger.debug(f">>> === Assigning Items: {selected_items} to Collection: {collection_id} === <<<")
@@ -391,7 +415,7 @@ def view_project_tree_backlog(request, pro_id):
             backlog_epic_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
             seq_add_to_top(ajax_data)
             #logger.debug(f">>> === ADD TO TOP: {create_backlog_item} {create_backlog_item.id} === <<<")
-
+            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
             
         if 'add_to_bottom' in request.POST:
             #logger.debug(f">>> === ADD TO BOTTOM:  === <<<")
@@ -410,7 +434,7 @@ def view_project_tree_backlog(request, pro_id):
                 created_by=user,
                 type_id=type_of_bi
             )
-
+            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
             # Regenerate display_backlog_items
             #logger.debug(f">>> === ADD TO BOTTOM: {create_backlog_item} {create_backlog_item.id} === <<<")
             return redirect("view_project_tree_backlog", pro_id=pro_id)
@@ -559,7 +583,7 @@ def create_or_update_tree_from_config(config, model_name, parent=None, project=N
         Model: The root node or updated tree node.
     """
     from django.apps import apps
-
+    
     # Resolve the model from the model_name string
     model = apps.get_model(model_name)
 

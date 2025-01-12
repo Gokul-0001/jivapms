@@ -473,6 +473,8 @@ def project_homepage(request, org_id, project_id):
     # Backlog
     backlog = Backlog.objects.filter(pro_id=project_id, active=True)
     
+    check_model_rec_count('****PROJECT_HOME_PAGE', BacklogType, f"{project_id}_PROJECT_TREE")
+    
     # get project administration details
     project_administration = ProjectAdministration.objects.filter(project_id=project_id, 
                                                                   active=True).first()
@@ -532,7 +534,12 @@ def project_homepage(request, org_id, project_id):
             #     active=True
             # )
             # Initiation 
-            backlog_project_type_root, create = BacklogType.objects.get_or_create(name=f"{project_id}_PROJECT_TREE")
+            CHECK_BACKLOG_TYPE = BacklogType.objects.filter(name=f"{project_id}_PROJECT_TREE")
+            logger.debug(f">>> === **PROJECT_HOME_PAGE** form creation CHECK_BACKLOG_TYPE: {CHECK_BACKLOG_TYPE} === <<<")
+            if not CHECK_BACKLOG_TYPE.exists():                
+                backlog_project_type_root, create = BacklogType.objects.get_or_create(pro=project, name=f"{project_id}_PROJECT_TREE")
+            else:
+                backlog_project_type_root = CHECK_BACKLOG_TYPE.first()
             
             # # Roadmap, self entry
             # project_roadmap.section = f"{project.name} Project Roadmap"
@@ -548,6 +555,17 @@ def project_homepage(request, org_id, project_id):
             print(f">>> === form.errors: {form.errors} === <<<")
         return redirect('project_homepage', org_id=org_id, project_id=project_id)
     print(f">>> === backlog: {backlog} === <<<")
+    
+    
+    ##
+    ##
+    ##
+    check_backlog_types = BacklogType.objects.filter(name=f"{project_id}_PROJECT_TREE")
+    logger.debug(f">>> === **PROJECT_HOME_PAGE** AFTER CHECK_BACKLOG_TYPES: {check_backlog_types} === <<<")
+    ##
+    ##
+    ##
+    
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'project_homepage',
