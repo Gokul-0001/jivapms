@@ -13,8 +13,6 @@ from app_organization.mod_backlog.models_backlog import *
 from app_organization.mod_project.models_project import *
 from app_jivapms.mod_app.all_view_imports import *
 
-from app_jivapms.mod_web.views_web import *
-
 app_name = 'app_organization'
 app_version = 'v1'
 
@@ -423,12 +421,6 @@ def view_iteration_kanban(request, org_id, project_id):
     include_types = [bug_type_id, story_type_id, tech_task_type_id, feature_type_id, component_type_id, capability_type_id]  
     display_backlog_items = Backlog.objects.filter(pro=pro, active=True, type__in=include_types).order_by('position')
     
-    current_datetime = now().replace(microsecond=0)
-    current_release = None
-    current_iteration = None
-    next_iteration = None
-    iteration_message = None
-    releases = OrgRelease.objects.prefetch_related('org_release_org_iterations').order_by('release_start_date', 'position')
     # Prepare the include types
     
     # Send the display backlog items
@@ -437,31 +429,173 @@ def view_iteration_kanban(request, org_id, project_id):
     
     # Send the next iteration details 
     
+    today = date.today()
+  
+    # Query for the nearest release where today is between the start and end date
+    nearest_release = OrgRelease.objects.filter(
+        Q(release_start_date__lte=today) &  # Start date is on or before today
+        Q(release_end_date__gte=today) &    # End date is on or after today
+        Q(active=True)                      # Release is active
+    ).order_by('release_start_date').first()
+        
+    # prepare for Backlog, two iteration kanban
+    if nearest_release:
+        iterations = OrgIteration.objects.filter(
+            org_release=nearest_release  # Filter iterations by release
+        ).order_by('iteration_start_date')[:2]  # Get the first two iterations
+
+    # Backlog items NOT linked to any release or iteration
+    unassigned_backlog = Backlog.objects.filter(
+        Q(release__isnull=True) & Q(iteration__isnull=True) & Q(pro=project)
+    )
+
+    # Backlog items linked to the nearest release or first two iterations
+    if iterations.exists():
+        backlog_in_iterations = Backlog.objects.filter(
+            Q(release=nearest_release) &
+            Q(iteration__in=iterations)
+        )
+    else:
+        backlog_in_iterations = Backlog.objects.filter(
+            Q(release=nearest_release)
+        )
+
+    # Backlog items NOT linked to the nearest release or its first two iterations
+    display_backlog_items = Backlog.objects.filter(
+        pro=pro, 
+        active=True, 
+        type__in=include_types
+    ).exclude(
+        Q(release=nearest_release) & Q(iteration__in=iterations)
+    ).order_by('position')
+
+    # Debugging the results
+    for item in display_backlog_items:
+        logger.debug(f">>> === DISPLAY BACKLOG ITEM: Release: {item.release}, Iteration: {item.iteration} === <<<")
+
+        
+    
+    # Check all releases ordered by start date
+    releases = OrgRelease.objects.filter(active=True).order_by('release_start_date')
+    for r in releases:
+        logger.debug(f">>> === {r.name}, Start: {r.release_start_date}, Active: {r.active} === <<<")
+   
+    # Fetch all releases and prefetch iterations
+    releases = OrgRelease.objects.prefetch_related('org_release_org_iterations').order_by('release_start_date', 'position')
+    org_releases = releases
+    current_release = None
+    current_iteration = None
+    next_iteration = None
+    iteration_message = None
+    # Fetch related OrgIterations within active OrgReleases
+    org_release_org_iterations = (
+        OrgIteration.objects.filter(
+            org_release__in=org_releases,  # Filter by releases linked to OrgIterations
+            iteration_start_date__lte=today,
+            iteration_end_date__gte=today,
+            active=True  # Ensure only active iterations
+        ).select_related('org_release')  # Optimize queries with joins
+    )
+    logger.debug(f">>> === ORG RELEASE ORG ITERATIONS: {org_release_org_iterations} === <<<")
+    current_iteration = org_release_org_iterations.first()
+    
+    
     ## idenitfying the current release and current iteration
     current_datetime = now().replace(microsecond=0)
     if project.project_release:
-        details = get_project_release_and_iteration_details(project.id)
-        current_iteration = details.get('current_iteration')
-        current_release = details.get('current_release')
-        next_iteration = details.get('next_iteration')
-        logger.debug(f">>> === PROJECT HAS RELEASE DETAILS {project.project_release} fetching current/next === <<<")
-        logger.debug(f">>> === CURRENT RELEASE: {current_release} === <<<")
-        logger.debug(f">>> === CURRENT ITERATION: {current_iteration} === <<<")
-        logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
+        current_release = OrgRelease.objects.filter(
+                id=project.project_release.id,
+                release_start_date__lte=current_datetime,
+                release_end_date__gte=current_datetime,            
+            ).order_by("-release_start_date").first()      
+        if current_release:
+            current_iteration = OrgIteration.objects.filter(
+                org_release=current_release,
+                iteration_start_date__lte=current_datetime,
+                iteration_end_date__gte=current_datetime,
+            ).order_by("iteration_start_date").first()
+            if current_iteration:
+                # Find the next iteration (in the current or any future release)
+                next_iteration = OrgIteration.objects.filter(
+                    iteration_start_date=current_iteration.iteration_end_date,
+                    active=True  # Ensure only active iterations
+                ).order_by('iteration_start_date').first()
+                if not next_iteration:
+                    next_iteration = OrgIteration.objects.filter(
+                        iteration_start_date__gt=current_iteration.iteration_end_date,
+                        active=True  # Ensure only active iterations
+                    ).order_by('iteration_start_date').first()
+            else:
+                # If no current iteration, find the next active iteration in the current or future releases
+                next_iteration = OrgIteration.objects.filter(
+                    org_release__in=OrgRelease.objects.filter(
+                        release_start_date__gte=current_datetime,
+                        active=True  # Ensure the release is active
+                    ),
+                    active=True
+                ).order_by('iteration_start_date').first()
+    logger.debug(f">>> === CURRENT RELEASE: {current_release} === <<<")
     
-    # PROJECT BACKLOG
     project_backlog = Backlog.objects.filter(pro=pro, active=True).order_by('position')
 
-    #
-    # EDIT PROJECT MAPPING
-    #
+   # Group releases by year and calculate positions
+    year_data = {}
+    for release in releases:
+        year = release.release_start_date.year
+
+        # Ensure the year is initialized
+        if year not in year_data:
+            year_data[year] = []
+
+        # Calculate total days in the year
+        year_start = date(year, 1, 1)
+        year_end = date(year, 12, 31)
+        total_year_days = (year_end - year_start).days
+
+        # Normalize release_start_date to a date type
+        release_start_date = release.release_start_date.date()
+
+        # Calculate position of release as a percentage within the year
+        release_days_from_start = (release_start_date - year_start).days
+        release_position = (release_days_from_start / total_year_days) * 100
+        release_position = max(0, min(release_position, 100))  # Clamp to 0-100%
+
+        # Handle iterations within the release
+        total_release_days = (release.release_end_date - release.release_start_date).days
+        iterations = []
+        for iteration in release.org_release_org_iterations.filter(active=True):
+            iter_days_from_start = (iteration.iteration_start_date - release.release_start_date).days
+            iter_position = (iter_days_from_start / total_release_days) * 100 if total_release_days > 0 else 0
+            iter_position = max(0, min(iter_position, 100))  # Clamp to 0-100%
+            iterations.append({
+                'id': iteration.id,
+                'name': iteration.name,
+                'start_date': iteration.iteration_start_date,
+                'end_date': iteration.iteration_end_date,
+                'position': iter_position
+            })
+
+        # Append release data
+        year_data[year].append({
+            'id': release.id,
+            'name': release.name,
+            'start_date': release.release_start_date,
+            'end_date': release.release_end_date,
+            'release_position': release_position,
+            'iterations': iterations
+        })
+
+    # Calculate positions for markers
+    month_positions = [(i / 12) * 100 for i in range(1, 13)]
+    week_positions = [(i / 52) * 100 for i in range(1, 53)]
+
+
     if 'edit_map_project_release' in request.GET:
         project.project_release_mapped_flag = False
         project.save()
         return redirect('view_iteration_kanban', org_id=org_id, project_id=project_id)
-    #
+    
     # Submit the form
-    #
     if request.method == 'POST':
         current_datetime = now().replace(microsecond=0)
         iteration_id = request.POST.get('map_project_release')
@@ -478,20 +612,6 @@ def view_iteration_kanban(request, org_id, project_id):
                     project.project_iteration = iteration
                     project.project_release = iteration.org_release
                     project.save()
-                    
-                    if project.project_release:
-                        details = get_project_release_and_iteration_details(project.id)
-                        current_iteration = details.get('current_iteration')
-                        current_release = details.get('current_release')
-                        next_iteration = details.get('next_iteration')
-                        logger.debug(f">>> === PROJECT HAS RELEASE DETAILS {project.project_release} fetching current/next === <<<")
-                        logger.debug(f">>> === CURRENT RELEASE: {current_release} === <<<")
-                        logger.debug(f">>> === CURRENT ITERATION: {current_iteration} === <<<")
-                        logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
-                    
-                    # PROJECT BACKLOG
-                    project_backlog = Backlog.objects.filter(pro=pro, active=True).order_by('position')
-                    
                 else:
                     logger.debug(f">>> === Iteration start date is less than current date === <<<")
                     iteration_message = f"Selected Release/Iteration: {iteration_selected.org_release} {iteration_selected} is in the past date/time."
@@ -501,7 +621,7 @@ def view_iteration_kanban(request, org_id, project_id):
                     project.save()
                 
                 # Update the Backlog status for the mapped release
-                #backlog_items = Backlog.objects.filter(pro=project, active=True).update(status="Backlog")
+                backlog_items = Backlog.objects.filter(pro=project, active=True).update(status="Backlog")
 
             except OrgIteration.DoesNotExist:
                 return HttpResponse("Invalid selection!", status=400)
@@ -512,11 +632,6 @@ def view_iteration_kanban(request, org_id, project_id):
             project.project_release = None
             project.save()
 
-
-    ## CHECKING THE CURRENT RELEASE, ITERATION AND NEXT ITERATION
-    logger.debug(f">>> === CURRENT RELEASE: {current_release} === <<<")
-    logger.debug(f">>> === CURRENT ITERATION: {current_iteration} === <<<")
-    logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
 
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -529,8 +644,14 @@ def view_iteration_kanban(request, org_id, project_id):
         'organization': org,
         'organization': org,
         'org_id': org_id,
-        'pro_id': project_id,       
-        'releases': releases,
+        'pro_id': project_id,
+        
+        'release': nearest_release,   
+        'nearest_release': nearest_release,    
+        'releases': releases,        
+        'years': year_data,
+        'month_positions': month_positions,
+        'week_positions': week_positions,
         
         'current_release': current_release,
         'current_iteration': current_iteration,
@@ -550,15 +671,12 @@ def view_iteration_kanban(request, org_id, project_id):
 
 @login_required
 def ajax_backlog_iteration_planning_update(request):
-    logger.debug(f">>> === Step1) AJAX BACKLOG ITERATION PLANNING UPDATE === <<<")
     if request.method == "POST":
-        logger.debug(f">>> === Step2) AJAX BACKLOG ITERATION PLANNING UPDATE === <<<")
         data = json.loads(request.body)
-        logger.debug(f">>> === Step3) AJAX BACKLOG ITERATION PLANNING UPDATE === <<<")
         card_id = data.get('card_id')
         from_state_id = data.get('from_state_id')
         to_state_id = data.get('to_state_id')
-        logger.debug(f">>> === Step4) AJAX BACKLOG ITERATION PLANNING UPDATE === <<<")
+
         # position 
         positions = data.get('positions')
         from_column = data.get('from_column')
@@ -579,7 +697,6 @@ def ajax_backlog_iteration_planning_update(request):
             store_backlog_positions(request, positions)
         elif from_state_id == 0 and to_state_id != 0:
             # This is from backlog to iteration
-            logger.debug(f">>> === Step5) AJAX BACKLOG ITERATION PLANNING UPDATE {to_state_id} to_state_id === <<<")
             iteration = OrgIteration.objects.get(id=to_state_id)
             backlog = Backlog.objects.get(id=card_id)
             backlog.iteration = iteration

@@ -407,3 +407,164 @@ def JIVAPMS_set_project_id(request, context):
 def JIVAPMS_get_project_id_from_session(request):
     # Fetch project_id directly from session
     return request.session.get('project_id', None)
+
+from app_organization.mod_org_release.models_org_release import *
+from app_organization.mod_org_iteration.models_org_iteration import *
+# @login_required
+# def get_project_release_and_iteration_details(project_id):
+   
+#     try:
+#         # Fetch the project
+#         project = Project.objects.get(id=project_id)
+#     except Project.DoesNotExist:
+#         return {"error": "Invalid project ID"}
+
+#     current_datetime = now().replace(microsecond=0)
+#     details = {
+#         "project_id": project_id,
+#         "current_release": None,
+#         "current_iteration": None,
+#         "release_details": None,
+#         "iteration_details": None,
+#     }
+
+#     # Get the current release from the project
+#     if project.project_release:
+#         # Fetch the release
+#         got_release = project.project_release        
+#         release = OrgRelease.objects.get(id=got_release.id)       
+
+#         # Check if the release dates have time components
+#         release_start_has_time = (
+#             release.release_start_date.time() != time(0, 0, 0) if release.release_start_date else False
+#         )
+#         release_end_has_time = (
+#             release.release_end_date.time() != time(0, 0, 0) if release.release_end_date else False
+#         )
+
+#         # Python date comparison
+#         if release.release_start_date and release.release_end_date:
+#             if (
+#                 release.release_start_date.date() <= current_datetime.date() <= release.release_end_date.date()
+#                 if not release_start_has_time or not release_end_has_time
+#                 else release.release_start_date <= current_datetime <= release.release_end_date
+#             ):
+#                 details["current_release"] = release
+#                 details["release_details"] = {
+#                     "id": release.id,
+#                     "name": release.name,
+#                     "start_date": release.release_start_date,
+#                     "end_date": release.release_end_date,
+#                 }
+
+#     # Get the current iteration
+#     if project.project_iteration:
+#         got_iteration = project.project_iteration
+#         iteration = OrgIteration.objects.get(id=got_iteration.id)
+
+#         # Check if the iteration dates have time components
+#         iteration_start_has_time = (
+#             iteration.iteration_start_date.time() != time(0, 0, 0) if iteration.iteration_start_date else False
+#         )
+#         iteration_end_has_time = (
+#             iteration.iteration_end_date.time() != time(0, 0, 0) if iteration.iteration_end_date else False
+#         )
+
+#         # Python date comparison
+#         if iteration.iteration_start_date and iteration.iteration_end_date:
+#             if (
+#                 iteration.iteration_start_date.date() <= current_datetime.date() <= iteration.iteration_end_date.date()
+#                 if not iteration_start_has_time or not iteration_end_has_time
+#                 else iteration.iteration_start_date <= current_datetime <= iteration.iteration_end_date
+#             ):
+#                 details["current_iteration"] = iteration
+#                 details["iteration_details"] = {
+#                     "id": iteration.id,
+#                     "name": iteration.name,
+#                     "start_date": iteration.iteration_start_date,
+#                     "end_date": iteration.iteration_end_date,
+#                 }
+
+#     return details
+
+
+
+def get_project_release_and_iteration_details(project_id):  
+
+    try:
+        # Fetch the project
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return {"error": "Invalid project ID"}
+
+    current_datetime = now().replace(microsecond=0)
+    details = {
+        "project_id": project_id,
+        "current_release": None,
+        "current_iteration": None,
+        "next_iteration": None,
+    }
+
+    # Get the current release from the project
+    if project.project_release:
+        # Fetch the release
+        got_release = project.project_release
+        release = OrgRelease.objects.get(id=got_release.id, active=True)
+
+        # Check if the release dates have time components
+        release_start_has_time = (
+            release.release_start_date.time() != time(0, 0, 0) if release.release_start_date else False
+        )
+        release_end_has_time = (
+            release.release_end_date.time() != time(0, 0, 0) if release.release_end_date else False
+        )
+        logger.debug(f"Release start date: {release.release_start_date} ==> {release_start_has_time}")
+        logger.debug(f"Release end date: {release.release_end_date} ==> {release_end_has_time}")
+        # Python date comparison
+        if release.release_start_date and release.release_end_date:
+            if (
+                release.release_start_date.date() <= current_datetime.date() <= release.release_end_date.date()
+                if not release_start_has_time or not release_end_has_time
+                else release.release_start_date <= current_datetime <= release.release_end_date
+            ):
+                details["current_release"] = release
+
+    # Get the current and next iterations
+    if project.project_release:
+        # Fetch all iterations for the release
+        iterations = OrgIteration.objects.filter(
+            org_release=project.project_release,
+            active=True,
+        ).order_by("iteration_start_date")
+
+        current_iteration = None
+        next_iteration = None
+
+        for iteration in iterations:
+            # Check if iteration dates have time components
+            iteration_start_has_time = (
+                iteration.iteration_start_date.time() != time(0, 0, 0) if iteration.iteration_start_date else False
+            )
+            iteration_end_has_time = (
+                iteration.iteration_end_date.time() != time(0, 0, 0) if iteration.iteration_end_date else False
+            )
+            logger.debug(f"Iteration start date: {iteration.iteration_start_date} ==> {iteration_start_has_time}")
+            logger.debug(f"Iteration end date: {iteration.iteration_end_date} ==> {iteration_end_has_time}")
+            # Python date comparison for current_iteration
+            if (
+                iteration.iteration_start_date.date() <= current_datetime.date() <= iteration.iteration_end_date.date()
+                if not iteration_start_has_time or not iteration_end_has_time
+                else iteration.iteration_start_date <= current_datetime <= iteration.iteration_end_date
+            ):
+                current_iteration = iteration
+
+            # Identify the next_iteration
+            if current_iteration and iteration.iteration_start_date >= current_iteration.iteration_end_date:
+                next_iteration = iteration
+                break
+
+        # Add results to the details dictionary
+        details["current_iteration"] = current_iteration
+        details["next_iteration"] = next_iteration
+
+    return details

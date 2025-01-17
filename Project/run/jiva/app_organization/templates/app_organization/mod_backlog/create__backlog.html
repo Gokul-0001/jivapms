@@ -93,7 +93,7 @@ org_id
                             </tr>
                            <tr>
                                 <td colspan="2" class="text-center"><button type="submit"
-                                    class="btn btn-sm btn-success" name="action" value="create_content">Save</button></td>
+                                    class="btn btn-sm btn-success" name="action" value="create_content">Create</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -105,6 +105,27 @@ org_id
         focusField = document.getElementById('id_name');
         focusField.focus();
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get the form element
+            const form = document.querySelector('form');
+            
+            // Attach an event listener to the form
+            form.addEventListener('keypress', function (event) {
+                // Check if the Enter key is pressed
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent default form submission behavior
+                    
+                    // Find the submit button and click it
+                    const submitButton = form.querySelector('button[name="action"][value="create_content"]');
+                    if (submitButton) {
+                        submitButton.click();
+                    }
+                }
+            });
+        });
+    </script>
+    
     <script>
         $(document).ready(function() {
             $('#id_release').change(function() {

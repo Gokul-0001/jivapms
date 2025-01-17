@@ -710,21 +710,6 @@ def update_project_board_state_transition(card, from_state_id, to_state_id):
         to_state_id=to_state_id,
         transition_time=now(),
     )
-    
-    # need to update the completed details / done details
-    to_state_details = ProjectBoardState.objects.get(id=to_state_id)
-    from_state_details = ProjectBoardState.objects.get(id=from_state_id)
-    if to_state_details and to_state_details.name == "Done":
-        card.backlog.done = True
-        card.backlog.done_at = now()
-        card.backlog.save()
-        logger.debug(f">>> === DONE FOR CARD {card.backlog} {card.backlog.done} {card.backlog.done_at} === <<<")
-    if from_state_details and from_state_details.name == "Done":
-        card.backlog.done = False
-        card.backlog.done_at = None
-        card.backlog.save()
-        logger.debug(f">>> === UNDONE FOR CARD {card.backlog} {card.backlog.done} {card.backlog.done_at} === <<<")
-    
     print(f">>> === Created State Transition: {created_st_entry} === <<<")
     return created_st_entry
                 

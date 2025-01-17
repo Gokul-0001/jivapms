@@ -41,12 +41,12 @@ class BacklogForm(forms.ModelForm):
         if 'release' in self.data:
             try:
                 release_id = int(self.data.get('release'))
-                self.fields['iteration'].queryset = OrgIteration.objects.filter(rel_id=release_id, active=True)
+                self.fields['iteration'].queryset = OrgIteration.objects.filter(org_release_id=release_id, active=True)
             except (ValueError, TypeError):
                 self.fields['iteration'].queryset = OrgIteration.objects.none()
         elif 'release' in self.initial and self.initial['release']:
             release_id = self.initial['release']
-            self.fields['iteration'].queryset = OrgIteration.objects.filter(rel_id=release_id, active=True)
+            self.fields['iteration'].queryset = OrgIteration.objects.filter(org_release_id=release_id, active=True)
         else:
             self.fields['iteration'].queryset = OrgIteration.objects.none()
         

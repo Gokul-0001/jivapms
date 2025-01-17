@@ -180,18 +180,47 @@
 </script>
 
 
-<script>
+
+<!-- <script>
     document.addEventListener('DOMContentLoaded', function () {
         const iterationTab = document.getElementById('iteration-tab');
-
+    
         iterationTab.addEventListener('click', function () {
-            // Redirect to the new page when the iteration tab is clicked
-            const iterationUrl = "{% url 'view_project_metrics_iteration_tab' project.id %}";
-            window.location.href = iterationUrl;
+            const iterationContent = document.getElementById('iteration');
+            if (!iterationContent.getAttribute('data-loaded')) {
+                fetch("{% url 'view_project_metrics_iteration_tab' project.id %}")
+                    .then(response => response.text()) // Since the response is HTML, use .text()
+                    .then(data => {
+                        iterationContent.innerHTML = data; // Insert the fetched HTML into the div
+                        iterationContent.setAttribute('data-loaded', 'true'); // Prevent multiple loads
+                    })
+                    .catch(error => console.error('Error loading iteration content:', error));
+            }
         });
     });
-</script>
+</script> -->
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const iterationTab = document.getElementById('iteration-tab');
+
+    iterationTab.addEventListener('click', function () {
+        const iterationContent = document.getElementById('iteration');
+        iterationContent.innerHTML = '<p>Loading...</p>'; // Show a loading message
+
+        fetch("{% url 'view_project_metrics_iteration_tab' project.id %}")
+            .then(response => response.text()) // Since the response is HTML, use .text()
+            .then(data => {
+                iterationContent.innerHTML = data; // Insert the fetched HTML into the div
+            })
+            .catch(error => {
+                console.error('Error loading iteration content:', error);
+                iterationContent.innerHTML = '<p>Error loading content.</p>'; // Show an error message
+            });
+    });
+});
+
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
     const qualityTab = document.getElementById('quality-tab');

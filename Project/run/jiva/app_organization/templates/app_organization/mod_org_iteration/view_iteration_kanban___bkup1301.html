@@ -506,8 +506,7 @@
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center">
-                <div class="display_topic"><b class="h3">Project Release/Iteration Planning: </b>{{ project }}
-                     {{current_release|display_if_not_none}}{{current_iteration|display_if_not_none}} {{next_iteration|display_if_not_none}}</div>
+                <div class="display_topic"><b class="h3">Project Release/Iteration Planning: </b>{{ project }}</div>
                 
             </div>
             <div class="container-fluid-width">
@@ -567,66 +566,67 @@
                 </div>
                              
                 <!-- Release Iteration -->
-               
-                {% if project.project_release_mapped_flag == True %}
-                
-                   {% if current_iteration != None %}
-                   <div class="kanban-column" data-id="{{ current_iteration.id }}" id="{{current_iteration.id}}">
-                    <b class="display_title">{{current_iteration.org_release.name}}/{{current_iteration}}</b>                  
-                    <div class="small-font-display">{{current_iteration.iteration_start_date}} to {{current_iteration.iteration_end_date}} </div>  
-                    <hr>     
-                        {% for item in project_backlog %}    
-                        {% if item.release == current_iteration.org_release and item.iteration == current_iteration %}
-                        <div class="kanban-card" data-id="{{ item.id }}">
-                            <div class="kanban-card-header">
-                                <span class="priority priority-high">H</span>
-                                <span>#{{item.id}} {{item.size}}</span>
+                {% if project.project_release_mapped_flag %}
+                    {% for iteration in project.project_release.org_release_org_iterations.all|filter_active %}
+                    {% if  forloop.counter > 0 %}
+                    <div class="kanban-column" data-id="{{ iteration.id }}" id="{{iteration.id}}">
+                        <b class="display_title">{{iteration.org_release.name}}/{{iteration}}</b>                  
+                        <div class="small-font-display">{{iteration.iteration_start_date}} to {{iteration.iteration_end_date}} </div>  
+                        <hr>     
+                            {% for item in project_backlog %}    
+                            {% if item.release == iteration.org_release and item.iteration == iteration %}
+                            <div class="kanban-card" data-id="{{ item.id }}">
+                                <div class="kanban-card-header">
+                                    <span class="priority priority-high">H</span>
+                                    <span>#{{item.id}} {{item.size}}</span>
+                                </div>
+                                
+                               
+                                <b>{{ item }}</b>
+                                <p>{{ item.description | display_if_not_none }}</p>
+                                
+                                <div class="kanban-card-footer">
+                                    <div class="parent">{{item.parent}}</div>
+                                </div>
                             </div>
                             
-                           
-                            <b>{{ item }} </b>
-                            <p>{{ item.description | display_if_not_none }}</p>
-                            
-                            <div class="kanban-card-footer">
-                                <div class="parent">{{item.parent}}</div>
-                            </div>
-                        </div>
-                        
-                        {% endif %}    
-                        {% endfor %}                   
+                            {% endif %}    
+                            {% endfor %}                   
                     </div> 
-                   {% endif %}
-
-                   {% if next_iteration != None %}
-                   <div class="kanban-column" data-id="{{ next_iteration.id }}" id="{{next_iteration.id}}">
-                    <b class="display_title">{{next_iteration.org_release.name}}/{{next_iteration}}</b>                  
-                    <div class="small-font-display">{{next_iteration.iteration_start_date}} to {{next_iteration.iteration_end_date}} </div>  
-                    <hr>     
-                        {% for item in project_backlog %}    
-                        {% if item.release == next_iteration.org_release and item.iteration == next_iteration %}
-                        <div class="kanban-card" data-id="{{ item.id }}">
-                            <div class="kanban-card-header">
-                                <span class="priority priority-high">H</span>
-                                <span>#{{item.id}} {{item.size}}</span>
-                            </div>
-                            
-                           
-                            <b>{{ item }} </b>
-                            <p>{{ item.description | display_if_not_none }}</p>
-                            
-                            <div class="kanban-card-footer">
-                                <div class="parent">{{item.parent}}</div>
-                            </div>
-                        </div>
-                        
-                        {% endif %}    
-                        {% endfor %}                   
-                    </div> 
-                   {% endif %}
+                    {% endif %}                     
+                    {% endfor %}
+                    
                 {% else %}
-                    {% if iteration_message %}
-                        {{iteration_message}}
-                    {% endif %}
+                <!-- The project has not been mapped to any release yet -->
+                {% for iteration in nearest_release.org_release_org_iterations.all|filter_active %}  
+                {% if  forloop.counter > 0 %}
+                <div class="kanban-column" data-id="{{ iteration.id }}" id="{{iteration.id}}">
+                    <b class="">{{nearest_release.name}}/{{iteration}}</b>                  
+                    <div class="small-font-display">{{iteration.iteration_start_date}} to {{iteration.iteration_end_date}} </div>  
+                    <hr>     
+                        {% for item in project_backlog %}    
+                        {% if item.release == nearest_release and item.iteration == iteration %}
+                        <div class="kanban-card" data-id="{{ item.id }}">
+                            <div class="kanban-card-header">
+                                <span class="priority priority-high">H</span>
+                                <span>#{{item.id}} {{item.size}}</span>
+                            </div>
+                            
+                           
+                            <b>{{ item }}</b>
+                            <p>{{ item.description | display_if_not_none }}</p>
+                            
+                            <div class="kanban-card-footer">
+                                <div class="parent">{{item.parent}}</div>
+                            </div>
+                        </div>
+                        
+                        {% endif %}    
+                        {% endfor %}                   
+                </div>    
+                {% endif %}                     
+                {% endfor %}                
+               
 
                 {% endif %}
         </div>

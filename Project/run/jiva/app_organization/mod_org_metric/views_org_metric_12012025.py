@@ -865,11 +865,13 @@ def view_project_metrics_iteration_tab(request, project_id):
     if project.project_iteration:
         # Use datetime comparison for both start and end dates
         current_datetime = now().replace(microsecond=0)
-        details = get_project_release_and_iteration_details(project.id)
-        current_release = details['current_release']
-        current_iteration = details['current_iteration']
-        next_iteration = details['next_iteration']       
-        
+        current_iteration = OrgIteration.objects.filter(
+            org_release=current_release,
+            iteration_start_date__lte=current_datetime,
+            iteration_end_date__gte=current_datetime
+        ).order_by("-iteration_start_date").first()
+
+        from django.db.models import Sum
 
         if current_iteration:
             logger.debug(f">>> === current_iteration: {current_iteration} {current_iteration.iteration_start_date} === <<<")
@@ -977,52 +979,6 @@ def view_project_metrics_iteration_tab(request, project_id):
     # Set the Iteration backlog items count
     iteration_backlog_items_count = iteration_backlog_items.count() if iteration_backlog_items else 0
     
-    
-
-
-    from datetime import timedelta
-
-    # Prepare Burndown Chart Data
-    if current_iteration:
-        logger.debug(f">>> === BURNDOWNcurrent_iteration: {current_iteration} === <<<")
-        iteration_start_date = current_iteration.iteration_start_date
-        iteration_end_date = current_iteration.iteration_end_date
-        
-        # Create date range
-        days_range = (iteration_end_date - iteration_start_date).days + 1
-        burndown_data = []
-        current_date = now().date()
-        for i in range(days_range):
-            itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
-            
-           # Filter backlog items for the current iteration
-            iteration_backlog_items = Backlog.objects.filter(
-                pro=project, 
-                active=True, 
-                iteration=current_iteration,
-                done_at__date__lte=itr_date
-            )
-            
-            # Log each done_at value and current_date
-            for item in iteration_backlog_items:
-                logger.debug(f"CHECK Backlog ID: {item.id}, {item}, done_at: {item.done_at}, current_date: {itr_date}")
-            
-            # Calculate remaining story points for each date
-            done_story_points_till_date = iteration_backlog_items.aggregate(total=Sum('size'))['total'] or 0
-            remaining_story_points = total_story_points - done_story_points_till_date
-            logger.debug(f">>> === itr_date: {itr_date} | done_story_points_till_date: {done_story_points_till_date} | remaining_story_points: {remaining_story_points} === <<<")
-            if itr_date.date() > current_date:
-                remaining_story_points = ''
-            burndown_data.append({
-            'date': itr_date.strftime('%Y-%m-%d'),
-            'remaining_story_points': remaining_story_points
-            })
-            
-        # Log the complete burndown data
-        logger.debug(f">>> === burndown_data: {burndown_data} === <<<")
-
-           
-    
     # Prepare context for rendering template
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -1042,8 +998,6 @@ def view_project_metrics_iteration_tab(request, project_id):
         'todo_story_points': todo_story_points,
         'wip_story_points': wip_story_points,
         'done_story_points': done_story_points,
-        
-        'burndown_data': burndown_data,
     }
 
     # Render template

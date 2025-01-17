@@ -265,6 +265,82 @@ def list_deleted_backlogs(request, pro_id, parent_id):
 
 
 
+# # Create View
+# @login_required
+# def create_backlog(request, pro_id, parent_id):
+#     user = request.user
+#     ref_parent_id = parent_id
+#     parent_id = None if parent_id == 0 else parent_id
+#     viewable_dict, first_viewable_dict = get_viewable_dicts(request.user, 
+#                                 viewable_flag, first_viewable_flag)
+#     # connect with connect id
+#     pro = get_object_or_404(Project, pk=pro_id, **viewable_dict)
+#     stored_selected_id = None
+#     form = None
+#     if request.method == 'POST':
+#         action = request.POST.get('action', None)
+#         if action == 'select_id':
+#             selected_id = request.POST.get('selected_id')
+#             request.session['selected_id'] = selected_id
+#             stored_selected_id = selected_id
+#             ctype = BacklogType.objects.get(pk=selected_id)
+#             print(f">>> === selected_id: {selected_id} === <<<")
+#             form = BacklogForm(initial={'type': ctype})
+#             context = {
+#                 'parent_page': '___PARENTPAGE___',
+#                 'page': 'create_backlog',
+#                 'pro_id': pro_id,
+#                 'pro': pro,
+#                 'project': pro,
+#                 'org': pro.org,
+#                 'org_id': pro.org_id,
+#                 'ref_parent_id': ref_parent_id,
+#                 'parent_id': parent_id,
+#                 'selected_id': selected_id,
+#                 'ctype': ctype,
+#                 'form': form,
+#                 'page_title': f'Create Backlog',
+#             }
+#             template_file = f"{app_name}/{module_path}/create__backlog.html"
+#             return render(request, template_file, context)
+        
+#         elif action == 'create_content':
+#             form = BacklogForm(request.POST)
+#             if form.is_valid():
+#                 print(f">>> === stored id : {stored_selected_id} === <<<")
+#                 selected_id = request.session.get('selected_id')
+#                 request.session['selected_id'] = None
+#                 form.instance.type_id = selected_id
+#                 form.instance.pro_id = pro_id
+#                 form.instance.parent_id = parent_id
+#                 form.instance.author = user
+#                 form.save()
+#                 return redirect('list_backlogs', pro_id=pro_id, parent_id=ref_parent_id)
+#             else:
+#                 print(f">>> === form.errors: {form.errors} === <<<")
+   
+#     else:
+#         form = BacklogForm()
+
+#     context = {
+#         'parent_page': '___PARENTPAGE___',
+#         'page': 'create_backlog',
+#         'pro_id': pro_id,
+#         'pro': pro,
+#         'project': pro,
+#         'org': pro.org,
+#         'org_id': pro.org_id,
+#         'ref_parent_id': ref_parent_id,  
+#         'parent_id': parent_id,  
+#         'module_path': module_path,
+#         'form': form,
+#         'page_title': f'Create Backlog',
+#     }
+#     template_file = f"{app_name}/{module_path}/create__backlog.html"
+#     return render(request, template_file, context) 
+
+
+
 # Create View
 @login_required
 def create_backlog(request, pro_id, parent_id):
@@ -800,7 +876,7 @@ def view_tree__backlog(request, pro_id, parent_id):
 @login_required
 def ajax_get_iterations(request, release_id):
     
-    iterations = OrgIteration.objects.filter(rel_id=release_id, active=True)
+    iterations = OrgIteration.objects.filter(org_release_id=release_id, active=True)
     data = [{'id': iteration.id, 'name': iteration.name} for iteration in iterations]
 
     return JsonResponse(data, safe=False)

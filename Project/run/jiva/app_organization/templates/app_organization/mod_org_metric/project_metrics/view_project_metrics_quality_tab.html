@@ -1,1 +1,68 @@
-<h2>QUALITY TAB</h2>
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>Project Metrics: {{project}}</h3>
+           <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+               <li class="nav-item">
+                   <a class="nav-link" id="backlog-tab" data-bs-toggle="tab" href="#backlog" role="tab" aria-controls="backlog" aria-selected="true">Backlog</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link " id="iteration-tab" data-bs-toggle="tab" href="#iteration" role="tab" aria-controls="iteration" aria-selected="false">Iteration</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link active" id="quality-tab" data-bs-toggle="tab" href="#quality" role="tab" aria-controls="quality" aria-selected="false">Quality</a>
+               </li>
+           </ul>
+
+           <div class="tab-content mt-3" id="projectTabsContent">
+               <div class="tab-pane fade" id="backlog" role="tabpanel" aria-labelledby="backlog-tab">
+                <p>Backlog content goes here...</p>
+               </div>
+               <div class="tab-pane fade" id="iteration" role="tabpanel" aria-labelledby="iteration-tab">
+                    <p>Iteration content goes here...</p>                   
+               </div>
+               <div class="tab-pane fade  show active" id="quality" role="tabpanel" aria-labelledby="quality-tab">
+                <b>QUALITY TAB</b>
+               </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const iterationTab = document.getElementById('backlog-tab');
+
+        iterationTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const iterationUrl = "{% url 'view_project_metrics' project.id %}";
+            window.location.href = iterationUrl;
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const iterationTab = document.getElementById('iteration-tab');
+
+        iterationTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const iterationUrl = "{% url 'view_project_metrics_iteration_tab' project.id %}";
+            window.location.href = iterationUrl;
+        });
+    });
+</script>
+{% endblock content %}

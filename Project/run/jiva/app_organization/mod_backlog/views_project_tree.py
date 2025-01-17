@@ -15,6 +15,7 @@ from app_common.mod_app.all_view_imports import *
 from app_jivapms.mod_app.all_view_imports import *
 
 from app_common.mod_app.all_view_imports import *
+from app_jivapms.mod_web.views_web import *
 
 app_name = 'app_organization'
 app_version = 'v1'
@@ -415,7 +416,7 @@ def view_project_tree_backlog(request, pro_id):
             backlog_epic_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
             seq_add_to_top(ajax_data)
             #logger.debug(f">>> === ADD TO TOP: {create_backlog_item} {create_backlog_item.id} === <<<")
-            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
+            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types).order_by('position')
             
         if 'add_to_bottom' in request.POST:
             #logger.debug(f">>> === ADD TO BOTTOM:  === <<<")
@@ -434,7 +435,7 @@ def view_project_tree_backlog(request, pro_id):
                 created_by=user,
                 type_id=type_of_bi
             )
-            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
+            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types).order_by('position')
             # Regenerate display_backlog_items
             #logger.debug(f">>> === ADD TO BOTTOM: {create_backlog_item} {create_backlog_item.id} === <<<")
             return redirect("view_project_tree_backlog", pro_id=pro_id)
@@ -454,25 +455,20 @@ def view_project_tree_backlog(request, pro_id):
     today = date.today()
     current_iteration = None
     next_iteration = None
-    # Fetch related OrgIterations within active OrgReleases
-    org_release_org_iterations = (
-        OrgIteration.objects.filter(
-            org_release__in=org_releases,  # Filter by releases linked to OrgIterations
-            iteration_start_date__lte=today,
-            iteration_end_date__gte=today,
-            active=True  # Ensure only active iterations
-        ).select_related('org_release')  # Optimize queries with joins
-    )
-    logger.debug(f">>> === ORG RELEASE ORG ITERATIONS: {org_release_org_iterations} === <<<")
-    current_iteration = org_release_org_iterations.first()
-    next_iteration = OrgIteration.objects.filter(
-        org_release__in=org_releases,  # Filter by releases linked to OrgIterations
-        iteration_start_date__gt=today,
-        active=True  # Ensure only active iterations
-    ).order_by('iteration_start_date').first()
-    logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
+   
     
-    
+    ##########################################################################
+    # Changing the current iteration by date selection
+    ##########################################################################
+    if project.project_release:
+        details = get_project_release_and_iteration_details(project.id)
+        current_release = details.get("current_release")
+        current_iteration = details.get("current_iteration")
+        next_iteration = details.get("next_iteration")
+        logger.debug(f">>> === CURRENT RELEASE: {current_release} === <<<")
+        logger.debug(f">>> === CURRENT ITERATION: {current_iteration} === <<<")
+        logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
+        
     ########## ADDING PROJECT TEMPLATE DETAILS ##########
     project_detail = project.project_details.first()
     logger.debug(f">>> === PROJECT DETAIL: {project_detail}, PROJECT_DETAILS: {project_detail.template} === <<<")

@@ -594,7 +594,7 @@
                 {% if collection.org_release != None %}
                 <li>
                     <div class="collection-item">
-                        <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.org_release.id}}|{{collection.id}}')">{{collection.org_release}}:{{collection.version}}</span>
+                        <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.org_release.id}}|{{collection.id}}')" style="font-size: 10px;">{{collection.org_release}}:{{collection}}</span>
                         <div class="action-buttons">
                             <button class="small-btn assign-btn" onclick="assignToVersion('{{collection.org_release.id}}|{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
                             <button class="small-btn unassign-btn me-2" onclick="unassignFromVersion('{{collection.org_release.id}}|{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
@@ -667,7 +667,7 @@
                                       
 
                                     <!-- display project template -->
-                                     <span class="small-font" style="font-size: 12px;"><b>{{project_detail.template}}</b></span>
+                                     <span class="small-font" style="font-size: 12px;"><b>{{project_detail.template|display_if_not_none}}</b></span>
 
                                     {% if project.project_release_mapped_flag == False %}               
                                         <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
@@ -675,7 +675,7 @@
                                     {% else %}        
 
                                     <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
-                                        <b class="bi-size-display display-next-iteration">{{project.project_release}}/{{project.project_iteration}}</b></a>   
+                                        <b class="bi-size-display display-next-iteration">{{project.project_release|display_if_not_none}}/{{project.project_iteration|display_if_not_none}}</b></a>   
                                     {% endif %}
                                 </div>
                                 
@@ -767,13 +767,13 @@
                 <td id="display_summary" width="30%" class="display_summary la"
                 ondblclick="makeEditable(this);"
                 onblur="save_element_text(this, '{{item.id}}', 'app_organization', 'backlog', 'name');"
-                ><b class="summary_of_bi">{{item.name|display_if_not_none}}</b></td>
+                ><b class="summary_of_bi">{{item.position}}:{{item.name|display_if_not_none}}</b></td>
                 <td id="display_parent" width="14%" class="display_parent la">{{item.parent|display_if_not_none}}</td>
                 <td id="display_release" width="10%" class="display_release la">{{item.release|display_if_not_none}}</td>
                 <td id="display_iteration" width="8%" class="display_iteration la">{{item.iteration|display_if_not_none}}</td>
                 <td id="display_key" width="6%" class="display_key ra bi-id-display me-2">BI-{{item.id}}&nbsp;&nbsp;</td>
                 <td id="display_size" width="4%" class="display_size ca "> <div class="bi-size-display"
-                ondblclick="makeEditable(this);"
+                onclick="makeEditable(this);"
                 onblur="save_element_text(this, '{{item.id}}', 'app_organization', 'Backlog', 'size');"
                 >{% if item.size != '0'  and item.size != None %}{{item.size|display_if_not_none}}{% endif %}&nbsp;</div></td>
                 <td id="display_status" width="8%" class="display_status ca">
