@@ -978,7 +978,11 @@ def view_project_metrics_iteration_tab(request, project_id):
     iteration_backlog_items_count = iteration_backlog_items.count() if iteration_backlog_items else 0
     
     
-
+    ##
+    ##
+    ## BURNDOWN CHART
+    ##
+    ##
 
     from datetime import timedelta
 
@@ -996,7 +1000,7 @@ def view_project_metrics_iteration_tab(request, project_id):
             itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
             
            # Filter backlog items for the current iteration
-            iteration_backlog_items = Backlog.objects.filter(
+            backlog_items = Backlog.objects.filter(
                 pro=project, 
                 active=True, 
                 iteration=current_iteration,
@@ -1004,11 +1008,11 @@ def view_project_metrics_iteration_tab(request, project_id):
             )
             
             # Log each done_at value and current_date
-            for item in iteration_backlog_items:
+            for item in backlog_items:
                 logger.debug(f"CHECK Backlog ID: {item.id}, {item}, done_at: {item.done_at}, current_date: {itr_date}")
             
             # Calculate remaining story points for each date
-            done_story_points_till_date = iteration_backlog_items.aggregate(total=Sum('size'))['total'] or 0
+            done_story_points_till_date = backlog_items.aggregate(total=Sum('size'))['total'] or 0
             remaining_story_points = total_story_points - done_story_points_till_date
             logger.debug(f">>> === itr_date: {itr_date} | done_story_points_till_date: {done_story_points_till_date} | remaining_story_points: {remaining_story_points} === <<<")
             if itr_date.date() > current_date:
@@ -1089,3 +1093,55 @@ def view_project_metrics_quality_tab(request, project_id):
         #     logger.debug(f">>> === Current datetime {current_datetime} is within the release period {release_start_date}--{release_end_date}. === <<<")
         # else:
         #     logger.debug(f">>> === Current datetime is outside the release period. === <<<")
+        
+        
+        
+        
+##
+##
+## reference 1701
+##
+##
+
+
+
+    # from datetime import timedelta
+
+    # # Prepare Burndown Chart Data
+    # if current_iteration:
+    #     logger.debug(f">>> === BURNDOWNcurrent_iteration: {current_iteration} === <<<")
+    #     iteration_start_date = current_iteration.iteration_start_date
+    #     iteration_end_date = current_iteration.iteration_end_date
+        
+    #     # Create date range
+    #     days_range = (iteration_end_date - iteration_start_date).days + 1
+    #     burndown_data = []
+    #     current_date = now().date()
+    #     for i in range(days_range):
+    #         itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
+            
+    #        # Filter backlog items for the current iteration
+    #         backlog_items = Backlog.objects.filter(
+    #             pro=project, 
+    #             active=True, 
+    #             iteration=current_iteration,
+    #             done_at__date__lte=itr_date
+    #         )
+            
+    #         # Log each done_at value and current_date
+    #         for item in backlog_items:
+    #             logger.debug(f"CHECK Backlog ID: {item.id}, {item}, done_at: {item.done_at}, current_date: {itr_date}")
+            
+    #         # Calculate remaining story points for each date
+    #         done_story_points_till_date = backlog_items.aggregate(total=Sum('size'))['total'] or 0
+    #         remaining_story_points = total_story_points - done_story_points_till_date
+    #         logger.debug(f">>> === itr_date: {itr_date} | done_story_points_till_date: {done_story_points_till_date} | remaining_story_points: {remaining_story_points} === <<<")
+    #         if itr_date.date() > current_date:
+    #             remaining_story_points = ''
+    #         burndown_data.append({
+    #         'date': itr_date.strftime('%Y-%m-%d'),
+    #         'remaining_story_points': remaining_story_points
+    #         })
+            
+    #     # Log the complete burndown data
+    #     logger.debug(f">>> === burndown_data: {burndown_data} === <<<")

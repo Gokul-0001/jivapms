@@ -211,14 +211,31 @@
                                         }
                                         return idealLine;
                                       }
-                                  
+                                       // Function to generate the slope line data using initial value and data points of Day 2 and Day 3
+                                    function generateSlopeLine(data, numDays) {
+                                    var slopeLine = [];
+                                    var numDays = numDays;
+                                    var initialValue = 0;
+                                    var dataPoints = data; // Initial value, Day 2, and Day 3
+                                    var slDays = dataPoints.length;
+                                    initialValue = dataPoints[0];
+                                       
+                                    // Calculate the slope of the line passing through the initial value and Day 3
+                                    var slope = (dataPoints[0] - dataPoints[slDays - 1]) / (slDays - 1);
+
+                                    // Generate the slope line data points using the equation y = mx + b
+                                    for (var i = 0; i < numDays; i++) {
+                                        slopeLine.push(initialValue - i * slope);
+                                    }
+                                    return slopeLine;
+                                    }
                                       // Calculate the total story points and number of days
                                       const totalStoryPoints = Math.max(...actualBurndown); // Use the max value in the data as the starting point
                                       const numDays = labels.length;
                                   
                                       // Generate the Ideal Burndown Line
                                       const idealBurndown = generateIdealLine(totalStoryPoints, 0, numDays);
-                                  
+                                        const slopeLine = generateSlopeLine(actualBurndown, numDays);
                                       // Chart data
                                       const data = {
                                         labels: labels, // Dates
@@ -236,6 +253,14 @@
                                             borderColor: "rgba(192, 75, 192, 1)",
                                             borderWidth: 2,
                                             fill: false
+                                          },
+                                          {
+                                            label: "Slope Line",
+                                            data: slopeLine, // Generated slope line
+                                            borderColor: "rgba(255, 0, 0, 1)",
+                                            borderWidth: 2,
+                                            fill: false,
+                                            borderDash: [5, 5] // To make it a dashed line
                                           }
                                         ]
                                       };
