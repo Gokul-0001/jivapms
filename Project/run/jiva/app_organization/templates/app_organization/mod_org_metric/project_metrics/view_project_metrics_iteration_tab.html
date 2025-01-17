@@ -212,23 +212,33 @@
                                         return idealLine;
                                       }
                                        // Function to generate the slope line data using initial value and data points of Day 2 and Day 3
-                                    function generateSlopeLine(data, numDays) {
-                                    var slopeLine = [];
-                                    var numDays = numDays;
-                                    var initialValue = 0;
-                                    var dataPoints = data; // Initial value, Day 2, and Day 3
-                                    var slDays = dataPoints.length;
-                                    initialValue = dataPoints[0];
-                                       
-                                    // Calculate the slope of the line passing through the initial value and Day 3
-                                    var slope = (dataPoints[0] - dataPoints[slDays - 1]) / (slDays - 1);
+                                       function generateSlopeLine(data, totalDays) {
+                                        const slopeLine = [];
+                                        
+                                        // Filter out completed burndown points (e.g., 0 story points)
+                                        const filteredData = data.filter(point => point > 0);
+                                        const numPoints = filteredData.length;
 
-                                    // Generate the slope line data points using the equation y = mx + b
-                                    for (var i = 0; i < numDays; i++) {
-                                        slopeLine.push(initialValue - i * slope);
+                                        // If no valid points for trendline, return an empty slope line
+                                        if (numPoints < 2) {
+                                            return Array(totalDays).fill(null); // No trendline if not enough data points
+                                        }
+
+                                        // Calculate the slope based on the most recent valid data
+                                        const startPoint = filteredData[0]; // First valid point (initial value)
+                                        const endPoint = filteredData[numPoints - 1]; // Most recent valid point
+                                        const slope = (startPoint - endPoint) / (numPoints - 1); // Slope based on valid data
+
+                                        // Generate the trendline
+                                        for (let i = 0; i < totalDays; i++) {
+                                            const projectedValue = startPoint - i * slope;
+                                            if (projectedValue <= 0) break; // Stop when projected value reaches 0
+                                            slopeLine.push(projectedValue);
+                                        }
+
+                                        return slopeLine;
                                     }
-                                    return slopeLine;
-                                    }
+
                                       // Calculate the total story points and number of days
                                       const totalStoryPoints = Math.max(...actualBurndown); // Use the max value in the data as the starting point
                                       const numDays = labels.length;
