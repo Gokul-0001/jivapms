@@ -828,38 +828,6 @@ def view_project_metrics(request, project_id):
     return render(request, template_file, context)
 
 
-def generate_minute_based_burndown(current_iteration, project, total_minutes, total_story_points):
-    burndown_data = []
-    current_datetime = now()
-    iteration_start_datetime = current_iteration.iteration_start_date
-
-    for minute_offset in range(total_minutes + 1):  # Include the last minute
-        itr_datetime = iteration_start_datetime + timedelta(minutes=minute_offset)
-
-        # Filter backlog items for the current iteration up to this minute
-        backlog_items = Backlog.objects.filter(
-            pro=project,
-            active=True,
-            iteration=current_iteration,
-            done_at__lte=itr_datetime
-        )
-
-        # Calculate remaining story points
-        done_story_points_till_now = backlog_items.aggregate(total=Sum('size'))['total'] or 0
-        remaining_story_points = total_story_points - done_story_points_till_now
-
-        # Set remaining_story_points to empty if the datetime is in the future
-        if itr_datetime > current_datetime:
-            remaining_story_points = ''
-
-        burndown_data.append({
-            'datetime': itr_datetime.isoformat(),  # Include timestamp
-            'remaining_story_points': remaining_story_points
-        })
-
-    return burndown_data
-
-
 @login_required
 def view_project_metrics_iteration_tab(request, project_id):
     # Fetch user, project, and organization details
@@ -1016,26 +984,17 @@ def view_project_metrics_iteration_tab(request, project_id):
     ##
     ##
 
-    
-    normal_release = True
-    burndown_data = []
-    # check the current iteration length from the release
-    if current_iteration and current_release:
-        check_iteration_length_in_mins = current_release.iteration_length_in_mins > 0
-        if check_iteration_length_in_mins:
-            normal_release = False
-            total_minutes = current_release.iteration_length_in_mins
-            burndown_data = generate_minute_based_burndown(current_iteration, project, total_minutes, total_story_points)
-    
+    from datetime import timedelta
+
     # Prepare Burndown Chart Data
-    if current_iteration and normal_release:
+    if current_iteration:
         logger.debug(f">>> === BURNDOWNcurrent_iteration: {current_iteration} === <<<")
         iteration_start_date = current_iteration.iteration_start_date
         iteration_end_date = current_iteration.iteration_end_date
         
         # Create date range
         days_range = (iteration_end_date - iteration_start_date).days + 1
-        
+        burndown_data = []
         current_date = now().date()
         for i in range(days_range):
             itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
@@ -1063,8 +1022,8 @@ def view_project_metrics_iteration_tab(request, project_id):
             'remaining_story_points': remaining_story_points
             })
             
-    # Log the complete burndown data
-    logger.debug(f">>> === NORMAL RELEASE: {normal_release} burndown_data: {burndown_data} === <<<")
+        # Log the complete burndown data
+        logger.debug(f">>> === burndown_data: {burndown_data} === <<<")
 
            
     
@@ -1089,7 +1048,6 @@ def view_project_metrics_iteration_tab(request, project_id):
         'done_story_points': done_story_points,
         
         'burndown_data': burndown_data,
-        'normal_release': normal_release,
     }
 
     # Render template

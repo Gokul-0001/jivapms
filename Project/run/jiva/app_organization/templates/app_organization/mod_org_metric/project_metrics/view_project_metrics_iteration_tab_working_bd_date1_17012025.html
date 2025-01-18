@@ -186,9 +186,8 @@
                                 <!-- <pre>{{ burndown_data }}</pre> -->
                 
                                 <!-- Canvas for the chart -->
-                                {% if normal_release == True %}
                                 <canvas id="burndownChart" style="width: 100%; height: 400px; border: 1px solid red;"></canvas>
-                                
+                
                                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                                 <script>
                                     document.addEventListener("DOMContentLoaded", function () {
@@ -230,34 +229,29 @@
                                         const endPoint = filteredData[numPoints - 1]; // Most recent valid point
                                         const slope = (startPoint - endPoint) / (numPoints - 1); // Slope based on valid data
 
-                                        let trendEnded = false;
-
                                         // Generate the trendline data
+                                        let lastValidDate = null; // To store where the line intersects the x-axis
                                         for (let i = 0; i < totalDays; i++) {
-                                            if (trendEnded) {
-                                                slopeLine.push(null); // Fill remaining days with null
-                                                continue;
-                                            }
-
                                             const projectedValue = startPoint - i * slope;
 
                                             if (projectedValue <= 0) {
-                                                // Calculate exact fractional point of the day where it intersects the x-axis
-                                                const fractionalPart = Math.abs(projectedValue / slope); // Fraction of the day
-                                                const exactIntersection = i + fractionalPart;
-
-                                                // Push the exact zero point to the trendline
-                                                slopeLine.push(0); // Stop the trendline at 0
-                                                trendEnded = true; // Mark the end of the trendline
-                                            } else {
-                                                slopeLine.push(projectedValue); // Append the current projected value
+                                                // Calculate the exact fraction of the day where it meets 0
+                                                const extraDays = projectedValue / slope; // How far into the current day it intersects
+                                                lastValidDate = i + extraDays; // Adjust for the exact x-axis intersection
+                                                slopeLine.push(0); // Add the zero point
+                                                break;
                                             }
+
+                                            slopeLine.push(projectedValue);
+                                        }
+
+                                        // Fill the remaining days with null values
+                                        while (slopeLine.length < totalDays) {
+                                            slopeLine.push(null);
                                         }
 
                                         return slopeLine;
                                     }
-
-
 
 
                                       // Calculate the total story points and number of days
@@ -331,95 +325,7 @@
                                       });
                                     });
                                   </script>
-                                  {% else %}
-                                  <canvas id="minuteBurndownChart" style="width: 100%; height: 400px;"></canvas>
-                                  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-                                  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-                                  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                                   
-                                 <script>
-                                    document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById("minuteBurndownChart").getContext("2d");
-
-    // Example static data for debugging
-    const burndownData = {{ burndown_data|safe }}; // Ensure this is valid JSON
-
-    // Extract labels (formatted as strings) and actual burndown points
-    const labels = burndownData.map(item => item.datetime.split("T")[1]); // Extract time portion only (e.g., "10:00:00")
-    const actualBurndown = burndownData
-        .filter(item => item.remaining_story_points !== '') // Exclude future points
-        .map(item => item.remaining_story_points);
-
-    const totalStoryPoints = Math.max(...actualBurndown);
-    const idealBurndown = [];
-    const decrement = totalStoryPoints / (labels.length - 1);
-
-    for (let i = 0; i < labels.length; i++) {
-        idealBurndown.push(totalStoryPoints - i * decrement);
-    }
-
-    // Debugging: Log extracted labels and burndown data
-    console.log("Labels:", labels);
-    console.log("Actual Burndown:", actualBurndown);
-    console.log("Ideal Burndown:", idealBurndown);
-
-    // Chart data
-    const data = {
-        labels: labels, // Use formatted string labels
-        datasets: [
-            {
-                label: "Actual Burndown",
-                data: actualBurndown,
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 2,
-                fill: false
-            },
-            {
-                label: "Ideal Burndown",
-                data: idealBurndown,
-                borderColor: "rgba(192, 75, 192, 1)",
-                borderWidth: 2,
-                fill: false
-            }
-        ]
-    };
-
-    // Chart options
-    const options = {
-        scales: {
-            x: {
-                type: 'category', // Use a category scale
-                title: {
-                    display: true,
-                    text: "Time (Minutes)"
-                }
-            },
-            y: {
-                title: {
-                    display: true,
-                    text: "Remaining Story Points"
-                },
-                beginAtZero: true
-            }
-        },
-        plugins: {
-            legend: {
-                display: true,
-                position: "top"
-            }
-        }
-    };
-
-    // Render the chart
-    new Chart(ctx, {
-        type: "line",
-        data: data,
-        options: options
-    });
-});
-
-                                 </script>
-                                  {% endif %}
                             </div>
                 
                         </div>
