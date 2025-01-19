@@ -827,33 +827,49 @@ def view_project_metrics(request, project_id):
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics.html"
     return render(request, template_file, context)
 
-
 def generate_minute_based_burndown(current_iteration, project, total_minutes, total_story_points):
     burndown_data = []
     current_datetime = now()
-    iteration_start_datetime = current_iteration.iteration_start_date
+
+    # Ensure the iteration start datetime is localized to Asia/Kolkata
+    tz = pytz.timezone('Asia/Kolkata')
+    iteration_start_datetime = current_iteration.iteration_start_date.astimezone(tz)
 
     for minute_offset in range(total_minutes + 1):  # Include the last minute
         itr_datetime = iteration_start_datetime + timedelta(minutes=minute_offset)
 
-        # Filter backlog items for the current iteration up to this minute
+        # Normalize `done_at` field to the same timezone as `itr_datetime`
         backlog_items = Backlog.objects.filter(
             pro=project,
             active=True,
             iteration=current_iteration,
-            done_at__lte=itr_datetime
+            done_at__lte=itr_datetime.astimezone(pytz.UTC)  # Convert `itr_datetime` to UTC
         )
+        for bi in backlog_items:
+            logger.debug(
+                f">>> === backlog_item: {bi} DONE: {bi.done_at.astimezone(tz)} | "
+                f"ITR: {itr_datetime} === <<<"
+            )
 
         # Calculate remaining story points
         done_story_points_till_now = backlog_items.aggregate(total=Sum('size'))['total'] or 0
         remaining_story_points = total_story_points - done_story_points_till_now
 
-        # Set remaining_story_points to empty if the datetime is in the future
+        logger.debug(
+            f">>> === MINUTE-BREAKDOWN: itr_datetime: {itr_datetime} | "
+            f"TOTAL STORY POINTS: {total_story_points} | "
+            f"DONE POINTS: {done_story_points_till_now} | "
+            f"Remaining: {remaining_story_points} === <<<"
+        )
+
+        # Handle future datetime
         if itr_datetime > current_datetime:
             remaining_story_points = ''
 
+        # Format datetime without timezone
+        formatted_datetime = itr_datetime.strftime('%Y-%m-%dT%H:%M:%S')
         burndown_data.append({
-            'datetime': itr_datetime.isoformat(),  # Include timestamp
+            'datetime': formatted_datetime,
             'remaining_story_points': remaining_story_points
         })
 
@@ -1037,6 +1053,7 @@ def view_project_metrics_iteration_tab(request, project_id):
         days_range = (iteration_end_date - iteration_start_date).days + 1
         
         current_date = now().date()
+        
         for i in range(days_range):
             itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
             

@@ -337,86 +337,86 @@
                                   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
                                   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                                   
-                                 <script>
-                                    document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById("minuteBurndownChart").getContext("2d");
+                                    <script>
+                                        document.addEventListener("DOMContentLoaded", function () {
+                                        const ctx = document.getElementById("minuteBurndownChart").getContext("2d");
 
-    // Example static data for debugging
-    const burndownData = {{ burndown_data|safe }}; // Ensure this is valid JSON
+                                        // Example static data for debugging
+                                        const burndownData = {{ burndown_data|safe }}; // Ensure this is valid JSON
 
-    // Extract labels (formatted as strings) and actual burndown points
-    const labels = burndownData.map(item => item.datetime.split("T")[1]); // Extract time portion only (e.g., "10:00:00")
-    const actualBurndown = burndownData
-        .filter(item => item.remaining_story_points !== '') // Exclude future points
-        .map(item => item.remaining_story_points);
+                                        // Extract labels (formatted as strings) and actual burndown points
+                                        const labels = burndownData.map(item => item.datetime.split("T")[1]); // Extract time portion only (e.g., "10:00:00")
+                                        const actualBurndown = burndownData
+                                            .filter(item => item.remaining_story_points !== '') // Exclude future points
+                                            .map(item => item.remaining_story_points);
 
-    const totalStoryPoints = Math.max(...actualBurndown);
-    const idealBurndown = [];
-    const decrement = totalStoryPoints / (labels.length - 1);
+                                        const totalStoryPoints = Math.max(...actualBurndown);
+                                        const idealBurndown = [];
+                                        const decrement = totalStoryPoints / (labels.length - 1);
 
-    for (let i = 0; i < labels.length; i++) {
-        idealBurndown.push(totalStoryPoints - i * decrement);
-    }
+                                        for (let i = 0; i < labels.length; i++) {
+                                            idealBurndown.push(totalStoryPoints - i * decrement);
+                                        }
 
-    // Debugging: Log extracted labels and burndown data
-    console.log("Labels:", labels);
-    console.log("Actual Burndown:", actualBurndown);
-    console.log("Ideal Burndown:", idealBurndown);
+                                        // Debugging: Log extracted labels and burndown data
+                                        console.log("Labels:", labels);
+                                        console.log("Actual Burndown:", actualBurndown);
+                                        console.log("Ideal Burndown:", idealBurndown);
 
-    // Chart data
-    const data = {
-        labels: labels, // Use formatted string labels
-        datasets: [
-            {
-                label: "Actual Burndown",
-                data: actualBurndown,
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 2,
-                fill: false
-            },
-            {
-                label: "Ideal Burndown",
-                data: idealBurndown,
-                borderColor: "rgba(192, 75, 192, 1)",
-                borderWidth: 2,
-                fill: false
-            }
-        ]
-    };
+                                        // Chart data
+                                        const data = {
+                                            labels: labels, // Use formatted string labels
+                                            datasets: [
+                                                {
+                                                    label: "Actual Burndown",
+                                                    data: actualBurndown,
+                                                    borderColor: "rgba(75, 192, 192, 1)",
+                                                    borderWidth: 2,
+                                                    fill: false
+                                                },
+                                                {
+                                                    label: "Ideal Burndown",
+                                                    data: idealBurndown,
+                                                    borderColor: "rgba(192, 75, 192, 1)",
+                                                    borderWidth: 2,
+                                                    fill: false
+                                                }
+                                            ]
+                                        };
 
-    // Chart options
-    const options = {
-        scales: {
-            x: {
-                type: 'category', // Use a category scale
-                title: {
-                    display: true,
-                    text: "Time (Minutes)"
-                }
-            },
-            y: {
-                title: {
-                    display: true,
-                    text: "Remaining Story Points"
-                },
-                beginAtZero: true
-            }
-        },
-        plugins: {
-            legend: {
-                display: true,
-                position: "top"
-            }
-        }
-    };
+                                        // Chart options
+                                        const options = {
+                                            scales: {
+                                                x: {
+                                                    type: 'category', // Use a category scale
+                                                    title: {
+                                                        display: true,
+                                                        text: "Time (Minutes)"
+                                                    }
+                                                },
+                                                y: {
+                                                    title: {
+                                                        display: true,
+                                                        text: "Remaining Story Points"
+                                                    },
+                                                    beginAtZero: true
+                                                }
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    display: true,
+                                                    position: "top"
+                                                }
+                                            }
+                                        };
 
-    // Render the chart
-    new Chart(ctx, {
-        type: "line",
-        data: data,
-        options: options
-    });
-});
+                                        // Render the chart
+                                        new Chart(ctx, {
+                                            type: "line",
+                                            data: data,
+                                            options: options
+                                        });
+                                    });
 
                                  </script>
                                   {% endif %}
