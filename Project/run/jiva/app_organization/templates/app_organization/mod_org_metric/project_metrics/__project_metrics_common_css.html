@@ -1,0 +1,58 @@
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+
+
+<style>
+    /* Base styling for all badges */
+.count-badge {
+    display: inline-block;
+    padding: 0.5em 1em;
+    border-radius: 20px; /* Makes the badge rounded */
+    font-size: 0.875em;
+    font-weight: bold;
+    color: white; /* Default text color */
+    margin-right: 0.5em;
+    text-align: center;
+    min-width: 40px; /* Ensures consistent size */
+}
+
+/* Specific colors for each type */
+.count-badge.backlog {
+    background-color: #6c757d; /* Gray */
+}
+
+.count-badge.todo {
+    background-color: #007bff; /* Blue */
+}
+
+.count-badge.wip {
+    background-color: #ffc107; /* Yellow */
+    color: black; /* Text color for better contrast */
+}
+
+.count-badge.done {
+    background-color: #28a745; /* Green */
+}
+
+.count-badge {
+    font-size: 10px;
+}
+
+
+.ToDo {
+    background-color: #007bff;
+    color: white;
+}
+.WIP {
+    background-color: #ffc107;
+    color: black;
+}
+.Done {
+    background-color: #28a745;
+    color: white;
+}
+</style>

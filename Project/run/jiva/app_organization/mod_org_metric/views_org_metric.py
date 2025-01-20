@@ -420,386 +420,8 @@ def view_org_metric(request, org_id, org_metric_id):
 
 from app_organization.mod_backlog.models_backlog import *
 from app_organization.mod_backlog.views_project_tree import jivapms_mod_backlog_helper_get_backlog_details
-# @login_required
-# def view_project_metrics(request, project_id):
-#     user = request.user
-#     project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
-#     organization = project.org
-#     org_id = organization.id
-    
-#     # get the backlog details
-#     backlog_details = jivapms_mod_backlog_helper_get_backlog_details(request, project_id)
-#     include_types = backlog_details['include_types']
-    
-#     end_date = now().date()  # Today's date
-#     start_date = end_date - timedelta(days=90)  # Last 3 months
-#     logger.debug(f">>> === start_date: {start_date} === <<<")
-#     logger.debug(f">>> === end_date: {end_date} === <<<")
-
-#     # Query backlog data
-#     backlog_check = Backlog.objects.filter(pro=project, active=True, deleted=False, type__in=include_types)
-#     backlog_count = backlog_check.count()
-#     logger.debug(f">>> === backlog_count: {backlog_count} === <<<")
-    
-    
-#     backlog_data = (
-#         Backlog.objects
-#         .filter(pro=project, created_at__range=(start_date, end_date), active=True, deleted=False, type__in=include_types)
-#         .extra({'created_date': "date(created_at)"})
-#         .values('created_date', 'status')
-#         .annotate(count=models.Count('id'))
-#         .order_by('created_date')
-#     )
-
-#     # Prepare data for Chart.js
-#     labels = [item['created_date'] for item in backlog_data]
-#     daily_counts = [item['count'] for item in backlog_data]
-
-#     # Compute cumulative counts
-#     cumulative_counts = []
-#     total = 0
-#     for count in daily_counts:
-#         total += count
-#         cumulative_counts.append(total)
-
-#     # Prepare data for Chart.js
-#     labels = []
-#     daily_counts = []
-#     cumulative_counts = []
-#     to_do_counts = []
-#     in_progress_counts = []
-#     done_counts = []
-#     backlog_counts = []
-    
-#     total_count = 0
-#     to_do_total = 0
-#     in_progress_total = 0
-#     done_total = 0
-#     backlog_total = 0
-
-#     for item in backlog_data:
-#         labels.append(item['created_date'])
-#         daily_counts.append(item['count'])
-
-#         # Calculate cumulative counts
-#         total_count += item['count']
-#         cumulative_counts.append(total_count)
-
-#         # Calculate cumulative counts for each status
-#         if item['status'] == 'To Do':
-#             to_do_total += item['count']
-#         elif item['status'] == 'In Progress':
-#             in_progress_total += item['count']
-#         elif item['status'] == 'Done':
-#             done_total += item['count']
-
-#         # Calculate the total backlog count as the sum of all statuses
-#         backlog_total = to_do_total + in_progress_total + done_total
-        
-#         logger.debug(f">>> === backlog_total: {backlog_total} === <<<")
-#         logger.debug(f">>> === to_do_total: {to_do_total} === <<<")
-#         logger.debug(f">>> === in_progress_total: {in_progress_total} === <<<")
-#         logger.debug(f">>> === done_total: {done_total} === <<<")
-        
-
-#         # Append CFD data
-#         backlog_counts.append(backlog_total)
-#         to_do_counts.append(to_do_total)
-#         in_progress_counts.append(in_progress_total)
-#         done_counts.append(done_total)
-
-       
-
-
-#     context = {
-#         'parent_page': '___PARENTPAGE___',
-#         'page': 'view_project_metrics',
-#         'organization': organization,
-#         'org_id': org_id,
-        
-#         'module_path': module_path,
-        
-#         'page_title': f'View Project Metrics',
-#         'labels': labels,
-#         'data': daily_counts,
-#         'cumulative_data': cumulative_counts,
-#         'to_do_data': to_do_counts,          # To Do status counts
-#         'in_progress_data': in_progress_counts,  # In Progress status counts
-#         'done_data': done_counts,          # Done status counts
-#         'backlog_data': backlog_counts,    # Backlog status counts
-#         'project': project,
-#         'project_id': project_id,
-#         'pro_id': project_id,
-#     }
-    
-#     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics.html"
-#     return render(request, template_file, context)
-
-# === testing
-# @login_required
-# def view_project_metrics(request, project_id):
-#     user = request.user
-#     project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
-#     organization = project.org
-#     org_id = organization.id
-    
-#     # get the backlog details
-#     backlog_details = jivapms_mod_backlog_helper_get_backlog_details(request, project_id)
-#     include_types = backlog_details['include_types']
-    
-#     # Date range
-#     end_date = now().date()  # Today's date
-#     start_date = end_date - timedelta(days=90)  # Last 3 months
-#     logger.debug(f">>> === start_date: {start_date} === <<<")
-#     logger.debug(f">>> === end_date: {end_date} === <<<")
-
-#     # Query backlog data
-#     backlog_check = Backlog.objects.filter(pro=project, active=True, deleted=False, type__in=include_types)
-#     backlog_count = backlog_check.count()
-#     logger.debug(f">>> === backlog_count: {backlog_count} === <<<")
-    
-    
-#     backlog_data = (
-#         Backlog.objects
-#         .filter(pro=project, created_at__range=(start_date, end_date), active=True, deleted=False, type__in=include_types)
-#         .extra({'created_date': "date(created_at)"})
-#         .values('created_date', 'status')
-#         .annotate(count=models.Count('id'))
-#         .order_by('created_date')
-#     )
-
-#     # Prepare data for Chart.js
-#     labels = []
-#     daily_counts = []
-#     cumulative_counts = []
-#     to_do_counts = []
-#     in_progress_counts = []
-#     done_counts = []
-#     backlog_counts = []
-    
-#     # Initialize counters
-#     total_count = 0
-#     to_do_total = 0
-#     in_progress_total = 0
-#     done_total = 0
-#     backlog_total = 0
-
-#     # Process each entry in backlog data
-#     for item in backlog_data:
-#         labels.append(item['created_date'])
-#         daily_counts.append(item['count'])
-
-#         # Calculate cumulative counts
-#         total_count += item['count']
-#         cumulative_counts.append(total_count)
-
-#         # Calculate cumulative counts for each status
-#         if item['status'] == 'To Do' or item['status'] == 'To Do':
-#             to_do_total += item['count']
-#         elif item['status'] == 'WIP':
-#             in_progress_total += item['count']
-#         elif item['status'] == 'Done':
-#             done_total += item['count']
-
-#         # Calculate the total backlog count as the sum of all statuses
-#         backlog_total = to_do_total + in_progress_total + done_total
-        
-#         # Debugging logs for verification
-#         logger.debug(
-#             f">>> === Date: {item['created_date']} | "
-#             f"Status: {item['status']} | "
-#             f"Daily Count: {item['count']} | "
-#             f"Backlog Total: {backlog_total} | "
-#             f"To Do: {to_do_total} | "
-#             f"In Progress: {in_progress_total} | "
-#             f"Done: {done_total} | "
-#             f"Cumulative Total: {total_count} === <<<"
-#         )
-        
-#         # Append CFD data
-#         backlog_counts.append(backlog_total)
-#         to_do_counts.append(to_do_total)
-#         in_progress_counts.append(in_progress_total)
-#         done_counts.append(done_total)
-
-#     # Context for rendering
-#     context = {
-#         'parent_page': '___PARENTPAGE___',
-#         'page': 'view_project_metrics',
-#         'organization': organization,
-#         'org_id': org_id,
-        
-#         'module_path': module_path,
-        
-#         'page_title': f'View Project Metrics',
-#         'labels': labels,
-#         'data': daily_counts,
-#         'cumulative_data': cumulative_counts,
-#         'to_do_data': to_do_counts,          # To Do status counts
-#         'in_progress_data': in_progress_counts,  # In Progress status counts
-#         'done_data': done_counts,          # Done status counts
-#         'backlog_data': backlog_counts,    # Backlog status counts
-#         'project': project,
-#         'project_id': project_id,
-#         'pro_id': project_id,
-#     }
-    
-#     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics.html"
-#     return render(request, template_file, context)
-
 from django.db.models.functions import TruncDate
-
 from app_organization.mod_org_board.models_org_board import *
-
-
-# @login_required
-# def view_project_metrics(request, project_id):
-#     # Fetch user, project, and organization details
-#     user = request.user
-#     project = get_object_or_404(Project, pk=project_id, active=True)
-#     organization = project.org
-#     org_id = organization.id
-
-#     # Get backlog details
-#     backlog_details = jivapms_mod_backlog_helper_get_backlog_details(request, project_id)
-#     include_types = backlog_details['include_types']
-
-#     # Date range for the last 90 days
-#     end_date = now().date()
-#     start_date = end_date - timedelta(days=90)
-
-#     # Initialize variables
-#     date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-#     to_do_counts = {date: 0 for date in date_range}
-#     wip_counts = {date: 0 for date in date_range}
-#     done_counts = {date: 0 for date in date_range}
-#     backlog_counts = {date: 0 for date in date_range}
-
-#     # Fetch initial backlog data (card creation counts)
-#     backlog_data = (
-#         Backlog.objects.filter(
-#             pro=project,
-#             created_at__range=(start_date, end_date),
-#             active=True,
-#             deleted=False,
-#             type__in=include_types
-#         )
-#         .annotate(date_created=TruncDate('created_at'))
-#         .values('date_created', 'status')
-#         .annotate(count=Count('id'))
-#         .order_by('date_created')
-#     )
-
-#     # Process backlog data
-#     for item in backlog_data:
-#         created_date = item['date_created']
-#         status = item['status']
-#         count = item['count']
-
-#         # Add initial counts based on status
-#         if status == 'To Do':
-#             to_do_counts[created_date] += count
-#         elif status == 'WIP':
-#             wip_counts[created_date] += count
-#         elif status == 'Done':
-#             done_counts[created_date] += count
-
-#         # Total backlog count (initial state)
-#         backlog_counts[created_date] += count
-
-#     # Fetch transition data (state movements)
-#     transitions = (
-#         ProjectBoardStateTransition.objects.filter(
-#             card__pro=project,
-#             transition_time__date__range=(start_date, end_date)
-#         )
-#         .annotate(date=TruncDate('transition_time'))
-#         .values('date', 'from_state__name', 'to_state__name')
-#         .annotate(count=Count('id'))
-#     )
-
-#     # Process transitions
-#     for transition in transitions:
-#         date = transition['date']
-#         from_state = transition['from_state__name']
-#         to_state = transition['to_state__name']
-#         count = transition['count']
-
-#         # Subtract from the previous state
-#         if from_state == 'To Do':
-#             to_do_counts[date] -= count
-#         elif from_state == 'WIP':
-#             wip_counts[date] -= count
-#         elif from_state == 'Done':
-#             done_counts[date] -= count
-
-#         # Add to the new state
-#         if to_state == 'To Do':
-#             to_do_counts[date] += count
-#         elif to_state == 'WIP':
-#             wip_counts[date] += count
-#         elif to_state == 'Done':
-#             done_counts[date] += count
-
-#     # Cumulative counters
-#     cumulative_to_do = []
-#     cumulative_wip = []
-#     cumulative_done = []
-#     cumulative_total = []
-#     cumulative_counts = []
-#     labels = []
-#     daily_counts = []
-
-#     running_to_do = 0
-#     running_wip = 0
-#     running_done = 0
-#     running_total = 0
-
-#     # Generate cumulative data for CFD
-#     for date in date_range:
-#         labels.append(date.strftime('%Y-%m-%d'))
-#         running_to_do += to_do_counts[date]
-#         running_wip += wip_counts[date]
-#         running_done += done_counts[date]
-#         running_total += backlog_counts[date]
-
-#         cumulative_to_do.append(running_to_do)
-#         cumulative_wip.append(running_wip)
-#         cumulative_done.append(running_done)
-#         cumulative_total.append(running_total)
-#         cumulative_counts.append(running_total)
-#         daily_counts.append(backlog_counts[date])
-
-#     # Debugging logs
-#     logger.debug(f"Labels: {labels}")
-#     logger.debug(f"To Do: {cumulative_to_do}")
-#     logger.debug(f"WIP: {cumulative_wip}")
-#     logger.debug(f"Done: {cumulative_done}")
-#     logger.debug(f"Total: {cumulative_total}")
-
-#     # Prepare context for rendering template
-#     context = {
-#         'parent_page': '___PARENTPAGE___',
-#         'page': 'view_project_metrics',
-#         'organization': organization,
-#         'org_id': org_id,
-#         'project': project,
-#         'project_id': project_id,
-#         'pro_id': project_id,
-
-#         # Chart Data for CFD
-#         'labels': labels,                      # X-axis labels (dates)
-#         'data': daily_counts,                  # Daily backlog counts
-#         'cumulative_data': cumulative_counts,  # Total cumulative counts
-#         'to_do_data': cumulative_to_do,        # To Do cumulative counts
-#         'in_progress_data': cumulative_wip,    # WIP cumulative counts
-#         'done_data': cumulative_done,          # Done cumulative counts
-#         'backlog_data': list(backlog_counts.values()),  # Backlog counts
-#     }
-
-#     # Render template
-#     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics.html"
-#     return render(request, template_file, context)
 
 
 @login_required
@@ -820,11 +442,39 @@ def view_project_metrics(request, project_id):
         'project_id': project_id,
         'pro_id': project_id,
 
-        
+        'selected_tab': 'project_metrics',
     }
 
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics.html"
+    return render(request, template_file, context)
+
+
+
+
+@login_required
+def view_project_metrics_backlog_tab(request, project_id):
+    from datetime import timedelta, date
+    import random
+    project = get_object_or_404(Project, pk=project_id, active=True)
+    organization = project.org
+    org_id = organization.id
+    
+    # Prepare context for rendering template
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_project_metrics_backlog_tab',
+        'organization': project.org,
+        'org_id': org_id,
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
+
+        'selected_tab': 'backlog',
+    }
+
+    # Render template
+    template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_backlog_tab.html"
     return render(request, template_file, context)
 
 def generate_minute_based_burndown(current_iteration, project, total_minutes, total_story_points):
@@ -1107,11 +757,42 @@ def view_project_metrics_iteration_tab(request, project_id):
         
         'burndown_data': burndown_data,
         'normal_release': normal_release,
+        
+        'selected_tab': 'iteration',
     }
 
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_iteration_tab.html"
     return render(request, template_file, context)
+
+@login_required
+def view_project_metrics_release_tab(request, project_id):
+    # Fetch user, project, and organization details
+    user = request.user
+    project = get_object_or_404(Project, pk=project_id, active=True)
+    organization = project.org
+    org_id = organization.id
+    # Prepare context for rendering template
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_project_metrics_release_tab',
+        'organization': organization,
+        'org_id': org_id,
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
+        
+        
+        'selected_tab': 'release',
+
+    }
+
+    # Render template
+    template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_release_tab.html"
+    return render(request, template_file, context)
+
+
+
 
 
 @login_required
@@ -1130,6 +811,8 @@ def view_project_metrics_quality_tab(request, project_id):
         'project': project,
         'project_id': project_id,
         'pro_id': project_id,
+        
+        'selected_tab': 'quality',
 
     }
 
@@ -1141,66 +824,3 @@ def view_project_metrics_quality_tab(request, project_id):
 
 
 
-
-
-    # release_start_date = current_release.release_start_date.replace(microsecond=0)
-        # release_end_date = current_release.release_end_date.replace(microsecond=0)
-        # logger.debug(f">>> === current_datetime: {current_datetime} === <<<")
-        # logger.debug(f">>> === release_start_date: {release_start_date} === <<<")
-        # logger.debug(f">>> === release_end_date: {release_end_date} === <<<")
-        # if release_start_date <= current_datetime <= release_end_date:
-        #     logger.debug(f">>> === Current datetime {current_datetime} is within the release period {release_start_date}--{release_end_date}. === <<<")
-        # else:
-        #     logger.debug(f">>> === Current datetime is outside the release period. === <<<")
-        
-        
-        
-        
-##
-##
-## reference 1701
-##
-##
-
-
-
-    # from datetime import timedelta
-
-    # # Prepare Burndown Chart Data
-    # if current_iteration:
-    #     logger.debug(f">>> === BURNDOWNcurrent_iteration: {current_iteration} === <<<")
-    #     iteration_start_date = current_iteration.iteration_start_date
-    #     iteration_end_date = current_iteration.iteration_end_date
-        
-    #     # Create date range
-    #     days_range = (iteration_end_date - iteration_start_date).days + 1
-    #     burndown_data = []
-    #     current_date = now().date()
-    #     for i in range(days_range):
-    #         itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
-            
-    #        # Filter backlog items for the current iteration
-    #         backlog_items = Backlog.objects.filter(
-    #             pro=project, 
-    #             active=True, 
-    #             iteration=current_iteration,
-    #             done_at__date__lte=itr_date
-    #         )
-            
-    #         # Log each done_at value and current_date
-    #         for item in backlog_items:
-    #             logger.debug(f"CHECK Backlog ID: {item.id}, {item}, done_at: {item.done_at}, current_date: {itr_date}")
-            
-    #         # Calculate remaining story points for each date
-    #         done_story_points_till_date = backlog_items.aggregate(total=Sum('size'))['total'] or 0
-    #         remaining_story_points = total_story_points - done_story_points_till_date
-    #         logger.debug(f">>> === itr_date: {itr_date} | done_story_points_till_date: {done_story_points_till_date} | remaining_story_points: {remaining_story_points} === <<<")
-    #         if itr_date.date() > current_date:
-    #             remaining_story_points = ''
-    #         burndown_data.append({
-    #         'date': itr_date.strftime('%Y-%m-%d'),
-    #         'remaining_story_points': remaining_story_points
-    #         })
-            
-    #     # Log the complete burndown data
-    #     logger.debug(f">>> === burndown_data: {burndown_data} === <<<")

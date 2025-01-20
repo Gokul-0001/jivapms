@@ -17,6 +17,11 @@ urlpatterns = [
     
     # added
     path('view_project_metrics/<int:project_id>/', views_org_metric.view_project_metrics, name='view_project_metrics'),
+    path('view_project_metrics_backlog_tab/<int:project_id>/', 
+         views_org_metric.view_project_metrics_backlog_tab, name='view_project_metrics_backlog_tab'),
     path('view_project_metrics_iteration_tab/<int:project_id>/', views_org_metric.view_project_metrics_iteration_tab, name='view_project_metrics_iteration_tab'),
-    path('view_project_metrics_quality_tab/<int:project_id>/', views_org_metric.view_project_metrics_quality_tab, name='view_project_metrics_quality_tab'),
+    path('view_project_metrics_quality_tab/<int:project_id>/', views_org_metric.view_project_metrics_quality_tab, 
+         name='view_project_metrics_quality_tab'),
+    path('view_project_metrics_release_tab/<int:project_id>/', views_org_metric.view_project_metrics_release_tab, 
+         name='view_project_metrics_release_tab'),
 ]

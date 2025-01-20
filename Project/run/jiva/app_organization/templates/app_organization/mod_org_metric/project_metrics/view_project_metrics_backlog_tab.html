@@ -6,6 +6,7 @@
 {% load markdown_extras  %}
 {% load mptt_tags %}
 {% block content %}
+
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 <div class="content-wrapper">   
@@ -16,14 +17,17 @@
         <div class="container-fluid">
            <h3>Project Metrics: {{project}}</h3>
            {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_declaration.html' %}
-            
-           <b>PROJECT METRICS TAB</b>
+            <b>BACKLOG TAB</b>
+           
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
 
-    
+
 {% endblock content %}
+
+

@@ -1,0 +1,75 @@
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+
+
+
+
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const project_metrics_tab = document.getElementById('project-metrics-tab');
+
+        project_metrics_tab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const project_metrics_Url = "{% url 'view_project_metrics' project.id %}";
+            window.location.href = project_metrics_Url;
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const backlogTab = document.getElementById('backlog-tab');
+
+        backlogTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const backlogUrl = "{% url 'view_project_metrics_backlog_tab' project.id %}";
+            window.location.href = backlogUrl;
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const iterationTab = document.getElementById('iteration-tab');
+
+        iterationTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const iterationUrl = "{% url 'view_project_metrics_iteration_tab' project.id %}";
+            window.location.href = iterationUrl;
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const releaseTab = document.getElementById('release-tab');
+
+        releaseTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const releaseUrl = "{% url 'view_project_metrics_release_tab' project.id %}";
+            window.location.href = releaseUrl;
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const qualityTab = document.getElementById('quality-tab');
+
+        qualityTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const qualityUrl = "{% url 'view_project_metrics_quality_tab' project.id %}";
+            window.location.href = qualityUrl;
+        });
+    });
+</script>

@@ -6,56 +6,7 @@
 {% load markdown_extras  %}
 {% load mptt_tags %}
 {% block content %}
-<style>
-    /* Base styling for all badges */
-.count-badge {
-    display: inline-block;
-    padding: 0.5em 1em;
-    border-radius: 20px; /* Makes the badge rounded */
-    font-size: 0.875em;
-    font-weight: bold;
-    color: white; /* Default text color */
-    margin-right: 0.5em;
-    text-align: center;
-    min-width: 40px; /* Ensures consistent size */
-}
-
-/* Specific colors for each type */
-.count-badge.backlog {
-    background-color: #6c757d; /* Gray */
-}
-
-.count-badge.todo {
-    background-color: #007bff; /* Blue */
-}
-
-.count-badge.wip {
-    background-color: #ffc107; /* Yellow */
-    color: black; /* Text color for better contrast */
-}
-
-.count-badge.done {
-    background-color: #28a745; /* Green */
-}
-
-.count-badge {
-    font-size: 10px;
-}
-
-
-.ToDo {
-    background-color: #007bff;
-    color: white;
-}
-.WIP {
-    background-color: #ffc107;
-    color: black;
-}
-.Done {
-    background-color: #28a745;
-    color: white;
-}
-</style>
+{% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_css.html' %}
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
 <div class="content-wrapper">   
@@ -65,27 +16,14 @@
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
            <h3>Project Metrics: {{project}}</h3>
-           <ul class="nav nav-tabs" id="projectTabs" role="tablist">
-               <li class="nav-item">
-                   <a class="nav-link" id="backlog-tab" data-bs-toggle="tab" href="#backlog" role="tab" aria-controls="backlog" aria-selected="true">Backlog</a>
-               </li>
-               <li class="nav-item">
-                   <a class="nav-link active" id="iteration-tab" data-bs-toggle="tab" href="#iteration" role="tab" aria-controls="iteration" aria-selected="false">Iteration</a>
-               </li>
-               <li class="nav-item">
-                   <a class="nav-link" id="quality-tab" data-bs-toggle="tab" href="#quality" role="tab" aria-controls="quality" aria-selected="false">Quality</a>
-               </li>
-           </ul>
+           {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_declaration.html' %}
 
-           <div class="tab-content mt-3" id="projectTabsContent">
+           <div class="tab-content" id="projectTabsContent">
                <div class="tab-pane fade" id="backlog" role="tabpanel" aria-labelledby="backlog-tab">
                 <p>Backlog content goes here...</p>
                </div>
                <div class="tab-pane fade show active" id="iteration" role="tabpanel" aria-labelledby="iteration-tab">
              
-                
-                {{project}}
-                {{project.id}}
                 {% if release_mismatch_flag %}
                     <p>The current date/time is not matching with the Project mapped Release/Iteartions: {{project.project_release}}</p>
                     <b>Solution:</b>
@@ -336,9 +274,54 @@
                                   <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
                                   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
                                   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                                  
+                                  <script>
+                                    function generateMinuteSlopeLine(data, totalMinutes) {
+                                        const slopeLine = [];
+
+                                        // Filter out completed burndown points (e.g., 0 story points)
+                                        const filteredData = data.filter(point => point > 0);
+                                        const numPoints = filteredData.length;
+
+                                        // If no valid points for trendline, return an empty slope line
+                                        if (numPoints < 2) {
+                                            return Array(totalMinutes).fill(null); // No trendline if not enough data points
+                                        }
+
+                                        // Calculate the slope based on the most recent valid data
+                                        const startPoint = filteredData[0]; // First valid point (initial value)
+                                        const endPoint = filteredData[numPoints - 1]; // Most recent valid point
+                                        const slope = (startPoint - endPoint) / (numPoints - 1); // Slope based on valid data
+
+                                        let trendEnded = false;
+
+                                        // Generate the trendline data
+                                        for (let i = 0; i < totalMinutes; i++) {
+                                            if (trendEnded) {
+                                                slopeLine.push(null); // Fill remaining minutes with null
+                                                continue;
+                                            }
+
+                                            const projectedValue = startPoint - i * slope;
+
+                                            if (projectedValue <= 0) {
+                                                // Calculate exact fractional minute of intersection with the x-axis
+                                                const fractionalPart = Math.abs(projectedValue / slope); // Fraction of the minute
+                                                const exactIntersection = i + fractionalPart;
+
+                                                // Push the exact zero point to the trendline
+                                                slopeLine.push(0); // Stop the trendline at 0
+                                                trendEnded = true; // Mark the end of the trendline
+                                            } else {
+                                                slopeLine.push(projectedValue); // Append the current projected value
+                                            }
+                                        }
+
+                                        return slopeLine;
+                                    }
+
+                                  </script>
                                     <script>
-                                        document.addEventListener("DOMContentLoaded", function () {
+                                      document.addEventListener("DOMContentLoaded", function () {
                                         const ctx = document.getElementById("minuteBurndownChart").getContext("2d");
 
                                         // Example static data for debugging
@@ -350,18 +333,26 @@
                                             .filter(item => item.remaining_story_points !== '') // Exclude future points
                                             .map(item => item.remaining_story_points);
 
+                                        // Total minutes and initial story points
+                                        const totalMinutes = labels.length;
                                         const totalStoryPoints = Math.max(...actualBurndown);
-                                        const idealBurndown = [];
-                                        const decrement = totalStoryPoints / (labels.length - 1);
 
-                                        for (let i = 0; i < labels.length; i++) {
+                                        // Generate the Ideal Burndown Line
+                                        const idealBurndown = [];
+                                        const decrement = totalStoryPoints / (totalMinutes - 1);
+
+                                        for (let i = 0; i < totalMinutes; i++) {
                                             idealBurndown.push(totalStoryPoints - i * decrement);
                                         }
+
+                                        // Generate the Slope Line
+                                        const slopeLine = generateMinuteSlopeLine(actualBurndown, totalMinutes);
 
                                         // Debugging: Log extracted labels and burndown data
                                         console.log("Labels:", labels);
                                         console.log("Actual Burndown:", actualBurndown);
                                         console.log("Ideal Burndown:", idealBurndown);
+                                        console.log("Slope Line:", slopeLine);
 
                                         // Chart data
                                         const data = {
@@ -380,6 +371,14 @@
                                                     borderColor: "rgba(192, 75, 192, 1)",
                                                     borderWidth: 2,
                                                     fill: false
+                                                },
+                                                {
+                                                    label: "Trend Line",
+                                                    data: slopeLine,
+                                                    borderColor: "rgba(255, 0, 0, 1)",
+                                                    borderWidth: 2,
+                                                    fill: false,
+                                                    borderDash: [5, 5] // Dashed line
                                                 }
                                             ]
                                         };
@@ -435,28 +434,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const iterationTab = document.getElementById('backlog-tab');
-
-        iterationTab.addEventListener('click', function () {
-            // Redirect to the new page when the iteration tab is clicked
-            const iterationUrl = "{% url 'view_project_metrics' project.id %}";
-            window.location.href = iterationUrl;
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const iterationTab = document.getElementById('quality-tab');
-
-        iterationTab.addEventListener('click', function () {
-            // Redirect to the new page when the iteration tab is clicked
-            const iterationUrl = "{% url 'view_project_metrics_quality_tab' project.id %}";
-            window.location.href = iterationUrl;
-        });
-    });
-</script>
+{% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
 {% endblock content %}
 
 
