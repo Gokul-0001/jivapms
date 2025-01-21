@@ -31,7 +31,11 @@ class OrgIteration(BaseModelTrackDateImpl):
     
     timestamp = models.DateTimeField(null=True, blank=True)
 
+    # Calculations
+    total_story_points = models.PositiveIntegerField(default=0)
+    done_story_points = models.PositiveIntegerField(default=0)
     
+        
     
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_org_iterations")

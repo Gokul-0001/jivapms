@@ -1,1 +1,103 @@
-<b>RELEASE TAB CONTENT from file</b>
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+<style>
+    .iteration_current_class {
+    background-color: #ffeb3b; /* Highlight color, adjust as needed */
+    color: #000; /* Text color for contrast */
+    font-weight: bold; /* Make the text bold for emphasis */
+    border: 1px solid #fbc02d; /* Optional: Add a border to further highlight */
+}
+
+.table {
+    font-size: 12px;
+}
+</style>
+<div class="container-fluid">
+
+    <!-- TOP ROW -->
+    <div class="row">
+        <div class="col col-md-12">
+            <table class="table">
+                <tr>
+                    <td width="">
+                        <b>Release: </b>
+                        {{current_release|display_if_not_none}}
+                        &nbsp;&nbsp;
+                    </td>
+                    <td width="">
+                        <b>Iteration: </b>
+                        {{current_iteration|display_if_not_none}} 
+                        &nbsp;&nbsp;
+                        
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Release Iteration Details and Release Burndown -->
+    <div class="row">
+        <div class="col col-md-6">
+            <table class="table">
+                <thead>
+                <tr>
+                    <td width="1%">
+                        <b>#</b>
+                    </td>
+                    <td width="10%">
+                        <b>Iteration</b>
+                    </td>
+                    <td width="">
+                        <b>Start Date</b>
+                    </td>
+                    <td width="">
+                        <b>End Date</b>
+                    </td>
+                    <td width="">
+                        <b>Total Story Points</b>
+                    </td>
+                    <td width="">
+                        <b> Done Points</b>
+                    </td>
+                </tr>
+                </thead>
+                {% for iteration in iteration_data %}
+                <tr 
+                {% if iteration.id == current_iteration.id %}
+                class="iteration_current_class"
+                {% endif %}
+                >
+                    <td width="1%">
+                        {{forloop.counter}}
+                    </td>
+                    <td width="10%">
+                        {{iteration.name}}
+                    </td>
+                    <td width="">
+                        {{iteration.iteration_start_date}}
+                    </td>
+                    <td width="">
+                        {{iteration.iteration_end_date}}
+                    </td>
+                    <td width="">
+                        {{iteration.total_story_points}}
+                    </td>
+                    <td width="">
+                        {{iteration.total_done_points}}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col col-md-6">
+            <!-- Release Burndown chart -->
+             <b>Release Burn-down chart</b>
+             <canvas id="releaseBurndown" width="300" height="200" style=" border: 1px solid red;"></canvas>
+        </div>
+    </div>
+
+</div>

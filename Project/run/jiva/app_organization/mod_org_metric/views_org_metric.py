@@ -772,6 +772,119 @@ def view_project_metrics_release_tab(request, project_id):
     project = get_object_or_404(Project, pk=project_id, active=True)
     organization = project.org
     org_id = organization.id
+    
+    current_iteration = None
+    current_release = None
+    next_iteration = None
+    iteration_data = []
+    total_story_points = 0
+    completed_story_points = 0
+    cumulative_total_points = 0
+    cumulative_done_points = 0
+    iteration_data_serialized = []
+    current_datetime = now().replace(microsecond=0)
+    total_release_points = 0  # Total story points for the release
+    release_burndown_data = []  # List to store iteration-wise burndown data
+    cumulative_done_points = 0  # Tracks cumulative points completed across iterations
+    ideal_burndown = []  # Ideal burndown data
+    actual_burndown = []  # Actual burndown data
+    
+    
+    # Prepare context for rendering template
+    if project.project_iteration:
+        # Use datetime comparison for both start and end dates
+        current_datetime = now().replace(microsecond=0)
+        details = get_project_release_and_iteration_details(project.id)
+        current_release = details['current_release']
+        current_iteration = details['current_iteration']
+        next_iteration = details['next_iteration']       
+
+        if project.project_release:
+            release = project.project_release
+            iterations = release.org_release_org_iterations.filter(active=True)            
+            # Calculate total release points BEFORE iterating
+            for iteration in iterations:
+                total_points = Backlog.objects.filter(pro=project, iteration=iteration, active=True).aggregate(
+                    total=Sum('size')
+                )['total'] or 0
+                total_release_points += total_points
+                
+                
+            for iteration in iterations:
+                # Fetch total story points for all backlog items in the iteration
+                check_total = Backlog.objects.filter( iteration=iteration, active=True)
+                for ct in check_total:
+                    logger.debug(f">>> === PROJECT : {ct.pro} == {project} == <<<")
+                    
+                total_points = Backlog.objects.filter(pro=project, iteration=iteration, active=True).aggregate(
+                    total=Sum('size')
+                )['total'] or 0
+                
+                # Fetch story points for "done" backlog items in the iteration
+                done_points = Backlog.objects.filter(
+                    pro=project,
+                    iteration=iteration, active=True, status="Done"
+                ).aggregate(
+                    done=Sum('size')
+                )['done'] or 0
+
+                # Fetch the count of backlog items
+                total_items = Backlog.objects.filter(pro=project, iteration=iteration, active=True).count()
+                done_items = Backlog.objects.filter(pro=project, iteration=iteration, active=True, status="done").count()
+
+
+                total_story_points += total_points
+                completed_story_points += done_points
+            
+            
+                
+                # Update cumulative totals
+               
+                # Attach additional data to the iteration object
+                iteration.total_story_points = total_points
+                iteration.total_done_points = done_points
+                # iteration_data.append({
+                #     "name": iteration.name,
+                #     "iteration_id": iteration.id,
+                #     "iteration_start_date": iteration.iteration_start_date,
+                #     "iteration_end_date": iteration.iteration_end_date,
+                #     "total_story_points": total_points,
+                #     "total_done_points": done_points,
+                # })
+                iteration_data.append(iteration)
+                # Add data for this iteration
+                cumulative_done_points += done_points
+                remaining_points = total_release_points - cumulative_done_points
+                actual_burndown.append(cumulative_done_points)
+                release_burndown_data.append({
+                    "name": iteration.name,
+                    "iteration_id": iteration.id,
+                    "iteration_start_date": iteration.iteration_start_date.isoformat(),
+                    "iteration_end_date": iteration.iteration_end_date.isoformat(),
+                    "remaining_points": remaining_points,  # Remaining points after this iteration
+                })
+            # Calculate ideal burndown
+            iterations_count = len(iterations)
+            ideal_burndown = [
+                total_release_points - (i * (total_release_points / iterations_count))
+                for i in range(iterations_count + 1)
+            ]
+    # Serialize the burndown data
+    logger.debug(f">>> === total_release_points: {total_release_points} === <<<")
+    logger.debug(f">>> === total_release_points: {remaining_points} === <<<")
+    logger.debug(f">>> === release_burndown_data: {release_burndown_data} === <<<")
+    # Serialize the burndown data
+    release_burndown_json = json.dumps({
+        "ideal_burndown": ideal_burndown,
+        "actual_burndown": release_burndown_data,
+    }, cls=DjangoJSONEncoder)
+                            
+    # Prepare context for rendering template            
+
+    iteration_data_json = json.dumps(
+        list(iteration_data_serialized),  # Convert QuerySet or list of objects to list of dictionaries
+        cls=DjangoJSONEncoder
+    )
     # Prepare context for rendering template
     context = {
         'parent_page': '___PARENTPAGE___',
@@ -782,10 +895,20 @@ def view_project_metrics_release_tab(request, project_id):
         'project_id': project_id,
         'pro_id': project_id,
         
+        # Release details
+        'current_release': current_release,
+        'current_iteration': current_iteration,
+        'next_iteration': next_iteration,
+        'current_datetime': current_datetime,
+        'iteration_data': iteration_data,
+        'iteration_data_json': iteration_data_json,
+        
+        'release_burndown_json': release_burndown_json,
         
         'selected_tab': 'release',
 
     }
+    logger.debug(f"Release Burndown JSON: {release_burndown_json}")
 
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_release_tab.html"

@@ -17,16 +17,80 @@
         <div class="container-fluid">
            <h3>Project Metrics: {{project}}</h3>
            {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_declaration.html' %}
-           {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_release_tab_content.html' %}
+            
            
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Burndown data from the backend
+    const burndownData = {{ release_burndown_json|safe }};
+    const idealBurndown = burndownData.ideal_burndown; // Ideal burndown points
+    const actualBurndown = burndownData.actual_burndown; // Actual burndown data
+
+    // Extract data for the chart
+    const labels = ["Start"].concat(actualBurndown.map(item => item.name)); // Iteration names with "Start"
+    const remainingPoints = [idealBurndown[0]].concat(actualBurndown.map(item => item.remaining_points)); // Remaining story points
+
+    // Render the Release Burndown Chart
+    const ctx = document.getElementById('releaseBurndown').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Ideal Burndown',
+                    data: idealBurndown,
+                    borderColor: 'rgba(75, 192, 192, 1)', // Green line
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    //borderDash: [5, 5], // Dashed line
+                },
+                {
+                    label: 'Actual Burndown',
+                    data: remainingPoints,
+                    borderColor: 'rgba(255, 99, 132, 1)', // Red line
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { enabled: true },
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Iteration',
+                    },
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Story Points',
+                    },
+                    min: 0, // Y-axis starts at 0
+                    max: Math.max(...idealBurndown), // Y-axis maximum is the initial total release points
+                    ticks: {
+                        stepSize: Math.ceil(Math.max(...idealBurndown) / 10), // Dynamic step size
+                    },
+                },
+            },
+        },
+    });
+</script>
+
 
 {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
-
 
 {% endblock content %}
 

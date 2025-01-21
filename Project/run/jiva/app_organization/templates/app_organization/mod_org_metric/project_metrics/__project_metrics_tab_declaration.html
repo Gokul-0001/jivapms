@@ -57,22 +57,22 @@
 
 
 
-<div class="tab-content " id="projectTabsContent">
+<div class="tab-content" id="projectTabsContent">
     <div 
         {% if selected_tab == 'project_metrics' %}
-            class="tab-pane fade active"
+            class="tab-pane show active"
         {% else %}
             class="tab-pane fade"
         {% endif %}        
     
     id="project-metrics" role="tabpanel" aria-labelledby="project-metrics-tab">
     {% if selected_tab == 'project_metrics' %}
-    {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_project_metrics_tab_content.html' %}
+    {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_content.html' %}
     {% else %}{% endif %}  
        </div>
     <div 
         {% if selected_tab == 'backlog' %}
-            class="tab-pane fade active"
+            class="tab-pane show active"
         {% else %}
             class="tab-pane fade"
         {% endif %}      
@@ -83,7 +83,7 @@
     </div>
     <div 
         {% if selected_tab == 'release' %}
-            class="tab-pane fade active"
+            class="tab-pane show active"
         {% else %}
             class="tab-pane fade"
         {% endif %}      
@@ -94,11 +94,12 @@
      </div>
     <div 
     {% if selected_tab == 'iteration' %}
-        class="tab-pane fade active"
+        class="tab-pane show active"
     {% else %}
         class="tab-pane fade"
     {% endif %}      
     id="iteration" role="tabpanel" aria-labelledby="iteration-tab">
+   
     {% if selected_tab == 'iteration' %}
         {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_iteration_tab_content.html' %}
     {% else %}{% endif %} 
@@ -106,7 +107,7 @@
     <div 
     
     {% if selected_tab == 'quality' %}
-        class="tab-pane fade active"
+        class="tab-pane show active"
     {% else %}
         class="tab-pane fade"
     {% endif %}      
