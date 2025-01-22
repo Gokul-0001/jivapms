@@ -94,7 +94,7 @@ RENDER THE ITERATIONS BURNDOWN
 -->
 {% for iteration in iteration_data %}
 {% if iteration.normal_release == True %}
-{{iteration.burndown_data}}
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -242,9 +242,8 @@ RENDER THE ITERATIONS BURNDOWN
     });
   </script>
   {% else %}
-  <canvas id="minuteBurndownChart" style="width: 100%; height: 400px;"></canvas>
-  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+  
+ 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     function generateMinuteSlopeLine(data, totalMinutes) {
@@ -398,6 +397,99 @@ RENDER THE ITERATIONS BURNDOWN
 
 <!-- END OF ITERATION BURNDOWN RENDERING -->
 
+
+<!-- BEGIN ITERATION VELOCITY CHART -->
+<!-- START OF VELOCITY CHART DISPLAY -->
+{% for iteration in iteration_data %}
+<div class="iteration-velocity-container">
+   
+    
+   <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    // Get velocity chart data for all iterations
+    const velocityChartData = {{ iteration.velocity_chart_data|safe }};
+    console.log(">>> === Velocity Chart Data for Iteration {{ iteration.name }}:", velocityChartData, " === <<<");
+
+    // Find the data for the current iteration using the iteration ID
+    const currentIterationData = velocityChartData.find(data => data.id === {{ iteration.id }});
+
+    // Check if current iteration data exists
+    if (currentIterationData) {
+        console.log(">>> === Current Iteration Data:", currentIterationData, " === <<<");
+
+        // Extract data for the current iteration
+        const totalPoints = currentIterationData.total_points;
+        const donePoints = currentIterationData.done_points;
+        const totalItems = currentIterationData.total_items;
+        const doneItems = currentIterationData.done_items;
+
+        console.log("Total Points:", totalPoints);
+        console.log("Done Points:", donePoints);
+        console.log("Total Items:", totalItems);
+        console.log("Done Items:", doneItems);
+
+        // Chart configuration
+        const ctx = document.getElementById("itr_vc_{{ iteration.id }}").getContext("2d");
+        const data = {
+            labels: ['Story Points', 'Items'], // Metrics categories
+            datasets: [
+                {
+                    label: 'Total',
+                    data: [totalPoints, totalItems], // Total points and items
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                },
+                {
+                    label: 'Done',
+                    data: [donePoints, doneItems], // Done points and items
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)', // Green
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                },
+            ],
+        };
+
+        const options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Count',
+                    },
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Metrics',
+                    },
+                },
+            },
+        };
+
+        // Render the chart
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options,
+        });
+    } else {
+        console.error("No data found for iteration ID:", {{ iteration.id }});
+    }
+});
+
+   </script>
+</div>
+{% endfor %}
+<!-- END OF VELOCITY CHART DISPLAY -->
 
 
 

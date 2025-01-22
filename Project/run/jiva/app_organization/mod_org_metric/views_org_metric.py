@@ -788,7 +788,7 @@ def view_project_metrics_release_tab(request, project_id):
     cumulative_done_points = 0  # Tracks cumulative points completed across iterations
     ideal_burndown = []  # Ideal burndown data
     actual_burndown = []  # Actual burndown data
-    
+    velocity_chart_data = []  # Velocity chart data
     
     # Prepare context for rendering template
     if project.project_iteration:
@@ -830,7 +830,7 @@ def view_project_metrics_release_tab(request, project_id):
 
                 # Fetch the count of backlog items
                 total_items = Backlog.objects.filter(pro=project, iteration=iteration, active=True).count()
-                done_items = Backlog.objects.filter(pro=project, iteration=iteration, active=True, status="done").count()
+                done_items = Backlog.objects.filter(pro=project, iteration=iteration, active=True, status="Done").count()
                 total_story_points += total_points
                 completed_story_points += done_points                   
                 
@@ -839,7 +839,15 @@ def view_project_metrics_release_tab(request, project_id):
                 # Attach additional data to the iteration object
                 iteration.total_story_points = total_points
                 iteration.total_done_points = done_points
-               
+
+                velocity_chart_data.append({
+                    'name': iteration.name,
+                    "id": iteration.id,
+                    'total_points': total_points,
+                    'done_points': done_points,
+                    'total_items': total_items,
+                    'done_items': done_items,
+                })
                
                 #
                 # Preparing the iteration burndown for each iteration
@@ -869,7 +877,7 @@ def view_project_metrics_release_tab(request, project_id):
                     for i in range(days_range):
                         itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
                         
-                    # Filter backlog items for the current iteration
+                        # Filter backlog items for the current iteration
                         backlog_items = Backlog.objects.filter(
                             pro=project, 
                             active=True, 
@@ -896,6 +904,9 @@ def view_project_metrics_release_tab(request, project_id):
                 # Log the complete burndown data
                 iteration.burndown_data = burndown_data              
                 iteration.normal_release = normal_release
+                
+                # Velocity chart
+                iteration.velocity_chart_data = velocity_chart_data
                
                 iteration_data.append(iteration)
                 # Add data for this iteration
@@ -917,8 +928,10 @@ def view_project_metrics_release_tab(request, project_id):
             ]
     # Serialize the burndown data
     logger.debug(f">>> === total_release_points: {total_release_points} === <<<")
-    logger.debug(f">>> === total_release_points: {remaining_points} === <<<")
+    logger.debug(f">>> === remaining points : {remaining_points} === <<<")
     logger.debug(f">>> === release_burndown_data: {release_burndown_data} === <<<")
+    
+    logger.debug(f">>> === velocity chart data : {velocity_chart_data} === <<<")
     # Serialize the burndown data
     release_burndown_json = json.dumps({
         "ideal_burndown": ideal_burndown,

@@ -125,7 +125,21 @@
         </div>
     </div>
     <!-- div row for the velocity charts -->
-
+    <div class="row">
+        <div class="col col-md-12">
+           <table border="1">
+            <tr>
+                {% if current_release != None %}
+                {% for iteration in iteration_data %}
+                    <td>
+                        <canvas id="itr_vc_{{iteration.id}}" width="300" height="250" style=" border: 1px solid red;"></canvas>
+                    </td>
+                {% endfor %}
+                {% endif %}
+            </tr>
+           </table>
+        </div>
+    </div>
 
 <!-- main div -->
 </div>
