@@ -65,6 +65,7 @@
                     </td>
                 </tr>
                 </thead>
+                {% if current_release != None %}
                 {% for iteration in iteration_data %}
                 <tr 
                 {% if iteration.id == current_iteration.id %}
@@ -91,12 +92,15 @@
                     </td>
                 </tr>
                 {% endfor %}
+                {% endif %}
             </table>
         </div>
         <div class="col col-md-6">
             <!-- Release Burndown chart -->
              <b>Release Burn-down chart</b>
+             {% if current_release != None %}
              <canvas id="releaseBurndown" width="300" height="200" style=" border: 1px solid red;"></canvas>
+             {% endif %}
         </div>
     </div>
 

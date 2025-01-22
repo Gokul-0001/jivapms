@@ -22,7 +22,7 @@
         </div>
     </div>
 </div>
-
+{% if current_release != None %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Burndown data from the backend
@@ -89,7 +89,7 @@
     });
 </script>
 
-
+{% endif %}
 {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
 
 {% endblock content %}
