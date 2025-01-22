@@ -831,26 +831,72 @@ def view_project_metrics_release_tab(request, project_id):
                 # Fetch the count of backlog items
                 total_items = Backlog.objects.filter(pro=project, iteration=iteration, active=True).count()
                 done_items = Backlog.objects.filter(pro=project, iteration=iteration, active=True, status="done").count()
-
-
                 total_story_points += total_points
-                completed_story_points += done_points
-            
-            
+                completed_story_points += done_points                   
                 
                 # Update cumulative totals
                
                 # Attach additional data to the iteration object
                 iteration.total_story_points = total_points
                 iteration.total_done_points = done_points
-                # iteration_data.append({
-                #     "name": iteration.name,
-                #     "iteration_id": iteration.id,
-                #     "iteration_start_date": iteration.iteration_start_date,
-                #     "iteration_end_date": iteration.iteration_end_date,
-                #     "total_story_points": total_points,
-                #     "total_done_points": done_points,
-                # })
+               
+               
+                #
+                # Preparing the iteration burndown for each iteration
+                #
+                #
+                normal_release = True
+                burndown_data = []
+                # check the current iteration length from the release
+                if iteration and release:
+                    check_iteration_length_in_mins = release.iteration_length_in_mins > 0
+                    if check_iteration_length_in_mins:
+                        normal_release = False
+                        total_minutes = release.iteration_length_in_mins
+                        burndown_data = generate_minute_based_burndown(iteration, project, total_minutes, total_points)
+                
+                # Prepare Burndown Chart Data
+                if iteration and normal_release:
+                    logger.debug(f">>> === BURNDOWNcurrent_iteration: {iteration} === <<<")
+                    iteration_start_date = iteration.iteration_start_date
+                    iteration_end_date = iteration.iteration_end_date
+                    
+                    # Create date range
+                    days_range = (iteration_end_date - iteration_start_date).days + 1
+                    
+                    current_date = now().date()
+                    
+                    for i in range(days_range):
+                        itr_date = iteration_start_date + timedelta(days=i)  # Correct usage of timedelta
+                        
+                    # Filter backlog items for the current iteration
+                        backlog_items = Backlog.objects.filter(
+                            pro=project, 
+                            active=True, 
+                            iteration=iteration,
+                            done_at__date__lte=itr_date
+                        )
+                        
+                        # Log each done_at value and current_date
+                        for item in backlog_items:
+                            logger.debug(f"CHECK Backlog ID: {item.id}, {item}, done_at: {item.done_at}, current_date: {itr_date}")
+                        
+                        # Calculate remaining story points for each date
+                        done_story_points_till_date = backlog_items.aggregate(total=Sum('size'))['total'] or 0
+                        remaining_story_points = total_points - done_story_points_till_date
+                        logger.debug(f">>> === itr_date: {itr_date} {iteration} | done_story_points_till_date: {done_story_points_till_date} | remaining_story_points: {remaining_story_points} === <<<")
+                        if itr_date.date() > current_date:
+                            remaining_story_points = ''
+                        burndown_data.append({
+                        'date': itr_date.strftime('%Y-%m-%d'),
+                        'remaining_story_points': remaining_story_points
+                        })
+               
+               
+                # Log the complete burndown data
+                iteration.burndown_data = burndown_data              
+                iteration.normal_release = normal_release
+               
                 iteration_data.append(iteration)
                 # Add data for this iteration
                 cumulative_done_points += done_points
@@ -885,6 +931,7 @@ def view_project_metrics_release_tab(request, project_id):
         list(iteration_data_serialized),  # Convert QuerySet or list of objects to list of dictionaries
         cls=DjangoJSONEncoder
     )
+    
     # Prepare context for rendering template
     context = {
         'parent_page': '___PARENTPAGE___',

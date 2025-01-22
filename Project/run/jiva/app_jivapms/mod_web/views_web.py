@@ -494,25 +494,29 @@ from datetime import time
 from django.shortcuts import get_object_or_404
 
 def get_project_release_and_iteration_details(project_id):
+    project = None
+    try:
+        # Fetch the project
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return {"error": "Invalid project ID"}
+    
     details = { "project_id": project_id }
     current_iteration = None
     next_iteration = None
     # Add results to the details dictionary
+    details["current_release"] = None
     details["current_iteration"] = current_iteration
     details["next_iteration"] = next_iteration
-    check_release_exists = OrgRelease.objects.filter(project_id=project_id, active=True).exists()
-    
+    check_release_exists = OrgRelease.objects.filter(id=project.project_release.id, active=True).exists()
+    logger.debug(f">>> === Check release exists: {check_release_exists} === <<<")
     if not check_release_exists:
         return details    
     
     ### BEGIN THE PROCESSING FOR RELEASE AND ITERATION ###
     
     
-    try:
-        # Fetch the project
-        project = Project.objects.get(id=project_id)
-    except Project.DoesNotExist:
-        return {"error": "Invalid project ID"}
+    
 
     current_datetime = now().replace(microsecond=0)
     details = {
@@ -581,6 +585,7 @@ def get_project_release_and_iteration_details(project_id):
                 break
 
         # Add results to the details dictionary
+        details["current_release"] = release
         details["current_iteration"] = current_iteration
         details["next_iteration"] = next_iteration
     

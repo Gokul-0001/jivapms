@@ -99,9 +99,33 @@
             <!-- Release Burndown chart -->
              <b>Release Burn-down chart</b>
              {% if current_release != None %}
-             <canvas id="releaseBurndown" width="300" height="200" style=" border: 1px solid red;"></canvas>
+             <canvas id="releaseBurndown" width="300" height="100" style=" border: 1px solid red;"></canvas>
              {% endif %}
         </div>
     </div>
 
+    <!-- div row for the iteration charts -->
+    <div class="row">
+        <div class="col col-md-12">
+            <table>
+                <!-- divide the no of iterations with the width of the td and render the charts within that -->
+                {% if current_release != None %}
+                
+                <tr>
+                    {% for iteration in iteration_data %}
+                    <td>
+                        <canvas id="itr_bd_{{iteration.id}}" width="300" height="250" style=" border: 1px solid red;"></canvas>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                {% endif %}
+               
+            </table>
+        </div>
+    </div>
+    <!-- div row for the velocity charts -->
+
+
+<!-- main div -->
 </div>
