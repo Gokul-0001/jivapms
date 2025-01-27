@@ -44,6 +44,18 @@
         
         id="iteration-tab" data-bs-toggle="tab" href="#iteration" role="tab" aria-controls="iteration" aria-selected="false">Iteration</a>
     </li>
+
+      <!-- Flow -->
+      <li class="nav-item">
+        <a 
+            {% if selected_tab == 'flow' %}
+                class="nav-link active"
+            {% else %}
+                class="nav-link"
+            {% endif %}        
+        id="flow-tab" data-bs-toggle="tab" href="#flow" role="tab" aria-controls="flow" aria-selected="false">Flow</a>
+    </li>
+    
     <li class="nav-item">
         <a 
             {% if selected_tab == 'quality' %}
@@ -53,6 +65,17 @@
             {% endif %}        
         id="quality-tab" data-bs-toggle="tab" href="#quality" role="tab" aria-controls="quality" aria-selected="false">Quality</a>
     </li>
+  
+
+    <!-- Value -->
+    <li class="nav-item">
+        <a 
+            {% if selected_tab == 'value' %}
+                class="nav-link active"
+            {% else %}
+                class="nav-link"
+            {% endif %}        
+        id="value-tab" data-bs-toggle="tab" href="#value" role="tab" aria-controls="value" aria-selected="false">Value</a>
 </ul>
 
 
@@ -104,6 +127,8 @@
         {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_iteration_tab_content.html' %}
     {% else %}{% endif %} 
     </div>
+
+
     <div 
     
     {% if selected_tab == 'quality' %}
@@ -119,4 +144,29 @@
         
     {% endif %}      
     </div>
-</div>
+
+    <!-- Flow -->
+    <div 
+    {% if selected_tab == 'flow' %}
+        class="tab-pane show active"
+    {% else %}
+        class="tab-pane fade"
+    {% endif %}
+    id="flow" role="tabpanel" aria-labelledby="flow-tab">
+    {% if selected_tab == 'flow' %}
+    {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_flow_tab_content.html' %}
+    {% else %}{% endif %}
+    </div>
+    
+    <!-- Value -->    
+    <div 
+        {% if selected_tab == 'value' %}
+            class="tab-pane show active"
+        {% else %}
+            class="tab-pane fade"
+        {% endif %}
+    id="value" role="tabpanel" aria-labelledby="value-tab">
+    {% if selected_tab == 'value' %}
+    {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_value_tab_content.html' %}
+    {% else %}{% endif %}
+    </div>

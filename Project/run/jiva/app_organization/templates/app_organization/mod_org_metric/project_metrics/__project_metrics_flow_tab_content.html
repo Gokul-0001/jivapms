@@ -1,0 +1,125 @@
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+<style>
+    .iteration_current_class {
+    background-color: #ffeb3b; /* Highlight color, adjust as needed */
+    color: #000; /* Text color for contrast */
+    font-weight: bold; /* Make the text bold for emphasis */
+    border: 1px solid #fbc02d; /* Optional: Add a border to further highlight */
+}
+
+.table {
+    font-size: 12px;
+}
+</style>
+<b>FLOW TAB</b>
+<ul>
+    <li>Release Start and End Date is the scope of the flow</li>
+    <li>Release CFD</li>
+    <li>Iteration CFD</li>
+    <li>Summary/Insights</li>
+</ul>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-md-12">
+            <table>
+                <tr>
+                    <td>
+                        <b>Release:</b>
+                        &nbsp;
+                        {{current_release}}
+                        &nbsp;
+                        &nbsp;
+                    </td>
+                    <td>
+                        <b>Start Date:</b>
+                        &nbsp;
+                        &nbsp;
+                    </td>
+                    <td>
+                        {{current_release.release_start_date}}
+                        &nbsp;&nbsp;
+                    </td>
+                    <td>
+                        <b>End Date:</b>
+                        &nbsp;
+                        &nbsp;
+                    <td>
+                        {{current_release.release_end_date}}
+                        &nbsp;&nbsp;
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
+     <!-- Release Iteration Details and Release Burndown -->
+     <div class="row">
+        <div class="col col-md-6">
+            <table class="table">
+                <thead>
+                <tr>
+                    <td width="1%">
+                        <b>#</b>
+                    </td>
+                    <td width="10%">
+                        <b>Iteration</b>
+                    </td>
+                    <td width="">
+                        <b>Start Date</b>
+                    </td>
+                    <td width="">
+                        <b>End Date</b>
+                    </td>
+                    <td width="">
+                        <b>Total Story Points</b>
+                    </td>
+                    <td width="">
+                        <b> Done Points</b>
+                    </td>
+                </tr>
+                </thead>
+                {% if current_release != None %}
+                {% for iteration in iteration_data %}
+                <tr 
+                {% if iteration.id == current_iteration.id %}
+                class="iteration_current_class"
+                {% endif %}
+                >
+                    <td width="1%">
+                        {{forloop.counter}} 
+                    </td>
+                    <td width="10%">
+                        {{iteration.name}}
+                    </td>
+                    <td width="">
+                        {{iteration.iteration_start_date}}
+                    </td>
+                    <td width="">
+                        {{iteration.iteration_end_date}}
+                    </td>
+                    <td width="">
+                        {{iteration.total_story_points}}
+                    </td>
+                    <td width="">
+                        {{iteration.total_done_points}}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+        </div>
+
+
+        <div class="row">
+            <div class="col col-md-6">
+                <canvas id="cfdChart" width="600" height="400"></canvas>
+            </div>
+        </div>
+</div>

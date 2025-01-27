@@ -73,3 +73,29 @@
         });
     });
 </script>
+
+<!-- Flow -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flowTab = document.getElementById('flow-tab');
+
+        flowTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const flowUrl = "{% url 'view_project_metrics_flow_tab' project.id %}";
+            window.location.href = flowUrl;
+        });
+    });
+</script>
+
+<!-- Value -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const valueTab = document.getElementById('value-tab');
+
+        valueTab.addEventListener('click', function () {
+            // Redirect to the new page when the iteration tab is clicked
+            const valueUrl = "{% url 'view_project_metrics_value_tab' project.id %}";
+            window.location.href = valueUrl;
+        });
+    });
+</script>

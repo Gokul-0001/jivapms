@@ -1,0 +1,126 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>Project Metrics: {{project}}</h3>
+           <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+               <li class="nav-item">
+                   <a class="nav-link active" id="backlog-tab" data-bs-toggle="tab" href="#backlog" role="tab" aria-controls="backlog" aria-selected="true">Backlog</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="iteration-tab" data-bs-toggle="tab" href="#iteration" role="tab" aria-controls="iteration" aria-selected="false">Iteration</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="quality-tab" data-bs-toggle="tab" href="#quality" role="tab" aria-controls="quality" aria-selected="false">Quality</a>
+               </li>
+           </ul>
+
+           <div class="tab-content mt-3" id="projectTabsContent">
+               <div class="tab-pane fade show active" id="backlog" role="tabpanel" aria-labelledby="backlog-tab">
+                   <div class="d-flex align-items-start">
+                       <div>
+                           <h5>Backlog and Cumulative Data</h5>
+                           <canvas id="backlogChart" style="width: 400px; height: 300px;"></canvas>
+                       </div>
+                   </div>
+                   <div class="d-flex align-items-start mt-4">
+                       <div>
+                           <h5>Cumulative Flow Diagram (CFD)</h5>
+                           <canvas id="cfdChart" style="width: 400px; height: 300px;"></canvas>
+                       </div>
+                   </div>
+               </div>
+               <div class="tab-pane fade" id="iteration" role="tabpanel" aria-labelledby="iteration-tab">
+                   <p>Iteration content goes here...</p>
+               </div>
+               <div class="tab-pane fade" id="quality" role="tabpanel" aria-labelledby="quality-tab">
+                   <p>Quality content goes here...</p>
+               </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ labels|safe }};
+    const data = {{ data|safe }};
+    const cumulativeData = {{ cumulative_data|safe }};
+    const toDoData = {{ to_do_data|safe }};
+    const inProgressData = {{ in_progress_data|safe }};
+    const doneData = {{ done_data|safe }};
+
+    const ctx = document.getElementById('backlogChart').getContext('2d');
+    const cfdCtx = document.getElementById('cfdChart').getContext('2d');
+
+    // Backlog Chart
+    let backlogChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Daily Backlog Items',
+                    data: data,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Cumulative Backlog Items',
+                    data: cumulativeData,
+                    borderColor: 'rgba(192, 75, 75, 1)',
+                    backgroundColor: 'rgba(192, 75, 75, 0.2)',
+                    borderWidth: 1,
+                    fill: true
+                }
+            ]
+        },
+        options: { responsive: true }
+    });
+
+    // CFD Chart
+    let cfdChart = new Chart(cfdCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'To Do',
+                    data: toDoData,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true
+                },
+                {
+                    label: 'In Progress',
+                    data: inProgressData,
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    fill: true
+                },
+                {
+                    label: 'Done',
+                    data: doneData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true
+                }
+            ]
+        },
+        options: { responsive: true }
+    });
+</script>
+{% endblock content %}

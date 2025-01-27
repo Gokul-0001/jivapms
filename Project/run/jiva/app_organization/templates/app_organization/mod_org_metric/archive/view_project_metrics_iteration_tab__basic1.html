@@ -1,0 +1,76 @@
+
+{% block content %}
+<style>
+    /* Base styling for all badges */
+.count-badge {
+    display: inline-block;
+    padding: 0.5em 1em;
+    border-radius: 20px; /* Makes the badge rounded */
+    font-size: 0.875em;
+    font-weight: bold;
+    color: white; /* Default text color */
+    margin-right: 0.5em;
+    text-align: center;
+    min-width: 40px; /* Ensures consistent size */
+}
+
+/* Specific colors for each type */
+.count-badge.backlog {
+    background-color: #6c757d; /* Gray */
+}
+
+.count-badge.todo {
+    background-color: #007bff; /* Blue */
+}
+
+.count-badge.wip {
+    background-color: #ffc107; /* Yellow */
+    color: black; /* Text color for better contrast */
+}
+
+.count-badge.done {
+    background-color: #28a745; /* Green */
+}
+
+</style>
+<h2>ITERATION TAB</h2>
+{{project}}
+{{project.id}}
+{% if release_mismatch_flag %}
+    <p>The current date/time is not matching with the Project mapped Release/Iteartions: {{project.project_release}}</p>
+    <b>Solution:</b>
+    <p>Set the Project with the Release from the Backlog/Release Planning <a href="{% url 'view_iteration_kanban' org_id project.id %}">here</a></p>
+{% else %}
+    <p>Current Mapped: Release  {{current_release}} and its active iteration {{current_iteration}} Count: {{iteration_backlog_items_count}}</p>
+    <table class="table table-bordered" width="40%">
+        <tr>
+            <th colspan="2">
+                <b>Iteration Goal: </b>
+                {{project.project_iteration_goal}}
+            </th>
+            <th width="5%">
+                <span class="count-badge backlog">{{ total_story_points }}</span>
+                <span class="count-badge todo">{{ todo_story_points }}</span>
+                <span class="count-badge wip">{{ wip_story_points }}</span>
+                <span class="count-badge done">{{ done_story_points }}</span>
+            </th>
+        </tr>
+        <tr>
+            <th width="1%">#</th>
+            <th width="10%">{{project}} Backlog</th>
+            <th width="10%">State</th>
+            <th width="3%">Size</th>
+        </tr>
+        {% for item in iteration_backlog_items %}
+            <tr>
+                <td width="1%">{{forloop.counter}}</td>
+                <td width="10%">{{item}}</td>
+                <td width="10%">{{item.status}}</td>
+                <td width="5%">{{item.size}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+
+{% endblock %}

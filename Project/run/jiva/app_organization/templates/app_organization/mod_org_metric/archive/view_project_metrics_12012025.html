@@ -1,0 +1,248 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>Project Metrics: {{project}}</h3>
+           <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+               <li class="nav-item">
+                   <a class="nav-link active" id="backlog-tab" data-bs-toggle="tab" href="#backlog" role="tab" aria-controls="backlog" aria-selected="true">Backlog</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="iteration-tab" data-bs-toggle="tab" href="#iteration" role="tab" aria-controls="iteration" aria-selected="false">Iteration</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="quality-tab" data-bs-toggle="tab" href="#quality" role="tab" aria-controls="quality" aria-selected="false">Quality</a>
+               </li>
+           </ul>
+
+           <div class="tab-content mt-3" id="projectTabsContent">
+               <div class="tab-pane fade show active" id="backlog" role="tabpanel" aria-labelledby="backlog-tab">
+                   <div class="d-flex align-items-start">
+                       <div>
+                           <h5>Backlog and Cumulative Data</h5>
+                           <canvas id="backlogChart" style="width: 400px; height: 300px;"></canvas>
+                       </div>
+                   </div>
+                   <div class="d-flex align-items-start mt-4">
+                       <div>
+                           <h5>Cumulative Flow Diagram (CFD)</h5>
+                           <canvas id="cfdChart" style="width: 400px; height: 300px;"></canvas>
+                       </div>
+                   </div>
+               </div>
+               <div class="tab-pane fade" id="iteration" role="tabpanel" aria-labelledby="iteration-tab">
+                   <p>Iteration content goes here...</p>
+               </div>
+               <div class="tab-pane fade" id="quality" role="tabpanel" aria-labelledby="quality-tab">
+                   <p>Quality content goes here...</p>
+               </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const backlogCtx = document.getElementById('backlogChart').getContext('2d');
+    const backlogChart = new Chart(backlogCtx, {
+        type: 'line',
+        data: {
+            labels: ["05-01-2025", "06-01-2025", "07-01-2025", "08-01-2025", "09-01-2025", "10-01-2025", "11-01-2025"], // Dates
+            datasets: [
+                {
+                    label: 'Backlog',
+                    data: [10, 15, 19, 22, 26, 28, 30],
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                    fill: true,
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    enabled: true
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Backlog Count'
+                    },
+                    beginAtZero: true
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            }
+        }
+    });
+</script>
+
+<script>
+    const ctx = document.getElementById('cfdChart').getContext('2d');
+    const cfdChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["05-01-2025", "06-01-2025", "07-01-2025", "08-01-2025", "09-01-2025", "10-01-2025", "11-01-2025"], // Dates
+                datasets: [
+                    {
+                        label: 'Backlog',
+                        data: [10, 15, 19, 22, 26, 28, 30],
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0, 0, 255, 0.4)',
+                        fill: true,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'To Do',
+                        data: [2, 1, 2, 1, 2, 3, 4],
+                        borderColor: 'orange',
+                        backgroundColor: 'rgba(255, 165, 0, 0.4)',
+                        fill: true,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'WIP',
+                        data: [0, 1, 2, 1, 2, 2, 2],
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0, 128, 0, 0.4)',
+                        fill: true,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Done',
+                        data: [0, 0, 2, 4, 5, 7, 8],
+                        borderColor: 'purple',
+                        backgroundColor: 'rgba(128, 0, 128, 0.4)',
+                        fill: true,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Count'
+                        },
+                        stacked: true, // Stacked area effect
+                        beginAtZero: true
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+</script>
+
+
+
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const iterationTab = document.getElementById('iteration-tab');
+    
+        iterationTab.addEventListener('click', function () {
+            const iterationContent = document.getElementById('iteration');
+            if (!iterationContent.getAttribute('data-loaded')) {
+                fetch("{% url 'view_project_metrics_iteration_tab' project.id %}")
+                    .then(response => response.text()) // Since the response is HTML, use .text()
+                    .then(data => {
+                        iterationContent.innerHTML = data; // Insert the fetched HTML into the div
+                        iterationContent.setAttribute('data-loaded', 'true'); // Prevent multiple loads
+                    })
+                    .catch(error => console.error('Error loading iteration content:', error));
+            }
+        });
+    });
+</script> -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const iterationTab = document.getElementById('iteration-tab');
+
+    iterationTab.addEventListener('click', function () {
+        const iterationContent = document.getElementById('iteration');
+        iterationContent.innerHTML = '<p>Loading...</p>'; // Show a loading message
+
+        fetch("{% url 'view_project_metrics_iteration_tab' project.id %}")
+            .then(response => response.text()) // Since the response is HTML, use .text()
+            .then(data => {
+                iterationContent.innerHTML = data; // Insert the fetched HTML into the div
+            })
+            .catch(error => {
+                console.error('Error loading iteration content:', error);
+                iterationContent.innerHTML = '<p>Error loading content.</p>'; // Show an error message
+            });
+    });
+});
+
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const qualityTab = document.getElementById('quality-tab');
+
+    qualityTab.addEventListener('click', function () {
+        const qualityContent = document.getElementById('quality');
+
+        // Always fetch fresh content for the quality tab
+        qualityContent.innerHTML = '<p>Loading...</p>'; // Optional: Display a loading message
+
+        fetch("{% url 'view_project_metrics_quality_tab' project.id %}")
+            .then(response => response.text()) // Since the response is HTML, use .text()
+            .then(data => {
+                qualityContent.innerHTML = data; // Insert the fetched HTML into the div
+            })
+            .catch(error => {
+                console.error('Error loading quality content:', error);
+                qualityContent.innerHTML = '<p>Error loading content.</p>'; // Show an error message
+            });
+    });
+});
+
+</script>
+    
+{% endblock content %}

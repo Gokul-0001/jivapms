@@ -1175,14 +1175,6 @@ def view_project_metrics_flow_tab(request, project_id):
                 formatted_transition_time = dt.transition_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
                 formatted_rel_datetime = rel_datetime.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
                 logger.debug(f">>> === DAILY TRANSITIONS: {dt.transition_time} {formatted_transition_time} {formatted_rel_datetime}=== <<<")
-                if dt.to_state.name == 'ToDo' and dt.transition_time.astimezone(tz) <= rel_datetime.astimezone(tz):
-                    todo_count += 1
-                if dt.to_state.name == 'WIP' and dt.transition_time.astimezone(tz) <= rel_datetime.astimezone(tz): 
-                    wip_count += 1
-                if dt.to_state.name == 'Done' and dt.transition_time.astimezone(tz) <= rel_datetime.astimezone(tz):
-                    done_count += 1
-                
-                    
             # Update cumulative counts
             cumulative_todo += todo_count
             cumulative_wip += wip_count

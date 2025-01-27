@@ -60,7 +60,11 @@ org_id
                                                 <select name="project" id="project_id">
                                                     <option value="">-- Select the Project --</option>
                                                     {% for project in projects %}
-                                                        <option value="{{ project.id }}">{{ project.name }}</option>
+                                                        <option value="{{ project.id }}"
+                                                            {% if project.id == project.id %}
+                                                                selected
+                                                            {% endif %}
+                                                        >{{ project.name }}</option>
                                                     {% endfor %}
                                                 </select>
                                                 &nbsp;&nbsp;

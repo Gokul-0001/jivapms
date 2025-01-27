@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kanban CFD</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="cfdChart" width="800" height="400"></canvas>
+    <script>
+        // Data for CFD
+        const cfdData = {
+    labels: ["2025-01-20", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24"],
+    datasets: [
+        {
+            label: "Backlog",
+            data: [50, 55, 60, 65, 70], // Cumulative count of items in Backlog
+            fill: true,
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgba(255, 99, 132, 1)"
+        },
+        {
+            label: "ToDo",
+            data: [30, 35, 40, 45, 50], // Cumulative count of items in ToDo
+            fill: true,
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgba(54, 162, 235, 1)"
+        },
+        {
+            label: "WIP",
+            data: [10, 15, 20, 25, 30], // Cumulative count of items in WIP
+            fill: true,
+            backgroundColor: "rgba(255, 206, 86, 0.2)",
+            borderColor: "rgba(255, 206, 86, 1)"
+        },
+        {
+            label: "Done",
+            data: [5, 10, 20, 30, 40], // Cumulative count of items in Done
+            fill: true,
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            borderColor: "rgba(75, 192, 192, 1)"
+        }
+    ]
+};
+
+
+        // CFD Chart Configuration
+        const config = {
+            type: 'line',
+            data: cfdData,
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Cumulative Flow Diagram (Kanban CFD)'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Number of Items'
+                        },
+                        stacked: true
+                    }
+                }
+            }
+        };
+
+        // Render Chart
+        const cfdChart = new Chart(
+            document.getElementById('cfdChart'),
+            config
+        );
+    </script>
+</body>
+</html>

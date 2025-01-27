@@ -24,4 +24,10 @@ urlpatterns = [
          name='view_project_metrics_quality_tab'),
     path('view_project_metrics_release_tab/<int:project_id>/', views_org_metric.view_project_metrics_release_tab, 
          name='view_project_metrics_release_tab'),
+    
+    path('view_project_metrics_flow_tab/<int:project_id>/', views_org_metric.view_project_metrics_flow_tab, 
+         name='view_project_metrics_flow_tab'),
+    
+    path('view_project_metrics_value_tab/<int:project_id>/', views_org_metric.view_project_metrics_value_tab, 
+         name='view_project_metrics_value_tab'),
 ]
