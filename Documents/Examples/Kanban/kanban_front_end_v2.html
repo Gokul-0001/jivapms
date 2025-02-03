@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Kanban Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .kanban-board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            justify-content: center;
+        }
+
+        .column {
+            background-color: #e2e2e2;
+            border-radius: 8px;
+            padding: 10px;
+            flex: 1 1 200px; /* Flex-grow, flex-shrink, flex-basis */
+            max-width: 300px;
+            min-width: 200px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .column h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .card {
+            background-color: #fff3a3;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: grab;
+            transition: transform 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .card:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .kanban-board {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .column {
+                width: 90%;
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .column h2 {
+                font-size: 1rem;
+            }
+
+            .card {
+                font-size: 0.8rem;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="kanban-board">
+        <div class="column" id="column1">
+            <h2>To Do</h2>
+            <div class="card" draggable="true">Task 1</div>
+            <div class="card" draggable="true">Task 2</div>
+        </div>
+        <div class="column" id="column2">
+            <h2>In Progress</h2>
+            <div class="card" draggable="true">Task 3</div>
+        </div>
+        <div class="column" id="column3">
+            <h2>Review</h2>
+            <div class="card" draggable="true">Task 4</div>
+        </div>
+        <div class="column" id="column4">
+            <h2>Testing</h2>
+            <div class="card" draggable="true">Task 5</div>
+        </div>
+        <div class="column" id="column5">
+            <h2>Done</h2>
+            <div class="card" draggable="true">Task 6</div>
+        </div>
+        <div class="column" id="column6">
+            <h2>Backlog</h2>
+            <div class="card" draggable="true">Task 7</div>
+        </div>
+        <div class="column" id="column7">
+            <h2>Archive</h2>
+            <div class="card" draggable="true">Task 8</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const cards = document.querySelectorAll('.card');
+            const columns = document.querySelectorAll('.column');
+
+            let dragCard = null;
+
+            cards.forEach(card => {
+                card.addEventListener('dragstart', dragStart);
+                card.addEventListener('dragend', dragEnd);
+            });
+
+            columns.forEach(column => {
+                column.addEventListener('dragover', dragOver);
+                column.addEventListener('dragenter', dragEnter);
+                column.addEventListener('dragleave', dragLeave);
+                column.addEventListener('drop', dragDrop);
+            });
+
+            function dragStart() {
+                dragCard = this;
+                setTimeout(() => {
+                    this.style.display = 'none';
+                }, 0);
+            }
+
+            function dragEnd() {
+                dragCard = null;
+                setTimeout(() => {
+                    this.style.display = 'block';
+                }, 0);
+            }
+
+            function dragOver(e) {
+                e.preventDefault();
+            }
+
+            function dragEnter(e) {
+                e.preventDefault();
+                this.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+            }
+
+            function dragLeave() {
+                this.style.backgroundColor = '#e2e2e2';
+            }
+
+            function dragDrop() {
+                this.style.backgroundColor = '#e2e2e2';
+                this.appendChild(dragCard);
+            }
+        });
+    </script>
+</body>
+</html>

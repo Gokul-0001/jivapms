@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Kanban Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .kanban-column {
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kanban-header {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .kanban-items {
+            flex-grow: 1;
+            padding: 10px;
+            min-height: 200px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+        }
+
+        .kanban-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: grab;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #007bff;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .kanban-board {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center;">Responsive Kanban Board</h2>
+
+    <div class="kanban-board">
+        <div class="kanban-column" data-status="backlog">
+            <div class="kanban-header">Backlog</div>
+            <div class="kanban-items"></div>
+        </div>
+        <div class="kanban-column" data-status="todo">
+            <div class="kanban-header">To Do</div>
+            <div class="kanban-items"></div>
+        </div>
+        <div class="kanban-column" data-status="inprogress">
+            <div class="kanban-header">In Progress</div>
+            <div class="kanban-items"></div>
+        </div>
+        <div class="kanban-column" data-status="review">
+            <div class="kanban-header">Review</div>
+            <div class="kanban-items"></div>
+        </div>
+        <div class="kanban-column" data-status="qa">
+            <div class="kanban-header">QA</div>
+            <div class="kanban-items"></div>
+        </div>
+        <div class="kanban-column" data-status="blocked">
+            <div class="kanban-header">Blocked</div>
+            <div class="kanban-items"></div>
+        </div>
+        <div class="kanban-column" data-status="done">
+            <div class="kanban-header">Done</div>
+            <div class="kanban-items"></div>
+        </div>
+        <div class="kanban-column" data-status="archived">
+            <div class="kanban-header">Archived</div>
+            <div class="kanban-items"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const kanbanColumns = document.querySelectorAll(".kanban-items");
+            let draggedItem = null;
+
+            function createTask(text) {
+                const task = document.createElement("div");
+                task.classList.add("kanban-item");
+                task.textContent = text;
+                task.setAttribute("draggable", "true");
+
+                task.addEventListener("dragstart", function () {
+                    draggedItem = this;
+                    setTimeout(() => this.classList.add("dragging"), 0);
+                });
+
+                task.addEventListener("dragend", function () {
+                    setTimeout(() => {
+                        this.classList.remove("dragging");
+                        draggedItem = null;
+                    }, 0);
+                });
+
+                return task;
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                if (draggedItem) {
+                    this.appendChild(draggedItem);
+                }
+            }
+
+            kanbanColumns.forEach(column => {
+                column.addEventListener("dragover", handleDragOver);
+                column.addEventListener("drop", handleDrop);
+            });
+
+            // Add initial tasks
+            const initialTasks = [
+                { text: "Task 1", status: "backlog" },
+                { text: "Task 2", status: "todo" },
+                { text: "Task 3", status: "inprogress" },
+                { text: "Task 4", status: "review" },
+                { text: "Task 5", status: "qa" },
+                { text: "Task 6", status: "blocked" },
+                { text: "Task 7", status: "done" },
+                { text: "Task 8", status: "archived" },
+            ];
+
+            initialTasks.forEach(task => {
+                const column = document.querySelector(`.kanban-column[data-status="${task.status}"] .kanban-items`);
+                if (column) {
+                    column.appendChild(createTask(task.text));
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
