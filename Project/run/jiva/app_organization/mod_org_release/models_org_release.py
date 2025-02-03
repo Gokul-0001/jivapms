@@ -19,7 +19,8 @@ class OrgRelease(BaseModelTrackDateImpl):
     # 23/12/2024 for roadmapping
     no_of_iterations = models.IntegerField(default=5)
     # New Predecessor Field (Multiple Dependencies)
-    predecessors = models.ManyToManyField('self', blank=True, related_name="successors")
+    predecessors = models.ManyToManyField('self', blank=True)
+    #predecessors = models.ManyToManyField('self', blank=True, related_name="successors")
     
     quarter = models.PositiveIntegerField(default=0)
     year = models.PositiveIntegerField(default=0)
