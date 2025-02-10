@@ -5,7 +5,7 @@ from app_common.mod_common.models_common import *
 from app_organization.mod_project_template.models_project_template import *
 
 class ProjectDetail(BaseModelTrackDateImpl):
-    pro = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
+    pro = models.OneToOneField('app_organization.Project', on_delete=models.CASCADE, 
                             related_name="project_details", null=True, blank=True)
     
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,

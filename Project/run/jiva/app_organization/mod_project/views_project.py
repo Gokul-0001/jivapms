@@ -480,7 +480,7 @@ def project_homepage(request, org_id, project_id):
                                                                   active=True).first()
     
     project = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)   
-    project_detail = project.project_details.first() 
+    project_detail = project.project_details if hasattr(project, 'project_details') else None
     
         
     roadmap_items = ProjectRoadmap.objects.filter(active=True)
@@ -600,7 +600,7 @@ def project_dvs(request, org_id, project_id):
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     project = get_object_or_404(Project, pk=project_id, active=True,**viewable_dict)   
-    project_detail = project.project_details.first()    
+    project_detail = project.project_details if hasattr(project, 'project_details') else None
     object = project
     
     # Get the DevValueStream Relation
