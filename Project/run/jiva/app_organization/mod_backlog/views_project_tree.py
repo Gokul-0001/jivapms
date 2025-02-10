@@ -494,7 +494,7 @@ def view_project_tree_backlog(request, pro_id):
         logger.debug(f">>> === NEXT ITERATION: {next_iteration} === <<<")
         
     ########## ADDING PROJECT TEMPLATE DETAILS ##########
-    project_detail = project.project_details.first()
+    project_detail = project.project_details if hasattr(project, 'project_details') else None
     logger.debug(f">>> === PROJECT DETAIL: {project_detail}, PROJECT_DETAILS: {project_detail.template} === <<<")
     
     
