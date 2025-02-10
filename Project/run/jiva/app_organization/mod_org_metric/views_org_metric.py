@@ -1062,15 +1062,26 @@ def view_project_metrics_flow_tab(request, project_id):
         
         release = project.project_release
         iterations = release.org_release_org_iterations.filter(active=True)   
-            
-            
-        for iteration in iterations:
-            # Fetch total story points for all backlog items in the iteration
-            backlog_items_check = Backlog.objects.filter(pro=project, iteration=iteration, active=True)
-            backlog_counts = backlog_items_check.count()
-            
-            release_backlog_items_check = Backlog.objects.filter(pro=project, release=release, active=True)
-            release_backlog_counts = release_backlog_items_check.count()
+    
+        # Fetch total story points for all backlog items in the iteration
+        backlog_items_check = Backlog.objects.filter(pro=project, iteration=current_iteration, active=True)
+        backlog_counts = backlog_items_check.count()
+        
+        release_backlog_items_check = Backlog.objects.filter(pro=project, release=current_release, active=True)
+        release_backlog_counts = release_backlog_items_check.count()
+
+        def cfd_backlog_counts(project, current_release):
+            release_backlog_items_check = Backlog.objects.filter(pro=project, release=current_release, active=True)
+            rel_backlog_counts = release_backlog_items_check.count()
+            return rel_backlog_counts
+
+        # Calculate the sum of the sizes of the items
+        total_size = release_backlog_items_check.aggregate(total_size=Sum('size'))['total_size']
+
+        # Log the results
+        logger.debug(f">>> === release_backlog_counts: {release_backlog_counts} === <<<")
+        logger.debug(f">>> === total_size of items: {total_size} === <<<")
+        for iteration in iterations:    
             
             
             # Check the short or normal iterations
@@ -1148,54 +1159,66 @@ def view_project_metrics_flow_tab(request, project_id):
     cumulative_done = 0
 
 
-    if release.release_length_in_mins > 0:
+    if current_release and release.release_length_in_mins > 0:
         logger.debug(f">>> === SHORT-TERM RELEASE {release.release_start_date}=== <<<")
         total_minutes = release.release_length_in_mins
         tz = pytz.timezone('Asia/Kolkata')
         release_start_datetime = current_release.release_start_date.astimezone(tz)
+        release_end_datetime = current_release.release_end_date.astimezone(tz)
         for minute_offset in range(total_minutes + 1):  # Include the last minute
             rel_datetime = release.release_start_date + timedelta(minutes=minute_offset)
-            #logger.debug(f">>> === rel_datetime: {rel_datetime} === <<<")
-            # Filter latest transitions up to the current date
-            #logger.debug(f">>> === TRANSACTION_TIME {latest_transitions_ids.transition_time} = rel_datetime {rel_datetime}=== <<<")
+          
             daily_transitions = latest_transitions_ids.filter(
-                transition_time__gte=release_start_datetime
+                transition_time__gte=release_start_datetime,
+                # transition_time__lte=release_end_datetime,
             )
-            logger.debug(f">>> === CHECK DAILY TRANSITIONS *** SUPER IMPORTANT ***: {daily_transitions} === <<<")
-            # # Aggregate counts for each state
-            # todo_count = daily_transitions.filter(to_state__name='ToDo').count()
-            # wip_count = daily_transitions.filter(to_state__name='WIP').count()
-            # done_count = daily_transitions.filter(to_state__name='Done').count()
-            
+            daily_transitions_count = daily_transitions.count()
+            logger.debug(f">>> === DAILY TRANSITIONS COUNT: {daily_transitions_count} === <<<")
             # Filter transitions for the specific datetime
             todo_count = 0 
             wip_count = 0
             done_count = 0
+            counter = 1
             for dt in daily_transitions:                
                 formatted_transition_time = dt.transition_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
                 formatted_rel_datetime = rel_datetime.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                logger.debug(f">>> === DAILY TRANSITIONS: {dt.transition_time} {formatted_transition_time} {formatted_rel_datetime}=== <<<")
-                if dt.to_state.name == 'ToDo' and dt.transition_time.astimezone(tz) <= rel_datetime.astimezone(tz):
-                    todo_count += 1
-                if dt.to_state.name == 'WIP' and dt.transition_time.astimezone(tz) <= rel_datetime.astimezone(tz): 
-                    wip_count += 1
-                if dt.to_state.name == 'Done' and dt.transition_time.astimezone(tz) <= rel_datetime.astimezone(tz):
-                    done_count += 1
-                
-                    
+                if dt.active:
+                    #logger.debug(f">>> === DAILY TRANSITIONS: {dt.transition_time} {formatted_transition_time} {formatted_rel_datetime}=== <<<")
+                    dt_transition_time_tz = dt.transition_time.astimezone(tz)
+                    rel_datetime_tz = rel_datetime.astimezone(tz)
+                    #logger.debug(f">>> === TESTING: DT TT: {dt_transition_time_tz} REL DT: {rel_datetime_tz} === <<<")
+                    #logger.debug(f">>> === {formatted_transition_time} {formatted_rel_datetime} === <<<")
+                    if dt.to_state.name == 'ToDo' and dt_transition_time_tz <= rel_datetime_tz :
+                        todo_count += 1
+                    if dt.to_state.name == 'WIP' and dt_transition_time_tz <= rel_datetime_tz: 
+                        wip_count += 1
+                    if dt.to_state.name == 'Done'and dt_transition_time_tz <= rel_datetime_tz   :
+                        done_count += 1
+                    counter += 1
+            logger.debug(f">>> === COUNTER: {counter} === <<<")
             # Update cumulative counts
             cumulative_todo += todo_count
             cumulative_wip += wip_count
-            cumulative_done += done_count
+            cumulative_done = done_count
+            logger.debug(f">>> === CUMULATIVE COUNTS: {todo_count} {wip_count} {done_count} === <<<")
             logger.debug(f">>> === CUMULATIVE COUNTS: {cumulative_todo} {cumulative_wip} {cumulative_done} === <<<")
+
+            # check the release backlog counts for cfd in each iteration
+            release_backlog_counts_cfd = cfd_backlog_counts(project, current_release)
+
             # Append to cumulative counts dictionary
             current_date_for_cfd = release_start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
             cumulative_counts['dates'].append(current_date_for_cfd)
-            #cumulative_counts['dates'].append(current_date.isoformat())
-            cumulative_counts['backlog_counts'].append(release_backlog_counts)
+            cumulative_counts['backlog_counts'].append(release_backlog_counts_cfd)
             cumulative_counts['todo_counts'].append(cumulative_todo)
             cumulative_counts['wip_counts'].append(cumulative_wip)
             cumulative_counts['done_counts'].append(cumulative_done)
+            # Create a random number and append to backlog counts
+            # cumulative_counts['backlog_counts'].append(2)
+            # cumulative_counts['todo_counts'].append(5)
+            # cumulative_counts['wip_counts'].append(4)
+            # cumulative_counts['done_counts'].append(10)
+            logger.debug(f">>> === LOG: {cumulative_counts['backlog_counts']} === <<<")
     else:
         logger.debug(f">>> === NORMAL RELEASE === <<<")
         while current_date <= release.release_end_date:
@@ -1230,7 +1253,11 @@ def view_project_metrics_flow_tab(request, project_id):
             cumulative_done += done_count
 
             # Append to cumulative counts dictionary
-            cumulative_counts['dates'].append(current_date)
+            if current_release:
+                release_start_datetime = current_release.release_start_date.astimezone(tz)
+                release_end_datetime = current_release.release_end_date.astimezone(tz)
+            current_date_for_cfd = release_start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+            cumulative_counts['dates'].append(current_date_for_cfd)
             cumulative_counts['backlog_counts'].append(backlog_counts)
             cumulative_counts['todo_counts'].append(cumulative_todo)
             cumulative_counts['wip_counts'].append(cumulative_wip)
@@ -1266,7 +1293,7 @@ def view_project_metrics_flow_tab(request, project_id):
         'done_counts': cfd_data['done_counts'],
 
     }
-
+    logger.debug(f">>> === BACKLOG COUNTS: {cfd_data['backlog_counts']} === <<<")
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_flow_tab.html"
     return render(request, template_file, context)

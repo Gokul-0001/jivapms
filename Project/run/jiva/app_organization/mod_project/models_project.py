@@ -35,6 +35,9 @@ class ProjectRole(BaseModelTrackImpl):
         ('NoView', 'No View'),
         # Add more roles as needed
     ]
+    project = models.ForeignKey('Project', on_delete=models.CASCADE,
+                                null=True, blank=True,
+                                related_name="project_roles")
     role_type = models.CharField(max_length=255, choices=ROLE_CHOICES, default='NoView')
     description = models.TextField(null=True, blank=True)
     
@@ -50,6 +53,7 @@ class ProjectRole(BaseModelTrackImpl):
 class ProjectAdministration(BaseModelTrackImpl):
     
     project = models.ForeignKey('Project', on_delete=models.CASCADE,
+                                null=True, blank=True,
                                 related_name="project_administrations")
     
     PROJECT_STATE_CHOICES = [
@@ -68,7 +72,7 @@ class ProjectAdministration(BaseModelTrackImpl):
     def __str__(self):
         return self.project.name
 
-
+ 
 
 
 

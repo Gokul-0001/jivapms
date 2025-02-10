@@ -291,11 +291,35 @@ def view_project_tree_backlog(request, pro_id):
     version_id = request.POST.get("version_id")
     input_release_id = None
     input_iteration_id = None
-    if version_id:
+    logger.debug(f">>> === VERSION ID: {version_id} === <<<")
+    if version_id and "|" in version_id:
         input_release_id, input_iteration_id = version_id.split("|")
     selected_version_items = request.POST.get("selected_version_items", "").split(",")
     logger.debug(f">>> === VERSION ACTION: {version_action} === <<<")   
     
+    # ################################ DEMO PROJECT ######################################### #
+    # # Get the project details
+    # if project name contains string "_SDEMO" in the end then it is a demo project
+    project_backlog_count = Backlog.objects.filter(pro=project, parent=project_backlog, active=True).count()
+    if project.name.endswith("_SDEMO") and project_backlog_count == 0:
+        story_type_id = bt_tree_name_and_id.get("User Story")
+        tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+        # create 30 stories and 30 tech tasks of various size 1,2,3,5,8,13 by random
+        TEST_CHOICES = [1, 2, 3, 5, 8, 13]
+        for i in range(30):
+            story_size = random.choice(TEST_CHOICES)
+            tech_task_size = random.choice(TEST_CHOICES)
+            story_name = f"Story {i+1} - {story_size}"
+            tech_task_name = f"Tech Task {i+1} - {tech_task_size}"
+            story = Backlog.objects.create(pro=project, name=story_name, parent=project_backlog, type_id=story_type_id, size=story_size, position=i)
+            story.save()
+            tech_task = Backlog.objects.create(pro=project, name=tech_task_name, parent=project_backlog, type_id=tech_task_type_id, size=tech_task_size, position=i)
+            tech_task.save()
+            logger.debug(f">>> === DEMO PROJECT: {story} {story.id} {tech_task} {tech_task.id} === <<<")
+    # ######################################################################################## #
+
+
+
     from app_organization.mod_org_board.models_org_board import ProjectBoardCard
     
     # WORKING PREVIOUS VERSION
@@ -475,6 +499,7 @@ def view_project_tree_backlog(request, pro_id):
     
     
     
+
     
     # send outputs (info, template,
     context = {

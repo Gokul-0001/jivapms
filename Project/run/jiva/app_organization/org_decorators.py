@@ -261,6 +261,7 @@ def org_admin_this_project_admin_or_member_of_project(view_func):
                                                              org=organization).exists()
 
         # role id
+        logger.debug(f">>> === CHECKING THE PROJECT ROLE : {PROJECT_ADMIN_ROLE_STR} === <<<")
         pa_admin_role_str = ProjectRole.objects.get(role_type=PROJECT_ADMIN_ROLE_STR).role_type
         
         # project

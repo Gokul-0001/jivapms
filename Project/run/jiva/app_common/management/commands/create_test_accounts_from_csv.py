@@ -6,6 +6,10 @@ from app_organization.mod_organization.models_organization import Organization
 from app_memberprofilerole.mod_profile.models_profile import *
 from app_memberprofilerole.mod_role.models_role import *
 from app_memberprofilerole.mod_member.models_member import Member, MemberOrganizationRole
+from app_organization.mod_project.models_project import *
+from app_jivapms.mod_app.all_view_imports import *
+from app_common.mod_app.all_view_imports import *
+from app_organization.mod_project_template.models_project_template import *
 
 class Command(BaseCommand):
     help = 'Generate test user accounts with roles and organization membership from config and CSV'
@@ -31,6 +35,33 @@ class Command(BaseCommand):
         # Create or get the organization
         organization, created = Organization.objects.get_or_create(name=organization_name)
         self.stdout.write(self.style.SUCCESS(f'Organization: {organization_name} created or already exists'))
+
+        # FEB 2025
+        # Project Roles additions
+        project_roles = ProjectRole.objects.filter(active=True)
+        if project_roles.count() == 0 :
+            # create the basic roles
+            for project_role in COMMON_PROJECT_ROLE_CONFIG.values():
+                db_project_role, created = ProjectRole.objects.get_or_create(role_type=project_role)
+                logger.debug(f">>> === CREATED PROJECT ROLE: {project_role} === <<<")
+        # Project Templates additions
+        project_templates = ProjectTemplate.objects.filter(active=True, org=organization)
+        if project_templates.count() == 0 :
+            # create the basic project templates
+            practices = {
+                'Scrum': 'Scrum as per Scrum Guide and general practices',
+                'Kanban': 'Kanban as per Lean/Kanban',
+                'Scrumban': 'Scrumban as a combination of Scrum and Kanban',
+                'Waterfall': 'Waterfall, as a sequential / adaptive lifecycle of project management',
+                'Hybrid': 'Hybrid as a combination of Agile and Waterfall',
+                'Custom': 'Custom as per organization specific practices',
+
+            }
+            for project_template in practices.keys():
+                db_project_template, created = ProjectTemplate.objects.get_or_create(org=organization, name=project_template, description=practices[project_template])
+                logger.debug(f">>> === CREATED PROJECT TEMPLATE: {project_template} === <<<")
+
+        # END FEB 2025
 
         # Initialize counters for created and existing objects
         users_created = 0
