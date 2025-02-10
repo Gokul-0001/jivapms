@@ -812,6 +812,7 @@ def view_project_metrics_release_tab(request, project_id):
     ideal_burndown = []  # Ideal burndown data
     actual_burndown = []  # Actual burndown data
     velocity_chart_data = []  # Velocity chart data
+    remaining_points = 0  # Remaining points after each iteration
     
     # Prepare context for rendering template
     if project.project_iteration:
