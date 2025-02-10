@@ -1053,6 +1053,16 @@ def view_project_metrics_flow_tab(request, project_id):
     current_iteration = None
     next_iteration = None
     normal_release = True
+    release = None
+    # Create a dictionary to store cumulative counts
+    cumulative_counts = {
+        'dates': [],
+        'backlog_counts': [],
+        'todo_counts': [],
+        'wip_counts': [],
+        'done_counts': []
+    }
+
     if project.project_release:
         current_datetime = now().replace(microsecond=0)
         details = get_project_release_and_iteration_details(project.id)
@@ -1122,42 +1132,34 @@ def view_project_metrics_flow_tab(request, project_id):
             iterations_count = len(iterations)
     
     
-    # prepare the release cfd
-    # Fetch all transitions within the date range
-    transitions = ProjectBoardStateTransition.objects.filter(
-        card__pro_id=project_id,
-        transition_time__date__gte=release.release_start_date,
-        transition_time__date__lte=release.release_end_date
-    ).annotate(
-        date=TruncDate('transition_time')  # Group by truncated date
-    )
-    logger.debug(f">>> === TRANSITIONS: {transitions} === <<<")
-    # Get the last transition per card per day
-    latest_transitions = (
-        transitions.values('card_id', 'date')  # Group by card and date
-        .annotate(latest_time=Max('transition_time'))  # Get the latest transition time for each card per day
-    )
+        # prepare the release cfd
+        # Fetch all transitions within the date range
+        transitions = ProjectBoardStateTransition.objects.filter(
+            card__pro_id=project_id,
+            transition_time__date__gte=release.release_start_date,
+            transition_time__date__lte=release.release_end_date
+        ).annotate(
+            date=TruncDate('transition_time')  # Group by truncated date
+        )
+        logger.debug(f">>> === TRANSITIONS: {transitions} === <<<")
+        # Get the last transition per card per day
+        latest_transitions = (
+            transitions.values('card_id', 'date')  # Group by card and date
+            .annotate(latest_time=Max('transition_time'))  # Get the latest transition time for each card per day
+        )
 
-    # Use the latest transitions to filter the main queryset
-    latest_transitions_ids = ProjectBoardStateTransition.objects.filter(
-        transition_time__in=[entry['latest_time'] for entry in latest_transitions]
-    )
+        # Use the latest transitions to filter the main queryset
+        latest_transitions_ids = ProjectBoardStateTransition.objects.filter(
+            transition_time__in=[entry['latest_time'] for entry in latest_transitions]
+        )
 
-    # Create a dictionary to store cumulative counts
-    cumulative_counts = {
-        'dates': [],
-        'backlog_counts': [],
-        'todo_counts': [],
-        'wip_counts': [],
-        'done_counts': []
-    }
-
-    # Iterate over each date in the range
-    current_date = release.release_start_date
-   
-    cumulative_todo = 0
-    cumulative_wip = 0
-    cumulative_done = 0
+       
+        # Iterate over each date in the range
+        current_date = release.release_start_date
+    
+        cumulative_todo = 0
+        cumulative_wip = 0
+        cumulative_done = 0
 
 
     if current_release and release.release_length_in_mins > 0:
@@ -1222,53 +1224,54 @@ def view_project_metrics_flow_tab(request, project_id):
             logger.debug(f">>> === LOG: {cumulative_counts['backlog_counts']} === <<<")
     else:
         logger.debug(f">>> === NORMAL RELEASE === <<<")
-        while current_date <= release.release_end_date:
-            # Filter latest transitions up to the current date
-            daily_transitions = latest_transitions_ids.filter(
-                transition_time__date__lte=current_date
-            )
+        if release:
+            while current_date <= release.release_end_date:
+                # Filter latest transitions up to the current date
+                daily_transitions = latest_transitions_ids.filter(
+                    transition_time__date__lte=current_date
+                )
 
-            # # Aggregate counts for each state
-            # todo_count = daily_transitions.filter(to_state__name='ToDo').count()
-            # wip_count = daily_transitions.filter(to_state__name='WIP').count()
-            # done_count = daily_transitions.filter(to_state__name='Done').count()
-            # Filter transitions for the specific date
-            todo_count = daily_transitions.filter(
-                transition_time__date=current_date,
-                to_state__name='ToDo'
-            ).count()
+                # # Aggregate counts for each state
+                # todo_count = daily_transitions.filter(to_state__name='ToDo').count()
+                # wip_count = daily_transitions.filter(to_state__name='WIP').count()
+                # done_count = daily_transitions.filter(to_state__name='Done').count()
+                # Filter transitions for the specific date
+                todo_count = daily_transitions.filter(
+                    transition_time__date=current_date,
+                    to_state__name='ToDo'
+                ).count()
 
-            wip_count = daily_transitions.filter(
-                transition_time__date=current_date,
-                to_state__name='WIP'
-            ).count()
+                wip_count = daily_transitions.filter(
+                    transition_time__date=current_date,
+                    to_state__name='WIP'
+                ).count()
 
-            done_count = daily_transitions.filter(
-                transition_time__date=current_date,
-                to_state__name='Done'
-            ).count()
+                done_count = daily_transitions.filter(
+                    transition_time__date=current_date,
+                    to_state__name='Done'
+                ).count()
 
-            # Update cumulative counts
-            cumulative_todo += todo_count
-            cumulative_wip += wip_count
-            cumulative_done += done_count
+                # Update cumulative counts
+                cumulative_todo += todo_count
+                cumulative_wip += wip_count
+                cumulative_done += done_count
 
-            # Append to cumulative counts dictionary
-            if current_release:
-                release_start_datetime = current_release.release_start_date.astimezone(tz)
-                release_end_datetime = current_release.release_end_date.astimezone(tz)
-            current_date_for_cfd = release_start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
-            cumulative_counts['dates'].append(current_date_for_cfd)
-            cumulative_counts['backlog_counts'].append(backlog_counts)
-            cumulative_counts['todo_counts'].append(cumulative_todo)
-            cumulative_counts['wip_counts'].append(cumulative_wip)
-            cumulative_counts['done_counts'].append(cumulative_done)
+                # Append to cumulative counts dictionary
+                if current_release:
+                    release_start_datetime = current_release.release_start_date.astimezone(tz)
+                    release_end_datetime = current_release.release_end_date.astimezone(tz)
+                current_date_for_cfd = release_start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+                cumulative_counts['dates'].append(current_date_for_cfd)
+                cumulative_counts['backlog_counts'].append(backlog_counts)
+                cumulative_counts['todo_counts'].append(cumulative_todo)
+                cumulative_counts['wip_counts'].append(cumulative_wip)
+                cumulative_counts['done_counts'].append(cumulative_done)
 
-            # Move to the next date
-            current_date += timedelta(days=1)
+                # Move to the next date
+                current_date += timedelta(days=1)
 
-    #logger.debug(f">>> === CUMULATIVE COUNTS: {cumulative_counts} === <<<")
-    
+            #logger.debug(f">>> === CUMULATIVE COUNTS: {cumulative_counts} === <<<")
+            
     cfd_data = cumulative_counts
     # Prepare context for rendering template
     context = {
