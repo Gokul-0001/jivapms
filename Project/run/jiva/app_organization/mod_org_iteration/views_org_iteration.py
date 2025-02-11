@@ -428,7 +428,7 @@ def view_iteration_kanban(request, org_id, project_id):
     current_iteration = None
     next_iteration = None
     iteration_message = None
-    releases = OrgRelease.objects.prefetch_related('org_release_org_iterations').order_by('release_start_date', 'position')
+    releases = OrgRelease.objects.prefetch_related('org_release_org_iterations').filter(org_id=org_id).order_by('release_start_date', 'position')
     # Prepare the include types
     
     # Send the display backlog items

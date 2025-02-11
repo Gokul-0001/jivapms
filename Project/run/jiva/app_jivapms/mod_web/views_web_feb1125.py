@@ -492,7 +492,7 @@ from app_organization.mod_org_iteration.models_org_iteration import *
 from django.utils.timezone import now
 from datetime import time
 from django.shortcuts import get_object_or_404
-# can use release_length_in_mins
+
 def get_project_release_and_iteration_details(project_id):
     logger.debug(f">>> === get_project_release_and_iteration_details: project_id={project_id} === <<<")
     project = None
@@ -515,7 +515,7 @@ def get_project_release_and_iteration_details(project_id):
         return details    
     
     ### BEGIN THE PROCESSING FOR RELEASE AND ITERATION ###
-    release = None
+
     current_datetime = now().replace(microsecond=0)
     details = {
         "project_id": project_id,
@@ -557,75 +557,30 @@ def get_project_release_and_iteration_details(project_id):
             active=True,
         ).order_by("iteration_start_date")
 
-        current_datetime = now().replace(microsecond=0)
-        current_date = current_datetime.date()  # Extract only the date component
+       
 
-        current_iteration = None
-        next_iteration = None
-        if release.release_length_in_mins == 0:
-            logger.debug(f">>> === STARTING ITERATION CHECK === <<<")
-            logger.debug(f">>> === Current date: {current_date} === <<<")
-
-            for i, iteration in enumerate(iterations):
-                iteration_start_date = iteration.iteration_start_date.date()
-                iteration_end_date = iteration.iteration_end_date.date()
-
-                logger.debug(f">>> === Checking Iteration {i + 1}: {iteration} === <<<")
-                logger.debug(f">>> === Iteration Start Date: {iteration_start_date} === <<<")
-                logger.debug(f">>> === Iteration End Date: {iteration_end_date} === <<<")
-
-                # Identify the current iteration using date comparison
-                if iteration_start_date <= current_date <= iteration_end_date:
-                    current_iteration = iteration
-                    logger.debug(f">>> === ✅ Found Current Iteration: {current_iteration} === <<<")
-
-                    # The next iteration should be the next one in the list where start_date > current_iteration end_date
-                    if i + 1 < len(iterations):
-                        next_iteration_candidate = iterations[i + 1]
-                        next_iteration_start_date = next_iteration_candidate.iteration_start_date.date()
-
-                        logger.debug(f">>> === 🔍 Checking Next Iteration Candidate: {next_iteration_candidate} === <<<")
-                        logger.debug(f">>> === Next Iteration Start Date: {next_iteration_start_date} === <<<")
-
-                        if next_iteration_start_date > iteration_end_date:
-                            next_iteration = next_iteration_candidate
-                            logger.debug(f">>> === ✅ Confirmed Next Iteration: {next_iteration} === <<<")
-                        else:
-                            logger.debug(f">>> === ⚠️ Next iteration candidate starts too early, skipping... === <<<")
-                    break  # Exit loop after finding current and next iterations
-
-            logger.debug(f">>> === FINAL SELECTION === <<<")
-            logger.debug(f">>> === Current Iteration: {current_iteration} === <<<")
-            logger.debug(f">>> === Next Iteration: {next_iteration} === <<<")
-
-        # SHORT-TERM Release
-        if release.release_length_in_mins > 0:
-            logger.debug(f">>> === STARTING SHORT-TERM RELEASE CHECK === <<<")
-            logger.debug(f">>> === Current datetime: {current_datetime} === <<<")
-            for i, iteration in enumerate(iterations):
-                # Check if iteration dates have time components
-                iteration_start_has_time = (
-                    iteration.iteration_start_date.time() != time(0, 0, 0) if iteration.iteration_start_date else False
-                )
-                iteration_end_has_time = (
-                    iteration.iteration_end_date.time() != time(0, 0, 0) if iteration.iteration_end_date else False
-                )
-                logger.debug(f"Iteration start date: {iteration.iteration_start_date} ==> {iteration_start_has_time}")
-                logger.debug(f"Iteration end date: {iteration.iteration_end_date} ==> {iteration_end_has_time}")
-                # Python date comparison for current_iteration
-                if (
-                    iteration.iteration_start_date.date() <= current_datetime.date() <= iteration.iteration_end_date.date()
-                    if not iteration_start_has_time or not iteration_end_has_time
-                    else iteration.iteration_start_date <= current_datetime <= iteration.iteration_end_date
-                ):
-                    current_iteration = iteration
-                    
-                # Identify the next_iteration
-                if current_iteration and iteration.iteration_start_date >= current_iteration.iteration_end_date:
-                    next_iteration = iteration
-                    break
+        for iteration in iterations:
+            # Check if iteration dates have time components
+            iteration_start_has_time = (
+                iteration.iteration_start_date.time() != time(0, 0, 0) if iteration.iteration_start_date else False
+            )
+            iteration_end_has_time = (
+                iteration.iteration_end_date.time() != time(0, 0, 0) if iteration.iteration_end_date else False
+            )
+            logger.debug(f"Iteration start date: {iteration.iteration_start_date} ==> {iteration_start_has_time}")
+            logger.debug(f"Iteration end date: {iteration.iteration_end_date} ==> {iteration_end_has_time}")
+            # Python date comparison for current_iteration
+            if (
+                iteration.iteration_start_date.date() <= current_datetime.date() <= iteration.iteration_end_date.date()
+                if not iteration_start_has_time or not iteration_end_has_time
+                else iteration.iteration_start_date <= current_datetime <= iteration.iteration_end_date
+            ):
+                current_iteration = iteration
                 
-
+            # Identify the next_iteration
+            if current_iteration and iteration.iteration_start_date >= current_iteration.iteration_end_date:
+                next_iteration = iteration
+                break
 
         # Add results to the details dictionary
         details["current_release"] = release
