@@ -525,11 +525,7 @@
                     </tr>
                 
                     <!-- Releases Rows -->
-                    {% if not project.project_release %}
-                    <b>Please map this project with a release</b>
-                    {% endif %}
                     {% for release in releases %}
-                    {% if release.id == project.project_release.id %}
                         {% for iteration in release.org_release_org_iterations.all|filter_active %}
                         <tr id="release-row-{{ release.id }}">
                             <td width="3%">
@@ -571,10 +567,7 @@
                           
                         </tr>
                         {% endfor %}
-                       
-                        {% endif %}
                     {% endfor %}
-                    
                 </table>
             </div>
             

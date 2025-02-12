@@ -107,66 +107,34 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
     const startDateInput = document.querySelector('[name="start_date"]');
-    const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
     const releaseLengthInput = document.querySelector('[name="release_length"]');
     const endDateInput = document.querySelector('[name="end_date"]');
 
-    function isWeekend(date) {
-        return date.getDay() === 6 || date.getDay() === 0; // Saturday (6) or Sunday (0)
-    }
-
-    function getNextBusinessDay(date) {
-        while (isWeekend(date)) {
-            date.setDate(date.getDate() + 1); // Move forward to the next business day
-        }
-        return date;
-    }
-
-    function calculateIterations() {
+    function calculateEndDate() {
         const startDateValue = startDateInput.value;
-        const iterationLengthValue = parseInt(iterationLengthInput.value, 10);
         const releaseLengthValue = parseInt(releaseLengthInput.value, 10);
 
-        if (startDateValue && iterationLengthValue && releaseLengthValue) {
-            let startDate = new Date(startDateValue);
-            startDate = getNextBusinessDay(startDate); // Ensure the first iteration starts on a business day
-            let lastIterationEndDate = startDate;
+        if (startDateValue && releaseLengthValue) {
+            const startDate = new Date(startDateValue);
+            const endDate = new Date(startDate);
 
-            // Calculate the total number of iterations based on release length
-            let totalWeeks = releaseLengthValue * 4; // Convert months to approx. weeks
-            let noOfIterations = Math.ceil(totalWeeks / iterationLengthValue); // Approximate iteration count
+            // Add months to the start date
+            endDate.setMonth(startDate.getMonth() + releaseLengthValue);
 
-            for (let count = 1; count <= noOfIterations; count++) {
-                let iterationStart = new Date(lastIterationEndDate);
-                iterationStart.setDate(iterationStart.getDate() + 1); // Start next iteration the next day
-                iterationStart = getNextBusinessDay(iterationStart); // Ensure business day
-
-                let iterationEnd = new Date(iterationStart);
-                iterationEnd.setDate(iterationStart.getDate() + (iterationLengthValue * 7) - 1); // Compute end date
-                iterationEnd = getNextBusinessDay(iterationEnd); // Ensure business day
-
-                lastIterationEndDate = iterationEnd; // Update last iteration's end date
+            // Adjust for months where the resulting day exceeds the last day of the month
+            if (endDate.getDate() !== startDate.getDate()) {
+                endDate.setDate(0); // Set to the last day of the previous month
             }
 
-            // Set release end date to the next business day after the last iteration ends
-            let releaseEndDate = new Date(lastIterationEndDate);
-            releaseEndDate.setDate(releaseEndDate.getDate() + 1); // Move to next day
-            releaseEndDate = getNextBusinessDay(releaseEndDate); // Ensure business day
-            endDateInput.value = formatDate(releaseEndDate);
+            // Format the end date to 'YYYY-MM-DD'
+            const formattedEndDate = endDate.toISOString().split('T')[0];
+            endDateInput.value = formattedEndDate;
         }
     }
 
-    function formatDate(date) {
-        return date.getFullYear() + '-' + 
-            String(date.getMonth() + 1).padStart(2, '0') + '-' +
-            String(date.getDate()).padStart(2, '0');
-    }
-
-    startDateInput.addEventListener('change', calculateIterations);
-    iterationLengthInput.addEventListener('change', calculateIterations);
-    releaseLengthInput.addEventListener('change', calculateIterations);
+    startDateInput.addEventListener('change', calculateEndDate);
+    releaseLengthInput.addEventListener('change', calculateEndDate);
 });
-
 
 </script>
 <!-- End: Content -->

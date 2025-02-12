@@ -307,7 +307,7 @@ def create_org_release_with_iterations(request, org_id):
 
             if 'create_iterations' in request.POST:
                 no_of_iterations = int(request.POST.get('no_of_iterations', 5))
-                iteration_length = int(form.cleaned_data['iteration_length'])
+                iteration_length = int(form.cleaned_data['apply_release_iteration_length'])
                 start_date = form.cleaned_data['start_date']
 
                 # Set the default time to 9:00 AM IST

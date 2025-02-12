@@ -150,74 +150,60 @@
     focusField.focus();
 
     document.addEventListener('DOMContentLoaded', function () {
-    const startDateInput = document.querySelector('[name="start_date"]');
-    const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
-    const noOfIterationsInput = document.getElementById('no_of_iterations');
-    const createIterationsCheckbox = document.getElementById('create_iterations');
-    const iterationsTable = document.getElementById('iterations-table');
-    const endDateInput = document.querySelector('[name="end_date"]');
+        const startDateInput = document.querySelector('[name="start_date"]');
+        const releaseLengthInput = document.querySelector('[name="release_length"]');
+        const endDateInput = document.querySelector('[name="end_date"]');
+        const createIterationsCheckbox = document.getElementById('create_iterations');
+        const iterationLengthInput = document.querySelector('[name="apply_release_iteration_length"]');
+        const noOfIterationsInput = document.getElementById('no_of_iterations');
+        const iterationsTable = document.getElementById('iterations-table');
+        function calculateEndDate() {
+            const startDateValue = startDateInput.value;
+            const releaseLengthValue = parseInt(releaseLengthInput.value, 10);
 
-    function isWeekend(date) {
-        return date.getDay() === 6 || date.getDay() === 0; // Saturday (6) or Sunday (0)
-    }
+            if (startDateValue && releaseLengthValue) {
+                const startDate = new Date(startDateValue);
+                const endDate = new Date(startDate);
 
-    function getNextBusinessDay(date) {
-        while (isWeekend(date)) {
-            date.setDate(date.getDate() + 1); // Move forward to next business day
+                endDate.setMonth(startDate.getMonth() + releaseLengthValue);
+
+                if (endDate.getDate() !== startDate.getDate()) {
+                    endDate.setDate(0);
+                }
+
+                //const formattedEndDate = endDate.toISOString().split('T')[0];
+                const formattedEndDate = formatDate(endDate);
+                endDateInput.value = formattedEndDate;
+            }
         }
-        return date;
-    }
-
-    function generateIterations() {
-        iterationsTable.innerHTML = "";
-        let startDate = new Date(startDateInput.value);
-        startDate = getNextBusinessDay(startDate); // Ensure first iteration starts on a business day
-        const iterationLength = parseInt(iterationLengthInput.value, 10);
-        const noOfIterations = parseInt(noOfIterationsInput.value, 10);
-        let lastIterationEndDate = startDate;
-
-        for (let count = 1; count <= noOfIterations; count++) {
-            let iterationStart = new Date(lastIterationEndDate);
-            iterationStart.setDate(iterationStart.getDate() + 1); // Start next iteration the next day
-            iterationStart = getNextBusinessDay(iterationStart); // Ensure business day
-
-            let iterationEnd = new Date(iterationStart);
-            iterationEnd.setDate(iterationStart.getDate() + (iterationLength * 7) - 1); // Compute end date
-            iterationEnd = getNextBusinessDay(iterationEnd); // Ensure business day
-
-            iterationsTable.innerHTML += `<tr>
-                <td width='2%'>${count}</td>
-                <td>Iteration ${count}</td>
-                <td>${formatDate(iterationStart)}</td>
-                <td>${formatDate(iterationEnd)}</td>
-            </tr>`;
-
-            lastIterationEndDate = iterationEnd;
-        }
-
-        // Set release end date to the day after the last iteration ends (on a business day)
-        let releaseEndDate = new Date(lastIterationEndDate);
-        releaseEndDate.setDate(releaseEndDate.getDate() + 1); // Move to next day
-        releaseEndDate = getNextBusinessDay(releaseEndDate); // Ensure business day
-        endDateInput.value = formatDate(releaseEndDate);
-    }
-
-    createIterationsCheckbox.addEventListener('change', function () {
-        if (this.checked) {
-            generateIterations();
-        } else {
+        function generateIterations() {
             iterationsTable.innerHTML = "";
-            endDateInput.value = "";
+            const startDate = new Date(startDateInput.value);
+            const iterationLength = parseInt(iterationLengthInput.value, 10);
+            const noOfIterations = parseInt(noOfIterationsInput.value, 10);
+
+            for (let count = 1; count <= noOfIterations; count++) {
+                const iterationEnd = new Date(startDate);
+                iterationEnd.setDate(startDate.getDate() + (iterationLength * 7));
+
+                iterationsTable.innerHTML += `<tr><td width='2%'>${count}</td><td>Iteration ${count}</td><td>${startDate.toISOString().split('T')[0]}</td><td>${iterationEnd.toISOString().split('T')[0]}</td></tr>`;
+                startDate.setDate(startDate.getDate() + (iterationLength * 7));
+            }
+            endDateInput.value = startDate.toISOString().split('T')[0];
         }
+
+        createIterationsCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                generateIterations();
+
+            } else {
+                iterationsTable.innerHTML = "";
+                endDateInput.value = "";
+                ganttChart.innerHTML = '';
+                setTimeout(() => calculateEndDate(), 0);
+            }
+        });
     });
-});
-
-function formatDate(date) {
-    return date.getFullYear() + '-' + 
-        String(date.getMonth() + 1).padStart(2, '0') + '-' +
-        String(date.getDate()).padStart(2, '0');
-}
-
 </script>
 <script>
     mermaid.initialize({ startOnLoad: true });
