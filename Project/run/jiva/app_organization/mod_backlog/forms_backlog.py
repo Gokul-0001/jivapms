@@ -54,3 +54,48 @@ class BacklogForm(forms.ModelForm):
 
         self.helper = FormHelper()
         self.helper.form_show_labels = False
+
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Field
+
+class PBIBacklogForm(forms.ModelForm):
+    class Meta:
+        model = Backlog
+        fields = ['name', 'description', 'size', 'priority', 'type', 'release', 'iteration', 'parent', 'pulled_by', 'created_by', 'acceptance_criteria']
+
+    def __init__(self, *args, **kwargs):
+        super(PBIBacklogForm, self).__init__(*args, **kwargs)
+
+        # Filter releases to only active ones and add a placeholder
+        self.fields['release'].queryset = OrgRelease.objects.filter(active=True)
+        self.fields['release'].empty_label = '-- Select Release --'
+
+        # Update the iteration queryset based on the selected release in POST data
+        if 'release' in self.data:
+            try:
+                release_id = int(self.data.get('release'))
+                self.fields['iteration'].queryset = OrgIteration.objects.filter(org_release_id=release_id, active=True)
+            except (ValueError, TypeError):
+                self.fields['iteration'].queryset = OrgIteration.objects.none()
+        elif 'release' in self.initial and self.initial['release']:
+            release_id = self.initial['release']
+            self.fields['iteration'].queryset = OrgIteration.objects.filter(org_release_id=release_id, active=True)
+        else:
+            self.fields['iteration'].queryset = OrgIteration.objects.none()
+
+        self.fields['iteration'].empty_label = '-- Select Iteration --'
+
+        # Use crispy forms helper for form layout
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Field('name', css_class='form-control w-50'),
+            Field('description', css_class='form-control w-75'),
+            Field('size', css_class='form-control w-25'),
+            Field('priority', css_class='form-control w-25'),
+            Field('type', css_class='form-control w-50'),
+            Field('release', css_class='form-control w-50', id='id_release'),
+            Field('iteration', css_class='form-control w-50', id='id_iteration'),
+            Field('parent', css_class='form-control w-50'),
+        )

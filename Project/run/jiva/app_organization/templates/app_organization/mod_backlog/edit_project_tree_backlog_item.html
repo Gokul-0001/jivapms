@@ -1,0 +1,142 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           
+           <div class="row">
+                <div class="col col-md-4">
+                    <b>Backlog Item: #{{backlog_item.id}} : </b> {{backlog_item}} 
+                </div>
+                <div class="col col-md-4"></div>
+                <div class="col col-md-4 text-end">
+                    <a href="{% url 'view_project_tree_backlog' project.id %}" class="btn btn-primary"><i class="bi bi-arrow-left"></i>Back to Backlog</a>
+                </div>
+           </div>
+           <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col col-md-12">
+                    
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col col-md-5">
+                                <b>Summary:</b>
+                                {{form.name|as_crispy_field}}
+                            </div>
+                            <div class="col col-md-2">
+                                <b>Type: &nbsp;{{form.instance.type}}</b>
+                                <br>
+                                <select name="type" id="" class="select form-select">                                    
+                                    <option value="">-- Select Type --</option>
+                                    {% for object in backlog_types %}
+                                        <option value="{{object.id}}" {% if object.id == form.instance.type.id %} selected {% endif %}>{{object.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col col-md-1">
+                                <b>Size:</b>
+                                {{form.size|as_crispy_field}}
+                            </div>
+                            <div class="col col-md-1">
+                                <b>Priority:</b>
+                                {{form.priority|as_crispy_field}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-md-5">
+                                <b>Description:</b>
+                                {{form.description|as_crispy_field}}
+                            </div>
+                           
+                            <div class="col col-md-2">
+                                <b>Release:</b>
+                                {{form.release|as_crispy_field}}
+                            </div>
+                            <div class="col col-md-2">
+                                <b>Iteration:</b>
+                                {{form.iteration|as_crispy_field}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-md-5">
+                                <b>Acceptance Criteria:</b>
+                                {{form.acceptance_criteria|as_crispy_field}}
+                            </div>
+                            <div class="col col-md-2">
+                                <b>Created By:</b>
+                                {{form.instance.created_by}}
+                                <br>
+                                <b>Pulled By:</b>
+                                {{form.pulled_by|as_crispy_field}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-md-4"></div>
+                            <div class="col col-md-4">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                            <div class="col col-md-4"></div>
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
+            </form> 
+
+            <!-- {% load crispy_forms_tags %}
+            <form method="post" id="pbiBacklogForm">
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form> -->
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    
+    $("#id_release").change(function(){
+        var releaseID = $(this).val();
+        var iterationField = $("#id_iteration");
+
+        if (releaseID) {
+            $.ajax({
+                url: "{% url 'ajax_get_release_iterations' %}",  // Ensure this URL exists
+                type: "POST",
+                data: {
+                    release_id: releaseID,
+                    csrfmiddlewaretoken: "{{ csrf_token }}",  // Include CSRF token for POST request
+                },
+                success: function(data) {
+                    iterationField.empty();
+                    iterationField.append('<option value="">-- Select Iteration --</option>');
+                    $.each(data.iterations, function(index, iteration){
+                        iterationField.append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
+                    });
+                }
+            });
+        } else {
+            iterationField.empty();
+            iterationField.append('<option value="">-- Select Iteration --</option>');
+        }
+    });
+});
+</script>
+
+{% endblock content %}

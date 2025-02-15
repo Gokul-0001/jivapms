@@ -883,6 +883,22 @@ def ajax_get_iterations(request, release_id):
 
 
 @login_required
+def ajax_get_release_iterations(request):
+    release_id = request.POST.get('release_id')
+
+    if release_id:
+        iterations = OrgIteration.objects.filter(org_release_id=release_id, active=True).values('id', 'name')
+        return JsonResponse({"iterations": list(iterations)})
+
+    return JsonResponse({"error": "Invalid release ID"}, status=400)
+    iterations = OrgIteration.objects.filter(org_release_id=release_id, active=True)
+    data = [{'id': iteration.id, 'name': iteration.name} for iteration in iterations]
+
+    return JsonResponse(data, safe=False)
+
+
+
+@login_required
 def iterate__backlog(request, pro_id, parent_id):
     # take inputs
     user = request.user

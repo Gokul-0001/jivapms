@@ -35,6 +35,9 @@ def get_viewable_dicts(user, viewable_flag, first_viewable_flag):
 @login_required
 def list_org_iterations(request, org_release_id):
     # take inputs
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
+
     # process inputs
     user = request.user       
     objects_count = 0    
@@ -110,6 +113,10 @@ def list_org_iterations(request, org_release_id):
         'org_release': org_release,
         'org_release_id': org_release_id,
         'org_id': org_release.org_id,
+
+        'project_id': project_id,
+        'project': project,
+
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -134,6 +141,8 @@ def list_org_iterations(request, org_release_id):
 @login_required
 def list_deleted_org_iterations(request, org_release_id):
     # take inputs
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
     # process inputs
     user = request.user       
     objects_count = 0    
@@ -212,6 +221,8 @@ def list_deleted_org_iterations(request, org_release_id):
 # Create View
 @login_required
 def create_org_basic_iteration(request, org_release_id):
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
     user = request.user
     org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
@@ -247,6 +258,8 @@ def create_org_basic_iteration(request, org_release_id):
 # Create View
 @login_required
 def create_org_iteration(request, org_release_id):
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
     user = request.user
     org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
@@ -281,6 +294,8 @@ def create_org_iteration(request, org_release_id):
 # Edit
 @login_required
 def edit_org_iteration(request, org_release_id, org_iteration_id):
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
     user = request.user
     org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
@@ -316,6 +331,8 @@ def edit_org_iteration(request, org_release_id, org_iteration_id):
 
 @login_required
 def delete_org_iteration(request, org_release_id, org_iteration_id):
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
     user = request.user
     org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
@@ -342,6 +359,8 @@ def delete_org_iteration(request, org_release_id, org_iteration_id):
 
 @login_required
 def permanent_deletion_org_iteration(request, org_release_id, org_iteration_id):
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
     user = request.user
     org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)
@@ -379,6 +398,8 @@ def restore_org_iteration(request,  org_release_id, org_iteration_id):
 
 @login_required
 def view_org_iteration(request, org_release_id, org_iteration_id):
+    project_id = JIVAPMS_get_project_id_from_session(request)
+    project = get_object_or_404(Project, pk=project_id, active=True)
     user = request.user
     org_release = OrgRelease.objects.get(id=org_release_id, active=True, 
                                                 **first_viewable_dict)

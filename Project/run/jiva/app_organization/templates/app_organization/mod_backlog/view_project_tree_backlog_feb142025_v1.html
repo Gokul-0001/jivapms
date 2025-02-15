@@ -521,7 +521,7 @@
                 </li>
 
                 <!-- COLLECTION FOR BACKLOG -->
-                {% for collection in epics_in_backlog %}               
+                {% for collection in epics_in_backlog %}
                 <li>
                     <div class="collection-item">
                         <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.id}}')">{{collection.name}}</span>
@@ -531,7 +531,7 @@
                             <button class="dropdown-btn" onclick="toggleDetails('{{collection.id}}-details')">▼</button>
                         </div>
                     </div>
-                    <div id="{{collection.id}}-details" class="details hidden">
+                    <div id="{{collection.id}}-details" class="details hidden"> 
                         <p class="display_details_small_text">{{collection.description|display_if_not_none}}</p>
                     </div>
                 </li>
@@ -588,22 +588,26 @@
                     </div>
                 </li>
 
-                <!-- COLLECTION FOR VERSIONS FOR BACKLOG -->
-                
-                <select id="id_release" name="release" class="form-select form-select-sm" aria-label=".form-select-sm example">
-                    <option value="">-- Select Release --</option>
-                    {% for release in org_releases %}
-                        <option value="{{ release.id }}">{{ release }}</option>
-                    {% endfor %}
-                </select>   
-                
-                
-                <select id="id_iteration" name="iteration" class="form-select form-select-sm" aria-label=".form-select-sm example">
-                    <option value="">-- Select Iteration --</option>
-                </select>
-                <br>
-                <button id="assignBtn" class="small-btn assign-btn" onclick="assignToVersion()">&lt;&lt; &nbsp; Map</button>
-                <button id="unassignBtn" class="small-btn unassign-btn" onclick="unassignFromVersion()">Unmap &nbsp; &gt;&gt;</button>
+                <!-- COLLECTION FOR BACKLOG -->
+                {% for release in org_releases %}
+                {% for collection in release.org_release_org_iterations.all|filter_active %}
+                {% if collection.org_release != None %}
+                <li>
+                    <div class="collection-item">
+                        <span id="filter_{{collection.id}}" onclick="filterBacklog('filter_{{collection.org_release.id}}|{{collection.id}}')" style="font-size: 10px;">{{collection.org_release}}:{{collection}}</span>
+                        <div class="action-buttons">
+                            <button class="small-btn assign-btn" onclick="assignToVersion('{{collection.org_release.id}}|{{collection.id}}')">&lt;&lt; &nbsp; Map</button>
+                            <button class="small-btn unassign-btn me-2" onclick="unassignFromVersion('{{collection.org_release.id}}|{{collection.id}}')">Unmap &nbsp; &gt;&gt;</button>
+                            <button class="dropdown-btn" onclick="toggleDetails('{{collection.org_release.id}}|{{collection.id}}-details')">▼</button>
+                        </div>
+                    </div>
+                    <div id="{{collection.id}}-details" class="details hidden">
+                        <p class="display_details_small_text">{{collection.description|display_if_not_none}}</p>
+                    </div>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
                 
                 <li>
                     <div class="collection-item">
@@ -659,35 +663,19 @@
                                 <div class="col col-md-6 text-end">   
                                     <!-- Story Mapping -->
                                     <a href="{% url 'create_project_story_map' org_id project.id %}" 
-                                    class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;"><b>Story Mapping</b></a> 
-                                   
+                                    class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;"><b>Story Mapping</b></a>  
                                       
-                                    {% if project_detail.template.name != None and project_detail.template.name == 'Scrum' %}  
-                                        <!-- 
 
-                                        Scrum Based Projects
-                                        --> 
-                                        <!-- display project template -->
-                                        <span class="small-font" style="font-size: 12px;">Practice: <b>{{project_detail.template|display_if_not_none}}</b></span>
+                                    <!-- display project template -->
+                                     <span class="small-font" style="font-size: 12px;"><b>{{project_detail.template|display_if_not_none}}</b></span>
 
-                                        {% if project.project_release_mapped_flag == False %}               
-                                            <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
-                                            <b class="bi-size-display display-next-iteration">Iteration Planning</b></a>   
-                                        {% else %}        
-
+                                    {% if project.project_release_mapped_flag == False %}               
                                         <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
-                                            <b class="bi-size-display display-next-iteration">{{project.project_release|display_if_not_none}}/{{project.project_iteration|display_if_not_none}}</b></a>   
-                                        {% endif %}
+                                        <b class="bi-size-display display-next-iteration">Iteration Planning</b></a>   
+                                    {% else %}        
 
-                                    {% elif project_detail.template.name != None and project_detail.template.name == 'Kanban' %}   
-                                        <!-- display project template -->
-                                         <!--
-                                            Kanban Based Projects
-                                         -->
-                                        <span class="small-font" style="font-size: 12px;">Practice: <b>{{project_detail.template|display_if_not_none}}</b></span>
-                                        <a href="{% url 'project_tree_board_settings' project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
-                                            <b class="bi-size-display display-next-iteration">Board Settings</b></a> 
-
+                                    <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;">
+                                        <b class="bi-size-display display-next-iteration">{{project.project_release|display_if_not_none}}/{{project.project_iteration|display_if_not_none}}</b></a>   
                                     {% endif %}
                                 </div>
                                 
@@ -697,6 +685,10 @@
                         <!-- Header section -->
                     </div>
                 </div>
+
+
+
+
                
             </div>
             <!-- HEADER of the backlog DISPLAY-->           
@@ -1181,7 +1173,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 FLAT_BACKLOG_NAME_ICONS = {
     "USER STORY": {"name": "User Story", "icon": "fas fa-user"},
-    "RETROSPECTIVE": {"name": "Retrospective", "icon": "fas fa-search-plus"},
     "TASK": {"name": "Task", "icon": "fas fa-tasks"},
     "TECHNICAL TASK": {"name": "Technical Task", "icon": "fas fa-tools"},
     "BUG": {"name": "Bug", "icon": "fas fa-bug"},
@@ -1245,97 +1236,58 @@ FLAT_BACKLOG_NAME_ICONS = {
       }
       
   }
-
-$(document).ready(function(){
-    $("#id_release").change(function(){
-        var releaseID = $(this).val();
-        var iterationField = $("#id_iteration");
-
-        if (releaseID) {
-            $.ajax({
-                url: "{% url 'ajax_get_release_iterations' %}",
-                type: "POST",
-                data: {
-                    release_id: releaseID,
-                    csrfmiddlewaretoken: "{{ csrf_token }}"
-                },
-                success: function(data) {
-                    iterationField.empty();
-                    iterationField.append('<option value="">-- Select Iteration --</option>');
-                    $.each(data.iterations, function(index, iteration){
-                        iterationField.append('<option value="' + iteration.id + '">' + iteration.name + '</option>');
-                    });
-                },
-                error: function(xhr, textStatus, errorThrown) {
-                    console.log("Error fetching iterations:", textStatus, errorThrown);
-                }
-            });
-        } else {
-            iterationField.empty();
-            iterationField.append('<option value="">-- Select Iteration --</option>');
-        }
-    });
-});
-function assignToVersion() {
-    var releaseID = $("#id_release").val();
-    var iterationID = $("#id_iteration").val();
-
-    if (!releaseID || !iterationID) {
-        alert("Please select a Release and an Iteration.");
-        return;
-    }
-
-    console.log(`Assigned to Release: ${releaseID}, Iteration: ${iterationID}`);
-
-    const form = document.getElementById('dynamic-form-version');
-    document.getElementById('form-version-action').value = 'assign';
-    document.getElementById('form-version-id').value = `${releaseID}|${iterationID}`;
-    document.getElementById('form-selected-version-items').value = Array.from(selectedItems).join(',');
-
-    form.submit();
-
-    // Remove items from 'Others' list if they were unmapped before
-    moveItemsBetweenLists(selectedItems, 'Others', false);
-}
-
-function unassignFromVersion() {
-    var releaseID = $("#id_release").val();
-    var iterationID = $("#id_iteration").val();
-
-    if (!releaseID || !iterationID) {
-        alert("Please select a Release and an Iteration.");
-        return;
-    }
-
-    console.log(`Unassigned from Release: ${releaseID}, Iteration: ${iterationID}`);
-
-    const form = document.getElementById('dynamic-form-version');
-    document.getElementById('form-version-action').value = 'unassign';
-    document.getElementById('form-version-id').value = `${releaseID}|${iterationID}`;
-    document.getElementById('form-selected-version-items').value = Array.from(selectedItems).join(',');
-
-    form.submit();
-
-    // Move unassigned items to "Others"
-    moveItemsBetweenLists(selectedItems, 'Others', true);
-}
-
-// Function to move items between lists
-function moveItemsBetweenLists(items, targetList, moveToTarget) {
-    items.forEach(item => {
-        var itemElement = document.getElementById(item);
-        if (itemElement) {
-            if (moveToTarget) {
-                document.getElementById('others').appendChild(itemElement); // Move to 'Others'
-            } else {
-                document.getElementById(targetList).removeChild(itemElement); // Remove from 'Others'
-            }
-        }
-    });
-}
-
-</script>
-
+  
+  function assignToVersion(collectionId) {
+      if (selectedItems.size === 0) {
+          //alert("No items selected!");
+          return;
+      }
+  
+      // Convert selected items to an array for display
+      const selectedItemsArray = Array.from(selectedItems);
+  
+      // Log or alert the assignment for simulation
+      console.log(`Assigned items: ${selectedItemsArray.join(', ')} to ${collectionId}`);
+      //alert(`Assigned items: ${selectedItemsArray.join(', ')} to ${collectionName}`);
+  
+      // Populate form data
+      const form = document.getElementById('dynamic-form-version');
+      document.getElementById('form-version-action').value = 'assign';
+      document.getElementById('form-version-id').value = collectionId;
+      document.getElementById('form-selected-version-items').value = Array.from(selectedItems).join(',');      
+  
+      // Submit the form
+      form.submit();     
+  
+      // // Close the panel
+      toggleVersionPanel();  
+      // // Clear selection (optional)
+      // clearSelection();
+  
+  }
+  
+  
+  function unassignFromVersion(collectionId) {
+      //alert(`Unassigned from ${collectionId}`);
+      if (selectedItems.size === 0) {
+          //alert("No items selected!");
+          return;
+      }
+  
+      // Populate form data
+      const form = document.getElementById('dynamic-form-version');
+      document.getElementById('form-version-action').value = 'unassign';
+      document.getElementById('form-version-id').value = collectionId;
+      document.getElementById('form-selected-version-items').value = Array.from(selectedItems).join(',');
+  
+      // Submit the form
+      
+      form.submit();
+      
+  }
+  
+  
+  </script>
 
 {% endblock content %}
 

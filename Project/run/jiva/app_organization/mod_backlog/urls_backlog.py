@@ -24,6 +24,8 @@ urlpatterns = [
     path('story_mapping_backlog/<int:pro_id>/<int:parent_id>/', views_backlog.story_mapping_backlog, name='story_mapping_backlog'),
     # ajax updates
     path('ajax_get_iterations/<int:release_id>/', views_backlog.ajax_get_iterations, name='ajax_get_iterations'),
+    # same as get_iterations but without release_id as parameter
+    path('ajax_get_release_iterations/', views_backlog.ajax_get_release_iterations, name='ajax_get_release_iterations'),
     path('ajax_fetch_persona_activities/', views_backlog.ajax_fetch_persona_activities, name='ajax_fetch_persona_activities'),    
     path('ajax_recieve_story_mapped_details/', views_backlog.ajax_recieve_story_mapped_details, name='ajax_recieve_story_mapped_details'),
     path('ajax_story_back_to_list/', views_backlog.ajax_story_back_to_list, name='ajax_story_back_to_list'),
@@ -48,6 +50,7 @@ urlpatterns = [
     path('view_flat_backlog/<int:pro_id>/<int:parent_id>/', views_backlog.view_flat_backlog, name='view_flat_backlog'),
     
     path('view_project_tree_backlog/<int:pro_id>/', views_project_tree.view_project_tree_backlog, name='view_project_tree_backlog'),
+    path('edit_project_tree_backlog_item/<int:pro_id>/<int:backlog_item_id>/', views_project_tree.edit_project_tree_backlog_item, name='edit_project_tree_backlog_item'),
     
     path('ajax_project_tree_sorted/', views_project_tree.ajax_project_tree_sorted, name='ajax_project_tree_sorted'),
     
@@ -55,6 +58,10 @@ urlpatterns = [
     path('create_project_story_map/<int:org_id>/<int:project_id>/', views_story_map.create_project_story_map, name='create_project_story_map'),
     
     # added nearest current/next iteration
+
+    # MVP2: Feb 15th 2025
+    # Kanban and other features
+    path('project_tree_board_settings/<int:pro_id>/', views_project_tree.project_tree_board_settings, name='project_tree_board_settings'),
     
     
 ]

@@ -135,7 +135,6 @@ def jivapms_mod_backlog_helper_get_backlog_details(request, project_id):
     collections_in_backlog = Backlog.objects.filter(pro=project, type__in=include_collection_types, active=True)
     
     send_data = {}
-    send_data["backlog_types"] = backlog_types
     send_data['include_type_id_name'] = include_type_id_name
     send_data["include_types"] = include_types
     send_data["include_collection_types"] = include_collection_types
@@ -146,30 +145,6 @@ def jivapms_mod_backlog_helper_get_backlog_details(request, project_id):
     send_data["collections_in_backlog"] = collections_in_backlog
     return send_data
     
-
-### KANBAN / BOARD SETTINGS
-@login_required
-def project_tree_board_settings(request, pro_id):
-    user = request.user
-    member = get_object_or_404(Member, user=user)
-    project = Project.objects.get(id=pro_id)
-  
-    # send outputs (info, template,
-    context = {
-        'parent_page': '__PARENTPAGE__',
-        'page': 'project_tree_board_settings',
-        'user': user,
-        'member': member,
-        'pro': project,
-        'project': project,
-        'pro_id': pro_id,
-        'org': project.org,
-        'org_id': project.org_id,
-       
-    }       
-    template_file = f"{app_name}/{module_path}/board_related/project_tree_board_settings.html"
-    return render(request, template_file, context)
-
 from django.forms.models import model_to_dict
 @login_required
 def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
@@ -181,7 +156,7 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
     backlog_item_parent = backlog_item.parent
     backlog_item_children = backlog_item.get_active_children()
     get_data = jivapms_mod_backlog_helper_get_backlog_details(request, pro_id)
-    backlog_types = get_data["backlog_types"]
+    include_type_id_name = get_data["include_type_id_name"]
     form = None 
     form = PBIBacklogForm(request.POST or None, instance=backlog_item)
     parent_id = backlog_item.parent_id
@@ -205,7 +180,7 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
-        'page': 'edit_project_tree_backlog_item',
+        'page': 'iterate',
         'user': user,
         'member': member,
         'pro': project,
@@ -213,7 +188,7 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
         'pro_id': pro_id,
         'org': project.org,
         'org_id': project.org_id,
-        'backlog_types': backlog_types,
+        'include_type_id_name': include_type_id_name,
         'form': form,
         'backlog_item': backlog_item,
         'backlog_item_type': backlog_item_type,
@@ -406,7 +381,7 @@ def view_project_tree_backlog(request, pro_id):
     # WORKING PREVIOUS VERSION
     # #logger.debug(f">>> === AJAX DATA: {ajax_data} === <<<")
     if 'deleted' in filter_by:
-        display_backlog_items = Backlog.objects.filter(pro=project, type__in=backlog_types, **filters).prefetch_related(
+        display_backlog_items = Backlog.objects.filter(pro=project, type__in=include_types, **filters).prefetch_related(
             Prefetch(
                 'board_cards',
                 queryset=ProjectBoardCard.objects.filter(active=True).select_related('state', 'board', 'swimlane'),
@@ -414,7 +389,7 @@ def view_project_tree_backlog(request, pro_id):
             )
         ).order_by('position').order_by('position')
     else:
-        display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=backlog_types, **filters).prefetch_related(
+        display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types, **filters).prefetch_related(
                 Prefetch(
                     'board_cards',
                     queryset=ProjectBoardCard.objects.filter(active=True).select_related('state', 'board', 'swimlane'),
@@ -520,10 +495,10 @@ def view_project_tree_backlog(request, pro_id):
             create_backlog_item.save()
 
             # Regenerate display_backlog_items
-            backlog_epic_items = Backlog.objects.filter(pro=project, active=True, type__in=backlog_types)
+            backlog_epic_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types)
             seq_add_to_top(ajax_data)
             #logger.debug(f">>> === ADD TO TOP: {create_backlog_item} {create_backlog_item.id} === <<<")
-            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=backlog_types).order_by('position')
+            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types).order_by('position')
             
         if 'add_to_bottom' in request.POST:
             #logger.debug(f">>> === ADD TO BOTTOM:  === <<<")
@@ -542,7 +517,7 @@ def view_project_tree_backlog(request, pro_id):
                 created_by=user,
                 type_id=type_of_bi
             )
-            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=backlog_types).order_by('position')
+            display_backlog_items = Backlog.objects.filter(pro=project, active=True, type__in=include_types).order_by('position')
             # Regenerate display_backlog_items
             #logger.debug(f">>> === ADD TO BOTTOM: {create_backlog_item} {create_backlog_item.id} === <<<")
             return redirect("view_project_tree_backlog", pro_id=pro_id)

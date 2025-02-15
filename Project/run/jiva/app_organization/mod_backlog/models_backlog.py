@@ -17,6 +17,8 @@ from app_common.mod_app.all_view_imports import *
 #
 # Core Hierarchical System Database
 class Backlog(MPTTModel, BaseModelImpl):
+
+    acceptance_criteria = models.TextField(null=True, blank=True)
   
     persona = models.ForeignKey('app_organization.Persona', on_delete=models.CASCADE,
                                 related_name="persona_backlogs", null=True, blank=True)
