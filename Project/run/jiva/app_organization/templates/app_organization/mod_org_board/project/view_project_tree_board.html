@@ -549,7 +549,7 @@ Project Iteration Board
                             <div class="kanban-card" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
                                     <span class="priority priority-{{item.priority}}">{{item.priority|get_first_letter_caps}}</span>
-                                    <span>#{{item.id}} {{item.iteration}}</span>
+                                    <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.id}}</a> {{item.iteration}}</span>
                                 </div>
                                 <b
                                
@@ -578,7 +578,7 @@ Project Iteration Board
                                 <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                        <span>#{{item.backlog.id}} {{item.backlog.iteration}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.iteration}}</span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -601,7 +601,7 @@ Project Iteration Board
                                 <div class="kanban-card in-progress WIP wip" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                        <span>#{{item.backlog.id}} {{item.backlog.iteration}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.iteration}}</span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -628,7 +628,7 @@ Project Iteration Board
                                 <div class="kanban-card done" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                        <span>#{{item.backlog.id}} {{item.backlog.size}} {{item.backlog.iteration}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.size}} {{item.backlog.iteration}}</span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -687,7 +687,7 @@ Project Iteration Board
                             <div class="kanban-card" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
                                     <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                    <span> <a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.id}}</a>
+                                    <span> <a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.id}}</a>
                                          {{item.status}} {{item.iteration}}</span>
                                 </div>
                                 <b
@@ -716,7 +716,7 @@ Project Iteration Board
                                 <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                        <span><a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -739,7 +739,7 @@ Project Iteration Board
                                 <div class="kanban-card wip WIP in-progress" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                        <span><a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -765,8 +765,8 @@ Project Iteration Board
                                 {% if item.backlog.parent == efcc %}
                                 <div class="kanban-card done" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span><a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -830,8 +830,8 @@ Project Iteration Board
                             
                             <div class="kanban-card" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
-                                    <span class="priority priority-high">H</span>
-                                    <span>#{{item.id}}</span>
+                                    <span class="priority priority-{{item.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                    <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.id}}</a></span>
                                 </div>
                                 <b
                                
@@ -858,8 +858,8 @@ Project Iteration Board
                                 
                                 <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
+                                        <span class="priority priority-{{item.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -881,8 +881,8 @@ Project Iteration Board
                                 
                                 <div class="kanban-card in-progress WIP wip" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
+                                        <span class="priority priority-{{item.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -909,7 +909,7 @@ Project Iteration Board
                                 <div class="kanban-card done" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>

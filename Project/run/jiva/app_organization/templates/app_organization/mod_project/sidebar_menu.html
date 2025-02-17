@@ -26,6 +26,13 @@
             <i class="material-icons" style="font-size: 18px;">map</i>
             <span>Roadmap</span>
         </a> 
+        {% if project.project_details.template.name != None and project.project_details.template.name == 'Scrum' %}
+        <a href="{% url 'view_iteration_kanban' org_id project.id %}" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">event_note</i>
+            <span>Planning</span>
+        </a>     
+        {% endif %}
+
         <a href="{% url 'view_project_tree_backlog' project.id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">checklist</i>
             <span>Backlog</span>

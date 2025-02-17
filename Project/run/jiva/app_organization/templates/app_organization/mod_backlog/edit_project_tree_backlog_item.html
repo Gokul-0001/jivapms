@@ -21,7 +21,8 @@
                 </div>
                 <div class="col col-md-4"></div>
                 <div class="col col-md-4 text-end">
-                    <a href="{% url 'view_project_tree_backlog' project.id %}" class="btn btn-primary"><i class="bi bi-arrow-left"></i>Back to Backlog</a>
+                    <a href="{% url 'view_project_tree_backlog' project.id %}" class="btn btn-primary me-2"><i class="bi bi-arrow-left"></i>Back to Backlog</a>
+                    <a href="{% url 'view_project_tree_board'  project.id %}" class="btn btn-warning me-2"><i class="bi bi-arrow-left"></i>Back to Board</a>
                 </div>
            </div>
            <form method="post">

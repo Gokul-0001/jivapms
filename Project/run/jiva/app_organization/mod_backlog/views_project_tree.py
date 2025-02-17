@@ -177,6 +177,19 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
     member = get_object_or_404(Member, user=user)
     project = Project.objects.get(id=pro_id)
     backlog_item = Backlog.objects.get(id=backlog_item_id)
+
+    back_to = None
+    project_id = None
+    back_to_info = request.GET.get('back_to')
+    if  back_to_info != None and back_to_info == 'view_project_tree_board':
+        back_to = request.GET.get('back_to')
+        project_id = request.GET.get('project_id')
+    if  back_to_info != None and back_to_info == 'view_iteration_kanban':
+        back_to = request.GET.get('back_to')
+        org_id = request.GET.get('org_id')
+        project_id = request.GET.get('project_id')
+
+
     backlog_item_type = backlog_item.type
     backlog_item_parent = backlog_item.parent
     backlog_item_children = backlog_item.get_active_children()
@@ -196,6 +209,11 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
             form.save()
             updated_backlog_item = Backlog.objects.get(id=backlog_item_id)
             logger.debug(f">>> === UPDATED BACKLOG ITEM: {model_to_dict(updated_backlog_item)} {backlog_item.id} === <<<")
+            if back_to == 'view_project_tree_board' and project_id:
+                return redirect(back_to, project_id=project_id)
+            if back_to == 'view_iteration_kanban' and project_id:
+                return redirect(back_to, org_id=org_id, project_id=project_id)
+            
             return redirect('view_project_tree_backlog', pro_id=pro_id)
         else:
             print(f">>> Form errors: {form.errors}")  # Debugging

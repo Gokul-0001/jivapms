@@ -549,8 +549,9 @@
                             {% if item.release != project.project_release %}
                             <div class="kanban-card" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
-                                    <span class="priority priority-high">H</span>
-                                    <span>#{{item.id}} {{item.size}}</span>
+                                    <span class="priority priority-{{item.priority}}">{{item.priority|get_first_letter_caps}}</span>
+                                    <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.id %}?back_to=view_iteration_kanban&org_id={{org_id}}&project_id={{project.id}}">#{{item.id}}</a> {{item.size}}
+                                    {{item.iteration|display_if_not_none}}</span>
                                 </div>
                                 <b
                                
@@ -579,8 +580,8 @@
                         {% if item.release == current_iteration.org_release and item.iteration == current_iteration %}
                         <div class="kanban-card" data-id="{{ item.id }}">
                             <div class="kanban-card-header">
-                                <span class="priority priority-high">H</span>
-                                <span>#{{item.id}} {{item.size}}</span>
+                                <span class="priority priority-{{item.priority}}">{{item.priority|get_first_letter_caps}}</span>
+                                <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.id %}?back_to=view_iteration_kanban&org_id={{org_id}}&project_id={{project.id}}">#{{item.id}}</a> {{item.size}} {{item.iteration|display_if_not_none}}</span>
                             </div>
                             
                            
@@ -606,8 +607,8 @@
                         {% if item.release == next_iteration.org_release and item.iteration == next_iteration %}
                         <div class="kanban-card" data-id="{{ item.id }}">
                             <div class="kanban-card-header">
-                                <span class="priority priority-high">H</span>
-                                <span>#{{item.id}} {{item.size}}</span>
+                                <span class="priority priority-{{item.priority}}">{{item.priority|get_first_letter_caps}}</span>
+                                <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.id %}?back_to=view_iteration_kanban&org_id={{org_id}}&project_id={{project.id}}">#{{item.id}}</a> {{item.size}} {{item.iteration|display_if_not_none}}</span>
                             </div>
                             
                            

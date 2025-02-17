@@ -611,7 +611,7 @@ def view_project_tree_board(request, project_id):
                 board=project_board,
                 state=state,
                 active=True,
-                backlog__type__in=backlog_types,
+                backlog__type__in=include_types,
                 backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
             ).select_related('backlog').order_by('position', '-created_at')
         logger.debug(f">>> === state_items: {project_board_states} === <<<")
@@ -656,7 +656,7 @@ def view_project_tree_board(request, project_id):
                 board=project_board,
                 state=state,
                 active=True,
-                backlog__type__in=backlog_types,
+                backlog__type__in=include_types,
                 backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
             ).select_related('backlog').order_by('position', '-created_at')
         logger.debug(f">>> === PROJECT REL ITR BOARD state_items: {project_board} ==> {project_board_states} === <<<")
