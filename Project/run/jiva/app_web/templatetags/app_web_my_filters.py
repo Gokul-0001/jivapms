@@ -151,3 +151,11 @@ def render_markdown(value):
     Converts Markdown text to HTML.
     """
     return mark_safe(markdown.markdown(value, extensions=['extra', 'toc', 'codehilite']))
+
+
+@register.filter
+def get_first_letter_caps(value):
+    """Capitalizes only the first character of a string."""
+    if isinstance(value, str) and value:
+        return value[0].upper() 
+    return value
