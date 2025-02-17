@@ -686,8 +686,9 @@ Project Iteration Board
                             {% if item.parent == efcc %}
                             <div class="kanban-card" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
-                                    <span class="priority priority-high">H</span>
-                                    <span>#{{item.id}} {{item.status}} {{item.iteration}}</span>
+                                    <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                    <span> <a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.id}}</a>
+                                         {{item.status}} {{item.iteration}}</span>
                                 </div>
                                 <b
                                
@@ -714,8 +715,8 @@ Project Iteration Board
                                 {% if item.backlog.parent == efcc %}
                                 <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -737,8 +738,8 @@ Project Iteration Board
                                 {% if item.backlog.parent == efcc %}
                                 <div class="kanban-card wip WIP in-progress" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
-                                        <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
@@ -765,7 +766,7 @@ Project Iteration Board
                                 <div class="kanban-card done" data-id="{{ item.id }}">
                                     <div class="kanban-card-header">
                                         <span class="priority priority-high">H</span>
-                                        <span>#{{item.backlog.id}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
                                     </div>
                                     <b>{{ item }}</b>
                                     <p>{{ item.description | display_if_not_none }}</p>
