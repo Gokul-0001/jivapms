@@ -8,55 +8,86 @@
 {% block content %}
 
 {% include 'app_common/common_files/navbar.html' %}
+
 <style>
     .nav-link.active {
-       font-weight: bold; /* Makes the text bolder */
-       color: #007bff !important; /* Changes the text color to a bright blue */
-       background-color: #f8f9fa; /* Adds a subtle background color for more emphasis */
-   }
+       font-weight: bold;
+       color: #007bff !important;
+       background-color: #f8f9fa;
+    }
 </style>
+
 <!-- Begin: Content -->
 <form action="" method="POST">
-{% csrf_token %}   
-<div class="container-fluid">
-    <div class="row pt-3">
-        <div class="col col-md-4">
-            <h4>{{SITE_TITLE}} Platform for Project Management</h4>
-            <p>{{SITE_DESC}}</p>
-        </div>
-        <div class="col col-md-8">          
-            <div style="width: 100%; max-width: 300px;">
-                <b class="h2">Register or </b> 
-                <b class="h2"><a href="{% url 'at_login' %}">Login</a></b>
-                {% if messages %}
-                    <div>
+    {% csrf_token %}
+
+    <div class="container-fluid">
+        <div class="row pt-3">
+            <div class="col col-md-4">
+                <h4>{{ SITE_TITLE }} Platform for Project Management</h4>
+                <p>{{ SITE_DESC }}</p>
+            </div>
+
+            <div class="col col-md-8">
+                <div style="width: 100%; max-width: 300px;">
+                    
+                    <b class="h2">Register or </b> 
+                    <b class="h2"><a href="{% url 'at_login' %}">Login</a></b>
+
+                    <!-- Display Form Errors -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Error:</strong> Please correct the following:
+                            <ul>
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <!-- Display Django Messages -->
+                    {% if messages %}
                         {% for message in messages %}
-                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">
                                 {{ message }}
                             </div>
                         {% endfor %}
+                    {% endif %}
+
+                    <div class="mb-3 pt-2">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>          
+                    
+                    <div class="mb-3">
+                        <label for="password1" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password1" name="password1" required>
                     </div>
-                {% endif %}
-                <div class="mb-3 pt-2">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
-                </div>          
-                <div class="mb-3">
-                    <label for="password1" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password1" name="password1" required>
+
+                    <div class="mb-3">
+                        <label for="password2" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="password2" name="password2" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reg_code" class="form-label">Authorized Code for Registration</label>
+                        <input type="password" class="form-control" id="reg_code" name="reg_code" size="50" maxlength="200">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Register</button>
+                    
                 </div>
-                <div class="mb-3">
-                    <label for="password2" class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control" id="password2" name="password2" required>
-                </div>
-                <div class="mb-3">
-                    <label for="reg_code" class="form-label">Authorized Code for Registration</label>
-                    <input type="password" class="form-control" id="reg_code" name="reg_code" size="50" maxlength="200">
-                </div>
-                <button type="submit" class="btn btn-primary">Register</button>
             </div>
         </div>
     </div>
-</div>
+</form>
 <!-- End: Content -->
+
 {% endblock content %}
