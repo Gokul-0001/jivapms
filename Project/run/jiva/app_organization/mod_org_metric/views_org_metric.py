@@ -993,7 +993,7 @@ def view_project_metrics_release_tab(request, project_id):
 
     }
     logger.debug(f"Release Burndown JSON: {release_burndown_json}")
-
+    print(f">>> === JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ === <<<")
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_release_tab.html"
     return render(request, template_file, context)

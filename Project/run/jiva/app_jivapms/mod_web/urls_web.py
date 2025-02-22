@@ -30,4 +30,7 @@ urlpatterns = [
     # Super user
     path('stats/', super_user.stats, name='stats'),
     path('super_user_admin/', super_user.super_user_admin, name='super_user_admin'),
+
+    # User Mgmt Admin
+    path('site_admin_bulk_add_user', web.site_admin_bulk_add_user, name="site_admin_bulk_add_user"),
 ]

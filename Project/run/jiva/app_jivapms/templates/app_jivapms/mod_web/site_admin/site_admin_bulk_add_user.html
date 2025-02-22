@@ -1,0 +1,125 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    
+    <div class="contentbar" id="contentbar">
+        <h2>Bulk Add :: User</h2>
+        <h1>Bulk User Creation</h1>
+        <form method="post" id="bulk-user-form">
+            {% csrf_token %}
+            <table id="bulk-user-table" border="1">
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Username</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in rows %}
+                    <tr>
+                        <td><input type="text" name="row_{{ i }}_first_name" data-row="{{ i }}" data-col="0" class="table-input" /></td>
+                        <td><input type="text" name="row_{{ i }}_last_name" data-row="{{ i }}" data-col="1" class="table-input" /></td>
+                        <td><input type="email" name="row_{{ i }}_email" data-row="{{ i }}" data-col="2" class="table-input" /></td>
+                        <td>
+                            <select name="row_{{ i }}_role" data-row="{{ i }}" data-col="3" class="table-input">
+                                <option value="">Select Role</option>
+                                {% for role in project_roles %}
+                                <option value="{{ role.id }}">{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="text" name="row_{{ i }}_username" data-row="{{ i }}" data-col="4" class="table-input" readonly /></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit">Create Users</button>
+        </form>
+    </div>
+</div>
+
+{% include 'app_jivapms/mod_web/common_files/script.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const table = document.getElementById('bulk-user-table');
+    if (!table) {
+        console.error("Error: Table element not found!");
+        return;
+    }
+
+    const inputs = table.querySelectorAll('.table-input');
+
+    // Enable navigation using Tab, Shift+Tab, and Arrow keys
+    inputs.forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            let row = parseInt(this.dataset.row);
+            let col = parseInt(this.dataset.col);
+            let newRow = row;
+            let newCol = col;
+
+            if (e.key === 'Tab' && !e.shiftKey) {
+                e.preventDefault();
+                newCol = col + 1;
+                if (newCol > 4) {
+                    newCol = 0;
+                    newRow += 1;
+                }
+                focusCell(newRow, newCol);
+            } else if (e.key === 'Tab' && e.shiftKey) {
+                e.preventDefault();
+                newCol = col - 1;
+                if (newCol < 0) {
+                    newCol = 4;
+                    newRow -= 1;
+                }
+                focusCell(newRow, newCol);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                focusCell(row - 1, col);
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                focusCell(row + 1, col);
+            }
+        });
+
+        // Auto-generate username when first/last name changes
+        if (input.dataset.col === "0" || input.dataset.col === "1") {
+            input.addEventListener('blur', function() {
+                let row = this.dataset.row;
+                let firstNameElem = document.querySelector(`input[name="row_${row}_first_name"]`);
+                let lastNameElem = document.querySelector(`input[name="row_${row}_last_name"]`);
+                let usernameField = document.querySelector(`input[name="row_${row}_username"]`);
+
+                if (firstNameElem && lastNameElem && usernameField) {
+                    let firstName = firstNameElem.value.trim();
+                    let lastName = lastNameElem.value.trim();
+                    if (firstName && lastName) {
+                        let username = firstName.toLowerCase() + '.' + lastName.toLowerCase();
+                        usernameField.value = username;
+                    }
+                }
+            });
+        }
+    });
+
+    function focusCell(row, col) {
+        let selector = `[data-row="${row}"][data-col="${col}"]`;
+        let cell = document.querySelector(selector);
+        if (cell) {
+            cell.focus();
+        }
+    }
+});
+</script>
+
+{% endblock content %}

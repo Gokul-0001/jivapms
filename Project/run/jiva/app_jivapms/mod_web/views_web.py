@@ -335,6 +335,25 @@ def blogs(request):
     template_url = f"app_common/common_files/specific/blogs.html"
     return render(request, template_url, context)   
 
+#
+#
+# SITE ADMIN
+#
+def site_admin_bulk_add_user(request):
+    user = request.user
+    member = Member.objects.get(user=user, active=True)
+    roles = member.member_roles.filter(active=True)
+    
+    context = {
+        'parent_page': 'site_admin_bulk_add_user',
+        'page': 'site_admin_bulk_add_user',
+        'page_title': 'Bulk Add User Page',
+        'user': user,
+        'member': member,
+        'roles': roles,
+    }
+    template_url = f"app_jivapms/mod_web/site_admin/site_admin_bulk_add_user.html"
+    return render(request, template_url, context)   
 
 
 def learn(request):
