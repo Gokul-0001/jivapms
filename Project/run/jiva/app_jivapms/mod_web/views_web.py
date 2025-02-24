@@ -103,17 +103,18 @@ def index(request):
                         'username': user.username,
                         'roles': []
                     }
-
+                    print(f">>> === {roles} === <<<")
                     for role in roles:
-                        role_data = {
-                            'org_id': role.org.id if role.org else None,
-                            'role_id': role.role.id if role.role else None,
-                            'role_name': role.role.name if role.role else 'No Role',
-                            'org_name': role.org.name if role.org else 'No Org',
-                            'lc_role_name': role.role.name.lower().replace(' ', '_') if role.role else 'no_page',
-                        }
-                        user_data['roles'].append(role_data)
-                        context['roles'].append(role)  # Aggregate all roles
+                        if role.role_name:
+                            role_data = {
+                                'org_id': role.org.id if role.org else None,
+                                'role_id': role.role.id if role.role else None,
+                                'role_name': role.role.name if role.role else 'No Role',
+                                'org_name': role.org.name if role.org else 'No Org',
+                                'lc_role_name': role.role.name.lower().replace(' ', '_') if role.role else 'no_page',
+                            }
+                            user_data['roles'].append(role_data)
+                            context['roles'].append(role)  # Aggregate all roles
                     # Fetch project memberships
                     project_memberships = Projectmembership.objects.filter(member=member)
                     project_info = [{'org': pm.project.org, 'project_id': pm.project.id ,'project_name': pm.project.name, 'role': pm.project_role.role_type} for pm in project_memberships]
