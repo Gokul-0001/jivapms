@@ -201,7 +201,7 @@ def public_frameworks(request):
 
 def role_homepage(request, role_name):
     user = request.user
-    member = Member.objects.get(user=user, active=True)
+    member = Member.objects.filter(user=user, active=True).first()
     roles = member.member_roles.filter(active=True)
     
     organizations = Organization.objects.filter(active=True)
