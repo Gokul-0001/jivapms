@@ -88,7 +88,7 @@ def index(request):
 
     if user.is_authenticated:
         logger.debug(f"User authenticated: {user.id}")
-        this_member = Member.objects.get(user=user, active=True)
+        this_member = Member.objects.filter(user=user, active=True).first()
         if user.is_superuser:
             context['role'] = COMMON_ROLE_CONFIG["SUPER_USER"]["name"]
             super_user_stats(request)
