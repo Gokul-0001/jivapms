@@ -65,10 +65,11 @@ class PBIBacklogForm(forms.ModelForm):
         fields = ['name', 'description', 'size', 'priority', 'type', 'release', 'iteration', 'parent', 'pulled_by', 'created_by', 'acceptance_criteria']
 
     def __init__(self, *args, **kwargs):
+        org_id = kwargs.pop('org_id', None) 
         super(PBIBacklogForm, self).__init__(*args, **kwargs)
 
         # Filter releases to only active ones and add a placeholder
-        self.fields['release'].queryset = OrgRelease.objects.filter(active=True)
+        self.fields['release'].queryset = OrgRelease.objects.filter(org_id=org_id, active=True)
         self.fields['release'].empty_label = '-- Select Release --'
 
         # Update the iteration queryset based on the selected release in POST data

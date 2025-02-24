@@ -1,0 +1,501 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load app_web_my_filters %}
+{% load markdown_extras  %}
+{% load mptt_tags %}
+{% block content %}
+{% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_css.html' %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<div class="content-wrapper">   
+    
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+           <h3>Project Metrics: {{project}}</h3>
+           {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_declaration.html' %}
+            
+           
+        </div>
+    </div>
+</div>
+{% if current_release != None %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Burndown data from the backend
+    const burndownData = {{ release_burndown_json|safe }};
+    const idealBurndown = burndownData.ideal_burndown; // Ideal burndown points
+    const actualBurndown = burndownData.actual_burndown; // Actual burndown data
+
+    // Extract data for the chart
+    const labels = ["Start"].concat(actualBurndown.map(item => item.name)); // Iteration names with "Start"
+    const remainingPoints = [idealBurndown[0]].concat(actualBurndown.map(item => item.remaining_points)); // Remaining story points
+
+    // Render the Release Burndown Chart
+    const ctx = document.getElementById('releaseBurndown').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Ideal Burndown',
+                    data: idealBurndown,
+                    borderColor: 'rgba(75, 192, 192, 1)', // Green line
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    //borderDash: [5, 5], // Dashed line
+                },
+                {
+                    label: 'Actual Burndown',
+                    data: remainingPoints,
+                    borderColor: 'rgba(255, 99, 132, 1)', // Red line
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { enabled: true },
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Iteration',
+                    },
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Story Points',
+                    },
+                    min: 0, // Y-axis starts at 0
+                    max: Math.max(...idealBurndown), // Y-axis maximum is the initial total release points
+                    ticks: {
+                        stepSize: Math.ceil(Math.max(...idealBurndown) / 10), // Dynamic step size
+                    },
+                },
+            },
+        },
+    });
+</script>
+
+<!-- 
+RENDER THE ITERATIONS BURNDOWN
+-->
+{% for iteration in iteration_data %}
+{% if iteration.normal_release == True %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+      var itr_burndown_id = `itr_bd_{{ iteration.id }}`;
+      console.log(">>> === itr_burndown_id: ", itr_burndown_id, " === <<<");
+      const ctx = document.getElementById(itr_burndown_id).getContext("2d");
+  
+      // Get burndown data from Django template
+      const burndownData = {{ iteration.burndown_data|safe }}; // Passed from the view as JSON
+  
+      // Extract labels (dates) and actual burndown points
+      const labels = burndownData.map(item => item.date);
+      const actualBurndown = burndownData
+            .filter(item => item.remaining_story_points !== '') // Exclude items with empty string values
+            .map(item => item.remaining_story_points);
+  
+      // Function to generate the Ideal Burndown Line
+      function generateIdealLine(startValue, endValue, numDays) {
+        const idealLine = [];
+        const decrement = (startValue - endValue) / (numDays - 1);
+        for (let i = 0; i < numDays; i++) {
+          idealLine.push(startValue - i * decrement);
+        }
+        return idealLine;
+      }
+       // Function to generate the slope line data using initial value and data points of Day 2 and Day 3
+       function generateSlopeLine(data, totalDays) {
+        const slopeLine = [];
+
+        // Filter out completed burndown points (e.g., 0 story points)
+        const filteredData = data.filter(point => point > 0);
+        const numPoints = filteredData.length;
+
+        // If no valid points for trendline, return an empty slope line
+        if (numPoints < 2) {
+            return Array(totalDays).fill(null); // No trendline if not enough data points
+        }
+
+        // Calculate the slope based on the most recent valid data
+        const startPoint = filteredData[0]; // First valid point (initial value)
+        const endPoint = filteredData[numPoints - 1]; // Most recent valid point
+        const slope = (startPoint - endPoint) / (numPoints - 1); // Slope based on valid data
+
+        let trendEnded = false;
+
+        // Generate the trendline data
+        for (let i = 0; i < totalDays; i++) {
+            if (trendEnded) {
+                slopeLine.push(null); // Fill remaining days with null
+                continue;
+            }
+
+            const projectedValue = startPoint - i * slope;
+
+            if (projectedValue <= 0) {
+                // Calculate exact fractional point of the day where it intersects the x-axis
+                const fractionalPart = Math.abs(projectedValue / slope); // Fraction of the day
+                const exactIntersection = i + fractionalPart;
+
+                // Push the exact zero point to the trendline
+                slopeLine.push(0); // Stop the trendline at 0
+                trendEnded = true; // Mark the end of the trendline
+            } else {
+                slopeLine.push(projectedValue); // Append the current projected value
+            }
+        }
+
+        return slopeLine;
+    }
+
+
+
+
+      // Calculate the total story points and number of days
+      const totalStoryPoints = Math.max(...actualBurndown); // Use the max value in the data as the starting point
+      const numDays = labels.length;
+  
+      // Generate the Ideal Burndown Line
+      const idealBurndown = generateIdealLine(totalStoryPoints, 0, numDays);
+        const slopeLine = generateSlopeLine(actualBurndown, numDays);
+      // Chart data
+      const data = {
+        labels: labels, // Dates
+        datasets: [
+          {
+            label: "Actual Burndown",
+            data: actualBurndown, // Dynamic data from the view
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+            fill: false
+          },
+          {
+            label: "Ideal Burndown",
+            data: idealBurndown, // Generated ideal burndown line
+            borderColor: "rgba(192, 75, 192, 1)",
+            borderWidth: 2,
+            fill: false
+          },
+          {
+            label: "Trend Line",
+            data: slopeLine, // Generated slope line
+            borderColor: "rgba(255, 0, 0, 1)",
+            borderWidth: 2,
+            fill: false,
+            borderDash: [5, 5] // To make it a dashed line
+          }
+        ]
+      };
+  
+      // Chart options
+      const options = {
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: "Dates"
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: "Remaining Story Points"
+            },
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: "top"
+          }
+        }
+      };
+  
+      // Render the chart
+      new Chart(ctx, {
+        type: "line",
+        data: data,
+        options: options
+      });
+    });
+  </script>
+  {% else %}
+  
+ 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    function generateMinuteSlopeLine(data, totalMinutes) {
+        const slopeLine = [];
+
+        // Filter out completed burndown points (e.g., 0 story points)
+        const filteredData = data.filter(point => point > 0);
+        const numPoints = filteredData.length;
+
+        // If no valid points for trendline, return an empty slope line
+        if (numPoints < 2) {
+            return Array(totalMinutes).fill(null); // No trendline if not enough data points
+        }
+
+        // Calculate the slope based on the most recent valid data
+        const startPoint = filteredData[0]; // First valid point (initial value)
+        const endPoint = filteredData[numPoints - 1]; // Most recent valid point
+        const slope = (startPoint - endPoint) / (numPoints - 1); // Slope based on valid data
+
+        let trendEnded = false;
+
+        // Generate the trendline data
+        for (let i = 0; i < totalMinutes; i++) {
+            if (trendEnded) {
+                slopeLine.push(null); // Fill remaining minutes with null
+                continue;
+            }
+
+            const projectedValue = startPoint - i * slope;
+
+            if (projectedValue <= 0) {
+                // Calculate exact fractional minute of intersection with the x-axis
+                const fractionalPart = Math.abs(projectedValue / slope); // Fraction of the minute
+                const exactIntersection = i + fractionalPart;
+
+                // Push the exact zero point to the trendline
+                slopeLine.push(0); // Stop the trendline at 0
+                trendEnded = true; // Mark the end of the trendline
+            } else {
+                slopeLine.push(projectedValue); // Append the current projected value
+            }
+        }
+
+        return slopeLine;
+    }
+
+  </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var itr_burndown_id = `itr_bd_{{ iteration.id }}`;
+        console.log(">>> === itr_burndown_id: ", itr_burndown_id, " === <<<");
+        const ctx = document.getElementById(itr_burndown_id).getContext("2d");
+
+        // Example static data for debugging
+        const burndownData = {{ iteration.burndown_data|safe }}; // Ensure this is valid JSON
+
+        // Extract labels (formatted as strings) and actual burndown points
+        const labels = burndownData.map(item => item.datetime.split("T")[1]); // Extract time portion only (e.g., "10:00:00")
+        const actualBurndown = burndownData
+            .filter(item => item.remaining_story_points !== '') // Exclude future points
+            .map(item => item.remaining_story_points);
+
+        // Total minutes and initial story points
+        const totalMinutes = labels.length;
+        const totalStoryPoints = Math.max(...actualBurndown);
+
+        // Generate the Ideal Burndown Line
+        const idealBurndown = [];
+        const decrement = totalStoryPoints / (totalMinutes - 1);
+
+        for (let i = 0; i < totalMinutes; i++) {
+            idealBurndown.push(totalStoryPoints - i * decrement);
+        }
+
+        // Generate the Slope Line
+        const slopeLine = generateMinuteSlopeLine(actualBurndown, totalMinutes);
+
+        // Debugging: Log extracted labels and burndown data
+        console.log("Labels:", labels);
+        console.log("Actual Burndown:", actualBurndown);
+        console.log("Ideal Burndown:", idealBurndown);
+        console.log("Slope Line:", slopeLine);
+
+        // Chart data
+        const data = {
+            labels: labels, // Use formatted string labels
+            datasets: [
+                {
+                    label: "Actual Burndown",
+                    data: actualBurndown,
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: "Ideal Burndown",
+                    data: idealBurndown,
+                    borderColor: "rgba(192, 75, 192, 1)",
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: "Trend Line",
+                    data: slopeLine,
+                    borderColor: "rgba(255, 0, 0, 1)",
+                    borderWidth: 2,
+                    fill: false,
+                    borderDash: [5, 5] // Dashed line
+                }
+            ]
+        };
+
+        // Chart options
+        const options = {
+            scales: {
+                x: {
+                    type: 'category', // Use a category scale
+                    title: {
+                        display: true,
+                        text: "Time (Minutes)"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Remaining Story Points"
+                    },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: "top"
+                }
+            }
+        };
+
+        // Render the chart
+        new Chart(ctx, {
+            type: "line",
+            data: data,
+            options: options
+        });
+    });
+
+ </script>
+{% endif %}
+{% endfor %}
+
+
+<!-- END OF ITERATION BURNDOWN RENDERING -->
+
+
+<!-- BEGIN ITERATION VELOCITY CHART -->
+<!-- START OF VELOCITY CHART DISPLAY -->
+{% for iteration in iteration_data %}
+<div class="iteration-velocity-container">
+   
+    
+   <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    // Get velocity chart data for all iterations
+    const velocityChartData = {{ iteration.velocity_chart_data|safe }};
+    console.log(">>> === Velocity Chart Data for Iteration {{ iteration.name }}:", velocityChartData, " === <<<");
+
+    // Find the data for the current iteration using the iteration ID
+    const currentIterationData = velocityChartData.find(data => data.id === {{ iteration.id }});
+
+    // Check if current iteration data exists
+    if (currentIterationData) {
+        console.log(">>> === Current Iteration Data:", currentIterationData, " === <<<");
+
+        // Extract data for the current iteration
+        const totalPoints = currentIterationData.total_points;
+        const donePoints = currentIterationData.done_points;
+        const totalItems = currentIterationData.total_items;
+        const doneItems = currentIterationData.done_items;
+
+        console.log("Total Points:", totalPoints);
+        console.log("Done Points:", donePoints);
+        console.log("Total Items:", totalItems);
+        console.log("Done Items:", doneItems);
+
+        // Chart configuration
+        const ctx = document.getElementById("itr_vc_{{ iteration.id }}").getContext("2d");
+        const data = {
+            labels: ['Story Points', 'Items'], // Metrics categories
+            datasets: [
+                {
+                    label: 'Total',
+                    data: [totalPoints, totalItems], // Total points and items
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                },
+                {
+                    label: 'Done',
+                    data: [donePoints, doneItems], // Done points and items
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)', // Green
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                },
+            ],
+        };
+
+        const options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Count',
+                    },
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Metrics',
+                    },
+                },
+            },
+        };
+
+        // Render the chart
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options,
+        });
+    } else {
+        console.error("No data found for iteration ID:", {{ iteration.id }});
+    }
+});
+
+   </script>
+</div>
+{% endfor %}
+<!-- END OF VELOCITY CHART DISPLAY -->
+
+
+
+{% endif %}
+{% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
+
+{% endblock content %}
+
+

@@ -196,7 +196,7 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
     get_data = jivapms_mod_backlog_helper_get_backlog_details(request, pro_id)
     backlog_types = get_data["backlog_types"]
     form = None 
-    form = PBIBacklogForm(request.POST or None, instance=backlog_item)
+    form = PBIBacklogForm(request.POST or None, instance=backlog_item, org_id=project.org.id)
     parent_id = backlog_item.parent_id
     logger.debug(f">>> === BACKLOG ITEM: {model_to_dict(backlog_item)} {backlog_item.id} === <<<")
     if request.method == 'POST':
@@ -219,7 +219,7 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
             print(f">>> Form errors: {form.errors}")  # Debugging
 
     else:
-        form = PBIBacklogForm(instance=backlog_item)
+        form = PBIBacklogForm(instance=backlog_item, org_id=project.org.id)
     # send outputs (info, template,
     context = {
         'parent_page': '__PARENTPAGE__',
