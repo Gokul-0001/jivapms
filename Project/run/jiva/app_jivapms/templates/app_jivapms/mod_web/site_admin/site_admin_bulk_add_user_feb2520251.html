@@ -1,0 +1,142 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    input, select { width: 100%; padding: 5px; border: 1px solid #ccc; }
+</style>
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    
+    <div class="contentbar" id="contentbar">
+      
+        <table class="table-borderless">
+            <tr>
+                <td width="33.33%"><b class="desc">Bulk Add :: User Management</b></td>
+                <td width="33.33%" style="text-align: center;"><b class="h4">User Creation</b></td>
+                <td width="33.33%" style="text-align: end;"><a href="{% url 'list_organizations' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Organizations
+                </a></td>
+            </tr>
+        </table>
+
+       
+        <form method="post" id="bulk-user-form">
+            {% csrf_token %}
+            
+            </table>
+                    <table id="userTable">
+                       
+                        <thead>
+                            <tr>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="user-row">
+                                <td><input type="text" class="first-name" oninput="generateUsername(this)"></td>
+                                <td><input type="text" class="last-name" oninput="generateUsername(this)"></td>
+                                <td><input type="text" class="username" readonly></td>
+                                <td><input type="text" class="email" readonly></td>
+                                <td>
+                                    <select class="role">
+                                        <option value="">Select Role</option>
+                                        {% for role in roles %}
+                                        <option value="{{ role.id }}">{{ role.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                    <table>
+                        <tr>
+                            <td colspan="5" style="text-align: center;">
+                                <button id="addRow" class="btn btn-sm btn-primary">+ Add Row</button>
+                                <button id="submitUsers" class="btn btn-sm btn-success">Submit Users</button>
+                            </td>
+                        </tr>
+                    </table>
+                    </form>
+                </div>
+            </div>
+
+
+<script>
+    function generateUsername(element) {
+        let row = $(element).closest("tr");
+        let firstName = row.find(".first-name").val().toLowerCase().trim();
+        let lastName = row.find(".last-name").val().toLowerCase().trim();
+        
+        if (firstName && lastName) {
+            let username = firstName + "." + lastName;
+            row.find(".username").val(username);
+            row.find(".email").val(username + "@yourdomain.com");
+            
+            // Check if username exists
+            $.ajax({
+                url: "{% url 'ajax_check_username' %}",
+                data: { "username": username },
+                success: function(response) {
+                    if (response.exists) {
+                        row.find(".username").val(response.suggested);
+                        row.find(".email").val(response.suggested + "@yourdomain.com");
+                    }
+                }
+            });
+        }
+    }
+    $(document).ready(function () {
+    $("#addRow").click(function (e) {
+        e.preventDefault(); // Prevent form submission
+
+        let newRow = $(".user-row:first").clone();
+        newRow.find("input").val(""); // Clear input fields
+        newRow.find("select").val(""); // Clear role selection
+        $("#userTable tbody").append(newRow);
+        newRow.find(".first-name").focus();
+    });
+
+    // Submit data
+    $("#submitUsers").click(function (e) {
+        e.preventDefault(); // Prevent form submission
+
+        let users = [];
+        $(".user-row").each(function () {
+            let row = $(this);
+            users.push({
+                first_name: row.find(".first-name").val(),
+                last_name: row.find(".last-name").val(),
+                username: row.find(".username").val(),
+                email: row.find(".email").val(),
+                role_id: row.find(".role").val(),
+            });
+        });
+
+        $.ajax({
+            url: "{% url 'ajax_submit_users' %}",
+            type: "POST",
+            data: JSON.stringify({ users: users }),
+            contentType: "application/json",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function (response) {
+                alert(response.message);
+            }
+        });
+    });
+});
+
+</script>
+{% endblock content %}
+
+

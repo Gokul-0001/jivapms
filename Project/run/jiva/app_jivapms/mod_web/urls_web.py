@@ -32,5 +32,14 @@ urlpatterns = [
     path('super_user_admin/', super_user.super_user_admin, name='super_user_admin'),
 
     # User Mgmt Admin
-    path('site_admin_bulk_add_user', web.site_admin_bulk_add_user, name="site_admin_bulk_add_user"),
+    path('site_admin_bulk_add_user/<int:org_id>/', web.site_admin_bulk_add_user, name="site_admin_bulk_add_user"),
+    path('ajax_user_creation_view/', web.ajax_user_creation_view, name="ajax_user_creation_view"),
+    path('ajax_check_username/', web.ajax_check_username, name="ajax_check_username"),
+    path('ajax_submit_users/', web.ajax_submit_users, name="ajax_submit_users"),
+    path('ajax_check_email/', web.ajax_check_username, name="ajax_check_email"),
+
+    path('ajax_edit_user/<int:userid>/', web.ajax_edit_user, name="ajax_edit_user"),
+    path('ajax_soft_delete_user/<int:userid>/', web.ajax_soft_delete_user, name="ajax_soft_delete_user"),
+    path('search_users/', web.search_users, name="search_users"),
+    
 ]

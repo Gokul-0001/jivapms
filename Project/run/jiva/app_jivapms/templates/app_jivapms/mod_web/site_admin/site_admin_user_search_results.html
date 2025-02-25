@@ -1,0 +1,147 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+
+    <div class="content-wrapper">
+        {% include 'app_organization/mod_project/sidebar_menu.html' %}
+        
+
+        <div class="contentbar" id="contentbar">
+            <!-- <div id="loading">Loading...</div> -->
+            <div id="content">
+            <!-- PAGEADMIN -->
+                
+            <h2>User Management</h2>
+
+            <!-- Search Bar -->
+            <input type="text" id="searchUser" placeholder="Search users..." onkeyup="searchUsers()">
+            
+            <!-- User List Table -->
+            <table id="userTable" class="table table-borderless">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr id="userRow{{ user.id }}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary me-2" onclick="editUser({{ user.id }}, '{{ user.first_name }}', '{{ user.last_name }}', '{{ user.email }}', '{{ user.role }}')">✏️ Edit</button>
+                       
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser({{ user.id }})">❌ Delete</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" style="text-align:center;">No users found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Edit User Modal -->
+            <div id="editUserModal" class="modal">
+                <div class="modal-header">
+                    Edit User
+                    <span class="close" onclick="closeEditModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <label>First Name:</label>
+                        <input type="text" id="editFirstName">
+                        <label>Last Name:</label>
+                        <input type="text" id="editLastName">
+                        <label>Email:</label>
+                        <input type="email" id="editEmail">
+                        <label>Role:</label>
+                        <select id="editRole">
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                            <option value="manager">Manager</option>
+                        </select>
+                        <button type="button" onclick="saveUser()">Save</button>
+                    </form>
+                </div>
+            </div>
+            
+            <script>
+                function searchUsers() {
+                    let query = document.getElementById("searchUser").value.trim();
+                    fetch(`/users/?query=${query}`)
+                        .then(response => response.text())
+                        .then(data => {
+                            document.getElementById("userTable").innerHTML = data;
+                        });
+                }
+            
+                function editUser(userId, firstName, lastName, email, role) {
+                    document.getElementById("editUserId").value = userId;
+                    document.getElementById("editFirstName").value = firstName;
+                    document.getElementById("editLastName").value = lastName;
+                    document.getElementById("editEmail").value = email;
+                    document.getElementById("editRole").value = role;
+                    document.getElementById("editUserModal").style.display = "block";
+                }
+            
+                function saveUser() {
+                    let userId = document.getElementById("editUserId").value;
+                    let formData = new FormData();
+                    formData.append("first_name", document.getElementById("editFirstName").value);
+                    formData.append("last_name", document.getElementById("editLastName").value);
+                    formData.append("email", document.getElementById("editEmail").value);
+                    formData.append("role", document.getElementById("editRole").value);
+            
+                    fetch(`/users/edit/${userId}/`, {
+                        method: "POST",
+                        body: formData,
+                        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                    }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("User updated successfully!");
+                            location.reload();
+                        } else {
+                            alert("Error updating user.");
+                        }
+                    });
+                }
+            
+                function deleteUser(userId) {
+                    if (!confirm("Are you sure you want to delete this user?")) return;
+                    fetch(`/users/delete/${userId}/`, {
+                        method: "POST",
+                        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                    }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById("userRow" + userId).remove();
+                        } else {
+                            alert("Error deleting user.");
+                        }
+                    });
+                }
+            
+                function closeEditModal() {
+                    document.getElementById("editUserModal").style.display = "none";
+                }
+            </script>
+                
+               
+            </div>
+        </div>
+    </div>
+
+<!-- End: Content -->
+{% endblock content %}

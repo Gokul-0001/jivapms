@@ -85,15 +85,9 @@
     <div class="contentbar" id="contentbar">
         <table class="table-borderless">
             <tr>
-                <td width="33.33%"><b class="desc"> {{org.name}} </b><b class="desc">:: User Creation </b></td>
+                <td width="33.33%"><b class="desc">Bulk Add :: User Management :: </b><b class="h4">User Creation</b></td>
                 <td width="33.33%" style="text-align: center;">
-                   <!-- Search Form -->
-                    <form id="searchForm" action="{% url 'search_users' %}" method="get">
-                        
-                        <input type="text" id="searchUser" name="query" placeholder="Search user...">
-                        <button type="submit" class="btn btn-primary">🔍 Search</button>
-                    </form>
-
+                    <input type="text" id="searchUser" placeholder="Search user..." onkeyup="searchUser()">
                 </td>
                 <td width="33.33%" style="text-align: end;"><a href="{% url 'list_organizations' %}" class="btn btn-sm btn-primary">
                     <i class="bi bi-arrow-left"></i> Back to Organizations
@@ -219,10 +213,6 @@
 
     function deleteRow(element) {
         $(element).closest("tr").remove();
-        // Check if table is empty after deletion, if yes, add a new row
-        if ($("#userTable tbody tr").length === 0) {
-            addNewRow();
-        }
         $("#userTable tbody tr").each(function (index) {
             $(this).find("td.small-width").first().text(index + 1);
         });
@@ -239,38 +229,19 @@
             messageDiv.addClass("error-msg");
         }
     }
-    function searchUser(event) {
-        event.preventDefault(); // Prevent form from reloading the page
-
-        let query = document.getElementById("searchUser").value.trim();
-
-        fetch(`/search_users/?query=${query}`)
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("userTable").innerHTML = data; // Update table with results
-            });
+    function searchUser() {
+        let input = document.getElementById("searchUser").value.toLowerCase();
+        document.querySelectorAll(".user-row").forEach(row => {
+            let username = row.querySelector(".username").value.toLowerCase();
+            let email = row.querySelector(".email").value.toLowerCase();
+            row.style.display = (username.includes(input) || email.includes(input)) ? "" : "none";
+        });
     }
-
 
     function deleteRow(element) {
         element.closest("tr").remove();
     }
-   
-    // Function to add a new row when required
-    function addNewRow() {
-        let newRow = $(".user-row:first").clone();
-        newRow.find("input").val(""); 
-        newRow.find("select").val(""); 
-        newRow.find(".status-cell").html('<i class="bi bi-hourglass-split text-warning status-icon"></i>'); 
-        $("#userTable tbody").append(newRow);
 
-        // Reset row numbers
-        $("#userTable tbody tr").each(function (index) {
-            $(this).find("td.small-width").first().text(index + 1);
-        });
-
-        newRow.find(".first-name").focus();
-    }
     $(document).ready(function () {
     $("#addRow").click(function (e) {
         e.preventDefault();
@@ -287,7 +258,6 @@
 
         newRow.find(".first-name").focus();
     });
-
 
     $("#submitUsers").click(function (e) {
         e.preventDefault();
@@ -346,12 +316,11 @@
             showMessage(errorMessage, "error");
             return;
         }
-        // Update status to processing
-        showMessage("Please wait... while processing the data", "error");
+
         $.ajax({
             url: "{% url 'ajax_submit_users' %}",
             type: "POST",
-            data: JSON.stringify({ users: users , org_id: "{{ org.id }}" }),
+            data: JSON.stringify({ users: users }),
             contentType: "application/json",
             headers: { "X-CSRFToken": "{{ csrf_token }}" },
             success: function (response) {
@@ -367,10 +336,7 @@
             }
         });
     });
-
-
 });
-
 
     function viewUser(element) {
         let row = $(element).closest("tr");

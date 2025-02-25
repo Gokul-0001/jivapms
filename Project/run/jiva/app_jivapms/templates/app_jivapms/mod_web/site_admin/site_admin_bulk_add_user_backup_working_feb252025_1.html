@@ -1,0 +1,223 @@
+{% extends 'app_common/common_files/base_template.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    input, select { width: 100%; padding: 5px; border: 1px solid #ccc; }
+    .invalid-email { border: 2px solid red; } /* Highlight invalid email */
+    .small-width { width: 5%; text-align: center; } /* Small width for serial number */
+    .delete-btn { cursor: pointer; color: red; } /* Delete button style */
+    .status-icon { font-size: 18px; } /* Status icon size */
+    .success-msg { color: green; font-weight: bold; } /* Success message */
+    .error-msg { color: red; font-weight: bold; } /* Error message */
+</style>
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    
+    <div class="contentbar" id="contentbar">
+        <table class="table-borderless">
+            <tr>
+                <td width="33.33%"><b class="desc">Bulk Add :: User Management :: </b><b class="h4">User Creation</b></td>
+                <td width="33.33%" style="text-align: center;">
+                    <span id="message" class=""></span> <!-- Success/Error Message Area -->
+                </td>
+                <td width="33.33%" style="text-align: end;"><a href="{% url 'list_organizations' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Organizations
+                </a></td>
+            </tr>
+        </table>
+
+        <form method="post" id="bulk-user-form">
+            {% csrf_token %}
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th class="small-width">#</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Username</th>
+                        <th class="small-width">Status</th>
+                        <th class="small-width">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="user-row">
+                        <td class="small-width">1</td>
+                        <td><input type="text" class="first-name" oninput="generateUsername(this)"></td>
+                        <td><input type="text" class="last-name" oninput="generateUsername(this)"></td>
+                        <td><input type="text" class="email" onblur="checkEmailAvailability(this)"></td>
+                        <td>
+                            <select class="role">
+                                <option value="">Select Role</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="text" class="username" readonly></td>
+                        <td class="small-width text-center status-cell">
+                            <i class="bi bi-hourglass-split text-warning status-icon"></i>
+                        </td>
+                        <td class="small-width text-center">
+                            <i class="bi bi-trash delete-btn" onclick="deleteRow(this)"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <tr>
+                    <td colspan="8" style="text-align: center;">
+                        <button id="addRow" class="btn btn-sm btn-primary">+ Add Row</button>
+                        <button id="submitUsers" class="btn btn-sm btn-success">Submit Users</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+
+<script>
+    function generateUsername(element) {
+        let row = $(element).closest("tr");
+        let firstName = row.find(".first-name").val().toLowerCase().trim();
+        let lastName = row.find(".last-name").val().toLowerCase().trim();
+        
+        if (firstName && lastName) {
+            let username = firstName + "." + lastName;
+            row.find(".username").val(username);
+        }
+    }
+
+    function isValidEmail(email) {
+        let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailPattern.test(email);
+    }
+
+    function checkEmailAvailability(element) {
+        let emailField = $(element);
+        let email = emailField.val().trim();
+
+        if (!isValidEmail(email)) {
+            emailField.addClass("invalid-email");
+            showMessage("Please enter a valid email address.", "error");
+            return;
+        } else {
+            emailField.removeClass("invalid-email");
+        }
+
+        $.ajax({
+            url: "{% url 'ajax_check_email' %}",
+            data: { "email": email },
+            success: function(response) {
+                if (response.exists) {
+                    emailField.addClass("invalid-email");
+                    showMessage("This email is already taken. Please choose another.", "error");
+                } else {
+                    emailField.removeClass("invalid-email");
+                }
+            }
+        });
+    }
+
+    function deleteRow(element) {
+        $(element).closest("tr").remove();
+        $("#userTable tbody tr").each(function (index) {
+            $(this).find("td.small-width").first().text(index + 1);
+        });
+    }
+
+    function showMessage(msg, type) {
+        let messageDiv = $("#message");
+        messageDiv.text(msg);
+        messageDiv.removeClass("success-msg error-msg");
+
+        if (type === "success") {
+            messageDiv.addClass("success-msg");
+        } else {
+            messageDiv.addClass("error-msg");
+        }
+    }
+
+    $(document).ready(function () {
+        $("#addRow").click(function (e) {
+            e.preventDefault();
+
+            let newRow = $(".user-row:first").clone();
+            newRow.find("input").val(""); 
+            newRow.find("select").val(""); 
+            newRow.find(".status-cell").html('<i class="bi bi-hourglass-split text-warning status-icon"></i>'); 
+            $("#userTable tbody").append(newRow);
+
+            $("#userTable tbody tr").each(function (index) {
+                $(this).find("td.small-width").first().text(index + 1);
+            });
+
+            newRow.find(".first-name").focus();
+        });
+
+        $("#submitUsers").click(function (e) {
+            e.preventDefault();
+
+            let users = [];
+            let isValid = true;
+
+            $(".user-row").each(function () {
+                let row = $(this);
+                let firstName = row.find(".first-name").val().trim();
+                let lastName = row.find(".last-name").val().trim();
+                let email = row.find(".email").val().trim();
+                let role = row.find(".role").val();
+
+                if (!firstName && !lastName && !email && !role) {
+                    return;
+                }
+
+                if (!isValidEmail(email)) {
+                    row.find(".email").addClass("invalid-email");
+                    isValid = false;
+                } else {
+                    row.find(".email").removeClass("invalid-email");
+                }
+
+                if (row.find(".status-cell i").hasClass("bi-check-circle")) {
+                    return; // Skip already submitted rows
+                }
+
+                users.push({
+                    first_name: firstName,
+                    last_name: lastName,
+                    username: row.find(".username").val(),
+                    email: email,
+                    role_id: role,
+                });
+            });
+
+            if (!isValid) {
+                showMessage("Some emails are invalid. Please correct them.", "error");
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'ajax_submit_users' %}",
+                type: "POST",
+                data: JSON.stringify({ users: users }),
+                contentType: "application/json",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                success: function (response) {
+                    showMessage(response.message, "success");
+                    $(".user-row").each(function () {
+                        $(this).find(".status-cell").html('<i class="bi bi-check-circle text-success status-icon"></i>');
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock content %}

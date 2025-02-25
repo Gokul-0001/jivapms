@@ -9,6 +9,7 @@ from app_organization.mod_projectmembership.models_projectmembership import *
 from app_organization.mod_framework.models_framework import *
 from app_organization.mod_org_image_map.models_org_image_map import *
 from app_organization.org_decorators import *
+from app_memberprofilerole.mod_role.models_role import *
 
 app_name = "app_jivapms"
 version = "v1"
@@ -64,10 +65,6 @@ def index(request):
     org_ids = public_frameworks.values_list('organization__id', flat=True).distinct()
     organizations = Organization.objects.filter(id__in=org_ids)
     all_orgs = Organization.objects.filter(active=True)
-     
-    
-    
-    
     context = {
         'parent_page': 'home',
         'page': 'index',
@@ -336,27 +333,6 @@ def blogs(request):
     template_url = f"app_common/common_files/specific/blogs.html"
     return render(request, template_url, context)   
 
-#
-#
-# SITE ADMIN
-#
-def site_admin_bulk_add_user(request):
-    user = request.user
-    member = Member.objects.get(user=user, active=True)
-    roles = member.member_roles.filter(active=True)
-    
-    context = {
-        'parent_page': 'site_admin_bulk_add_user',
-        'page': 'site_admin_bulk_add_user',
-        'page_title': 'Bulk Add User Page',
-        'user': user,
-        'member': member,
-        'roles': roles,
-    }
-    template_url = f"app_jivapms/mod_web/site_admin/site_admin_bulk_add_user.html"
-    return render(request, template_url, context)   
-
-
 def learn(request):
 
     
@@ -430,82 +406,7 @@ def JIVAPMS_get_project_id_from_session(request):
 
 from app_organization.mod_org_release.models_org_release import *
 from app_organization.mod_org_iteration.models_org_iteration import *
-# @login_required
-# def get_project_release_and_iteration_details(project_id):
-   
-#     try:
-#         # Fetch the project
-#         project = Project.objects.get(id=project_id)
-#     except Project.DoesNotExist:
-#         return {"error": "Invalid project ID"}
 
-#     current_datetime = now().replace(microsecond=0)
-#     details = {
-#         "project_id": project_id,
-#         "current_release": None,
-#         "current_iteration": None,
-#         "release_details": None,
-#         "iteration_details": None,
-#     }
-
-#     # Get the current release from the project
-#     if project.project_release:
-#         # Fetch the release
-#         got_release = project.project_release        
-#         release = OrgRelease.objects.get(id=got_release.id)       
-
-#         # Check if the release dates have time components
-#         release_start_has_time = (
-#             release.release_start_date.time() != time(0, 0, 0) if release.release_start_date else False
-#         )
-#         release_end_has_time = (
-#             release.release_end_date.time() != time(0, 0, 0) if release.release_end_date else False
-#         )
-
-#         # Python date comparison
-#         if release.release_start_date and release.release_end_date:
-#             if (
-#                 release.release_start_date.date() <= current_datetime.date() <= release.release_end_date.date()
-#                 if not release_start_has_time or not release_end_has_time
-#                 else release.release_start_date <= current_datetime <= release.release_end_date
-#             ):
-#                 details["current_release"] = release
-#                 details["release_details"] = {
-#                     "id": release.id,
-#                     "name": release.name,
-#                     "start_date": release.release_start_date,
-#                     "end_date": release.release_end_date,
-#                 }
-
-#     # Get the current iteration
-#     if project.project_iteration:
-#         got_iteration = project.project_iteration
-#         iteration = OrgIteration.objects.get(id=got_iteration.id)
-
-#         # Check if the iteration dates have time components
-#         iteration_start_has_time = (
-#             iteration.iteration_start_date.time() != time(0, 0, 0) if iteration.iteration_start_date else False
-#         )
-#         iteration_end_has_time = (
-#             iteration.iteration_end_date.time() != time(0, 0, 0) if iteration.iteration_end_date else False
-#         )
-
-#         # Python date comparison
-#         if iteration.iteration_start_date and iteration.iteration_end_date:
-#             if (
-#                 iteration.iteration_start_date.date() <= current_datetime.date() <= iteration.iteration_end_date.date()
-#                 if not iteration_start_has_time or not iteration_end_has_time
-#                 else iteration.iteration_start_date <= current_datetime <= iteration.iteration_end_date
-#             ):
-#                 details["current_iteration"] = iteration
-#                 details["iteration_details"] = {
-#                     "id": iteration.id,
-#                     "name": iteration.name,
-#                     "start_date": iteration.iteration_start_date,
-#                     "end_date": iteration.iteration_end_date,
-#                 }
-
-#     return details
 
 
 
@@ -656,91 +557,142 @@ def get_project_release_and_iteration_details(project_id):
 
 
 
+import json
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.contrib.auth import get_user_model
+from app_memberprofilerole.mod_role.models_role import Role
+
+User = get_user_model()
+
+#
+#
+# SITE ADMIN
+#
+def site_admin_bulk_add_user(request, org_id):
+    user = request.user
+    member = Member.objects.get(user=user, active=True)
+    roles = Role.objects.filter(active=True)
+    org = Organization.objects.get(id=org_id, active=True)
+    
+    context = {
+        'parent_page': 'site_admin_bulk_add_user',
+        'page': 'site_admin_bulk_add_user',
+        'page_title': 'Bulk Add User Page',
+        'user': user,
+        'member': member,
+        'roles': roles,
+        'org': org,
+    }
+    template_url = f"app_jivapms/mod_web/site_admin/site_admin_bulk_add_user.html"
+    return render(request, template_url, context)   
+
+
+def ajax_user_creation_view(request):
+    """ Renders the user creation page with roles. """
+    roles = Role.objects.filter(active=True)
+    return render(request, 'user_creation.html', {"roles": roles})
+
+def ajax_check_username(request):
+    """ Checks if username exists and suggests an alternative. """
+    username = request.GET.get('username')
+    if User.objects.filter(username=username).exists():
+        suffix = 1
+        while User.objects.filter(username=f"{username}{suffix}").exists():
+            suffix += 1
+        return JsonResponse({"exists": True, "suggested": f"{username}{suffix}"})
+    return JsonResponse({"exists": False, "suggested": username})
+
+def ajax_submit_users(request):
+    """ Handles the submission of users from the template. """
+    if request.method == "POST":
+        data = json.loads(request.body)
+        users_created = []
+        org_id = data.get("org_id")
+        
+        try:
+            org = Organization.objects.get(id=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse({"error": "Organization not found."}, status=400)
+
+        default_password = "password123"
+        
+        for user_data in data.get("users", []):
+            try:
+                if not all([user_data.get("first_name"), user_data.get("last_name"), user_data.get("role_id"), user_data.get("username"), user_data.get("email")]):
+                    continue  # Skip this user if any required field is missing
+                
+                if User.objects.filter(username=user_data["username"]).exists():
+                    continue  # Skip if username already exists
+
+                # Create user
+                user = User(
+                    first_name=user_data["first_name"],
+                    last_name=user_data["last_name"],
+                    username=user_data["username"],
+                    email=user_data["email"],
+                    is_active=True
+                )
+                user.set_password(default_password)  # Hash and set password
+                user.save()  # Save user after setting password
+
+                # Create Member and Role relationships
+                member, _ = Member.objects.get_or_create(user=user, org=org, active=True)
+                role = Role.objects.get(id=user_data["role_id"])    
+                _, _ = MemberOrganizationRole.objects.get_or_create(member=member, org=org, role=role, active=True) 
+
+                users_created.append(user.username)  # Track successfully created users
+
+            except Exception as e:
+                print(f"Error creating user {user_data.get('username')}: {e}")  # Log errors
+
+        return JsonResponse({"message": f"{len(users_created)} users created successfully.", "users": users_created})
 
 
 
+def ajax_check_email(request):
+    email = request.GET.get("email", "").strip()
+    
+    if not email:
+        return JsonResponse({"error": "Email is required"}, status=400)
+
+    # Check if email is already used
+    email_exists = User.objects.filter(email=email).exists()
+
+    return JsonResponse({"exists": email_exists})
 
 
+def search_users(request):
+    query = request.GET.get("query", "").strip()
+    users = User.objects.filter(is_active=True)  # Show only active users
 
-# =========> working one below
+    if query:
+        users = users.filter(
+            username__icontains=query
+        ) | users.filter(email__icontains=query) 
 
-# def get_project_release_and_iteration_details(project_id):  
+    #return render(request, "user_list.html", {"users": users})
+    context = {
+        "users": users,
+    }
+    template_url = f"app_jivapms/mod_web/site_admin/site_admin_user_search_results.html"
+    return render(request, template_url, context)   
 
-#     try:
-#         # Fetch the project
-#         project = Project.objects.get(id=project_id)
-#     except Project.DoesNotExist:
-#         return {"error": "Invalid project ID"}
+def ajax_edit_user(request, user_id):
+    user = get_object_or_404(UserProfile, id=user_id)
+    
+    if request.method == "POST":
+        user.first_name = request.POST.get("first_name")
+        user.last_name = request.POST.get("last_name")
+        user.email = request.POST.get("email")
+        user.role = request.POST.get("role")
+        user.save()
+        return JsonResponse({"success": True, "message": "User updated successfully."})
 
-#     current_datetime = now().replace(microsecond=0)
-#     details = {
-#         "project_id": project_id,
-#         "current_release": None,
-#         "current_iteration": None,
-#         "next_iteration": None,
-#     }
+    return JsonResponse({"success": False, "message": "Invalid request."})
 
-#     # Get the current release from the project
-#     if project.project_release:
-#         # Fetch the release
-#         got_release = project.project_release
-#         #release = OrgRelease.objects.get(id=got_release.id, active=True)
-#         release = get_object_or_404(OrgRelease, id=got_release.id, active=True)
-#         if not release:
-#             return details
-#         # Check if the release dates have time components
-#         release_start_has_time = (
-#             release.release_start_date.time() != time(0, 0, 0) if release.release_start_date else False
-#         )
-#         release_end_has_time = (
-#             release.release_end_date.time() != time(0, 0, 0) if release.release_end_date else False
-#         )
-#         logger.debug(f"Release start date: {release.release_start_date} ==> {release_start_has_time}")
-#         logger.debug(f"Release end date: {release.release_end_date} ==> {release_end_has_time}")
-#         # Python date comparison
-#         if release.release_start_date and release.release_end_date:
-#             if (
-#                 release.release_start_date.date() <= current_datetime.date() <= release.release_end_date.date()
-#                 if not release_start_has_time or not release_end_has_time
-#                 else release.release_start_date <= current_datetime <= release.release_end_date
-#             ):
-#                 details["current_release"] = release
-
-#     # Get the current and next iterations
-#     if project.project_release:
-#         # Fetch all iterations for the release
-#         iterations = OrgIteration.objects.filter(
-#             org_release=project.project_release,
-#             active=True,
-#         ).order_by("iteration_start_date")
-
-       
-
-#         for iteration in iterations:
-#             # Check if iteration dates have time components
-#             iteration_start_has_time = (
-#                 iteration.iteration_start_date.time() != time(0, 0, 0) if iteration.iteration_start_date else False
-#             )
-#             iteration_end_has_time = (
-#                 iteration.iteration_end_date.time() != time(0, 0, 0) if iteration.iteration_end_date else False
-#             )
-#             logger.debug(f"Iteration start date: {iteration.iteration_start_date} ==> {iteration_start_has_time}")
-#             logger.debug(f"Iteration end date: {iteration.iteration_end_date} ==> {iteration_end_has_time}")
-#             # Python date comparison for current_iteration
-#             if (
-#                 iteration.iteration_start_date.date() <= current_datetime.date() <= iteration.iteration_end_date.date()
-#                 if not iteration_start_has_time or not iteration_end_has_time
-#                 else iteration.iteration_start_date <= current_datetime <= iteration.iteration_end_date
-#             ):
-#                 current_iteration = iteration
-
-#             # Identify the next_iteration
-#             if current_iteration and iteration.iteration_start_date >= current_iteration.iteration_end_date:
-#                 next_iteration = iteration
-#                 break
-
-#         # Add results to the details dictionary
-#         details["current_iteration"] = current_iteration
-#         details["next_iteration"] = next_iteration
-
-#     return details
+def ajax_soft_delete_user(request, user_id):
+    user = get_object_or_404(UserProfile, id=user_id)
+    user.is_active = False  # Soft delete
+    user.save()
+    return JsonResponse({"success": True, "message": "User deleted successfully."})

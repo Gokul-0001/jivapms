@@ -455,14 +455,7 @@ def org_homepage(request,  org_id):
     for project in projects:
         logger.debug(f"Project: {project.name}, Roles: {project_roles_dict.get(project.id, [])}")
     
-    # projects = Project.objects.filter(
-    #             project_members__member__in=memberships,
-    #             project_members__project_role_id__in=role_ids,
-    #             project_members__active=True,
-    #             org_id=org_id,
-    #             active=True
-    #         ).distinct().order_by('position')
-    #logger.debug(f">>> === projects: {projects} with memberships {memberships} === <<<")
+  
     # Prepare context with projects and their roles
     projects_with_roles = []
     for project in projects:

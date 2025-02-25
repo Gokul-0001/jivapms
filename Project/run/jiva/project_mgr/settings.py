@@ -181,3 +181,32 @@ WARNING: An indication that something unexpected happened, or indicative of some
 ERROR: Due to a more serious problem, the software has not been able to perform some function.
 CRITICAL: A serious error, indicating that the program itself may be unable to continue running.
 """
+
+
+import environ
+import os
+
+# Define the path to the .env file
+ENV_PATH = os.path.abspath("../../../../../../../.dev-env")  # Ensure the absolute path
+
+# Initialize environment variables
+env = environ.Env()
+
+# Check if the file exists before reading it
+if os.path.exists(ENV_PATH):
+    environ.Env.read_env(env_file=ENV_PATH)  # Specify the file path
+    print(f"Environment file found: {ENV_PATH}")  # Debugging statement
+else:
+    print(f"Environment file NOT found at {ENV_PATH}")  # Debugging statement
+
+# Check if environment variables are loaded correctly
+try:
+    EMAIL_HOST_USER = env("EMAIL_ADDR_NAME")
+    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+    print(f"EMAIL_HOST_USER loaded: {EMAIL_HOST_USER}")  # Debugging statement
+except environ.ImproperlyConfigured as e:
+    print(f"Error loading environment variables: {e}")  # Debugging statement
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
