@@ -662,21 +662,48 @@ def ajax_check_email(request):
     return JsonResponse({"exists": email_exists})
 
 
+# def search_users(request):
+#     query = request.GET.get("query", "").strip()
+#     users = User.objects.filter(is_active=True)  # Show only active users
+
+#     if query:
+#         users = users.filter(
+#             username__icontains=query
+#         ) | users.filter(email__icontains=query) 
+
+#     #return render(request, "user_list.html", {"users": users})
+#     context = {
+#         "users": users,
+#     }
+#     template_url = f"app_jivapms/mod_web/site_admin/site_admin_user_search_results.html"
+#     return render(request, template_url, context)   
+
+
 def search_users(request):
     query = request.GET.get("query", "").strip()
-    users = User.objects.filter(is_active=True)  # Show only active users
+    org_id = request.GET.get("org_id")
+    org = Organization.objects.get(id=org_id, active=True)
+    # Get active users who are members in the MemberOrganizationRole model
+    users = User.objects.filter(is_active=True, member__isnull=False).distinct()
 
     if query:
         users = users.filter(
             username__icontains=query
         ) | users.filter(email__icontains=query) 
 
-    #return render(request, "user_list.html", {"users": users})
+    # Fetch the relevant MemberOrganizationRole entries
+    mor_data = MemberOrganizationRole.objects.filter(member__user__in=users)
+
     context = {
+        "page": "List Users",
+        "org": org,
         "users": users,
+        "mor_data": mor_data,  # Include the related MemberOrganizationRole data
     }
-    template_url = f"app_jivapms/mod_web/site_admin/site_admin_user_search_results.html"
-    return render(request, template_url, context)   
+    
+    template_url = f"app_jivapms/mod_web/site_admin/site_admin_list_users.html"
+    return render(request, template_url, context)
+
 
 def ajax_edit_user(request, user_id):
     user = get_object_or_404(UserProfile, id=user_id)

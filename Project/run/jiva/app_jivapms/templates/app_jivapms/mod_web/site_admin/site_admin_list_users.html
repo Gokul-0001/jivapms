@@ -2,5 +2,391 @@
 {% load static %}
 
 {% block content %}
+{% include 'app_common/common_files/navbar.html' %}
+{% include 'app_jivapms/mod_web/common_files/css.html' %}
+<style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 5px; border: 1px solid #ddd; }
+    input, select { width: 100%; padding: 5px; border: 1px solid #ccc; }
+    .invalid-email { border: 2px solid red; } /* Highlight invalid email */
+    .small-width { width: 5%; text-align: center; } /* Small width for serial number */
+    .delete-btn, .view-btn { cursor: pointer; } /* Buttons cursor */
+    .delete-btn { color: red; } /* Delete button color */
+    .view-btn { color: blue; } /* View button color */
+    .status-icon { font-size: 18px; } /* Status icon size */
+    .success-msg, .error-msg { font-size: 12px; padding: 3px; display: block; text-align: center; }
+    .success-msg { color: green; font-weight: bold; }
+    .error-msg { color: red; font-weight: bold; }
+    .message-row { height: 30px; } /* Small message row */
+    #searchUser { width: 50%; padding: 5px; border: 1px solid #ccc; text-align: center; }
+/* Modal Styling */
+.modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        top: 50%;
+        width: 60%;
+        height: 60%;
+        transform: translate(-50%, -50%);
+        background: white;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+        border-radius: 10px;
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    /* Modal Header */
+    .modal-header {
+        background: #007BFF;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        padding: 10px;
+        position: relative;
+    }
 
+    /* Close Button */
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    /* Modal Content */
+    .modal-body {
+        padding: 20px;
+    }
+
+    /* User Details Table */
+    .user-details-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .user-details-table th, .user-details-table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    .user-details-table th {
+        background: #f7f7f7;
+        width: 30%;
+    }
+</style>
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+    
+    <div class="contentbar" id="contentbar">
+        <table class="table-borderless">
+            <tr>
+                <td width="33.33%"><b class="desc"> {{org.name}} </b><b class="desc">:: User Creation </b></td>
+                <td width="33.33%" style="text-align: center;">
+                   <!-- Search Form -->
+                   <form id="searchForm" action="{% url 'search_users' %}" method="get">
+                    <input type="hidden" id="orgId" name="org_id" value="{{ org.id }}">
+                    <input type="text" id="searchUser" name="query" placeholder="Search user...">
+                    <button type="submit" class="btn btn-primary">🔍 Search</button>
+                    </form>
+
+                </td>
+                <td width="33.33%" style="text-align: end;"><a href="{% url 'list_organizations' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Organizations
+                </a></td>
+            </tr>
+            <tr class="message-row">
+                <td colspan="9" style="text-align: center;">
+                    <span id="message" class=""></span> <!-- Success/Error Message Area -->
+                </td>
+            </tr>
+        </table>
+
+        <form method="post" id="bulk-user-form">
+            {% csrf_token %}
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th class="small-width">#</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Username</th>
+                        <th class="small-width">View</th>
+                        <th class="small-width">Edit</th>                        
+                        <th class="small-width">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr class="user-row">
+                        <td class="small-width">{{forloop.counter}}</td>
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        <td>
+                            {{user.email}}
+                            
+                        </td>
+                        <td>
+                            {% for mor in mor_data %}
+                                {% if mor.member.user == user %}
+                                    {{ mor.role.name }} <br>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{user.username}}</td>
+                       
+                        <td class="small-width text-center view-cell">
+                            <i class="bi bi-eye view-btn" onclick="viewUser(this)"></i>
+                        </td>
+                        <td class="small-width text-center status-cell">
+                            <i class="bi bi-pencil"></i>
+                         </td>
+                        <td class="small-width text-center">
+                            <i class="bi bi-trash delete-btn" onclick="deleteRow(this)"></i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+           
+        </form>
+    </div>
+</div>
+
+<!-- Modal for Viewing User -->
+<div id="userModal" class="modal">
+    <div class="modal-header">
+        User Details
+        <span class="close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+        <table class="user-details-table">
+            <tbody id="modalContent"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+     function generateUsername(element) {
+        let row = $(element).closest("tr");
+        let firstName = row.find(".first-name").val().toLowerCase().trim();
+        let lastName = row.find(".last-name").val().toLowerCase().trim();
+        
+        if (firstName && lastName) {
+            let username = firstName + "." + lastName;
+            row.find(".username").val(username);
+        }
+    }
+
+    function isValidEmail(email) {
+        let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailPattern.test(email);
+    }
+
+    function checkEmailAvailability(element) {
+        let emailField = $(element);
+        let email = emailField.val().trim();
+
+        if (!isValidEmail(email)) {
+            emailField.addClass("invalid-email");
+            showMessage("Please enter a valid email address.", "error");
+            return;
+        } else {
+            emailField.removeClass("invalid-email");
+        }
+
+        $.ajax({
+            url: "{% url 'ajax_check_email' %}",
+            data: { "email": email },
+            success: function(response) {
+                if (response.exists) {
+                    emailField.addClass("invalid-email");
+                    showMessage("This email is already taken. Please choose another.", "error");
+                } else {
+                    emailField.removeClass("invalid-email");
+                }
+            }
+        });
+    }
+
+    function deleteRow(element) {
+        $(element).closest("tr").remove();
+        // Check if table is empty after deletion, if yes, add a new row
+        if ($("#userTable tbody tr").length === 0) {
+            addNewRow();
+        }
+        $("#userTable tbody tr").each(function (index) {
+            $(this).find("td.small-width").first().text(index + 1);
+        });
+    }
+
+    function showMessage(msg, type) {
+        let messageDiv = $("#message");
+        messageDiv.text(msg);
+        messageDiv.removeClass("success-msg error-msg");
+
+        if (type === "success") {
+            messageDiv.addClass("success-msg");
+        } else {
+            messageDiv.addClass("error-msg");
+        }
+    }
+    function searchUser(event) {
+        event.preventDefault(); // Prevent form from reloading the page
+
+        let query = document.getElementById("searchUser").value.trim();
+
+        fetch(`/search_users/?org_id={{org.id}}&query=${query}`)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("userTable").innerHTML = data; // Update table with results
+            });
+    }
+
+
+    function deleteRow(element) {
+        element.closest("tr").remove();
+    }
+   
+    // Function to add a new row when required
+    function addNewRow() {
+        let newRow = $(".user-row:first").clone();
+        newRow.find("input").val(""); 
+        newRow.find("select").val(""); 
+        newRow.find(".status-cell").html('<i class="bi bi-hourglass-split text-warning status-icon"></i>'); 
+        $("#userTable tbody").append(newRow);
+
+        // Reset row numbers
+        $("#userTable tbody tr").each(function (index) {
+            $(this).find("td.small-width").first().text(index + 1);
+        });
+
+        newRow.find(".first-name").focus();
+    }
+    $(document).ready(function () {
+    $("#addRow").click(function (e) {
+        e.preventDefault();
+
+        let newRow = $(".user-row:first").clone();
+        newRow.find("input").val(""); 
+        newRow.find("select").val(""); 
+        newRow.find(".status-cell").html('<i class="bi bi-hourglass-split text-warning status-icon"></i>'); 
+        $("#userTable tbody").append(newRow);
+
+        $("#userTable tbody tr").each(function (index) {
+            $(this).find("td.small-width").first().text(index + 1);
+        });
+
+        newRow.find(".first-name").focus();
+    });
+
+
+    $("#submitUsers").click(function (e) {
+        e.preventDefault();
+
+        let users = [];
+        let isValid = true;
+        let errorMessage = "";
+
+        $(".user-row").each(function () {
+            let row = $(this);
+            let firstName = row.find(".first-name").val().trim();
+            let lastName = row.find(".last-name").val().trim();
+            let emailField = row.find(".email");
+            let email = emailField.val().trim();
+            let roleField = row.find(".role");
+            let role = roleField.val();
+
+            // Skip already submitted rows
+            if (row.find(".status-cell i").hasClass("bi-check-circle")) {
+                return;
+            }
+
+            // Ignore empty rows
+            if (!firstName && !lastName && !email && !role) {
+                return;
+            }
+
+            // Validate Email Format
+            if (!isValidEmail(email)) {
+                emailField.addClass("invalid-email");
+                errorMessage += "❌ Please enter a valid email (e.g., name@example.com).";
+                isValid = false;
+            } else {
+                emailField.removeClass("invalid-email");
+            }
+
+            // Validate Role Selection
+            if (!role) {
+                roleField.css("border", "2px solid red"); // Highlight dropdown
+                errorMessage += "❌ Please select a role.";
+                isValid = false;
+            } else {
+                roleField.css("border", "1px solid #ccc"); // Reset border
+            }
+
+            users.push({
+                first_name: firstName,
+                last_name: lastName,
+                username: row.find(".username").val(),
+                email: email,
+                role_id: role,
+            });
+        });
+
+        if (!isValid) {
+            showMessage(errorMessage, "error");
+            return;
+        }
+        // Update status to processing
+        showMessage("Please wait... while processing the data", "error");
+        $.ajax({
+            url: "{% url 'ajax_submit_users' %}",
+            type: "POST",
+            data: JSON.stringify({ users: users , org_id: "{{ org.id }}" }),
+            contentType: "application/json",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function (response) {
+                showMessage("✅ Users successfully submitted!", "success");
+                showMessage(response.message, "success");
+                $(".user-row").each(function () {
+                    let row = $(this);
+                    if (!row.find(".status-cell i").hasClass("bi-check-circle")) {
+                        row.find(".status-cell").html('<i class="bi bi-check-circle text-success status-icon"></i>');
+                        row.find(".view-cell").html('<i class="bi bi-eye view-btn" onclick="viewUser(this)"></i>');
+                    }
+                });
+            }
+        });
+    });
+
+
+});
+
+
+    function viewUser(element) {
+        let row = $(element).closest("tr");
+        let userDetails = `
+     
+            <tr><th>First Name</th><td>${row.find(".first-name").val()}</td></tr>
+            <tr><th>Last Name</th><td>${row.find(".last-name").val()}</td></tr>
+            <tr><th>Email</th><td>${row.find(".email").val()}</td></tr>
+            <tr><th>Role</th><td>${row.find(".role option:selected").text()}</td></tr>
+            <tr><th>Username</th><td>${row.find(".username").val()}</td></tr>
+            
+        `;
+        document.getElementById("modalContent").innerHTML = userDetails;
+        document.getElementById("userModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("userModal").style.display = "none";
+    }
+</script>
 {% endblock content %}

@@ -116,7 +116,7 @@ class OrgAdmin(BaseModelImpl):
 # Can assign project specific roles to members of orgs
 class ProjectAdmin(BaseModelImpl):
     member = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True,
-                               related_name="org_admin_roles")
+                               related_name="project_admin_roles")
    
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_projectadmin")

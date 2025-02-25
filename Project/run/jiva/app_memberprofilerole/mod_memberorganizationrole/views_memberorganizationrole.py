@@ -38,10 +38,17 @@ def list_memberorganizationroles(request, org_id):
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get('search', '').strip()
+    
     if search_query:
-        tobjects = MemberOrganizationRole.objects.filter(name__icontains=search_query, 
-                                             **viewable_dict).order_by('position')
+        tobjects = MemberOrganizationRole.objects.filter(
+            (Q(member__user__first_name__icontains=search_query) |
+            Q(member__user__last_name__icontains=search_query) |
+            Q(member__user__email__icontains=search_query) |
+            Q(role__name__icontains=search_query)),  # Also search in Role name
+            **viewable_dict
+        ).order_by('position')
+        
     else:
         tobjects = MemberOrganizationRole.objects.filter(active=True, org_id=org_id).order_by('position')
         deleted = MemberOrganizationRole.objects.filter(active=False, deleted=False,
@@ -136,11 +143,15 @@ def list_deleted_memberorganizationroles(request, org_id):
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
     
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get('search', '').strip()
     if search_query:
-        tobjects = MemberOrganizationRole.objects.filter(name__icontains=search_query, 
-                                            active=False,
-                                            org_id=org_id, **viewable_dict).order_by('position')
+         tobjects = MemberOrganizationRole.objects.filter(
+            (Q(member__user__first_name__icontains=search_query) |
+            Q(member__user__last_name__icontains=search_query) |
+            Q(member__user__email__icontains=search_query) |
+            Q(role__name__icontains=search_query)),  # Also search in Role name
+            **viewable_dict
+        ).order_by('position')
     else:
         tobjects = MemberOrganizationRole.objects.filter(active=False, org_id=org_id,
                                             **viewable_dict).order_by('position')        
@@ -235,15 +246,15 @@ def create_memberorganizationrole(request, org_id):
 
 
 
-
 # Edit
 @login_required
 def edit_memberorganizationrole(request, org_id, memberorganizationrole_id):
     user = request.user
     organization = Organization.objects.get(id=org_id, active=True, 
                                                 **first_viewable_dict)
+    member_role = get_object_or_404(MemberOrganizationRole, id=memberorganizationrole_id)
     
-    object = get_object_or_404(Memberorganizationrole, pk=memberorganizationrole_id, active=True,**viewable_dict)
+    object = get_object_or_404(MemberOrganizationRole, pk=memberorganizationrole_id, active=True,**viewable_dict)
     if request.method == 'POST':
         form = MemberorganizationroleForm(request.POST, instance=object)
         if form.is_valid():

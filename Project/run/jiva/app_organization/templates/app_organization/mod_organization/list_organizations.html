@@ -142,6 +142,7 @@ org_id
                                     {% if is_site_admin %}
                                     &nbsp;&nbsp;<a href="{% url 'list_memberorganizationroles'   tobject.id  %}">Org Membership</a>
                                     &nbsp;&nbsp;<a href="{% url 'site_admin_bulk_add_user' tobject.id %}">User Management </a>
+                                    &nbsp;&nbsp;<a href="{% url 'list_memberorganizationroles' tobject.id %}">Member Management </a>
                                     {% endif %}
                                 </td>
                                 <td width="50%">

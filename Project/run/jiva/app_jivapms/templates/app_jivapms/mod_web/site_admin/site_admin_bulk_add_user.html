@@ -87,11 +87,11 @@
             <tr>
                 <td width="33.33%"><b class="desc"> {{org.name}} </b><b class="desc">:: User Creation </b></td>
                 <td width="33.33%" style="text-align: center;">
-                   <!-- Search Form -->
-                    <form id="searchForm" action="{% url 'search_users' %}" method="get">
-                        
-                        <input type="text" id="searchUser" name="query" placeholder="Search user...">
-                        <button type="submit" class="btn btn-primary">🔍 Search</button>
+                    <!-- Search Form -->
+                    <form id="searchForm" action="{% url 'list_memberorganizationroles' org.id %}" method="get">
+                    <input type="hidden" id="orgId" name="org_id" value="{{ org.id }}">
+                    <input type="text" id="searchUser" name="query" placeholder="Search user...">
+                    <button type="submit" class="btn btn-primary">🔍 Search</button>
                     </form>
 
                 </td>
@@ -240,16 +240,18 @@
         }
     }
     function searchUser(event) {
-        event.preventDefault(); // Prevent form from reloading the page
+        event.preventDefault(); // Prevent page reload
 
         let query = document.getElementById("searchUser").value.trim();
+        let orgId = "{{ org.id }}";  // Get org_id from Django context
 
-        fetch(`/search_users/?query=${query}`)
+        fetch(`/search_users/?org_id=${orgId}&query=${query}`)
             .then(response => response.text())
             .then(data => {
-                document.getElementById("userTable").innerHTML = data; // Update table with results
+                document.getElementById("userTable").innerHTML = data; // Update table with search results
             });
     }
+
 
 
     function deleteRow(element) {

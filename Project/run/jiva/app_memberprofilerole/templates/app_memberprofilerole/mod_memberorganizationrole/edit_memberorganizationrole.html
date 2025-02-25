@@ -59,26 +59,37 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td width="15%">
-                                <strong>Memberorganizationrole</strong>
-                            </td>
-                            <td>
-                                {{form.name|as_crispy_field}}
-                            </td>
+                            <td width="15%"><strong>First Name</strong></td>
+                            <td>{{ form.first_name|as_crispy_field }}</td>
                         </tr>
                         <tr>
-                            <td>
-                                <strong>Description</strong>
-                            </td>
-                            <td>
-                                {{form.description|as_crispy_field}}
-                            </td>
+                            <td><strong>Last Name</strong></td>
+                            <td>{{ form.last_name|as_crispy_field }}</td>
                         </tr>
-                       <tr>
-                            <td colspan="2" class="text-center"><button type="submit"
-                                class="btn btn-sm btn-success">Save</button></td>
+                        <tr>
+                            <td><strong>Email</strong></td>
+                            <td>{{ form.email|as_crispy_field }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Member</strong></td>
+                            <td>{{ form.member|as_crispy_field }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Organization</strong></td>
+                            <td>{{ form.org|as_crispy_field }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Role</strong></td>
+                            <td>{{ form.role|as_crispy_field }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center">
+                                <button type="submit" class="btn btn-sm btn-success">Save</button>
+                                <a href="{% url 'list_memberorganizationroles' org_id  %}" class="btn btn-sm btn-secondary">Cancel</a>
+                            </td>
                         </tr>
                     </tbody>
+                    
                 </table>
             </div>
         </div>
