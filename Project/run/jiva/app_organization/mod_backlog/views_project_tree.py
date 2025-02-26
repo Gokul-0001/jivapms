@@ -241,6 +241,39 @@ def edit_project_tree_backlog_item(request, pro_id, backlog_item_id):
     template_file = f"{app_name}/{module_path}/edit_project_tree_backlog_item.html"
     return render(request, template_file, context)
 
+##########################################################################################################
+# 
+#
+#
+#
+##########################################################################################################
+import csv
+@login_required
+def export_backlog_csv(request):
+    # Create HTTP response with CSV content type
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="backlog.csv"'
+
+    # Create a CSV writer
+    writer = csv.writer(response)
+
+    # Write CSV Header
+    writer.writerow(['ID', 'Title', 'Description', 'Status', 'Created Date', 'Assigned To'])
+
+    # Fetch backlog data (Modify based on your actual model fields)
+    backlogs = Backlog.objects.filter()
+
+    for backlog in backlogs:
+        writer.writerow([
+            backlog.id,
+            backlog.title,
+            backlog.description,
+            backlog.status,
+            backlog.created_at.strftime('%Y-%m-%d'),  # Formatting date
+            backlog.assigned_to.username if backlog.assigned_to else "Unassigned"
+        ])
+
+    return response
 
 @login_required
 def view_project_tree_backlog(request, pro_id):

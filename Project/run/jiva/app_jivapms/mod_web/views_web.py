@@ -623,6 +623,7 @@ def ajax_submit_users(request):
                     continue  # Skip this user if any required field is missing
                 
                 if User.objects.filter(username=user_data["username"]).exists():
+                    print(f">>> === Skipped: {user_data['username']} already exists === <<<")
                     continue  # Skip if username already exists
 
                 # Create user
