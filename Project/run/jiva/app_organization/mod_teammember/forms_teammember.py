@@ -36,5 +36,5 @@ class TeammemberForm(forms.ModelForm):
         
         # Alternatively, if the instance exists and is related to a team, you can pull the team from the instance
         elif self.instance and self.instance.pk:
-            organization = self.instance.team.org
+            organization = self.instance.tea.org
             self.fields['member_role'].queryset = Memberrole.objects.filter(org=organization)
