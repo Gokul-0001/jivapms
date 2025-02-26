@@ -284,10 +284,12 @@ def create_organization(request):
         if form.is_valid():
             form.instance.author = user
             form.save()
+
+            org_admin_roles = Role.objects.filter(name=org_admin_str, org=form.instance).values_list('id', flat=True)
             member = Member.objects.filter(user=user, active=True).first()
             member_create, created = MemberOrganizationRole.objects.get_or_create(member=member, 
                                                                                   org=form.instance, 
-                                                                                  role=Role.objects.get(name=org_admin_str))
+                                                                                  role_id__in=org_admin_roles)
             logger.debug(f">>> === member_create: {member_create} === <<<")
         else:
             print(f">>> === form.errors: {form.errors} === <<<")

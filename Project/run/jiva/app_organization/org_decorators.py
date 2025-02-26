@@ -203,16 +203,42 @@ def site_admin_this_org_admin_or_member_of_org(view_func):
         # Check if user is a Site Admin (general admin role)
         is_site_admin = MemberOrganizationRole.objects.filter(name=site_admin_str).exists()
 
-        # role id
-        org_admin_role_id = Role.objects.get(name=org_admin_str, org_id=org_id).id
-        
-        # Check if the user is an Organization Admin for this organization
-        is_org_admin = MemberOrganizationRole.objects.filter(
-            member_id=member.id, 
-            org=organization, 
-            role=org_admin_role_id,  # Assuming this is the role for Org Admin
-            active=True
-        ).exists()
+        # # role id
+        # print(f">>> === CHECKING THE ORG ADMIN ROLE : {org_admin_str} === <<<")
+        # org_admin_role_id = Role.objects.get(name=org_admin_str, org_id=org_id).id
+        # print(f">>> === ORG ADMIN ROLE ID : {org_admin_role_id} === <<<")
+        # # Check if the user is an Organization Admin for this organization
+        # is_org_admin = MemberOrganizationRole.objects.filter(
+        #     member_id=member.id, 
+        #     org=organization, 
+        #     role=org_admin_role_id,  # Assuming this is the role for Org Admin
+        #     active=True
+        # ).exists()
+
+        from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+
+        # Fetching all Org Admin roles within the organization
+        print(f">>> === CHECKING THE ORG ADMIN ROLE : {org_admin_str} IN {organization} === <<<")
+        check_roles = Role.objects.filter(org_id=org_id)
+        print(f">>> === ALL ROLES IN THE ORGANIZATION : {check_roles} === <<<")
+        org_admin_roles = Role.objects.filter(name=org_admin_str, org_id=org_id).values_list('id', flat=True)
+
+        if not org_admin_roles:
+            print(">>> === No Org Admin role found for this organization === <<<")
+            is_org_admin = False
+        else:
+            print(f">>> === ORG ADMIN ROLE IDs : {list(org_admin_roles)} === <<<")
+
+            # Check if the user has any of these roles in the organization
+            is_org_admin = MemberOrganizationRole.objects.filter(
+                member_id=member.id, 
+                org=organization, 
+                role_id__in=org_admin_roles,  # Filter with multiple role IDs
+                active=True
+            ).exists()
+
+        print(f">>> === IS ORG ADMIN? {is_org_admin} === <<<")
+
 
         # Check if the user has any member role within the organization
         is_member = MemberOrganizationRole.objects.filter(
