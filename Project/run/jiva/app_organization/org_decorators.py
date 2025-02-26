@@ -204,7 +204,7 @@ def site_admin_this_org_admin_or_member_of_org(view_func):
         is_site_admin = MemberOrganizationRole.objects.filter(name=site_admin_str).exists()
 
         # role id
-        org_admin_role_id = Role.objects.get(name=org_admin_str).id
+        org_admin_role_id = Role.objects.get(name=org_admin_str, org_id=org_id).id
         
         # Check if the user is an Organization Admin for this organization
         is_org_admin = MemberOrganizationRole.objects.filter(

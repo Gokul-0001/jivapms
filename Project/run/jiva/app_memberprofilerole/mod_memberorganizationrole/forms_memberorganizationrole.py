@@ -4,10 +4,9 @@ from app_memberprofilerole.mod_app.all_form_imports import *
 from app_memberprofilerole.mod_member.models_member import *
 
 class MemberorganizationroleForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=150, required=True, label="First Name")
-    last_name = forms.CharField(max_length=150, required=True, label="Last Name")
-    email = forms.EmailField(required=True, label="Email")
-
+    first_name = forms.CharField(max_length=150, required=False, label="First Name")
+    last_name = forms.CharField(max_length=150, required=False, label="Last Name")
+    email = forms.EmailField(required=False, label="Email")
     class Meta:
         model = MemberOrganizationRole
         fields = ['member', 'org', 'role']  # Keep original fields
@@ -35,3 +34,4 @@ class MemberorganizationroleForm(forms.ModelForm):
                 instance.save()  # Save MemberOrganizationRole changes
 
         return instance
+

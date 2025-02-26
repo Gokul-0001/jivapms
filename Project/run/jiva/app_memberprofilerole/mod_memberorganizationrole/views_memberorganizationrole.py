@@ -212,22 +212,73 @@ def list_deleted_memberorganizationroles(request, org_id):
 
 
 
-# Create View
+# # Create View
+# @login_required
+# def create_memberorganizationrole(request, org_id):
+#     user = request.user
+#     organization = Organization.objects.get(id=org_id, active=True, 
+#                                                 **first_viewable_dict)
+    
+#     if request.method == 'POST':
+#         form = MemberorganizationroleForm(request.POST)
+#         if form.is_valid():
+#             form.instance.author = user
+#             form.instance.org_id = org_id
+#             form.save()
+#         else:
+#             print(f">>> === form.errors: {form.errors} === <<<")
+#         return redirect('list_memberorganizationroles', org_id=org_id)
+#     else:
+#         form = MemberorganizationroleForm()
+
+#     context = {
+#         'parent_page': '___PARENTPAGE___',
+#         'page': 'create_memberorganizationrole',
+#         'organization': organization,
+#         'org_id': org_id,
+        
+#         'module_path': module_path,
+#         'form': form,
+#         'page_title': f'Create Memberorganizationrole',
+#     }
+#     template_file = f"{app_name}/{module_path}/create_memberorganizationrole.html"
+#     return render(request, template_file, context)
 @login_required
 def create_memberorganizationrole(request, org_id):
     user = request.user
-    organization = Organization.objects.get(id=org_id, active=True, 
-                                                **first_viewable_dict)
-    
+    organization = Organization.objects.get(id=org_id, active=True, **first_viewable_dict)
+
     if request.method == 'POST':
         form = MemberorganizationroleForm(request.POST)
+
         if form.is_valid():
-            form.instance.author = user
-            form.instance.org_id = org_id
-            form.save()
+            member_role = form.save(commit=False)  # Do not commit yet
+            member_role.author = user
+            member_role.org_id = org_id
+
+            # Fetch hidden fields manually
+            first_name = request.POST.get("first_name", "").strip()
+            last_name = request.POST.get("last_name", "").strip()
+            email = request.POST.get("email", "").strip()
+
+            # Ensure the related User model is updated
+            if member_role.member and member_role.member.user:
+                user = member_role.member.user
+
+                if first_name:
+                    user.first_name = first_name
+                if last_name:
+                    user.last_name = last_name
+                if email:
+                    user.email = email
+
+                user.save()  # Save updated User fields
+
+            member_role.save()  # Save MemberOrganizationRole instance
+            return redirect('list_memberorganizationroles', org_id=org_id)
         else:
-            print(f">>> === form.errors: {form.errors} === <<<")
-        return redirect('list_memberorganizationroles', org_id=org_id)
+            print(f">>> === form.errors: {form.errors} === <<<")  # Debugging
+
     else:
         form = MemberorganizationroleForm()
 
@@ -236,10 +287,9 @@ def create_memberorganizationrole(request, org_id):
         'page': 'create_memberorganizationrole',
         'organization': organization,
         'org_id': org_id,
-        
         'module_path': module_path,
         'form': form,
-        'page_title': f'Create Memberorganizationrole',
+        'page_title': 'Create MemberOrganizationRole',
     }
     template_file = f"{app_name}/{module_path}/create_memberorganizationrole.html"
     return render(request, template_file, context)

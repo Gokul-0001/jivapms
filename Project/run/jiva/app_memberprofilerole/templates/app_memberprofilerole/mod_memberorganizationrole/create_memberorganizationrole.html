@@ -43,19 +43,22 @@
                         <tr>
                             <td width="15%">
                                 <strong>Member</strong>
+                                <input type="hidden" name="email" value="{{form.instance.member.user.email}}">
+                                <input type="hidden" name="first_name" value="{{form.instance.member.user.first_name}}">
+                                <input type="hidden" name="last_name" value="{{form.instance.member.user.last_name}}">
                             </td>
                             <td>
                                 {{form.member|as_crispy_field}}
                             </td>
                         </tr>
-                        <tr>
+                        <!-- <tr>
                             <td>
                                 <strong>Organization</strong>
                             </td>
                             <td>
                                 {{form.org|as_crispy_field}}
                             </td>
-                        </tr>
+                        </tr> -->
                         <tr>
                             <td>
                                 <strong>Role</strong>
