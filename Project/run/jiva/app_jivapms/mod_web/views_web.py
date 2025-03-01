@@ -102,7 +102,7 @@ def index(request):
                     }
                     print(f">>> === {roles} === <<<")
                     for role in roles:
-                        if role.role.name:
+                        if role.role and role.role.name:
                             role_data = {
                                 'org_id': role.org.id if role.org else None,
                                 'role_id': role.role.id if role.role else None,
