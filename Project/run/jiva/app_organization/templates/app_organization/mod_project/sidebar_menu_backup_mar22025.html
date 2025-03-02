@@ -43,11 +43,6 @@
             <span>Board</span>
         </a>
 
-        <a href="{% url 'list_project_workflows' project.id %}" class="nav-link" >
-            <i class="material-icons" style="font-size: 18px;">arrow_forward</i>
-            <span>Workflow</span>
-        </a>
-
         {% endif %}
 
 
@@ -57,7 +52,10 @@
 
         {% if org_id %} 
         
-       
+        <a href="{% url 'list_org_work_flows' org_id %}{% if project.id %}?project_id={{project.id}}{% endif %}" class="nav-link" >
+            <i class="material-icons" style="font-size: 18px;">arrow_forward</i>
+            <span>Workflow</span>
+        </a>
         <a href="{% url 'list_teams' org_id %}{% if project.id %}?project_id={{project.id}}{% endif %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">groups</i>            
             <span>Teams</span>

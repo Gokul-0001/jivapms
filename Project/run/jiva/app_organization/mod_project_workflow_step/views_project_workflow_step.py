@@ -37,7 +37,10 @@ def list_project_workflow_steps(request, project_workflow_id):
     deleted_count = 0
     project_workflow = ProjectWorkflow.objects.get(id=project_workflow_id, active=True, 
                                                 **first_viewable_dict)
-    
+    project_id = None 
+    if request.GET.get('project_id'):
+        project_id = request.GET.get('project_id')
+        project = Project.objects.get(id=project_id, active=True)
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = ProjectWorkflowStep.objects.filter(name__icontains=search_query, 
@@ -101,7 +104,11 @@ def list_project_workflow_steps(request, project_workflow_id):
         'page': 'list_project_workflow_steps',
         'project_workflow': project_workflow,
         'project_workflow_id': project_workflow_id,
-        
+        'org_id': project_workflow.project.org.id,
+        'project_id': project_id,
+        'project': project,
+
+
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -184,7 +191,7 @@ def list_deleted_project_workflow_steps(request, project_workflow_id):
         'page': 'list_deleted_project_workflow_steps',
         'project_workflow': project_workflow,
         'project_workflow_id': project_workflow_id,
-        
+        'org_id': project_workflow.project.org.id,
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -225,7 +232,7 @@ def create_project_workflow_step(request, project_workflow_id):
         'page': 'create_project_workflow_step',
         'project_workflow': project_workflow,
         'project_workflow_id': project_workflow_id,
-        
+        'org_id': project_workflow.project.org.id,
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Project Workflow Step',
@@ -234,7 +241,27 @@ def create_project_workflow_step(request, project_workflow_id):
     return render(request, template_file, context)
 
 
+# Create View
+@login_required
+def add_project_workflow_step(request, project_workflow_id):
+    user = request.user
+    project_workflow = ProjectWorkflow.objects.get(id=project_workflow_id, active=True, 
+                                                **first_viewable_dict)
+    
+    step = ProjectWorkflowStep.objects.create(author=user, project_workflow_id=project_workflow_id)
+    step.save()
 
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'add_project_workflow_step',
+        'project_workflow': project_workflow,
+        'project_workflow_id': project_workflow_id,
+        'org_id': project_workflow.project.org.id,
+        'module_path': module_path,
+        
+        'page_title': f'Add Project Workflow Step',
+    }
+    return redirect('list_project_workflow_steps', project_workflow_id=project_workflow_id)
 
 # Edit
 @login_required
@@ -261,7 +288,7 @@ def edit_project_workflow_step(request, project_workflow_id, project_workflow_st
         'page': 'edit_project_workflow_step',
         'project_workflow': project_workflow,
         'project_workflow_id': project_workflow_id,
-        
+        'org_id': project_workflow.project.org.id,
         'module_path': module_path,
         'form': form,
         'object': object,
@@ -289,7 +316,7 @@ def delete_project_workflow_step(request, project_workflow_id, project_workflow_
         'page': 'delete_project_workflow_step',
         'project_workflow': project_workflow,
         'project_workflow_id': project_workflow_id,
-        
+        'org_id': project_workflow.project.org.id,
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Project Workflow Step',
@@ -316,7 +343,7 @@ def permanent_deletion_project_workflow_step(request, project_workflow_id, proje
         'page': 'permanent_deletion_project_workflow_step',
         'project_workflow': project_workflow,
         'project_workflow_id': project_workflow_id,
-        
+        'org_id': project_workflow.project.org.id,
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Project Workflow Step',
@@ -348,7 +375,7 @@ def view_project_workflow_step(request, project_workflow_id, project_workflow_st
         'page': 'view_project_workflow_step',
         'project_workflow': project_workflow,
         'project_workflow_id': project_workflow_id,
-        
+        'org_id': project_workflow.project.org.id,
         'module_path': module_path,
         'object': object,
         'page_title': f'View Project Workflow Step',

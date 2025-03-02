@@ -14,4 +14,6 @@ urlpatterns = [
     path('permanent_deletion_project_workflow_step/<int:project_workflow_id>/<int:project_workflow_step_id>/', views_project_workflow_step.permanent_deletion_project_workflow_step, name='permanent_deletion_project_workflow_step'),
     path('restore_project_workflow_step/<int:project_workflow_id>/<int:project_workflow_step_id>/', views_project_workflow_step.restore_project_workflow_step, name='restore_project_workflow_step'),
     path('view_project_workflow_step/<int:project_workflow_id>/<int:project_workflow_step_id>/', views_project_workflow_step.view_project_workflow_step, name='view_project_workflow_step'),
+
+    path('add_project_workflow_step/<int:project_workflow_id>/', views_project_workflow_step.add_project_workflow_step, name='add_project_workflow_step'),
 ]

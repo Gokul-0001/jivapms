@@ -29,7 +29,7 @@
                                 Project Workflow :: {{object}}</h2>
                         </div>
                         <div class="col col-md-4 text-end">
-                            <a href="{% url 'list_project_workflows' organization_id %}"
+                            <a href="{% url 'list_project_workflows' project_id %}"
                              class="btn btn-sm btn-primary"><b>List Project Workflow</b></a>
                         </div>
                     </div>
@@ -45,9 +45,9 @@
                                         </div>
                                         <div class="col col-md-7">
                                             <div class="text-end">
-                                                <a href="{% url 'edit_project_workflow' organization_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
+                                                <a href="{% url 'edit_project_workflow' project_id object.id %}" class="btn btn-sm btn-primary"><b>Edit</b></a>
                                                 &nbsp;&nbsp;&nbsp;
-                                                <a href="{% url 'delete_project_workflow' organization_id object.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
+                                                <a href="{% url 'delete_project_workflow' project_id object.id %}" class="btn btn-sm btn-danger"><b>Delete</b></a>
                                             </div>
                                         </div>
                                     </div>

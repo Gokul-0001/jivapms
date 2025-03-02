@@ -250,12 +250,12 @@ def add_ops_value_stream_step(request, ops_id):
 
     context = {
         'parent_page': '___PARENTPAGE___',
-        'page': 'create_ops_value_stream_step',
+        'page': 'add_ops_value_stream_step',
         'opsvaluestream': opsvaluestream,
         'ops_id': ops_id,
         
         'module_path': module_path,
-        'page_title': f'Create Ops Value Stream Step',
+        'page_title': f'Add Ops Value Stream Step',
     }
     return redirect('list_ops_value_stream_steps', ops_id=ops_id)
 

@@ -32,6 +32,9 @@ class ProjectBoard(BaseModelTrackDateImpl):
     project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
                                 related_name="project_boards", null=True, blank=True)
     
+    project_workflow = models.ForeignKey('app_organization.ProjectWorkflow', on_delete=models.CASCADE, 
+                                related_name="project_workflow", null=True, blank=True)
+    
     org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, related_name="org_release_boards", null=True, blank=True)
     org_iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, related_name="org_iteration_boards", null=True, blank=True)
     

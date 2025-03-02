@@ -38,7 +38,7 @@
                                 <div class="row pb-2">
                                     <div class="col col-md-5">                                
                                         <b class="h3">
-                                        <a href="{% url 'list_organizations' %}" style="text-decoration: none;">
+                                        <a href="{% url 'list_projects' org_id %}" style="text-decoration: none;">
                                             {{organization}}
                                         </a>
                                         </b>
@@ -58,16 +58,16 @@
                                     <div class="col col-md-3 text-end">
                                         <span class="display_count">{{objects_count}} project_workflow(s)</span>
                                         &nbsp;&nbsp;
-                                        <a href="{% url 'create_project_workflow' organization_id  %}" 
+                                        <a href="{% url 'create_project_workflow' project_id  %}" 
                                         class="btn btn-sm btn-success"><b>+ Create Project Workflow</b></a>
                                         
                                         &nbsp;&nbsp;
-                                        <a href="{% url 'list_organizations' %}" class="btn btn-primary">
+                                        <a href="{% url 'list_projects' org_id %}" class="btn btn-primary">
                                             <i class="bi bi-arrow-left"></i>
                                         </a>
                                         &nbsp;&nbsp;
                                         {% if deleted_count > 0 %}
-                                        <a href="{% url 'list_deleted_project_workflows' organization_id %}"><i class="bi bi-trash-fill"></i></a>   
+                                        <a href="{% url 'list_deleted_project_workflows' project_id %}"><i class="bi bi-trash-fill"></i></a>   
                                         {% endif %}
                                     </div>
                                 </div>
@@ -128,18 +128,18 @@
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'ProjectWorkflow', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                         <td width="20%">
-                                            <a href="{% url 'list_project_workflow_steps'  tobject.id  %}"
+                                            <a href="{% url 'list_project_workflow_steps'  tobject.id  %}?project_id={{project_id}}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-arrow-right"></i></a>
                                             &nbsp;&nbsp;
                                         </td>
                                         <td width="50%">
-                                            <a href="{% url 'view_project_workflow' organization_id  tobject.id  %}"
+                                            <a href="{% url 'view_project_workflow' project_id  tobject.id  %}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'edit_project_workflow' organization_id  tobject.id %}"
+                                            <a href="{% url 'edit_project_workflow' project_id  tobject.id %}"
                                             class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'delete_project_workflow' organization_id  tobject.id %}"
+                                            <a href="{% url 'delete_project_workflow' project_id  tobject.id %}"
                                             class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
                                         </td>
                                     </tr>
@@ -178,19 +178,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_project_workflows' organization_id %}?page=1&all=5";
+      window.location.href = "{% url 'list_project_workflows' project_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_project_workflows' organization_id %}?page=1&all=10";
+      window.location.href = "{% url 'list_project_workflows' project_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_project_workflows' organization_id %}?page=1&all=15";
+      window.location.href = "{% url 'list_project_workflows' project_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_project_workflows' organization_id  %}?page=1&all=25";
+      window.location.href = "{% url 'list_project_workflows' project_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_project_workflows' organization_id %}?page=1&all=50";
+      window.location.href = "{% url 'list_project_workflows' project_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_project_workflows' organization_id %}?page=1&all=100";
+      window.location.href = "{% url 'list_project_workflows' project_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_project_workflows' organization_id %}?page=1&all=all";
+      window.location.href = "{% url 'list_project_workflows' project_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });

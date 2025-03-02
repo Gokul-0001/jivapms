@@ -3,7 +3,7 @@ from app_organization.mod_app.all_view_imports import *
 from app_organization.mod_project_workflow.models_project_workflow import *
 from app_organization.mod_project_workflow.forms_project_workflow import *
 
-from app_organization.mod_organization.models_organization import *
+from app_organization.mod_project.models_project import *
 
 from app_common.mod_common.models_common import *
 
@@ -25,7 +25,7 @@ def get_viewable_dicts(user, viewable_flag, first_viewable_flag):
     return viewable_dict, first_viewable_dict
 # ============================================================= #
 @login_required
-def list_project_workflows(request, organization_id):
+def list_project_workflows(request, project_id):
     # take inputs
     # process inputs
     user = request.user       
@@ -35,17 +35,17 @@ def list_project_workflows(request, organization_id):
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
     deleted_count = 0
-    organization = Organization.objects.get(id=organization_id, active=True, 
+    project = Project.objects.get(id=project_id, active=True, 
                                                 **first_viewable_dict)
     
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = ProjectWorkflow.objects.filter(name__icontains=search_query, 
-                                            organization_id=organization_id, **viewable_dict).order_by('position')
+                                            project_id=project_id, **viewable_dict).order_by('position')
     else:
-        tobjects = ProjectWorkflow.objects.filter(active=True, organization_id=organization_id).order_by('position')
+        tobjects = ProjectWorkflow.objects.filter(active=True, project_id=project_id).order_by('position')
         deleted = ProjectWorkflow.objects.filter(active=False, deleted=False,
-                                organization_id=organization_id,
+                                project_id=project_id,
                                **viewable_dict).order_by('position')
         deleted_count = deleted.count()
     
@@ -92,16 +92,18 @@ def list_project_workflows(request, organization_id):
                     object.save()
                     
                 else:
-                    redirect('list_project_workflows', organization_id=organization_id)
-            return redirect('list_project_workflows', organization_id=organization_id)
+                    redirect('list_project_workflows', project_id=project_id)
+            return redirect('list_project_workflows', project_id=project_id)
     
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'list_project_workflows',
-        'organization': organization,
-        'organization_id': organization_id,
-        'org_id': organization_id,
+        'project': project,
+        'project_id': project_id,
+        'organization': project.org,
+        'organization_id': project.org.id,
+        'org_id': project.org.id,
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -124,7 +126,7 @@ def list_project_workflows(request, organization_id):
 
 # ============================================================= #
 @login_required
-def list_deleted_project_workflows(request, organization_id):
+def list_deleted_project_workflows(request, project_id):
     # take inputs
     # process inputs
     user = request.user       
@@ -133,16 +135,16 @@ def list_deleted_project_workflows(request, organization_id):
     objects_per_page = int(show_all) if show_all != 'all' else 25
     pagination_options = [5, 10, 15, 25, 50, 100, 'all']
     selected_bulk_operations = None
-    organization = Organization.objects.get(id=organization_id, active=True, 
+    project = Project.objects.get(id=project_id, active=True, 
                                                 **first_viewable_dict)
     
     search_query = request.GET.get('search', '')
     if search_query:
         tobjects = ProjectWorkflow.objects.filter(name__icontains=search_query, 
                                             active=False, deleted=False,
-                                            organization_id=organization_id, **viewable_dict).order_by('position')
+                                            project_id=project_id, **viewable_dict).order_by('position')
     else:
-        tobjects = ProjectWorkflow.objects.filter(active=False, deleted=False, organization_id=organization_id,
+        tobjects = ProjectWorkflow.objects.filter(active=False, deleted=False, project_id=project_id,
                                             **viewable_dict).order_by('position')        
     
     if show_all == 'all':
@@ -175,16 +177,16 @@ def list_deleted_project_workflows(request, organization_id):
                         object.deleted = True             
                         object.save()    
                     else:
-                        redirect('list_project_workflows', organization_id=organization_id)
-                redirect('list_project_workflows', organization_id=organization_id)
+                        redirect('list_project_workflows', project_id=project_id)
+                redirect('list_project_workflows', project_id=project_id)
     
     # send outputs info, template,
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'list_deleted_project_workflows',
-        'organization': organization,
-        'organization_id': organization_id,
-        'org_id': organization_id,
+        'project': project,
+        'project_id': project_id,
+        
         'module_path': module_path,
         'user': user,
         'tobjects': tobjects,
@@ -203,29 +205,29 @@ def list_deleted_project_workflows(request, organization_id):
 
 # Create View
 @login_required
-def create_project_workflow(request, organization_id):
+def create_project_workflow(request, project_id):
     user = request.user
-    organization = Organization.objects.get(id=organization_id, active=True, 
+    project = Project.objects.get(id=project_id, active=True, 
                                                 **first_viewable_dict)
     
     if request.method == 'POST':
         form = ProjectWorkflowForm(request.POST)
         if form.is_valid():
             form.instance.author = user
-            form.instance.organization_id = organization_id
+            form.instance.project_id = project_id
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
-        return redirect('list_project_workflows', organization_id=organization_id)
+        return redirect('list_project_workflows', project_id=project_id)
     else:
         form = ProjectWorkflowForm()
 
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'create_project_workflow',
-        'organization': organization,
-        'organization_id': organization_id,
-        'org_id': organization_id,
+        'project': project,
+        'project_id': project_id,
+        
         'module_path': module_path,
         'form': form,
         'page_title': f'Create Project Workflow',
@@ -238,9 +240,9 @@ def create_project_workflow(request, organization_id):
 
 # Edit
 @login_required
-def edit_project_workflow(request, organization_id, project_workflow_id):
+def edit_project_workflow(request, project_id, project_workflow_id):
     user = request.user
-    organization = Organization.objects.get(id=organization_id, active=True, 
+    project = Project.objects.get(id=project_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(ProjectWorkflow, pk=project_workflow_id, active=True,**viewable_dict)
@@ -248,20 +250,20 @@ def edit_project_workflow(request, organization_id, project_workflow_id):
         form = ProjectWorkflowForm(request.POST, instance=object)
         if form.is_valid():
             form.instance.author = user
-            form.instance.organization_id = organization_id
+            form.instance.project_id = project_id
             form.save()
         else:
             print(f">>> === form.errors: {form.errors} === <<<")
-        return redirect('list_project_workflows', organization_id=organization_id)
+        return redirect('list_project_workflows', project_id=project_id)
     else:
         form = ProjectWorkflowForm(instance=object)
 
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'edit_project_workflow',
-        'organization': organization,
-        'organization_id': organization_id,
-        'org_id': organization_id,
+        'project': project,
+        'project_id': project_id,
+        
         'module_path': module_path,
         'form': form,
         'object': object,
@@ -273,23 +275,23 @@ def edit_project_workflow(request, organization_id, project_workflow_id):
 
 
 @login_required
-def delete_project_workflow(request, organization_id, project_workflow_id):
+def delete_project_workflow(request, project_id, project_workflow_id):
     user = request.user
-    organization = Organization.objects.get(id=organization_id, active=True, 
+    project = Project.objects.get(id=project_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(ProjectWorkflow, pk=project_workflow_id, active=True,**viewable_dict)
     if request.method == 'POST':
         object.active = False
         object.save()
-        return redirect('list_project_workflows', organization_id=organization_id)
+        return redirect('list_project_workflows', project_id=project_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'delete_project_workflow',
-        'organization': organization,
-        'organization_id': organization_id,
-        'org_id': organization_id,
+        'project': project,
+        'project_id': project_id,
+        
         'module_path': module_path,        
         'object': object,
         'page_title': f'Delete Project Workflow',
@@ -299,9 +301,9 @@ def delete_project_workflow(request, organization_id, project_workflow_id):
 
 
 @login_required
-def permanent_deletion_project_workflow(request, organization_id, project_workflow_id):
+def permanent_deletion_project_workflow(request, project_id, project_workflow_id):
     user = request.user
-    organization = Organization.objects.get(id=organization_id, active=True, 
+    project = Project.objects.get(id=project_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(ProjectWorkflow, pk=project_workflow_id, active=False, deleted=False, **viewable_dict)
@@ -309,14 +311,14 @@ def permanent_deletion_project_workflow(request, organization_id, project_workfl
         object.active = False
         object.deleted = True
         object.save()
-        return redirect('list_project_workflows', organization_id=organization_id)
+        return redirect('list_project_workflows', project_id=project_id)
 
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'permanent_deletion_project_workflow',
-        'organization': organization,
-        'organization_id': organization_id,
-        'org_id': organization_id,
+        'project': project,
+        'project_id': project_id,
+        
         'module_path': module_path,        
         'object': object,
         'page_title': f'Permanent Deletion Project Workflow',
@@ -326,19 +328,19 @@ def permanent_deletion_project_workflow(request, organization_id, project_workfl
 
 
 @login_required
-def restore_project_workflow(request,  organization_id, project_workflow_id):
+def restore_project_workflow(request,  project_id, project_workflow_id):
     user = request.user
     object = get_object_or_404(ProjectWorkflow, pk=project_workflow_id, active=False,**viewable_dict)
     object.active = True
     object.save()
-    return redirect('list_project_workflows', organization_id=organization_id)
+    return redirect('list_project_workflows', project_id=project_id)
    
 
 
 @login_required
-def view_project_workflow(request, organization_id, project_workflow_id):
+def view_project_workflow(request, project_id, project_workflow_id):
     user = request.user
-    organization = Organization.objects.get(id=organization_id, active=True, 
+    project = Project.objects.get(id=project_id, active=True, 
                                                 **first_viewable_dict)
     
     object = get_object_or_404(ProjectWorkflow, pk=project_workflow_id, active=True,**viewable_dict)    
@@ -346,9 +348,9 @@ def view_project_workflow(request, organization_id, project_workflow_id):
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'view_project_workflow',
-        'organization': organization,
-        'organization_id': organization_id,
-        'org_id': organization_id,
+        'project': project,
+        'project_id': project_id,
+        
         'module_path': module_path,
         'object': object,
         'page_title': f'View Project Workflow',
