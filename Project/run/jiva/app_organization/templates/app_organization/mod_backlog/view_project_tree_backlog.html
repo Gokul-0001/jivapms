@@ -662,9 +662,9 @@
                                     class="btn btn-sm btn-primary me-5 mb-1" style="font-size: 12px;"><b>Story Mapping</b></a> 
                                    
                                       
-                                    {% if project_detail.template.name != None and project_detail.template.name == 'Scrum' %}  
+                                    {% if project_detail.template.name != None %}  
                                         <!-- 
-
+                                   
                                         Scrum Based Projects
                                         --> 
                                         <!-- display project template -->
@@ -679,7 +679,7 @@
                                             <b class="bi-size-display display-next-iteration">{{project.project_release|display_if_not_none}}/{{project.project_iteration|display_if_not_none}}</b></a>   
                                         {% endif %}
 
-                                    {% elif project_detail.template.name != None and project_detail.template.name == 'Kanban' %}   
+                                    {% elif project_detail.template.name != None and project_detail.template.name == 'Kanban1' %}   
                                         <!-- display project template -->
                                          <!--
                                             Kanban Based Projects

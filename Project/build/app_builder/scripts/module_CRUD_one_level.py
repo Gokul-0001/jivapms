@@ -1353,7 +1353,10 @@ first_model = "Organization"
 module_name = "content"
 # the above is an example for reference, while we pickup from command line
 if len(sys.argv) < 2:
-    print("Usage: python CRUD_ONE_LEVEL.py  <projectname>.<app_name> <firstapp>.<first_model> <module_name:Content/ContentType>")
+    print("Usage: python CRUD_ONE_LEVEL.py  <projectname>.<app_name> <firstapp>.<first_model> <module_name:Content or ContentType> the connected")
+    print("Example: python scriptname jiva.organization organization.organization project_workflow")
+    print("\t\t means that project_workflow is connected with the organization model one level")
+    print("\t\t this is after creating the project.app.mod from django")
     sys.exit(1)  # Exit the program indicating that there was an issue
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 # Read arguments

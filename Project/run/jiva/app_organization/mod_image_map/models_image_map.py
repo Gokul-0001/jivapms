@@ -65,7 +65,7 @@ class ImageMap(BaseModelImpl):
             except Exception as e:
                 print(f"Error processing image dimensions: {e}")
 
-class ImageMapArea(BaseModelTrackImpl):
+class ImageMapAreaProject(BaseModelTrackImpl):
     image_map = models.ForeignKey(ImageMap, related_name='areas', on_delete=models.CASCADE, null=True, blank=True)
     shape = models.CharField(max_length=20, choices=[('rect', 'Rectangle'), ('circle', 'Circle'), ('poly', 'Polygon')], null=True, blank=True)
     coords = models.TextField(help_text="Comma-separated coordinates (e.g., x1,y1,x2,y2)", null=True, blank=True)

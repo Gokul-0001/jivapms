@@ -195,7 +195,7 @@ env = environ.Env()
 # Check if the file exists before reading it
 if os.path.exists(ENV_PATH):
     environ.Env.read_env(env_file=ENV_PATH)  # Specify the file path
-    print(f"Environment file found: {ENV_PATH}")  # Debugging statement
+    #print(f"Environment file found: {ENV_PATH}")  # Debugging statement
 else:
     print(f"Environment file NOT found at {ENV_PATH}")  # Debugging statement
 
@@ -203,7 +203,7 @@ else:
 try:
     EMAIL_HOST_USER = env("EMAIL_ADDR_NAME")
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-    print(f"EMAIL_HOST_USER loaded: {EMAIL_HOST_USER}")  # Debugging statement
+    #print(f"EMAIL_HOST_USER loaded: {EMAIL_HOST_USER}")  # Debugging statement
 except environ.ImproperlyConfigured as e:
     print(f"Error loading environment variables: {e}")  # Debugging statement
 
