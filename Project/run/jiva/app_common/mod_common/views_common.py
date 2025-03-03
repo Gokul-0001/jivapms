@@ -350,3 +350,102 @@ def COMMON_set_project_id(request, context):
 @login_required
 def COMMON_get_project_id_from_session(request):
     return request.session.get('project_id', None)
+
+@login_required
+def ajax_update_checkbox_state(request):
+    if request.method == 'POST':
+        user = request.user
+        object_id = request.POST.get('id', None)
+        checkbox_field = request.POST.get('checkbox_field', None)  # Field name dynamically passed
+        checkbox_value = request.POST.get('checkbox_value', None)  # New value for the checkbox
+        model_name = request.POST.get('model_name', None)
+        given_app_name = request.POST.get('app_name', app_name)  # Use default app_name if not provided
+
+        if not (object_id and checkbox_field and checkbox_value and model_name):
+            return JsonResponse({'success': False, 'error': 'Missing parameters'})
+
+        # Get the model class dynamically
+        model_class = apps.get_model(given_app_name, model_name)
+        print(f">>>>>>> Model class: {model_class}  ===> {model_name}")
+        # Ensure the field exists in the model
+        if not hasattr(model_class, checkbox_field):
+            return JsonResponse({'success': False, 'error': f'Field "{checkbox_field}" does not exist in {model_name}'})
+
+        # Fetch and update the object
+        obj = model_class.objects.filter(id=object_id).first()
+        if obj:
+            setattr(obj, checkbox_field, checkbox_value.lower() == 'true')  # Update checkbox field dynamically
+            print(f">>>>>>> CHECK THIS Object: {obj} {checkbox_field} {checkbox_value}")
+            # If the checkbox is a "done" field, update completion time
+            if checkbox_field == 'done' and checkbox_value.lower() == 'true':
+                obj.completed_at = timezone.now()
+
+                # Calculate duration in hours if created_at exists
+                if hasattr(obj, 'created_at') and obj.created_at:
+                    duration = obj.completed_at - obj.created_at
+                    obj.duration_in_hours = duration.total_seconds() / 3600  # Convert to hours
+
+            obj.save()
+            return JsonResponse({'success': True, 'object_id': object_id})
+
+    return JsonResponse({'success': False})
+
+
+
+@login_required
+def ajax_update_select_box(request):
+    if request.method == 'POST':
+        object_id = request.POST.get('id', None)
+        field_name = request.POST.get('field_name', None)  # Field name passed dynamically
+        new_value = request.POST.get('new_value', None)  # Updated value
+        model_name = request.POST.get('model_name', None)
+        given_app_name = request.POST.get('app_name', None)
+
+        if not (object_id and field_name and new_value and model_name):
+            return JsonResponse({'success': False, 'error': 'Missing parameters'})
+
+        model_class = apps.get_model(given_app_name, model_name)
+
+        # Ensure the field exists in the model before updating
+        if not hasattr(model_class, field_name):
+            return JsonResponse({'success': False, 'error': f'Field "{field_name}" does not exist in {model_name}'})
+
+        # Fetch and update the object
+        obj = model_class.objects.filter(id=object_id).first()
+        if obj:
+            setattr(obj, field_name, new_value)  # Set the field dynamically
+            obj.save()
+            return JsonResponse({'success': True, 'updated_field': field_name, 'new_value': new_value})
+
+    return JsonResponse({'success': False})
+
+
+
+@login_required
+def ajax_update_default_radio_box(request):
+    if request.method == 'POST':
+        object_id = request.POST.get('id', None)
+        field_name = request.POST.get('field_name', None)  # Field to update (e.g., 'default_board')
+        model_name = request.POST.get('model_name', None)
+        given_app_name = request.POST.get('app_name', None)
+
+        if not (object_id and field_name and model_name):
+            return JsonResponse({'success': False, 'error': 'Missing parameters'})
+
+        model_class = apps.get_model(given_app_name, model_name)
+
+        # Ensure the field exists in the model before updating
+        if not hasattr(model_class, field_name):
+            return JsonResponse({'success': False, 'error': f'Field "{field_name}" does not exist in {model_name}'})
+
+        # Set all records to False before setting the selected one to True
+        model_class.objects.filter(active=True).update(**{field_name: False})
+
+        # Fetch and update the selected object
+        obj = model_class.objects.filter(id=object_id, active=True).first()
+        if obj:
+            setattr(obj, field_name, True)  # Set selected record as default
+            obj.save()
+            return JsonResponse({'success': True, 'updated_field': field_name, 'new_value': True})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})

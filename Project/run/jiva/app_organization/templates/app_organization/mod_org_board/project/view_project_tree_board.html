@@ -521,6 +521,17 @@ Project Iteration Board
 
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
+            <div class="row">
+                <div class="col col-md-3"></div>
+                <div class="col col-md-3"></div>
+                <div class="col col-md-6 align-items-end">
+                    <a href="" class="btn btn-sm btn-warning me-2">Level</a>
+                    <a href="{% url 'list_project_boards' project.id %}" class="btn btn-sm btn-primary me-2">Board</a>
+                    <a href="" class="btn btn-sm btn-success me-2">Card</a>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="display_topic"><b class="">Project Board: </b>
                 <b class="">{{ project }} {{current_release|display_if_not_none}}

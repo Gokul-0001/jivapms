@@ -16,4 +16,9 @@ urlpatterns = [
     
     
     path('ajax_update_row_task_done_state/', views_common.ajax_update_row_task_done_state, name='ajax_update_row_task_done_state'),
+
+    path('ajax_update_checkbox_state/', views_common.ajax_update_checkbox_state, name='ajax_update_checkbox_state'),
+    path('ajax_update_select_box/', views_common.ajax_update_select_box, name='ajax_update_select_box'),
+    path('ajax_update_default_radio_box/', views_common.ajax_update_default_radio_box, name='ajax_update_default_radio_box'),
+    
 ]

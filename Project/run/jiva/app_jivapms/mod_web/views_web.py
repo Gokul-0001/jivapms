@@ -707,20 +707,21 @@ def search_users(request):
 
 
 def ajax_edit_user(request, user_id):
-    user = get_object_or_404(UserProfile, id=user_id)
+    user = get_object_or_404(User, id=user_id)
     
     if request.method == "POST":
         user.first_name = request.POST.get("first_name")
         user.last_name = request.POST.get("last_name")
         user.email = request.POST.get("email")
-        user.role = request.POST.get("role")
+        #user.role = request.POST.get("role")
+        role_from_form = request.POST.get("role")
         user.save()
         return JsonResponse({"success": True, "message": "User updated successfully."})
 
     return JsonResponse({"success": False, "message": "Invalid request."})
 
 def ajax_soft_delete_user(request, user_id):
-    user = get_object_or_404(UserProfile, id=user_id)
+    user = get_object_or_404(User, id=user_id)
     user.is_active = False  # Soft delete
     user.save()
     return JsonResponse({"success": True, "message": "User deleted successfully."})

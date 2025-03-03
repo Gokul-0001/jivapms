@@ -3,7 +3,8 @@ from app_organization.mod_app.all_model_imports import *
 from app_organization.mod_organization.models_organization import *
 from app_organization.mod_project.models_project import *   
 from app_common.mod_common.models_common import *
-
+from app_organization.mod_project_board.models_project_board import *
+from app_organization.mod_project_board_state.models_project_board_state import *
 from app_jivapms.mod_app.all_view_imports import *
 
 class OrgBoard(BaseModelImpl):
@@ -24,48 +25,48 @@ class OrgBoard(BaseModelImpl):
             return str(self.id)
 
 
-class ProjectBoard(BaseModelTrackDateImpl):
-    # ref as of 08012025 DEFAULT_BOARD_COLUMNS = ['To Do', 'WIP', 'Done']
-    org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
-                            related_name="project_org_boards", null=True, blank=True)
+# class ProjectBoard(BaseModelTrackDateImpl):
+#     # ref as of 08012025 DEFAULT_BOARD_COLUMNS = ['To Do', 'WIP', 'Done']
+#     org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
+#                             related_name="project_org_boards", null=True, blank=True)
     
-    project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
-                                related_name="project_boards", null=True, blank=True)
+#     project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
+#                                 related_name="project_boards", null=True, blank=True)
     
-    project_workflow = models.ForeignKey('app_organization.ProjectWorkflow', on_delete=models.CASCADE, 
-                                related_name="project_workflow", null=True, blank=True)
+#     project_workflow = models.ForeignKey('app_organization.ProjectWorkflow', on_delete=models.CASCADE, 
+#                                 related_name="project_workflow", null=True, blank=True)
     
-    org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, related_name="org_release_boards", null=True, blank=True)
-    org_iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, related_name="org_iteration_boards", null=True, blank=True)
+#     org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, related_name="org_release_boards", null=True, blank=True)
+#     org_iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, related_name="org_iteration_boards", null=True, blank=True)
     
 
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                               related_name="author_project_boards")
+#     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+#                                related_name="author_project_boards")
    
         
-    def __str__(self):
-        if self.name:
-            return self.name
-        else:
-            return str(self.id)
+#     def __str__(self):
+#         if self.name:
+#             return self.name
+#         else:
+#             return str(self.id)
 
 
-class ProjectBoardState(BaseModelTrackDateImpl):
+# class ProjectBoardState(BaseModelTrackDateImpl):
     
-    board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE,
-                                related_name="board_states", null=True, blank=True)
+#     board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE,
+#                                 related_name="board_states", null=True, blank=True)
     
-    wip_limit = models.PositiveIntegerField(default=0)
+#     wip_limit = models.PositiveIntegerField(default=0)
     
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                               related_name="author_board_states")
+#     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+#                                related_name="author_board_states")
    
         
-    def __str__(self):
-        if self.name:
-            return self.name
-        else:
-            return str(self.id)
+#     def __str__(self):
+#         if self.name:
+#             return self.name
+#         else:
+#             return str(self.id)
 
 class ProjectBoardStateTransition(BaseModelTrackDateImpl):
     card = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE,null=True, blank=True,
