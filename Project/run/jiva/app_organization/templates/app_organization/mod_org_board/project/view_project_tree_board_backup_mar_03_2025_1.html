@@ -510,12 +510,11 @@
 
 
 <!--
-TESTING STARTS
-
+1. This is default or when get_swimlane_id is -1 where we need to display 
+Project Iteration Board
 -->
-{% if FLAG_display_selected_board == True %}
 
-
+{% if project_iteration_flag == True %}
 
 <div class="content-wrapper">
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
@@ -535,7 +534,8 @@ TESTING STARTS
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="display_topic"><b class="">Project Board: </b>
-                <b class="">{{project_board}}</b>
+                <b class="">{{ project }} {{current_release|display_if_not_none}}
+                 {{current_iteration|display_if_not_none}}</b>
                 </div>
                 <div class="dropdown">
                     <select id="parentFilter" >
@@ -576,82 +576,83 @@ TESTING STARTS
                     
                 </div>
                 {% for state in project_board_states %}
-
-                {% if state.column_type == 'ToDo' %}
-                <!-- To Do Column -->
-                <div class="kanban-column" data-id="{{ state.id }}" id="todo">
-                    <h4>{{state.name}}::{{state.column_type}}</h4>
-                        {{todo_items}}
-                        {% for item in todo_items %}
-                       
-                            {% if item.backlog.iteration.id == current_iteration.id %}
-                            <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
-                                <div class="kanban-card-header">
-                                    <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                    <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.iteration}}</span>
-                                </div>
-                                <b>{{ item }}</b>
-                                <p>{{ item.description | display_if_not_none }}</p>
-                                <div class="kanban-card-footer">
-                                   <div class="parent">{{item.backlog.parent}}</div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
                     
-                </div>
-                {% endif %}
-                {% if state.column_type == 'WIP' %}
-                <!-- In Progress Column -->
-                <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
-                    <h4>{{state.name}}::{{state.column_type}}</h4>
-                    
-                        {% for item in in_progress_items %}
-                            {% if item.backlog.iteration.id == current_iteration.id %}
-                            <div class="kanban-card in-progress WIP wip" data-id="{{ item.id }}">
-                                <div class="kanban-card-header">
-                                    <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                    <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.iteration}}</span>
-                                </div>
-                                <b>{{ item }}</b>
-                                <p>{{ item.description | display_if_not_none }}</p>
-                                <div class="kanban-card-footer">
-                                    <!-- <i class="action bi bi-pencil-square">Edit</i>
-                                    <i class="action bi bi-eye">View</i>
-                                    <i class="action bi bi-trash">Delete</i> -->
-                                    <div class="parent">{{item.backlog.parent}}</div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
-                    
-                </div>
-                {% endif %}
-                
-                {% if state.column_type == 'Done' %}
-                <!-- Done Column -->
-                <div class="kanban-column" data-id="{{ state.id }}" id="done">
-                    <h4>{{state.name}}::{{state.column_type}}</h4>
-                    
-                        {% for item in done_items %}
-                            {% if item.backlog.iteration.id == current_iteration.id %}
-                            <div class="kanban-card done" data-id="{{ item.id }}">
-                                <div class="kanban-card-header">
-                                    <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
-                                    <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.size}} {{item.backlog.iteration}}</span>
-                                </div>
-                                <b>{{ item }}</b>
-                                <p>{{ item.description | display_if_not_none }}</p>
-                                <div class="kanban-card-footer">
-                                    <div class="parent">{{item.backlog.parent}}</div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
                    
-                </div>
-                {% endif %}
-
+                    {% if state.name == 'ToDo' %}
+                    <!-- To Do Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="todo">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in todo_items %}
+                           
+                                {% if item.backlog.iteration.id == current_iteration.id %}
+                                <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.iteration}}</span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                       <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                    {% if state.name == 'WIP' %}
+                    <!-- In Progress Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in in_progress_items %}
+                                {% if item.backlog.iteration.id == current_iteration.id %}
+                                <div class="kanban-card in-progress WIP wip" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.iteration}}</span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <!-- <i class="action bi bi-pencil-square">Edit</i>
+                                        <i class="action bi bi-eye">View</i>
+                                        <i class="action bi bi-trash">Delete</i> -->
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                    
+                    {% if state.name == 'Done' %}
+                    <!-- Done Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="done">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in done_items %}
+                                {% if item.backlog.iteration.id == current_iteration.id %}
+                                <div class="kanban-card done" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a> {{item.backlog.size}} {{item.backlog.iteration}}</span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                       
+                    </div>
+                    {% endif %}
+                
                 {% endfor %}
             </div>
             
@@ -659,14 +660,290 @@ TESTING STARTS
     </div>
 </div>
 
+{% else %}
+
+
+
+{% if swimlane_flag == True  %}
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="display_topic"><b class="h3">Project Board: </b>{{ project }}</div>
+                <div class="dropdown">
+                    <select id="parentFilter" >
+                        <option value="">-- Select SwimLane --</option>                        
+                        <option value="0" selected>-- All SwimLanes --</option>
+                        <option value="-1">-- Project Iteration --</option>
+                        {% for efcc in efcc_backlog_items %}
+                            <option value="{{ efcc.id }}">{{ efcc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% for efcc in efcc_backlog_items_swimlane %}
+            <div class="swimlane_display">
+                <b>Swimlane: {{efcc}}</b>
+            </div>
+            <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
+                 <!-- Backlog Column -->
+                 <div class="kanban-column" data-id="0" id="backlog">
+                    <h4>Backlog</h4>
+                    
+                        {% for item in backlog_items %}
+                            {% if item.parent == efcc %}
+                            <div class="kanban-card" data-id="{{ item.id }}">
+                                <div class="kanban-card-header">
+                                    <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                    <span> <a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.id}}</a>
+                                         {{item.status}} {{item.iteration}}</span>
+                                </div>
+                                <b
+                               
+                                >{{ item }}</b>
+                                <p>{{ item.description | display_if_not_none }}</p>
+                                
+                                <div class="kanban-card-footer">
+                                    <div class="parent">{{item.parent}}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    
+                </div>
+                {% for state in project_board_states %}
+                    
+                   
+                    {% if state.name == 'ToDo' %}
+                    <!-- To Do Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="todo">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in todo_items %}
+                                {% if item.backlog.parent == efcc %}
+                                <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                       <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                    {% if state.name == 'WIP' %}
+                    <!-- In Progress Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in in_progress_items %}
+                                {% if item.backlog.parent == efcc %}
+                                <div class="kanban-card wip WIP in-progress" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <!-- <i class="action bi bi-pencil-square">Edit</i>
+                                        <i class="action bi bi-eye">View</i>
+                                        <i class="action bi bi-trash">Delete</i> -->
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                    
+                    {% if state.name == 'Done' %}
+                    <!-- Done Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="done">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in done_items %}
+                                {% if item.backlog.parent == efcc %}
+                                <div class="kanban-card done" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.backlog.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+
+
+
+
+            
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- All swimlanes grouped -->
+
+
+<div class="content-wrapper">
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+    <div class="contentbar mb-5" id="contentbar">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="display_topic"><b class="h3">Project Board: </b>{{ project }}</div>
+                <div class="dropdown">
+                    <select id="parentFilter" >
+                        <option value="">-- Select SwimLane --</option>
+                        <option value="0">-- All SwimLanes --</option>
+                        <option value="-1">-- Project Iteration --</option>
+                        {% for efcc in efcc_backlog_items %}
+                            <option value="{{ efcc.id }}"
+                                {% if efcc.id == get_swimlane_id %}
+                                    selected
+                                {% endif %}
+                            >{{ efcc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+         
+            <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
+                 <!-- Backlog Column -->
+                 <div class="kanban-column" data-id="0" id="backlog">
+                    <h4>Backlog</h4>
+                    
+                        {% for item in backlog_items %}
+                            
+                            <div class="kanban-card" data-id="{{ item.id }}">
+                                <div class="kanban-card-header">
+                                    <span class="priority priority-{{item.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                    <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.id}}</a></span>
+                                </div>
+                                <b
+                               
+                                >{{ item }}</b>
+                                <p>{{ item.description | display_if_not_none }}</p>
+                                
+                                <div class="kanban-card-footer">
+                                    <div class="parent">{{item.parent}}</div>
+                                </div>
+                            </div>
+                            
+                        {% endfor %}
+                    
+                </div>
+                {% for state in project_board_states %}
+                    
+                   
+                    {% if state.name == 'ToDo' %}
+                    <!-- To Do Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="todo">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in todo_items %}
+                                
+                                <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                       <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                    {% if state.name == 'WIP' %}
+                    <!-- In Progress Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="in-progress">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in in_progress_items %}
+                                
+                                <div class="kanban-card in-progress WIP wip" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-{{item.priority}}">{{item.backlog.priority|get_first_letter_caps}}</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <!-- <i class="action bi bi-pencil-square">Edit</i>
+                                        <i class="action bi bi-eye">View</i>
+                                        <i class="action bi bi-trash">Delete</i> -->
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                
+                            {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                    
+                    {% if state.name == 'Done' %}
+                    <!-- Done Column -->
+                    <div class="kanban-column" data-id="{{ state.id }}" id="done">
+                        <h4>{{state.name}}</h4>
+                        
+                            {% for item in done_items %}
+                                
+                                <div class="kanban-card done" data-id="{{ item.id }}">
+                                    <div class="kanban-card-header">
+                                        <span class="priority priority-high">H</span>
+                                        <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{project.id}}">#{{item.backlog.id}}</a></span>
+                                    </div>
+                                    <b>{{ item }}</b>
+                                    <p>{{ item.description | display_if_not_none }}</p>
+                                    <div class="kanban-card-footer">
+                                        <div class="parent">{{item.backlog.parent}}</div>
+                                    </div>
+                                </div>
+                                
+                            {% endfor %}
+                       
+                    </div>
+                    {% endif %}
+                
+                {% endfor %}
+            </div>
+            <b>{{efcc_backlog_with_no_epic.all|filter_active}}</b>
+        </div>
+    </div>
+</div>
 
 {% endif %}
-<!--
-TESTING ENDS
 
--->
-
-
+{% endif %}
 <div id="loading-spinner" style="
     display: none;
     position: fixed;

@@ -13,10 +13,10 @@ class ProjectBoardState(BaseModelTrackDateImpl):
 
     buffer_column = models.BooleanField(default=False)
     COLUMN_TYPE_CHOICES = [
-        ('To Do', 'To Do'),
+        ('ToDo', 'ToDo'),
         ('WIP', 'WIP'),
         ('Done', 'Done'),]
-    column_type = models.CharField(max_length=10, choices=COLUMN_TYPE_CHOICES, default='To Do')  
+    column_type = models.CharField(max_length=10, choices=COLUMN_TYPE_CHOICES, default='ToDo')  
 
     
     

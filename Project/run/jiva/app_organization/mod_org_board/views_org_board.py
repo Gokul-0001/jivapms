@@ -757,6 +757,15 @@ def view_project_tree_board(request, project_id):
         project_iteration = project.project_iteration
         project_release = project.project_release
         project_iteration_flag = True
+
+        ##
+        ##
+        ## TESTING project_iteration_flag = True to false for testing
+        ##
+        ##
+        ##
+        project_iteration_flag = False
+
         if project.project_release and project.project_iteration:
             details = get_project_release_and_iteration_details(project.id)
             current_release = details.get('current_release')
@@ -816,126 +825,87 @@ def view_project_tree_board(request, project_id):
     filters = {}
 
 
-
-
+    ################ **************************** CHANGING FOR PROJECT BOARD ***************************** ################
+    #
+    # IMPORTANT
+    #
+    #
+    # create new flag for display
+    FLAG_display_selected_board = True
+    # WE HAVE THE PROJECT RELEASE_ITERATION BOARD
+    DEFAULT_BOARD_COLUMNS = ['ToDo', 'WIP', 'Done']
     # find out whethere we have any default_board configured in the DB
     check_default_project_board = None
     check_default_board_columns = None
+    project_board = None
     check_default_project_board = ProjectBoard.objects.filter(default_board=True, project=project, active=True).first()
     if check_default_project_board:
         print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DEFAULT_PROJECT_BOARD {check_default_project_board}")
         check_default_board_columns = ProjectBoardState.objects.filter(board=check_default_project_board, active=True)
         print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DEFAULT_BOARD_COLUMNS {check_default_board_columns}")
-
-
-
-    
-    # THIS IS THE DEFAULT BOARD
-    if USE_DEFAULT_PROJECT_BOARD_FLAG:
-        # Get or create the default project board
-        DEFAULT_BOARD_NAME = 'Default Board'
-        project_board, created = ProjectBoard.objects.get_or_create(
-            project=project,
-            name=DEFAULT_BOARD_NAME,
-            defaults={'author': user}
-        )
-        
-        board_name = ProjectBoard.objects.get(project=project, active=True, name=DEFAULT_BOARD_NAME)
-
-        # Ensure the default columns exist or create them
-        DEFAULT_BOARD_COLUMNS = ['ToDo', 'WIP', 'Done']
-        #ProjectBoardState.objects.all().delete()
-        backlog_state = None  # To store the "Backlog" state reference
-        for position, column_name in enumerate(DEFAULT_BOARD_COLUMNS):
-            state, _ = ProjectBoardState.objects.get_or_create(
-                board=project_board,
-                name=column_name,
-                defaults={'author': user, 'wip_limit': 0}
-            )
-            if column_name == 'Backlog':
-                backlog_state = state
-        
-        logger.debug(f">>> === current release: {current_release} {current_iteration} === <<<")
-        actual_project_backlog_items = Backlog.objects.filter(
-            pro_id=project.id,
-            type__in=backlog_types,
-            active=True,
-           
-        ).exclude(
-            id__in=ProjectBoardCard.objects.filter(
-                board=project_board,
-                state__isnull=False  # Exclude items where state.id is NOT NULL (moved to other states)
-            ).values_list('backlog_id', flat=True)
-        ).order_by('position', '-created_at')    
-        
-        # Get the project board states
-        project_board_states = ProjectBoardState.objects.filter(board=project_board)
-        
-        # Fetch the project backlog items state
-        state_items = {state.name: [] for state in project_board.board_states.filter(active=True)}
-        #logger.debug(f">>> === state_items: {state_items} === <<<")
-        # Get the card / backlog item from the ProjectBoardStateTransition
-        for state in project_board_states:
-            state_items[state.name] = ProjectBoardCard.objects.filter(
-                board=project_board,
-                state=state,
-                active=True,
-                backlog__type__in=backlog_types,
-                backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
-            ).select_related('backlog').order_by('position', '-created_at')
-        logger.debug(f">>> === state_items: {project_board_states} === <<<")
+        project_board = check_default_project_board
     else:
-        # WE HAVE THE PROJECT RELEASE_ITERATION BOARD
-        DEFAULT_BOARD_COLUMNS = ['ToDo', 'WIP', 'Done']
         project_board = project_release_iteration_board
-        #ProjectBoardState.objects.all().delete()
-        backlog_state = None  # To store the "Backlog" state reference
-        for position, column_name in enumerate(DEFAULT_BOARD_COLUMNS):
-            state, _ = ProjectBoardState.objects.get_or_create(
-                board=project_board,
-                name=column_name,
-                defaults={'author': user, 'wip_limit': 0}
-            )
-            if column_name == 'Backlog':
-                backlog_state = state
-        
-        logger.debug(f">>> === current release: {current_release} {current_iteration} === <<<")
-        actual_project_backlog_items = Backlog.objects.filter(
-            pro_id=project.id,
-            type__in=backlog_types,
-            active=True,
-            iteration=current_iteration,
-            release=current_release,
-        ).exclude(
-            id__in=ProjectBoardCard.objects.filter(
-                board=project_board,
-                state__isnull=False  # Exclude items where state.id is NOT NULL (moved to other states)
-            ).values_list('backlog_id', flat=True)
-        ).order_by('position', '-created_at')    
-        logger.debug(f">>> === ********************** SUPER IMPORTANT actual_project_backlog_items: {actual_project_backlog_items} === <<<")
-        # Get the project board states
-        project_board_states = ProjectBoardState.objects.filter(board=project_board)
-        
-        # Fetch the project backlog items state
-        state_items = {state.name: [] for state in project_board.board_states.filter(active=True)}
-        #logger.debug(f">>> === state_items: {state_items} === <<<")
-        # Get the card / backlog item from the ProjectBoardStateTransition
-        for state in project_board_states:
-            state_items[state.name] = ProjectBoardCard.objects.filter(
-                board=project_board,
-                state=state,
-                active=True,
-                backlog__type__in=backlog_types,
-                backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
-            ).select_related('backlog').order_by('position', '-created_at')
-        logger.debug(f">>> === PROJECT REL ITR BOARD state_items: {project_board} ==> {project_board_states} === <<<")
-        
-        check_project_board_card = ProjectBoardCard.objects.filter(
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SELECTED RELEASE/ITERATION BOARD {project_board}")
+   
+    
+    
+    #ProjectBoardState.objects.all().delete()
+    backlog_state = None  # To store the "Backlog" state reference
+    # this needs to be ***REVIEWED***
+    # for position, column_name in enumerate(DEFAULT_BOARD_COLUMNS):
+    #     state, _ = ProjectBoardState.objects.get_or_create(
+    #         board=project_board,
+    #         name=column_name,
+    #         defaults={'author': user, 'wip_limit': 0}
+    #     )
+    #     if column_name == 'Backlog':
+    #         backlog_state = state
+    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> project_board {project_board}")
+    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> backlog_state {backlog_state}")
+    logger.debug(f">>> === current release: {current_release} {current_iteration} === <<<")
+    actual_project_backlog_items = Backlog.objects.filter(
+        pro_id=project.id,
+        type__in=backlog_types,
+        active=True,
+        iteration=current_iteration,
+        release=current_release,
+    ).exclude(
+        id__in=ProjectBoardCard.objects.filter(
             board=project_board,
-            active=True
-        )   
-        logger.debug(f">>> === check_project_board_card: {check_project_board_card} === <<<")
-        
+            state__isnull=False  # Exclude items where state.id is NOT NULL (moved to other states)
+        ).values_list('backlog_id', flat=True)
+    ).order_by('position', '-created_at')    
+    logger.debug(f">>> === ********************** SUPER IMPORTANT actual_project_backlog_items: {actual_project_backlog_items} === <<<")
+    # Get the project board states
+    project_board_states = ProjectBoardState.objects.filter(board=project_board, active=True)
+    
+    # Fetch the project backlog items state
+    state_items = {state.name: [] for state in project_board.board_states.filter(active=True)}
+    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> state_items {state_items}")
+    #logger.debug(f">>> === state_items: {state_items} === <<<")
+    # Get the card / backlog item from the ProjectBoardStateTransition
+    for state in project_board_states:
+        state_items[state.name] = ProjectBoardCard.objects.filter(
+            board=project_board,
+            state=state,
+            active=True,
+            backlog__type__in=backlog_types,
+            backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
+        ).select_related('backlog').order_by('position', '-created_at')
+    logger.debug(f">>> === PROJECT BOARD state_items: {project_board} ==> {project_board_states} === <<<")
+    
+    check_project_board_card = ProjectBoardCard.objects.filter(
+        board=project_board,
+        active=True
+    )   
+    logger.debug(f">>> === check_project_board_card: {check_project_board_card} === <<<")
+
+
+    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> get_swimlane_id {get_swimlane_id}")
+    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> USE_DEFAULT_PROJECT_BOARD_FLAG {USE_DEFAULT_PROJECT_BOARD_FLAG}")
+    ################ **************************** CHANGING FOR PROJECT BOARD ***************************** ################
+
     context = {
         'organization': organization,
         'org_id': org_id,
@@ -956,7 +926,7 @@ def view_project_tree_board(request, project_id):
         'project_iteration_flag': project_iteration_flag,
         'current_release': current_release,
         'current_iteration': current_iteration,
-        
+        'FLAG_display_selected_board': FLAG_display_selected_board,
         
         #'chart_data': chart_data,
     }

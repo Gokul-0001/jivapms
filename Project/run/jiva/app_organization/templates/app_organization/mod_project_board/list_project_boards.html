@@ -58,6 +58,8 @@
                                     <div class="col col-md-3 text-end">
                                         <span class="display_count">{{objects_count}} project_board(s)</span>
                                         &nbsp;&nbsp;
+                                        <a href="{% url 'view_project_tree_board' project_id  %}?project_id={{ project_id }}" 
+                                        class="btn btn-sm btn-primary"><b><i class="bi bi-arrow-left"></i>Back to Board</b></a>
                                         <a href="{% url 'create_project_board' project_id  %}" 
                                         class="btn btn-sm btn-success"><b>+ Create Project Board</b></a>
                                         
