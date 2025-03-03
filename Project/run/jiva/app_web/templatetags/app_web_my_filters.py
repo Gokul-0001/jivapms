@@ -159,3 +159,18 @@ def get_first_letter_caps(value):
     if isinstance(value, str) and value:
         return value[0].upper() 
     return value
+
+
+# Mar 03 2025
+
+@register.filter
+def replace_underscore(value):
+    """Replaces underscores with spaces."""
+    return value.replace("_", " ") if isinstance(value, str) else value
+
+
+@register.filter
+def get_attr(obj, attr_name):
+    """Fetch an attribute from an object dynamically."""
+    return getattr(obj, attr_name, None)
+

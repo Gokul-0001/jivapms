@@ -21,7 +21,7 @@
 </style>
 <!-- Begin: Content -->
 <div class="content-wrapper">
-   {% include 'app_organization/mod_project_board/breadcrumb_project_boards.html' %}
+   {% include 'app_organization/mod_board_card/breadcrumb_board_cards.html' %}
     
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
     <form method="post">
@@ -38,12 +38,12 @@
                                 <div class="row pb-2">
                                     <div class="col col-md-5">                                
                                         <b class="h3">
-                                        <a href="{% url 'list_projects' project.id %}" style="text-decoration: none;">
+                                        <a href="{% url 'list_project_boards' project.id %}" style="text-decoration: none;">
                                             {{organization}}
                                         </a>
                                         </b>
                                         &nbsp;&nbsp;
-                                        Project Board List
+                                        Board Card List
                                     
                                     </div>
                                     <div class="col col-md-4">
@@ -56,18 +56,18 @@
                                         </form>
                                     </div>
                                     <div class="col col-md-3 text-end">
-                                        <span class="display_count">{{objects_count}} project_board(s)</span>
+                                        <span class="display_count">{{objects_count}} board_card(s)</span>
                                         &nbsp;&nbsp;
-                                        <a href="{% url 'create_project_board' project_id  %}" 
-                                        class="btn btn-sm btn-success"><b>+ Create Project Board</b></a>
+                                        <a href="{% url 'create_board_card' project_board_id  %}" 
+                                        class="btn btn-sm btn-success"><b>+ Create Board Card</b></a>
                                         
                                         &nbsp;&nbsp;
-                                        <a href="{% url 'list_projects' org_id  %}" class="btn btn-primary">
+                                        <a href="{% url 'list_project_boards' project.id %}" class="btn btn-primary">
                                             <i class="bi bi-arrow-left"></i>
                                         </a>
                                         &nbsp;&nbsp;
                                         {% if deleted_count > 0 %}
-                                        <a href="{% url 'list_deleted_project_boards' project_id %}"><i class="bi bi-trash-fill"></i></a>   
+                                        <a href="{% url 'list_deleted_board_cards' project_board_id %}"><i class="bi bi-trash-fill"></i></a>   
                                         {% endif %}
                                     </div>
                                 </div>
@@ -82,12 +82,10 @@
                                             <input type="checkbox" name="select_all" id="select_all" onclick='checkUncheck(this)'>
                                         </th>                                
                                         <th width="2%">#</th>
-                                        <th width="20%">Project Board</th>
+                                        <th>Board Card</th>
                                         <th width="20%">Description</th>
-                                        <th width="5%">Default Board</th>
-                                        <th width="5%">Card Config</th>
                                         <th width="10%">Configure</th>
-                                        <th width="20%">                                    
+                                        <th width="50%">                                    
                                             Actions
                                             &nbsp;&nbsp;
                                             <select name="pagination" id="paginationselect">
@@ -124,33 +122,22 @@
                                         </td>
                                         <td>{{forloop.counter}}</td>
                                         <td width="20%" ondblclick="makeEditable(this)"
-                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'ProjectBoard', 'name')"
+                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'BoardCard', 'name')"
                                         ><strong>{% if tobject.name != None %}{{tobject.name}}{% endif %}</strong></td>
-                                        <td width="20%" ondblclick="makeEditable(this)"
-                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'ProjectBoard', 'description')"
+                                        <td width="" ondblclick="makeEditable(this)"
+                                        onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'BoardCard', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
-                                        <td width="5%">                                           
-                                            <input type="radio" name="default_board" id="default_board-{{tobject.id}}"
-                                            onchange="update_set_this_record_as_default({{ tobject.id }}, 'default_board', this.checked)"
-                                            {% if tobject.default_board == True %}checked{% endif %}
-                                            > 
-                                        </td>
-                                        <td width="5%">
-                                            <a href="{% url 'board_card_settings' tobject.id %}"><i class="bi bi-gear"></i></a>
-                                        </td>
-                                        <td width="10%">
-                                            <a href="{% url 'list_project_board_states' tobject.id  %}"
-                                            class="btn btn-sm btn-primary"><i class="bi bi-kanban"></i></a>
-                                            &nbsp;&nbsp;
-                                        </td>
                                         <td width="20%">
-                                            <a href="{% url 'view_project_board' project_id  tobject.id  %}"
+                                        
+                                        </td>
+                                        <td width="50%">
+                                            <a href="{% url 'view_board_card' project_board_id  tobject.id  %}"
                                             class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'edit_project_board' project_id  tobject.id %}"
+                                            <a href="{% url 'edit_board_card' project_board_id  tobject.id %}"
                                             class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
                                             &nbsp;&nbsp;
-                                            <a href="{% url 'delete_project_board' project_id  tobject.id %}"
+                                            <a href="{% url 'delete_board_card' project_board_id  tobject.id %}"
                                             class="btn btn-sm btn-danger"><i class="bi bi-x-square"></i></a>
                                         </td>
                                     </tr>
@@ -189,19 +176,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Redirect the user based on the selected value
     if (selectedValue === "5") {
-      window.location.href = "{% url 'list_project_boards' project_id %}?page=1&all=5";
+      window.location.href = "{% url 'list_board_cards' project_board_id %}?page=1&all=5";
     } else if (selectedValue === "10") {
-      window.location.href = "{% url 'list_project_boards' project_id %}?page=1&all=10";
+      window.location.href = "{% url 'list_board_cards' project_board_id %}?page=1&all=10";
     } else if (selectedValue === "15") {
-      window.location.href = "{% url 'list_project_boards' project_id %}?page=1&all=15";
+      window.location.href = "{% url 'list_board_cards' project_board_id %}?page=1&all=15";
     } else if (selectedValue === "25") {
-      window.location.href = "{% url 'list_project_boards' project_id  %}?page=1&all=25";
+      window.location.href = "{% url 'list_board_cards' project_board_id  %}?page=1&all=25";
     } else if (selectedValue === "50") {
-      window.location.href = "{% url 'list_project_boards' project_id %}?page=1&all=50";
+      window.location.href = "{% url 'list_board_cards' project_board_id %}?page=1&all=50";
     } else if (selectedValue === "100") {
-      window.location.href = "{% url 'list_project_boards' project_id %}?page=1&all=100";
+      window.location.href = "{% url 'list_board_cards' project_board_id %}?page=1&all=100";
     } else if (selectedValue === "all") {
-      window.location.href = "{% url 'list_project_boards' project_id %}?page=1&all=all";
+      window.location.href = "{% url 'list_board_cards' project_board_id %}?page=1&all=all";
     } 
     // Add more conditions for other options as needed
   });
@@ -223,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 type: 'POST',
                 data : {
                   'csrfmiddlewaretoken': "{{ csrf_token }}",
-                  'model_name': 'ProjectBoard',
+                  'model_name': 'BoardCard',
                   'app_name': 'app_organization',
                   'sorted_list_data': JSON.stringify(arrayOrder),
                   
@@ -265,37 +252,6 @@ document.addEventListener("DOMContentLoaded", function () {
         })
     }
 </script>
-<script>
-   function update_set_this_record_as_default(itemId, fieldName) {
-    $.ajax({
-        url: '/common/common_ajax/ajax_update_default_radio_box/',  // Ensure this URL is correct
-        type: 'POST',
-        data: {
-            'id': itemId,
-            'field_name': fieldName,
-            'model_name': 'ProjectBoard',  // Change if using another model
-            'app_name': 'app_organization',
-            'csrfmiddlewaretoken': '{{ csrf_token }}'
-        },
-        success: function(response) {
-            if (response.success) {
-                console.log(`Field '${fieldName}' updated successfully!`);
 
-                // Uncheck all other radio buttons
-                $('input[name="default_board"]').prop('checked', false);
-
-                // Check only the selected one
-                $('#default_board-' + itemId).prop('checked', true);
-            } else {
-                alert(response.error); // Show error if update fails
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('An error occurred:', error);
-        }
-    });
-}
-
-</script>
 <!-- End: Content -->
 {% endblock content %}

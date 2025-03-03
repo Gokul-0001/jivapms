@@ -7,6 +7,7 @@ urlpatterns = [
     path('backlog_type/', include('app_organization.mod_backlog_type.urls_backlog_type')),
     path('blog/', include('app_organization.mod_blog.urls_blog')),
     path('board/', include('app_organization.mod_board.urls_board')),
+    path('board_card/', include('app_organization.mod_board_card.urls_board_card')),
     path('collection/', include('app_organization.mod_collection.urls_collection')),
     path('dev_value_stream/', include('app_organization.mod_dev_value_stream.urls_dev_value_stream')),
     path('dev_value_stream_step/', include('app_organization.mod_dev_value_stream_step.urls_dev_value_stream_step')),
