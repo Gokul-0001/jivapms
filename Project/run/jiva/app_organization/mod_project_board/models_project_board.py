@@ -14,12 +14,21 @@ class ProjectBoard(BaseModelTrackDateImpl):
     project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
                                 related_name="project_boards", null=True, blank=True)
     
-    project_workflow = models.ForeignKey('app_organization.ProjectWorkflow', on_delete=models.CASCADE, 
-                                related_name="project_workflow", null=True, blank=True)
+    
     
     org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, related_name="org_release_boards", null=True, blank=True)
     org_iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, related_name="org_iteration_boards", null=True, blank=True)
     default_board = models.BooleanField(default=False)
+
+    BOARD_TYPE_CHOICES = (
+        ('TODO_WIP_DONE', 'To Do, WIP, Done'),
+        ('KANBAN', 'To Do, Doing, Done'),
+        ('SCRUM', 'To Do, WIP, Done'),
+        ('Portfolio', 'Portfolio'),
+        ('Program', 'Program'),
+        ('Project', 'Project'),
+    )
+    board_type = models.CharField(max_length=50, choices=BOARD_TYPE_CHOICES, default='TODO_WIP_DONE')
 
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                related_name="author_project_boards")

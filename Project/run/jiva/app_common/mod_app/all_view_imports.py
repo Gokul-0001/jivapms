@@ -428,3 +428,17 @@ PROJECT_MEMBER_ROLES = [
     QA_STR, IT_ENGINEER_STR, NETWORK_ENGINEER_STR, TECH_LEAD_STR, TEAM_LEAD_STR
 ]
 ################################################################################
+
+# KANBAN BOARD 
+
+# 03/Mar/2025
+GLOBAL_DEFAULT_BOARD_COLUMNS = ['ToDo', 'WIP', 'Done']
+GLOBAL_DEFAULT_SCRUM_COLUMNS = ['ToDo', 'WIP', 'Done']
+GLOBAL_DEFAULT_KANBAN_COLUMNS = ['ToDo', 'Doing', 'Done']
+GLOBAL_DEFAULT_PORTFOLIO_COLUMNS = ['Funnel', 'Reviewing', 'Analyzing', 'Portfolio Backlog', 'Implementing=MVP, Persevere', 'Done']
+GLOBAL_DEFAULT_PROGRAM_COLUMNS = ['Funnel', 'Analyzing', 'Program Backlog', 'Validating on Staging', 'Deploying to Production', 'Releasing', 'Done']
+GLOBAL_DEFAULT_PROJECT_COLUMNS = ['Funnel', 'Analyzing', 'Project Backlog', 'Validating on Staging', 'Deploying to Production', 'Releasing', 'Done']
+
+GLOBAL_DEFAULT_KANBAN_COS = ['Expedite', 'Fixed Date', 'Standard', 'Intangible']
+GLOBAL_DEFAULT_PROJECT_COS = ['Critical', 'High', 'Medium', 'Low']
+GLOBAL_DEFAULT_SERVICE_COS = ['P1', 'P2', 'P3', 'P4', 'P5']

@@ -9,7 +9,7 @@ from app_organization.mod_persona.models_persona import *
 from app_organization.mod_backlog_type.models_backlog_type import *
 from app_organization.mod_collection.models_collection import *
 from app_common.mod_app.all_view_imports import *
-
+from app_organization.mod_project_board_swimlane.models_project_board_swimlane import *
 
 #
 #  The idea is the backlog can be flat and have one child element / sub-tasks
@@ -60,6 +60,11 @@ class Backlog(MPTTModel, BaseModelImpl):
             validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
         )
     # end roadmap   
+
+
+    # KANBAN
+    board_swimlane = models.ForeignKey('app_organization.ProjectBoardSwimLane', on_delete=models.CASCADE,
+                                related_name="card_swimlane", null=True, blank=True)
     
     
     # for now label is a char field

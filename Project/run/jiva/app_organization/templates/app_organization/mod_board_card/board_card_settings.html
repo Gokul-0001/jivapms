@@ -29,11 +29,15 @@
                            Please select which attributes needs to be displayed on the Card for this Board.
                         </div>
                         <div class="col col-md-3 text-end">
-                            <a href="{% url 'view_project_tree_board' project.id %}"
-                             class="btn btn-sm btn-success me-2"><b>Back to Board</b></a>
-
+                            {% if project.project_details.template.name != None and project.project_details.template.name == 'Scrum' %}
+                            <a href="{% url 'view_project_tree_board' project_id  %}?project_id={{ project_id }}" 
+                            class="btn btn-sm btn-primary me-2"><b><i class="bi bi-arrow-left"></i>Back to Board</b></a>
+                            {% else %}
+                            <a href="{% url 'view_project_tree_board_custom' project_id  %}?project_id={{ project_id }}" 
+                            class="btn btn-sm btn-primary me-2"><b><i class="bi bi-arrow-left"></i>Back to Board</b></a>
+                            {% endif %}
                              <a href="{% url 'list_project_boards' project.id %}"
-                             class="btn btn-sm btn-primary"><b>Project Boards</b></a>
+                             class="btn btn-sm btn-success"><b>Project Boards</b></a>
                         </div>
                     </div>
 

@@ -58,8 +58,15 @@
                                     <div class="col col-md-3 text-end">
                                         <span class="display_count">{{objects_count}} project_board(s)</span>
                                         &nbsp;&nbsp;
+                                        {% if project.project_details.template.name != None and project.project_details.template.name == 'Scrum' %}
                                         <a href="{% url 'view_project_tree_board' project_id  %}?project_id={{ project_id }}" 
-                                        class="btn btn-sm btn-primary"><b><i class="bi bi-arrow-left"></i>Back to Board</b></a>
+                                        class="btn btn-sm btn-primary me-2"><b><i class="bi bi-arrow-left"></i>Back to Board</b></a>
+                                        {% else %}
+                                        <a href="{% url 'view_project_tree_board_custom' project_id  %}?project_id={{ project_id }}" 
+                                        class="btn btn-sm btn-primary me-2"><b><i class="bi bi-arrow-left"></i>Back to Board</b></a>
+                                        {% endif %}
+
+
                                         <a href="{% url 'create_project_board' project_id  %}" 
                                         class="btn btn-sm btn-success"><b>+ Create Project Board</b></a>
                                         

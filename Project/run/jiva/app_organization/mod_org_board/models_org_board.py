@@ -5,6 +5,7 @@ from app_organization.mod_project.models_project import *
 from app_common.mod_common.models_common import *
 from app_organization.mod_project_board.models_project_board import *
 from app_organization.mod_project_board_state.models_project_board_state import *
+from app_organization.mod_project_board_swimlane.models_project_board_swimlane import *
 from app_jivapms.mod_app.all_view_imports import *
 
 class OrgBoard(BaseModelImpl):
@@ -115,18 +116,6 @@ class ProjectBoardCard(BaseModelTrackDateImpl):
         else:
             return str(self.id)
 
-class ProjectBoardSwimLane(BaseModelTrackDateImpl):
-    board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE,
-                                related_name="board_swim_lanes", null=True, blank=True)
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                               related_name="author_board_swim_lanes")
-   
-        
-    def __str__(self):
-        if self.name:
-            return self.name
-        else:
-            return str(self.id)
 
 
 

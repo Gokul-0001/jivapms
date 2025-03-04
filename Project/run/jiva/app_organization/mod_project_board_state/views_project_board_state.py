@@ -105,6 +105,7 @@ def list_project_board_states(request, project_board_id):
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
         'column_type_choices': ProjectBoardState.COLUMN_TYPE_CHOICES,
@@ -192,6 +193,7 @@ def list_deleted_project_board_states(request, project_board_id):
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
 
@@ -236,6 +238,7 @@ def create_project_board_state(request, project_board_id):
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
 
@@ -266,6 +269,7 @@ def add_project_board_state(request, project_board_id):
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
 
@@ -301,6 +305,7 @@ def edit_project_board_state(request, project_board_id, project_board_state_id):
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
 
@@ -322,8 +327,19 @@ def delete_project_board_state(request, project_board_id, project_board_state_id
     
     object = get_object_or_404(ProjectBoardState, pk=project_board_state_id, active=True,**viewable_dict)
     if request.method == 'POST':
+        ## Additionally ##
+        ## move all the cards from this column to Backlog
+        cards_in_this_state = ProjectBoardCard.objects.filter(board_id=project_board_id, state_id=project_board_state_id, active=True)
+        for card in cards_in_this_state:
+            card.state = None
+            card.save()
+
         object.active = False
         object.save()
+
+        
+
+
         return redirect('list_project_board_states', project_board_id=project_board_id)
 
     context = {
@@ -332,6 +348,7 @@ def delete_project_board_state(request, project_board_id, project_board_state_id
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
 
@@ -362,6 +379,7 @@ def permanent_deletion_project_board_state(request, project_board_id, project_bo
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
 
@@ -397,6 +415,7 @@ def view_project_board_state(request, project_board_id, project_board_state_id):
         'project_board': project_board,
         'project_board_id': project_board_id,
         'project': project_board.project,
+        'project_id': project_board.project.id,
         'org': project_board.project.org,
         'org_id': project_board.project.org.id,
 

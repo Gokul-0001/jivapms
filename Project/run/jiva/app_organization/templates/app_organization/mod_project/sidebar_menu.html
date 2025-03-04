@@ -37,11 +37,16 @@
             <i class="material-icons" style="font-size: 18px;">checklist</i>
             <span>Backlog</span>
         </a>     
-       
+        {% if project.project_details.template.name != None and project.project_details.template.name == 'Scrum' %}
         <a href="{% url 'view_project_tree_board' project.id %}?project_id={{project.id}}" class="nav-link" >
             <i class="bi bi-kanban"></i>
             <span>Board</span>
         </a>
+        {% else %}
+        <a href="{% url 'view_project_tree_board_custom' project.id %}?project_id={{project.id}}" class="nav-link" >
+            <i class="bi bi-kanban"></i>
+            <span>Board</span>
+        {% endif %}
 
         <a href="{% url 'list_project_workflows' project.id %}" class="nav-link" >
             <i class="material-icons" style="font-size: 18px;">arrow_forward</i>
