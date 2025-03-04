@@ -579,17 +579,17 @@ Project Iteration Board
                 </div>
                 {% for state in project_board_states %}
                 <!-- Kanban Column -->
-                <div class="kanban-column" data-id="{{ state.id }}" id="column-{{ state.name }}">
-                    <h4>{{ state.name }}</h4>
+                <div class="kanban-column" data-id="{{ state.id }}" id="column-{{ state.name }}" data-column-type="{{ state.column_type }}">
+                    <h4>{{ state.name }} {{state.wip_limit}} {{state.buffer_column}}</h4>
            
                     {% for item in state_items|get_item:state.id %}
                         {% if item.backlog.iteration.id == current_iteration.id %}
-                            <div class="kanban-card todo" style="color: white;" data-id="{{ item.id }}">
+                            <div class="kanban-card {{state.column_type|lower}}" style="color: white;" data-id="{{ item.id }}">
                                 <div class="kanban-card-header">
                                     <span class="priority priority-{{ item.backlog.priority }}">{{ item.backlog.priority|get_first_letter_caps }}</span>
                                     <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{ project.id }}">#{{ item.backlog.id }}</a> {{ item.backlog.iteration }}</span>
                                 </div>
-                                <b>{{ item }}</b>
+                                <b>{{ item }} </b>
                                 <p>{{ item.description | display_if_not_none }}</p>
                                 <div class="kanban-card-footer">
                                     <div class="parent">{{ item.backlog.parent }}</div>
@@ -701,7 +701,8 @@ Project Iteration Board
             var toColumn = ui.item.closest(".kanban-column"); // Target column
             var toStateId = toColumn.data("id"); // Target state ID
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-
+            var columnType = toColumn.data("column-type"); // Column type
+           
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);
             console.log("To Column (ID):", toStateId, "Name:", destColumn);
@@ -718,7 +719,7 @@ Project Iteration Board
             // Remove all column color classes
             card.removeClass("todo wip blocked done");
             // Add the correct class based on the column name
-            const newClass = columnColorMapping[destColumn] || "kanban-card";
+            const newClass = columnColorMapping[columnType] || "kanban-card";
             card.attr("class", newClass); // Replace classes dynamically
             
             // Call the backend to update the card state and positions
