@@ -10,6 +10,7 @@ class ProjectBoardState(BaseModelTrackDateImpl):
                                 related_name="board_states", null=True, blank=True)
     
     wip_limit = models.PositiveIntegerField(default=0)
+    apply_wip_limit = models.BooleanField(default=True)
 
     buffer_column = models.BooleanField(default=False)
     COLUMN_TYPE_CHOICES = [

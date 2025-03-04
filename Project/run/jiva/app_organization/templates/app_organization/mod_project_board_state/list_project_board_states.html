@@ -104,6 +104,7 @@
                                         <th width="12%">Project Board State</th>
                                         <th width="20%">Description</th>
                                         <th width="3%">WIP Limit</th>
+                                        <th width="3%">Apply WIP</th>
                                         <th width="3%">Buffer Column</th>
                                         <th width="4%">Column Type</th>
                                         <th width="20%">                                    
@@ -134,6 +135,13 @@
                                         <td width="3%" ondblclick="makeEditable(this)"
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'ProjectBoardState', 'wip_limit')"
                                         >{% if tobject.wip_limit != None %}{{tobject.wip_limit}}{% endif %}</td>
+                                        <td width="3%">
+                                            <input type="checkbox" id="checkbox-{{ tobject.id }}" 
+                                            onchange="updateCheckboxState({{ tobject.id }}, 'apply_wip_limit', this.checked)"
+                                            {% if tobject.apply_wip_limit %}checked{% endif %}
+                                            >
+                                     
+                                        </td>
                                         <td width="3%">
                                             <input type="checkbox" id="checkbox-{{ tobject.id }}" 
                                             onchange="updateCheckboxState({{ tobject.id }}, 'buffer_column', this.checked)"
