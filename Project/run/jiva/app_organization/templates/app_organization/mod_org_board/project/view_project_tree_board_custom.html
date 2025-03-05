@@ -605,7 +605,14 @@
     padding: 5px;
 }
 
-
+.kanban-subcolumn {
+    width: 100%;
+    min-height: 150px;
+    padding: 5px;
+    background: #fdfdfd;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
 
 .kanban-subcolumn.doing {
     border: 2px dashed #ff9800; /* Orange border */
@@ -692,8 +699,7 @@ Project Iteration Board
 -->
 
 {% if project_iteration_flag == True %}
-<form action="" method="post">
-{% csrf_token %}
+
 <div class="content-wrapper">
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
@@ -849,7 +855,7 @@ Project Iteration Board
         </div>
     </div>
 </div>
-</form>
+
 
 {% endif %}
 <div id="loading-spinner" style="
@@ -985,8 +991,8 @@ window.addEventListener("load", updateWIPCounts);
             var toStateId = toColumn.data("id"); // Target state ID
             var subState = toColumn.attr("data-substate");
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-            var columnType = toColumn.closest(".kanban-column").data("column-type"); // Column type
-           
+            //var columnType = toColumn.data("column-type"); // Column type
+            var columnType = toColumn.closest(".kanban-column").data("column-type");
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);
             console.log("To Column (ID):", toStateId, "Name:", destColumn);
@@ -1009,10 +1015,7 @@ window.addEventListener("load", updateWIPCounts);
                 updateCardSubstate(cardId, toStateId, subState);
             }
             // Call the backend to update the card state and positions
-            //updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
-            setTimeout(function() { // Add slight delay to prevent race condition
-                updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, {{ project.id }}, boardId, fromColumn);
-            }, 300); // 300ms delay
+            updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
             
             // Clear and reset the data to avoid stale values
             ui.item.removeData("start-state").removeData("from-column");
@@ -1042,7 +1045,7 @@ function updateCardSubstate(id, stateId, subState) {
     fetch("/common/common_ajax/ajax_update_app_model_field_value/", {
         method: "POST",
         headers: {
-            "csfrmiddlewaretoken": "{{ csrf_token }}"
+            "X-CSRFToken": "{{ csrf_token }}"
         },
         body: formData // Fix: Using FormData instead of JSON
     })
@@ -1066,7 +1069,7 @@ function updateCardSubstate(id, stateId, subState) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "csfrmiddlewaretoken": "{{ csrf_token }}"
+                "X-CSRFToken": "{{ csrf_token }}"
             },
             body: JSON.stringify({
                 card_id: cardId,

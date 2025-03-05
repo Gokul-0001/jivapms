@@ -605,14 +605,7 @@
     padding: 5px;
 }
 
-.kanban-subcolumn {
-    width: 100%;
-    min-height: 150px;
-    padding: 5px;
-    background: #fdfdfd;
-    border-radius: 6px;
-    margin-bottom: 5px;
-}
+
 
 .kanban-subcolumn.doing {
     border: 2px dashed #ff9800; /* Orange border */
@@ -644,18 +637,7 @@
     gap: 5px; /* Space between the sub-columns */
 }
 
-.kanban-subcolumn {
-    width: 50%; /* Each sub-column takes half the space */
-    /* min-height: 150px; */
-    height: 100%;
-    padding: 10px;
-    background: #fdfdfd;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-}
+
 
 .kanban-subcolumn.doing {
     border: 2px dashed #ff9800; /* Orange border */
@@ -672,6 +654,37 @@
     display: none;
 }
 
+.kanban-subcolumn {
+    width: 100%; /* Full width */
+    min-height: 100px; /* Ensure some height */
+    padding: 10px;
+    background: #fdfdfd;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* Ensure full width */
+    justify-content: flex-start;
+    position: relative;
+}
+
+/* Increase the size of the placeholder */
+.kanban-card-placeholder {
+    width: 100% !important; /* Full width of the subcolumn */
+    height: 80px !important; /* Adjust based on your card size */
+    background: rgba(200, 200, 200, 0.3); /* Light grey */
+    border: 2px dashed #bbb; /* Dashed border */
+    border-radius: 6px;
+    margin: 5px 0;
+    transition: height 0.2s ease;
+}
+
+/* Highlight the entire subcolumn when an item is dragged over */
+.kanban-subcolumn.kanban-droppable-hover {
+    background: rgba(0, 123, 255, 0.1); /* Light blue effect */
+    border: 2px dashed #007bff; /* Dashed border when dragging */
+    min-height: 150px; /* Ensure enough height */
+}
+
 </style>
 <!--
 1. This is default or when get_swimlane_id is -1 where we need to display 
@@ -679,7 +692,8 @@ Project Iteration Board
 -->
 
 {% if project_iteration_flag == True %}
-
+<form action="" method="post">
+{% csrf_token %}
 <div class="content-wrapper">
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
@@ -835,7 +849,7 @@ Project Iteration Board
         </div>
     </div>
 </div>
-
+</form>
 
 {% endif %}
 <div id="loading-spinner" style="
@@ -971,7 +985,7 @@ window.addEventListener("load", updateWIPCounts);
             var toStateId = toColumn.data("id"); // Target state ID
             var subState = toColumn.attr("data-substate");
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-            var columnType = toColumn.data("column-type"); // Column type
+            var columnType = toColumn.closest(".kanban-column").data("column-type"); // Column type
            
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);
@@ -995,7 +1009,10 @@ window.addEventListener("load", updateWIPCounts);
                 updateCardSubstate(cardId, toStateId, subState);
             }
             // Call the backend to update the card state and positions
-            updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
+            //updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
+            setTimeout(function() { // Add slight delay to prevent race condition
+                updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, {{ project.id }}, boardId, fromColumn);
+            }, 300); // 300ms delay
             
             // Clear and reset the data to avoid stale values
             ui.item.removeData("start-state").removeData("from-column");
@@ -1011,72 +1028,74 @@ window.addEventListener("load", updateWIPCounts);
         }
     }).disableSelection();
 });
-// Function to update the substate (Doing/Done)
+// Function to update the substate (Doing/Done) using jQuery
 function updateCardSubstate(id, stateId, subState) {
     console.log(`Updating substate for Card ${id} -> ${subState}`);
 
-    let formData = new FormData();
-    formData.append("id", id);
-    formData.append("model_name", "ProjectBoardCard");
-    formData.append("app_name", "app_organization");
-    formData.append("field_name", "substate");
-    formData.append("new_value", subState); // Fix: Changed from 'field_value' to 'new_value'
-
-    fetch("/common/common_ajax/ajax_update_app_model_field_value/", {
-        method: "POST",
+    $.ajax({
+        url: "/common/common_ajax/ajax_update_app_model_field_value/",
+        type: "POST",
         headers: {
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: formData // Fix: Using FormData instead of JSON
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error("Error:", data.error);
-        } else {
-            console.log("Substate Update Success:", data);
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-    });
-}
-
-
-    // Function to update the card state
-    function updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn) {
-        fetch("{% url 'ajax_update_project_board_card_state' %}", {
-            method: "POST",
-            headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": "{{ csrf_token }}"
             },
-            body: JSON.stringify({
-                card_id: cardId,
-                board_id: {{ project_board.id }},
-                from_state_id: fromStateId,
-                to_state_id: toStateId,
-                positions: destPositions,
-                dest_column: destColumn,
-                project_id: projectId,
-                board_id: boardId,
-                from_column: fromColumn
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
+        data: {
+            
+            'id': id,
+            'model_name': "ProjectBoardCard",
+            'app_name': "app_organization",
+            'field_name': "substate",
+            'new_value': subState  // Fix: Changed from 'field_value' to 'new_value'
+        },
+        dataType: 'json',
+        success: function(data) {
             if (data.error) {
                 console.error("Error:", data.error);
             } else {
-                console.log("Success:", data);
-                
+                console.log("Substate Update Success:", data);
             }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        });
-    }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error:", status, error);
+        }
+    });
+}
+// Function to update the card state using jQuery AJAX
+function updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn) {
+    console.log(`Updating Card State: ${cardId} from ${fromStateId} to ${toStateId}`);
     
+    $.ajax({
+        url: "{% url 'ajax_update_project_board_card_state' %}",
+        type: "POST",
+        headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+        data: {
+           
+            'card_id': cardId,
+            'board_id': boardId,
+            'from_state_id': fromStateId,
+            'to_state_id': toStateId,
+            'positions': JSON.stringify(destPositions),  // Ensure it's properly sent as a JSON string
+            'dest_column': destColumn,
+            'project_id': projectId,
+            'from_column': fromColumn
+        },
+        dataType: 'json',
+        success: function(data) {
+            if (data.error) {
+                console.error("Error:", data.error);
+            } else {
+                console.log("Card State Update Success:", data);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error:", status, error);
+        }
+    });
+}
+
 
 
 function refreshKanbanBoard() {

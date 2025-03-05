@@ -834,6 +834,7 @@ def update_backlog_text_status(card_id, to_state):
 def ajax_update_project_board_card_state(request):
     if request.method == "POST":
         data = json.loads(request.body)
+        #data = request.POST
         card_id = data.get('card_id')
         board_id = data.get('board_id')
         from_state_id = data.get('from_state_id')
