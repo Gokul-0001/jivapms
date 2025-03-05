@@ -105,7 +105,11 @@ class ProjectBoardCard(BaseModelTrackDateImpl):
     swimlane = models.ForeignKey(
         'app_organization.ProjectBoardSwimLane', on_delete=models.SET_NULL, null=True, blank=True, related_name="swimlane_cards"
     )
-    
+    SUBSTATE_CHOICE = [
+        ('Doing', 'Doing'),
+        ('Done', 'Done')
+    ]
+    substate = models.CharField(max_length=10, choices=SUBSTATE_CHOICE, default='Doing')
     class Meta:
         indexes = [
             models.Index(fields=['board', 'state']),

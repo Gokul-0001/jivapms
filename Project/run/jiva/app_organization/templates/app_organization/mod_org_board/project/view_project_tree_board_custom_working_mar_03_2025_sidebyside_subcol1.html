@@ -529,12 +529,7 @@
     padding: 5px; /* Reduce padding */
     font-size: 0.9rem; /* Reduce text size */
 }
-.kanban-column.buffer-column {
-    width: 400px; /* 70% of original 250px */
-    min-width: 400px; /* Maintain minimum width */
-    padding: 5px; /* Reduce padding */
-    font-size: 0.9rem; /* Reduce text size */
-}
+
 /* Reduce Header Font Size */
 .kanban-column h4 {
     font-size: 0.85rem; /* Reduce header text */
@@ -646,8 +641,7 @@
 
 .kanban-subcolumn {
     width: 50%; /* Each sub-column takes half the space */
-    /* min-height: 150px; */
-    height: 100%;
+    min-height: 150px;
     padding: 10px;
     background: #fdfdfd;
     border-radius: 6px;
@@ -719,7 +713,7 @@ Project Iteration Board
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
                  <div class="kanban-column" data-id="0" id="backlog">
-                    <h4>Backlog <span style="color: red;">∞</span></h4>
+                    <h4>Backlog</h4>
                     
                         {% for item in backlog_items %}
                             
@@ -743,7 +737,7 @@ Project Iteration Board
                 </div>
                 {% for state in project_board_states %}
                 <!-- Kanban Column -->
-                <div class="kanban-column {% if state.buffer_column %}buffer-column{% endif %}" data-id="{{ state.id }}" id="column-{{ state.name }}" 
+                <div class="kanban-column" data-id="{{ state.id }}" id="column-{{ state.name }}" 
                         data-column-type="{{ state.column_type }}" data-wip-limit="{{ state.wip_limit }}" 
                         data-apply-wip-limit="{{ state.apply_wip_limit|yesno:"true,false" }}">
 
@@ -971,7 +965,7 @@ window.addEventListener("load", updateWIPCounts);
             var toStateId = toColumn.data("id"); // Target state ID
             var subState = toColumn.attr("data-substate");
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-            var columnType = toColumn.closest(".kanban-column").data("column-type"); // Column type
+            var columnType = toColumn.data("column-type"); // Column type
            
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);

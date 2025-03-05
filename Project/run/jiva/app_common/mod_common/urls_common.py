@@ -20,5 +20,8 @@ urlpatterns = [
     path('ajax_update_checkbox_state/', views_common.ajax_update_checkbox_state, name='ajax_update_checkbox_state'),
     path('ajax_update_select_box/', views_common.ajax_update_select_box, name='ajax_update_select_box'),
     path('ajax_update_default_radio_box/', views_common.ajax_update_default_radio_box, name='ajax_update_default_radio_box'),
-    
+
+    # this updates a value app/model/field/value
+    path('ajax_update_app_model_field_value/', views_common.ajax_update_app_model_field_value, name='ajax_update_app_model_field_value'),
+
 ]

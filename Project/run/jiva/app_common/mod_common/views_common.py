@@ -393,6 +393,7 @@ def ajax_update_checkbox_state(request):
 
 
 @login_required
+# this is a simple select/option update
 def ajax_update_select_box(request):
     if request.method == 'POST':
         object_id = request.POST.get('id', None)
@@ -422,6 +423,7 @@ def ajax_update_select_box(request):
 
 
 @login_required
+# This will update one of the row as default in the entire rows set, as default or selected
 def ajax_update_default_radio_box(request):
     if request.method == 'POST':
         object_id = request.POST.get('id', None)
@@ -449,3 +451,34 @@ def ajax_update_default_radio_box(request):
             return JsonResponse({'success': True, 'updated_field': field_name, 'new_value': True})
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+
+@login_required
+# Update a specific field with value
+def ajax_update_app_model_field_value(request):
+    if request.method == 'POST':
+        object_id = request.POST.get('id', None)
+        field_name = request.POST.get('field_name', None)  # Field name passed dynamically
+        new_value = request.POST.get('new_value', None)  # Updated value
+        model_name = request.POST.get('model_name', None)
+        given_app_name = request.POST.get('app_name', None)
+
+        if not (object_id and field_name and new_value and model_name):
+            return JsonResponse({'success': False, 'error': 'Missing parameters'})
+
+        model_class = apps.get_model(given_app_name, model_name)
+
+        # Ensure the field exists in the model before updating
+        if not hasattr(model_class, field_name):
+            return JsonResponse({'success': False, 'error': f'Field "{field_name}" does not exist in {model_name}'})
+
+        # Fetch and update the object
+        obj = model_class.objects.filter(id=object_id).first()
+        if obj:
+            setattr(obj, field_name, new_value)  # Set the field dynamically
+            obj.save()
+            
+            return JsonResponse({'success': True, 'updated_field': field_name, 'new_value': new_value})
+
+    return JsonResponse({'success': False})

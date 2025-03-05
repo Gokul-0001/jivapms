@@ -971,7 +971,7 @@ window.addEventListener("load", updateWIPCounts);
             var toStateId = toColumn.data("id"); // Target state ID
             var subState = toColumn.attr("data-substate");
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-            var columnType = toColumn.closest(".kanban-column").data("column-type"); // Column type
+            var columnType = toColumn.data("column-type"); // Column type
            
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);

@@ -516,8 +516,6 @@
             font-size: 0.55rem;
         }
     }
-
-    
 </style>
 
 
@@ -529,12 +527,7 @@
     padding: 5px; /* Reduce padding */
     font-size: 0.9rem; /* Reduce text size */
 }
-.kanban-column.buffer-column {
-    width: 400px; /* 70% of original 250px */
-    min-width: 400px; /* Maintain minimum width */
-    padding: 5px; /* Reduce padding */
-    font-size: 0.9rem; /* Reduce text size */
-}
+
 /* Reduce Header Font Size */
 .kanban-column h4 {
     font-size: 0.85rem; /* Reduce header text */
@@ -596,83 +589,9 @@
         padding: 5px;
     }
 }
-.kanban-buffer {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: #f8f9fa;
-    padding: 5px;
-}
-
-.kanban-subcolumn {
-    width: 100%;
-    min-height: 150px;
-    padding: 5px;
-    background: #fdfdfd;
-    border-radius: 6px;
-    margin-bottom: 5px;
-}
-
-.kanban-subcolumn.doing {
-    border: 2px dashed #ff9800; /* Orange border */
-    background-color: #fff8e1;
-}
-
-.kanban-subcolumn.done {
-    border: 2px dashed #4caf50; /* Green border */
-    background-color: #e8f5e9;
-}
-
-.dotted-line {
-    height: 2px;
-    background: repeating-linear-gradient(90deg, #000, #000 2px, transparent 2px, transparent 6px);
-    margin: 5px 0;
-}
 
 </style>
-<style>
-    /* for side by side */
-    .kanban-buffer {
-    display: flex;
-    flex-direction: row;  /* Change from column to row */
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: #f8f9fa;
-    padding: 5px;
-    width: 100%; /* Makes it span full width of column */
-    gap: 5px; /* Space between the sub-columns */
-}
 
-.kanban-subcolumn {
-    width: 50%; /* Each sub-column takes half the space */
-    /* min-height: 150px; */
-    height: 100%;
-    padding: 10px;
-    background: #fdfdfd;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.kanban-subcolumn.doing {
-    border: 2px dashed #ff9800; /* Orange border */
-    background-color: #fff8e1;
-}
-
-.kanban-subcolumn.done {
-    border: 2px dashed #4caf50; /* Green border */
-    background-color: #e8f5e9;
-}
-
-/* Remove dotted line as it's not needed in a side-by-side layout */
-.dotted-line {
-    display: none;
-}
-
-</style>
 <!--
 1. This is default or when get_swimlane_id is -1 where we need to display 
 Project Iteration Board
@@ -719,7 +638,7 @@ Project Iteration Board
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
                  <div class="kanban-column" data-id="0" id="backlog">
-                    <h4>Backlog <span style="color: red;">∞</span></h4>
+                    <h4>Backlog</h4>
                     
                         {% for item in backlog_items %}
                             
@@ -743,7 +662,7 @@ Project Iteration Board
                 </div>
                 {% for state in project_board_states %}
                 <!-- Kanban Column -->
-                <div class="kanban-column {% if state.buffer_column %}buffer-column{% endif %}" data-id="{{ state.id }}" id="column-{{ state.name }}" 
+                <div class="kanban-column" data-id="{{ state.id }}" id="column-{{ state.name }}" 
                         data-column-type="{{ state.column_type }}" data-wip-limit="{{ state.wip_limit }}" 
                         data-apply-wip-limit="{{ state.apply_wip_limit|yesno:"true,false" }}">
 
@@ -759,53 +678,7 @@ Project Iteration Board
                             {{ state.name }} <span style="color: red;">∞</span>  {# Show Infinity if WIP Limit is not applied #}
                             {% endif %}
                         </h4>
-                        <!-- Split column if buffer_column=True -->
-                        {% if state.buffer_column %}
-                        <div class="kanban-buffer">
-                            <!-- Doing Section -->
-                            <div class="kanban-subcolumn doing" data-id="{{ state.id }}" id="doing-{{ state.id }}" data-substate="doing">
-                                <b>{{ state.name }}: Doing</b>
-                                {% for item in state_items|get_item:state.id %}
-                                    {% if item.backlog.iteration.id == current_iteration.id and item.substate|lower == "doing" %}
-                                    <div class="kanban-card {{ state.column_type|lower }}" style="color: white;" data-id="{{ item.id }}">
-                                        <div class="kanban-card-header">
-                                            <span class="priority priority-{{ item.backlog.priority }}">{{ item.backlog.priority|get_first_letter_caps }}</span>
-                                            <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{ project.id }}">#{{ item.backlog.id }}</a> {{ item.backlog.iteration }}</span>
-                                        </div>
-                                        <b>{{ item }} {{item.substate}}</b>
-                                        <p>{{ item.description | display_if_not_none }}</p>
-                                        <div class="kanban-card-footer">
-                                            <div class="parent"></div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
 
-                            <!-- Dotted Line -->
-                            <div class="dotted-line"></div>
-
-                            <!-- Done Section -->
-                            <div class="kanban-subcolumn done" data-id="{{ state.id }}" id="done-{{ state.id }}" data-substate="done">
-                                <b>{{ state.name }}: Done</b>
-                                {% for item in state_items|get_item:state.id %}
-                                    {% if item.backlog.iteration.id == current_iteration.id and item.substate|lower == "done" %}
-                                    <div class="kanban-card {{ state.column_type|lower }}" style="color: white;" data-id="{{ item.id }}">
-                                        <div class="kanban-card-header">
-                                            <span class="priority priority-{{ item.backlog.priority }}">{{ item.backlog.priority|get_first_letter_caps }}</span>
-                                            <span><a href="{% url 'edit_project_tree_backlog_item' project.id item.backlog.id %}?back_to=view_project_tree_board&project_id={{ project.id }}">#{{ item.backlog.id }}</a> {{ item.backlog.iteration }}</span>
-                                        </div>
-                                        <b>{{ item }}</b>
-                                        <p>{{ item.description | display_if_not_none }}</p>
-                                        <div class="kanban-card-footer">
-                                            <div class="parent"></div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% else %}
                         {% for item in state_items|get_item:state.id %}
                             {% if item.backlog.iteration.id == current_iteration.id %}
                                 <div class="kanban-card {{ state.column_type|lower }}" style="color: white;" data-id="{{ item.id }}">
@@ -821,10 +694,6 @@ Project Iteration Board
                                 </div>
                             {% endif %}
                         {% endfor %}
-                    {% endif %}
-
-
-
                     </div>
 
            
@@ -933,8 +802,8 @@ window.addEventListener("load", updateWIPCounts);
 </script>
 <script>
    $(function() {
-    $(".kanban-column, .kanban-subcolumn").sortable({
-        connectWith: ".kanban-column, .kanban-subcolumn",
+    $(".kanban-column").sortable({
+        connectWith: ".kanban-column",
         placeholder: "kanban-card-placeholder",
         tolerance: 'pointer', // Makes dragging more responsive
         scroll: true, // Enables scrolling if the list overflows
@@ -967,11 +836,10 @@ window.addEventListener("load", updateWIPCounts);
             var fromStateId = ui.item.data("start-state"); // Initial state ID
             var fromColumn = ui.item.data("from-column");  // Initial column name
 
-            var toColumn = ui.item.closest(".kanban-subcolumn, .kanban-column"); // Target column
+            var toColumn = ui.item.closest(".kanban-column"); // Target column
             var toStateId = toColumn.data("id"); // Target state ID
-            var subState = toColumn.attr("data-substate");
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-            var columnType = toColumn.closest(".kanban-column").data("column-type"); // Column type
+            var columnType = toColumn.data("column-type"); // Column type
            
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);
@@ -991,12 +859,10 @@ window.addEventListener("load", updateWIPCounts);
             // Add the correct class based on the column name
             const newClass = columnColorMapping[columnType] || "kanban-card";
             card.attr("class", newClass); // Replace classes dynamically
-            if (subState) {
-                updateCardSubstate(cardId, toStateId, subState);
-            }
+            
             // Call the backend to update the card state and positions
             updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
-            
+
             // Clear and reset the data to avoid stale values
             ui.item.removeData("start-state").removeData("from-column");
             ui.item.data("start-state", toStateId);
@@ -1011,36 +877,7 @@ window.addEventListener("load", updateWIPCounts);
         }
     }).disableSelection();
 });
-// Function to update the substate (Doing/Done)
-function updateCardSubstate(id, stateId, subState) {
-    console.log(`Updating substate for Card ${id} -> ${subState}`);
 
-    let formData = new FormData();
-    formData.append("id", id);
-    formData.append("model_name", "ProjectBoardCard");
-    formData.append("app_name", "app_organization");
-    formData.append("field_name", "substate");
-    formData.append("new_value", subState); // Fix: Changed from 'field_value' to 'new_value'
-
-    fetch("/common/common_ajax/ajax_update_app_model_field_value/", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "PBwemLumoDXiZy6ygWKExGsbqEsWrAWJ3b4zeCI7yggPcnRSZeaXceiMPdscRKCP"
-        },
-        body: formData // Fix: Using FormData instead of JSON
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error("Error:", data.error);
-        } else {
-            console.log("Substate Update Success:", data);
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-    });
-}
 
 
     // Function to update the card state
