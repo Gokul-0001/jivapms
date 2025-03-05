@@ -1014,6 +1014,8 @@ def view_project_tree_board_custom(request, project_id):
     # Step2: Check whether Project - Release - Iteration board is there
     project_iteration = project.project_iteration
     project_release = project.project_release
+    current_release = None
+    current_iteration = None
     if project.project_release and project.project_iteration:
         project_iteration_flag = True
         details = get_project_release_and_iteration_details(project.id)
