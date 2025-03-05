@@ -1021,7 +1021,7 @@ def view_project_tree_board_custom(request, project_id):
         current_iteration = details.get('current_iteration')
         next_iteration = details.get('next_iteration')
         # Check the Project Release_Iteration Board exists, if not create it
-        PROJECT_RELEASE_ITERATION_BOARD_NAME = f"{project.name} Release_Iteration Board"
+        PROJECT_RELEASE_ITERATION_BOARD_NAME = f"{project.name}__{project_release}__{project_iteration}__PrjRelItrBoard"
         release_iteration_project_board, created = ProjectBoard.objects.get_or_create(
             project=project,
             name=PROJECT_RELEASE_ITERATION_BOARD_NAME,

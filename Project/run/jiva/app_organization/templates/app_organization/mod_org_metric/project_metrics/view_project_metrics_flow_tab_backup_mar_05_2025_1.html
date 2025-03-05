@@ -3,47 +3,38 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load app_web_my_filters %}
-{% load markdown_extras %}
+{% load markdown_extras  %}
 {% load mptt_tags %}
-
 {% block content %}
 {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_css.html' %}
 {% include 'app_common/common_files/navbar.html' %}
 {% include 'app_jivapms/mod_web/common_files/css.html' %}
-
 <div class="content-wrapper">   
-    {% include 'app_organization/mod_project/sidebar_menu.html' %}
     
+    {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
     <div class="contentbar mb-5" id="contentbar">
         <div class="container-fluid">
-           <h3>Project Metrics: {{ project }}</h3>
+           <h3>Project Metrics: {{project}}</h3>
            {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_declaration.html' %}
+           
+           
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
+
+
 <script>
     // Get data from Django context
     const dates = {{ dates|safe }};
     const backlogCounts = {{ backlog_counts|safe }};
-    
-    // Fetch dynamic columns from Django context
-    const columnNames = {{ column_names|safe }};
-    const columnData = {{ column_data|safe }};
-    
-    // Ensure None values in columnData are converted to empty arrays
-    Object.keys(columnData).forEach(key => {
-        if (!Array.isArray(columnData[key])) {
-            columnData[key] = [];  // Convert None to empty array
-        }
-    });
-
-    console.log("Dates:", dates);
-    console.log("Backlog Counts:", backlogCounts);
-    console.log("Column Names:", columnNames);
-    console.log("Column Data:", columnData);
+    const todoCounts = {{ todo_counts|safe }};
+    const wipCounts = {{ wip_counts|safe }};
+    const doneCounts = {{ done_counts|safe }};
 
     // Initialize the Chart.js line chart
     const ctx = document.getElementById('cfdChart').getContext('2d');
@@ -59,13 +50,27 @@
                     backgroundColor: 'rgba(0, 0, 255, 0.1)',
                     fill: true,
                 },
-                ...columnNames.map(col => ({
-                    label: col,
-                    data: columnData[col.toLowerCase()] || [],
-                    borderColor: getRandomColor(),
+                {
+                    label: 'ToDo',
+                    data: todoCounts,
+                    borderColor: 'pink',
+                    backgroundColor: 'rgba(50, 170, 255, 0.1)',
+                    fill: true,
+                },
+                {
+                    label: 'WIP',
+                    data: wipCounts,
+                    borderColor: 'orange',
                     backgroundColor: 'rgba(255, 165, 0, 0.1)',
                     fill: true,
-                }))
+                },
+                {
+                    label: 'Done',
+                    data: doneCounts,
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    fill: true,
+                }
             ]
         },
         options: {
@@ -96,12 +101,8 @@
             }
         }
     });
-
-    // Function to generate random colors for datasets
-    function getRandomColor() {
-        return `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
-    }
 </script>
 
-
 {% endblock content %}
+
+

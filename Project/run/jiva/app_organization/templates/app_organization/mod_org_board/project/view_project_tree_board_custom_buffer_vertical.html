@@ -516,6 +516,8 @@
             font-size: 0.55rem;
         }
     }
+
+    
 </style>
 
 
@@ -527,7 +529,12 @@
     padding: 5px; /* Reduce padding */
     font-size: 0.9rem; /* Reduce text size */
 }
-
+.kanban-column.buffer-column {
+    width: 400px; /* 70% of original 250px */
+    min-width: 400px; /* Maintain minimum width */
+    padding: 5px; /* Reduce padding */
+    font-size: 0.9rem; /* Reduce text size */
+}
 /* Reduce Header Font Size */
 .kanban-column h4 {
     font-size: 0.85rem; /* Reduce header text */
@@ -624,7 +631,48 @@
 }
 
 </style>
+<style>
+    /* for side by side */
+    .kanban-buffer {
+    display: flex;
+    flex-direction: row;  /* Change from column to row */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f8f9fa;
+    padding: 5px;
+    width: 100%; /* Makes it span full width of column */
+    gap: 5px; /* Space between the sub-columns */
+}
 
+.kanban-subcolumn {
+    width: 50%; /* Each sub-column takes half the space */
+    /* min-height: 150px; */
+    height: 100%;
+    padding: 10px;
+    background: #fdfdfd;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.kanban-subcolumn.doing {
+    border: 2px dashed #ff9800; /* Orange border */
+    background-color: #fff8e1;
+}
+
+.kanban-subcolumn.done {
+    border: 2px dashed #4caf50; /* Green border */
+    background-color: #e8f5e9;
+}
+
+/* Remove dotted line as it's not needed in a side-by-side layout */
+.dotted-line {
+    display: none;
+}
+
+</style>
 <!--
 1. This is default or when get_swimlane_id is -1 where we need to display 
 Project Iteration Board
@@ -671,7 +719,7 @@ Project Iteration Board
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
                  <div class="kanban-column" data-id="0" id="backlog">
-                    <h4>Backlog</h4>
+                    <h4>Backlog <span style="color: red;">∞</span></h4>
                     
                         {% for item in backlog_items %}
                             
@@ -695,7 +743,7 @@ Project Iteration Board
                 </div>
                 {% for state in project_board_states %}
                 <!-- Kanban Column -->
-                <div class="kanban-column" data-id="{{ state.id }}" id="column-{{ state.name }}" 
+                <div class="kanban-column {% if state.buffer_column %}buffer-column{% endif %}" data-id="{{ state.id }}" id="column-{{ state.name }}" 
                         data-column-type="{{ state.column_type }}" data-wip-limit="{{ state.wip_limit }}" 
                         data-apply-wip-limit="{{ state.apply_wip_limit|yesno:"true,false" }}">
 
@@ -923,7 +971,7 @@ window.addEventListener("load", updateWIPCounts);
             var toStateId = toColumn.data("id"); // Target state ID
             var subState = toColumn.attr("data-substate");
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-            var columnType = toColumn.data("column-type"); // Column type
+            var columnType = toColumn.closest(".kanban-column").data("column-type"); // Column type
            
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);

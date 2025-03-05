@@ -1001,11 +1001,173 @@ def view_project_metrics_quality_tab(request, project_id):
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_quality_tab.html"
     return render(request, template_file, context)
+from django.db.models import Max
+from django.utils.timezone import now
+from django.db.models.functions import TruncDate
+from datetime import timedelta
+import pytz
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 @login_required
 def view_project_metrics_flow_tab(request, project_id):
+    # Fetch user, project, and organization details
+    user = request.user
+    project = get_object_or_404(Project, pk=project_id, active=True)
+    organization = project.org
+    org_id = organization.id
+    tz = pytz.timezone('Asia/Kolkata')
+
+    logger.debug(f">>> === PROJECT METRICS: ****FLOW TAB**** === <<<")
+
+    # Release and Iteration
+    current_release = None
+    current_iteration = None
+    next_iteration = None
+    release = None
+
+    # Fetch current release details
+    if project.project_release:
+        current_datetime = now().replace(microsecond=0)
+        details = get_project_release_and_iteration_details(project.id)
+        current_release = details['current_release']
+        current_iteration = details['current_iteration']
+        next_iteration = details['next_iteration']
+        release = project.project_release
+
+        # Get the default active board for the project
+        project_board = ProjectBoard.objects.filter(project=project, active=True, default_board=True).first()
+        if not project_board:
+            logger.warning("No active project board found.")
+            return HttpResponse("No active board found.", status=404)
+
+        # Fetch all dynamic columns (states) from ProjectBoardState
+        active_columns = list(ProjectBoardState.objects.filter(board=project_board, active=True).values_list("name", flat=True))
+
+        # Initialize CFD data storage
+        cumulative_counts = {
+            'dates': [],
+            'backlog_counts': []
+        }
+        for column in active_columns:
+            cumulative_counts[column.lower() + '_counts'] = []
+
+        # Fetch backlog count for the release
+        release_backlog_items_check = Backlog.objects.filter(pro=project, release=current_release, active=True)
+        release_backlog_counts = release_backlog_items_check.count()
+
+        def cfd_backlog_counts(project, current_release):
+            return Backlog.objects.filter(pro=project, release=current_release, active=True).count()
+
+        # Prepare the release CFD
+        transitions = ProjectBoardStateTransition.objects.filter(
+            card__pro_id=project_id,
+            transition_time__date__gte=release.release_start_date,
+            transition_time__date__lte=release.release_end_date
+        ).annotate(date=TruncDate('transition_time'))
+
+        latest_transitions = (
+            transitions.values('card_id', 'date')
+            .annotate(latest_time=Max('transition_time'))
+        )
+
+        latest_transitions_ids = ProjectBoardStateTransition.objects.filter(
+            transition_time__in=[entry['latest_time'] for entry in latest_transitions]
+        )
+
+        # Iterate over each date in the release
+        current_date = release.release_start_date
+        cumulative_column_counts = {col.lower(): 0 for col in active_columns}  # Initialize counts dynamically
+
+        if release.release_length_in_mins > 0:
+            logger.debug(f">>> === SHORT-TERM RELEASE {release.release_start_date} === <<<")
+            total_minutes = release.release_length_in_mins
+            release_start_datetime = current_release.release_start_date.astimezone(tz)
+
+            for minute_offset in range(total_minutes + 1):
+                rel_datetime = release_start_datetime + timedelta(minutes=minute_offset)
+                daily_transitions = latest_transitions_ids.filter(transition_time__gte=release_start_datetime)
+
+                column_counts = {col.lower(): 0 for col in active_columns}  # Reset for each minute
+
+                for dt in daily_transitions:
+                    dt_transition_time_tz = dt.transition_time.astimezone(tz)
+                    rel_datetime_tz = rel_datetime.astimezone(tz)
+
+                    if dt.active and dt_transition_time_tz <= rel_datetime_tz:
+                        column_name = dt.to_state.name.lower()
+                        if column_name in column_counts:
+                            column_counts[column_name] += 1
+
+                # Update cumulative counts
+                for col_name in column_counts:
+                    cumulative_column_counts[col_name] += column_counts[col_name]
+
+                release_backlog_counts_cfd = cfd_backlog_counts(project, current_release)
+                current_date_for_cfd = release_start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+
+                cumulative_counts['dates'].append(current_date_for_cfd)
+                cumulative_counts['backlog_counts'].append(release_backlog_counts_cfd)
+                for col_name in column_counts:
+                    cumulative_counts[col_name + '_counts'].append(cumulative_column_counts[col_name])
+
+        else:
+            logger.debug(f">>> === NORMAL RELEASE === <<<")
+            while current_date <= release.release_end_date:
+                daily_transitions = latest_transitions_ids.filter(
+                    transition_time__date__lte=current_date
+                )
+
+                column_counts = {col.lower(): 0 for col in active_columns}  # Reset for each date
+
+                for col in active_columns:
+                    column_counts[col.lower()] = daily_transitions.filter(
+                        transition_time__date=current_date,
+                        to_state__name=col
+                    ).count()
+
+                # Update cumulative counts
+                for col_name in column_counts:
+                    cumulative_column_counts[col_name] += column_counts[col_name]
+
+                release_backlog_counts_cfd = cfd_backlog_counts(project, current_release)
+                current_date_for_cfd = current_date.strftime('%Y-%m-%dT%H:%M:%S')
+
+                cumulative_counts['dates'].append(current_date_for_cfd)
+                cumulative_counts['backlog_counts'].append(release_backlog_counts_cfd)
+                for col_name in column_counts:
+                    cumulative_counts[col_name + '_counts'].append(cumulative_column_counts[col_name])
+
+                current_date += timedelta(days=1)
+
+    # Prepare context for rendering template
+    context = {
+        'parent_page': '___PARENTPAGE___',
+        'page': 'view_project_metrics_flow_tab',
+        'organization': organization,
+        'org_id': org_id,
+        'project': project,
+        'project_id': project_id,
+        'pro_id': project_id,
+        'selected_tab': 'flow',
+        'current_release': current_release,
+        'current_iteration': current_iteration,
+        'next_iteration': next_iteration,
+        'dates': cumulative_counts['dates'],
+        'backlog_counts': cumulative_counts['backlog_counts'],
+        'column_names': active_columns,  # Send dynamic column names
+        'column_data': {col.lower(): cumulative_counts[col.lower() + '_counts'] for col in active_columns},  # Send dynamic data
+    }
+
+    logger.debug(f">>> === FINAL CFD COUNTS: {cumulative_counts} === <<<")
+
+    template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_flow_tab.html"
+    return render(request, template_file, context)
+
+
+@login_required
+def view_project_metrics_flow_tabx1(request, project_id):
     # Fetch user, project, and organization details
     user = request.user
     project = get_object_or_404(Project, pk=project_id, active=True)
