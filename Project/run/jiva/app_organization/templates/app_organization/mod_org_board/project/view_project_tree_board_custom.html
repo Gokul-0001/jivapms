@@ -692,7 +692,8 @@ Project Iteration Board
 -->
 
 {% if project_iteration_flag == True %}
-
+<form action="" method="post">
+{% csrf_token %}
 <div class="content-wrapper">
     {% include 'app_organization/mod_project/sidebar_menu.html' %}
 
@@ -848,7 +849,7 @@ Project Iteration Board
         </div>
     </div>
 </div>
-
+</form>
 
 {% endif %}
 <div id="loading-spinner" style="
