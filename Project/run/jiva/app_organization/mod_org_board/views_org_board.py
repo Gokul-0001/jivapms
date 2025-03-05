@@ -1054,13 +1054,19 @@ def _COMMON_for_kanban(request, project_id):
     # SOMETHING LIKE THIS ['ToDo', 'WIP', 'Done']
     #ProjectBoardState.objects.all().delete()
     backlog_state = None  # To store the "Backlog" state reference
+    COLUMN_TYPE_MAPPING = {
+        'ToDo': 'ToDo',
+        'WIP': 'WIP',
+        'Done': 'Done'
+    }
     existing_column_count = ProjectBoardState.objects.filter(board=selected_project_board).count()
     if existing_column_count == 0:
         for position, column_name in enumerate(DEFAULT_BOARD_COLUMNS):
+            
             state, _ = ProjectBoardState.objects.get_or_create(
                 board=selected_project_board,
                 name=column_name,
-                defaults={'author': user, 'wip_limit': 0}
+                defaults={'author': user, 'wip_limit': 1, 'apply_wip_limit': True if column_name == 'WIP' else False, 'column_type': COLUMN_TYPE_MAPPING[column_name]}
             )
             if column_name == 'Backlog':
                 backlog_state = state
