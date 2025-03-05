@@ -1085,7 +1085,14 @@ def view_project_tree_board_custom(request, project_id):
                 board=project_board,
                 state__isnull=False  # Exclude items where state.id is NOT NULL (moved to other states)
             ).values_list('backlog_id', flat=True)
-        ).order_by('position', '-created_at')    
+        ).order_by('position', '-created_at')   
+    reference_backlog_items =  Backlog.objects.filter(
+            pro_id=project.id,
+            type__in=backlog_types,
+            active=True,
+          
+        
+        ).order_by('position', '-created_at')  
     # Step8: Collect the state/column items
     # Fetch the project backlog items state
     state_items = {
@@ -1100,12 +1107,23 @@ def view_project_tree_board_custom(request, project_id):
     }
     logger.debug(f">>> === state_items: {state_items} === <<<")
     logger.debug(f">>> === PROJECT BOARD COLUMNS: {project_board_states} === <<<")
-
+    state_items_list = [
+        (state, ProjectBoardCard.objects.filter(
+            board=project_board,
+            state=state,
+            active=True,
+            backlog__type__in=backlog_types,
+            backlog__active=True  # Exclude cards linked to soft-deleted Backlog items
+        ).select_related('backlog').order_by('position', '-created_at'))
+        for state in project_board.board_states.filter(active=True)
+    ]
+    # IT HAS TO BE ITERATED -- see REFERENCE_01
     # Step9: Check the swimlane
-    board_swimlanes = ProjectBoardSwimLane.objects.filter(board=project_board, active=True)    
-
+    board_swimlanes = ProjectBoardSwimLane.objects.filter(board=project_board, active=True)
+    board_swimlanes_count = board_swimlanes.count()    
+    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BOARD SWIMLANES {board_swimlanes} {board_swimlanes_count}")
     # Step10: Set the flags
-    FLAG_board_swimlane_exists = board_swimlanes.exists()
+    FLAG_board_swimlane_exists = board_swimlanes_count > 0
     if FLAG_board_swimlane_exists:
         efcc_backlog_items_swimlane = Backlog.objects.filter(
             pro_id=project.id,
@@ -1116,7 +1134,36 @@ def view_project_tree_board_custom(request, project_id):
             pro_id=project.id,
             active=True
         ).exclude(type__in=efcc_include_types)
-        print(f"SWIMLANES>>>>>>>>>>>>>>>>>>>>>>>>>>>>exists>>>>>>>>>>>>> {efcc_backlog_items_swimlane}")
+
+    # Step10.1: Preprocess
+    # Preprocess state_items to create a backlog-to-state mapping
+    # Create a mapping of backlog item ID to its state ID from ProjectBoardCard
+    # Create a dictionary mapping backlog_id to a set of state_ids
+    # Create a dictionary mapping backlog_id to its cards in different states
+    backlog_state_mapping = {}
+
+    # Query all active ProjectBoardCards related to the board
+    board_cards = ProjectBoardCard.objects.filter(board=project_board, active=True).select_related('backlog', 'state')
+
+    # Build the mapping
+    for card in board_cards:
+        if card.backlog_id not in backlog_state_mapping:
+            backlog_state_mapping[card.backlog_id] = []  # Store a list of card-state pairs
+
+        backlog_state_mapping[card.backlog_id].append({
+            "state_id": card.state_id,  # State ID where this card exists
+            "state_name": card.state,  # State Name
+            "card_id": card.id,  # Card ID
+            "card_name": str(card),  # Card Name
+            "substate": card.substate,  # Substate (Doing/Done)
+            "priority": card.backlog.priority if card.backlog else None,  # Priority of the backlog item
+        })
+
+
+
+    print(f"SWIMLANES>>>>>>>>>>>>>>>>>>>>>>>>>>>>exists>>>>>>>>>>>>> {efcc_backlog_items_swimlane}")
+
+    print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BACKLOG ITEMS {actual_project_backlog_items} ")
     context = {
         'organization': organization,
         'org_id': org_id,
@@ -1125,16 +1172,18 @@ def view_project_tree_board_custom(request, project_id):
         'project_board': selected_project_board,
         'project_board_states': project_board_states,
         'backlog_items': actual_project_backlog_items,
+        'reference_backlog_items': reference_backlog_items,
         'todo_items': state_items.get('ToDo', []),
         'in_progress_items': state_items.get('WIP', []),
         'done_items': state_items.get('Done', []),
         'state_items': state_items,
+        'state_items_list': state_items_list,
         'page_title': f'Project Board: {project.name}',
         'efcc_backlog_items': efcc_backlog_items,
         'efcc_backlog_with_no_epic': efcc_backlog_with_no_epic,
         'swimlane_flag': swimlane_flag,
         'efcc_backlog_items_swimlane': efcc_backlog_items_swimlane,
-        
+        'backlog_state_mapping': backlog_state_mapping,
         'project_iteration_flag': project_iteration_flag,
         'current_release': current_release,
         'current_iteration': current_iteration,
@@ -1146,6 +1195,23 @@ def view_project_tree_board_custom(request, project_id):
     print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {project_type}")
     if project_type == 'Kanban':
         template_file = f"{app_name}/{module_path}/project/view_project_tree_board_custom.html"
+        # experimenting with new version to be responsive
+        #template_file = f"{app_name}/{module_path}/project/view_project_tree_board_smart_kanban.html"
     else:
         template_file = f"{app_name}/{module_path}/project/view_project_tree_board.html"
     return render(request, template_file, context)
+
+
+# REFERENCE_01
+# {% for state, items in state_items_list %}
+#     <td class="kanban-column kanban-column-with-cards">
+#         <h4>{{ state.name }}</h4> <!-- Display State Name -->
+#         {% for item in items %}
+#             <div class="kanban-card">
+#                 {{ item }}
+#             </div>
+#         {% empty %}
+#             <div class="kanban-card-placeholder">No Cards</div>
+#         {% endfor %}
+#     </td>
+# {% endfor %}

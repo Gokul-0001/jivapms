@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Kanban Board</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .kanban-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .kanban-column {
+            background: white;
+            border-radius: 6px;
+            padding: 8px;
+            width: 8%;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .kanban-column h4 {
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+
+        .kanban-swimlane {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+        }
+
+        .kanban-card {
+            background: #ffecb3;
+            border-radius: 4px;
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+            font-size: 0.75rem;
+            text-align: center;
+            cursor: grab;
+        }
+
+        .card-details {
+            width: 200px;
+            padding: 5px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .board-wrapper {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .card-section {
+            min-width: 220px;
+        }
+
+        @media (max-width: 768px) {
+            .kanban-column {
+                min-width: 100px;
+            }
+            .card-details {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="board-wrapper">
+        <div class="card-section">
+            <h4>Card Details</h4>
+            <div class="card-details">
+                <p>Select a card to see details.</p>
+            </div>
+        </div>
+
+        <div class="kanban-container">
+            <div class="kanban-column" id="todo">
+                <h4>To Do</h4>
+                <div class="kanban-swimlane">
+                    <div class="kanban-card" data-id="1">Task 1</div>
+                    <div class="kanban-card" data-id="2">Task 2</div>
+                </div>
+            </div>
+            <div class="kanban-column" id="inprogress">
+                <h4>In Progress</h4>
+                <div class="kanban-swimlane"></div>
+            </div>
+            <div class="kanban-column" id="review">
+                <h4>Review</h4>
+                <div class="kanban-swimlane"></div>
+            </div>
+            <div class="kanban-column" id="done">
+                <h4>Done</h4>
+                <div class="kanban-swimlane"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $(".kanban-swimlane").sortable({
+                connectWith: ".kanban-swimlane",
+                placeholder: "kanban-card-placeholder",
+                update: function (event, ui) {
+                    console.log("Card moved", ui.item.data("id"));
+                }
+            }).disableSelection();
+
+            $(".kanban-card").click(function () {
+                let cardText = $(this).text();
+                $(".card-details").html("<p><strong>Details for:</strong> " + cardText + "</p>");
+            });
+        });
+    </script>
+</body>
+</html>

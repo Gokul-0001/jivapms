@@ -529,7 +529,12 @@
     padding: 5px; /* Reduce padding */
     font-size: 0.9rem; /* Reduce text size */
 }
-
+.kanban-column.buffer-column {
+    width: 400px; /* 70% of original 250px */
+    min-width: 400px; /* Maintain minimum width */
+    padding: 5px; /* Reduce padding */
+    font-size: 0.9rem; /* Reduce text size */
+}
 /* Reduce Header Font Size */
 .kanban-column h4 {
     font-size: 0.85rem; /* Reduce header text */
@@ -639,17 +644,7 @@
     gap: 5px; /* Space between the sub-columns */
 }
 
-.kanban-subcolumn {
-    width: 50%; /* Each sub-column takes half the space */
-    min-height: 150px;
-    padding: 10px;
-    background: #fdfdfd;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-}
+
 
 .kanban-subcolumn.doing {
     border: 2px dashed #ff9800; /* Orange border */
@@ -664,6 +659,37 @@
 /* Remove dotted line as it's not needed in a side-by-side layout */
 .dotted-line {
     display: none;
+}
+
+.kanban-subcolumn {
+    width: 100%; /* Full width */
+    min-height: 100px; /* Ensure some height */
+    padding: 10px;
+    background: #fdfdfd;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* Ensure full width */
+    justify-content: flex-start;
+    position: relative;
+}
+
+/* Increase the size of the placeholder */
+.kanban-card-placeholder {
+    width: 100% !important; /* Full width of the subcolumn */
+    height: 80px !important; /* Adjust based on your card size */
+    background: rgba(200, 200, 200, 0.3); /* Light grey */
+    border: 2px dashed #bbb; /* Dashed border */
+    border-radius: 6px;
+    margin: 5px 0;
+    transition: height 0.2s ease;
+}
+
+/* Highlight the entire subcolumn when an item is dragged over */
+.kanban-subcolumn.kanban-droppable-hover {
+    background: rgba(0, 123, 255, 0.1); /* Light blue effect */
+    border: 2px dashed #007bff; /* Dashed border when dragging */
+    min-height: 150px; /* Ensure enough height */
 }
 
 </style>
@@ -713,7 +739,7 @@ Project Iteration Board
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
                  <div class="kanban-column" data-id="0" id="backlog">
-                    <h4>Backlog</h4>
+                    <h4>Backlog <span style="color: red;">∞</span></h4>
                     
                         {% for item in backlog_items %}
                             
@@ -737,7 +763,7 @@ Project Iteration Board
                 </div>
                 {% for state in project_board_states %}
                 <!-- Kanban Column -->
-                <div class="kanban-column" data-id="{{ state.id }}" id="column-{{ state.name }}" 
+                <div class="kanban-column {% if state.buffer_column %}buffer-column{% endif %}" data-id="{{ state.id }}" id="column-{{ state.name }}" 
                         data-column-type="{{ state.column_type }}" data-wip-limit="{{ state.wip_limit }}" 
                         data-apply-wip-limit="{{ state.apply_wip_limit|yesno:"true,false" }}">
 
@@ -965,8 +991,8 @@ window.addEventListener("load", updateWIPCounts);
             var toStateId = toColumn.data("id"); // Target state ID
             var subState = toColumn.attr("data-substate");
             var destColumn = toColumn.attr("id").replace("column-", "").trim().toLowerCase(); // Extracted column name
-            var columnType = toColumn.data("column-type"); // Column type
-           
+            //var columnType = toColumn.data("column-type"); // Column type
+            var columnType = toColumn.closest(".kanban-column").data("column-type");
             console.log("DEBUG: Moving card", cardId);
             console.log("From Column (ID):", fromStateId, "Name:", fromColumn);
             console.log("To Column (ID):", toStateId, "Name:", destColumn);
@@ -989,11 +1015,8 @@ window.addEventListener("load", updateWIPCounts);
                 updateCardSubstate(cardId, toStateId, subState);
             }
             // Call the backend to update the card state and positions
-            //updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
-            setTimeout(function() { // Add slight delay to prevent race condition
-                updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, {{ project.id }}, boardId, fromColumn);
-            }, 300);
-                    
+            updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
+            
             // Clear and reset the data to avoid stale values
             ui.item.removeData("start-state").removeData("from-column");
             ui.item.data("start-state", toStateId);
@@ -1022,7 +1045,7 @@ function updateCardSubstate(id, stateId, subState) {
     fetch("/common/common_ajax/ajax_update_app_model_field_value/", {
         method: "POST",
         headers: {
-            "X-CSRFToken": "PBwemLumoDXiZy6ygWKExGsbqEsWrAWJ3b4zeCI7yggPcnRSZeaXceiMPdscRKCP"
+            "X-CSRFToken": "{{ csrf_token }}"
         },
         body: formData // Fix: Using FormData instead of JSON
     })
