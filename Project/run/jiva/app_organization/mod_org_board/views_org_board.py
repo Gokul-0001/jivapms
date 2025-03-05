@@ -950,10 +950,9 @@ def ajax_update_project_board_card_order(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
-
 from app_organization.mod_backlog.views_project_tree import create_or_update_tree_from_config, get_tree_name_id
 @login_required
-def view_project_tree_board_custom(request, project_id):
+def _COMMON_for_kanban(request, project_id):
     user = request.user
     project = Project.objects.get(id=project_id, active=True)
     org_id = project.org.id
@@ -1164,6 +1163,7 @@ def view_project_tree_board_custom(request, project_id):
     print(f"SWIMLANES>>>>>>>>>>>>>>>>>>>>>>>>>>>>exists>>>>>>>>>>>>> {efcc_backlog_items_swimlane}")
 
     print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BACKLOG ITEMS {actual_project_backlog_items} ")
+    project_type = project.project_details.template.name
     context = {
         'organization': organization,
         'org_id': org_id,
@@ -1187,16 +1187,33 @@ def view_project_tree_board_custom(request, project_id):
         'project_iteration_flag': project_iteration_flag,
         'current_release': current_release,
         'current_iteration': current_iteration,
-        
-        
+        'project_type': project_type,
+        'FLAG_board_swimlane_exists': FLAG_board_swimlane_exists,
         #'chart_data': chart_data,
     }
-    project_type = project.project_details.template.name 
+     
     print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {project_type}")
+    return context
+
+
+@login_required
+def view_project_tree_board_custom(request, project_id):
+    context = _COMMON_for_kanban(request, project_id)
+    project_type = context.get('project_type')
+    context["page"] = "custom"
     if project_type == 'Kanban':
         template_file = f"{app_name}/{module_path}/project/view_project_tree_board_custom.html"
-        # experimenting with new version to be responsive
-        #template_file = f"{app_name}/{module_path}/project/view_project_tree_board_smart_kanban.html"
+    else:
+        template_file = f"{app_name}/{module_path}/project/view_project_tree_board.html"
+    return render(request, template_file, context)
+
+@login_required
+def view_project_tree_board_smart_kanban(request, project_id):
+    context = _COMMON_for_kanban(request, project_id)
+    context["page"] = "smart"
+    project_type = context.get('project_type')
+    if project_type == 'Kanban':
+        template_file = f"{app_name}/{module_path}/project/view_project_tree_board_smart_kanban.html"
     else:
         template_file = f"{app_name}/{module_path}/project/view_project_tree_board.html"
     return render(request, template_file, context)

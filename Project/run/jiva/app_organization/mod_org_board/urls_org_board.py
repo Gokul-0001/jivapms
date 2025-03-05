@@ -22,4 +22,6 @@ urlpatterns = [
     path('ajax_update_project_board_card_order/', views_org_board.ajax_update_project_board_card_order, name='ajax_update_project_board_card_order'),
 
     path('view_project_tree_board_custom/<int:project_id>/', views_org_board.view_project_tree_board_custom, name='view_project_tree_board_custom'),
+    path('view_project_tree_board_smart_kanban/<int:project_id>/', views_org_board.view_project_tree_board_smart_kanban, name='view_project_tree_board_smart_kanban'),
+
 ]

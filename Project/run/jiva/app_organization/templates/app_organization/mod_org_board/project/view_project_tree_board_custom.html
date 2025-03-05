@@ -707,23 +707,29 @@ Project Iteration Board
         {% if project.project_details.template.name == 'Kanban' %}
         <div class="container-fluid mb-1">
             <div class="row">
-                <div class="col col-md-3"></div>
-                <div class="col col-md-3"></div>
+                <div class="col col-md-6">
+                    <b class="me-2">Project: </b>
+                    {{project}}
+
+                <b class="mb-2 me-2">Project Board: </b>
+                    {{project_board}}
+                
+                </div>
+
                 <div class="col col-md-6 text-end">
-                    <!-- <a href="" class="btn btn-sm btn-warning me-2">Level</a> -->
-                    <a href="{% url 'list_project_boards' project.id %}" class="btn btn-sm btn-primary me-2">Board</a>
-                    <a href="{% url 'board_card_settings' project_board.id %}" class="btn btn-sm btn-success me-2">Card</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="display_topic"><b class="">Project Board: </b>
-                <b class="">{{ project }} {{current_release|display_if_not_none}}
-                 {{current_iteration|display_if_not_none}}</b>
-                </div>
-                <div class="dropdown">
+                    {% if page == 'custom' %}
+                    <a href="{% url 'view_project_tree_board_smart_kanban' project.id %}" class="me-2">SMART</a>
+                    <b>Custom</b>
+                    {% else %}
+                    <b>SMART</b>
+                    <a href="{% url 'view_project_tree_board_smart_kanban' project.id %}" class="me-2">Custom</a>
+                    
+                    {% endif %}
+                    
+                    
+                     <!-- <a href="" class="btn btn-sm btn-warning me-2">Level</a> -->
+                     <a href="{% url 'list_project_boards' project.id %}" class="btn btn-sm btn-primary me-2">Board</a>
+                     <a href="{% url 'board_card_settings' project_board.id %}" class="btn btn-sm btn-success me-2">Card</a>
                     <select id="parentFilter" >
                         <option value="">-- Select SwimLane --</option>
                         <option value="0">-- All SwimLanes --</option>
@@ -733,6 +739,23 @@ Project Iteration Board
                         {% endfor %}
                     </select>
                 </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="container-fluid">
+            <div class="d-flex justify-content-end align-items-center">
+                <div class="display_topic">
+                </div>
+                <div class="view_options">
+                    
+                </div>
+                <div class="dropdown">
+                   
+                </div>
+
+                <div class="menu">
+                   
+               </div>
             </div>
             
          
@@ -1014,13 +1037,13 @@ window.addEventListener("load", updateWIPCounts);
             if (subState) {                
                 setTimeout(function() { // Add slight delay to prevent race condition
                     updateCardSubstate(cardId, toStateId, subState);
-            }, 300);
+                }, 3);
             }
             // Call the backend to update the card state and positions
             //updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
             setTimeout(function() { // Add slight delay to prevent race condition
                 updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, {{ project.id }}, boardId, fromColumn);
-            }, 300);
+            }, 3);
             // Clear and reset the data to avoid stale values
             ui.item.removeData("start-state").removeData("from-column");
             ui.item.data("start-state", toStateId);
