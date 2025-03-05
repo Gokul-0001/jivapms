@@ -1041,7 +1041,7 @@ function updateCardSubstate(id, stateId, subState) {
     fetch("/common/common_ajax/ajax_update_app_model_field_value/", {
         method: "POST",
         headers: {
-            "X-CSRFToken": "PBwemLumoDXiZy6ygWKExGsbqEsWrAWJ3b4zeCI7yggPcnRSZeaXceiMPdscRKCP"
+            "csfrmiddlewaretoken": "{{ csrf_token }}"
         },
         body: formData // Fix: Using FormData instead of JSON
     })
@@ -1065,7 +1065,7 @@ function updateCardSubstate(id, stateId, subState) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
+                "csfrmiddlewaretoken": "{{ csrf_token }}"
             },
             body: JSON.stringify({
                 card_id: cardId,
