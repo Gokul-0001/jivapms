@@ -1011,12 +1011,16 @@ window.addEventListener("load", updateWIPCounts);
             // Add the correct class based on the column name
             const newClass = columnColorMapping[columnType] || "kanban-card";
             card.attr("class", newClass); // Replace classes dynamically
-            if (subState) {
-                updateCardSubstate(cardId, toStateId, subState);
+            if (subState) {                
+                setTimeout(function() { // Add slight delay to prevent race condition
+                    updateCardSubstate(cardId, toStateId, subState);
+            }, 300);
             }
             // Call the backend to update the card state and positions
-            updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
-            
+            //updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, projectId, boardId, fromColumn);
+            setTimeout(function() { // Add slight delay to prevent race condition
+                updateCardState(cardId, fromStateId, toStateId, destPositions, destColumn, {{ project.id }}, boardId, fromColumn);
+            }, 300);
             // Clear and reset the data to avoid stale values
             ui.item.removeData("start-state").removeData("from-column");
             ui.item.data("start-state", toStateId);
