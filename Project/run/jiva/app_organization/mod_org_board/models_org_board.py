@@ -70,10 +70,12 @@ class OrgBoard(BaseModelImpl):
 #             return str(self.id)
 
 class ProjectBoardStateTransition(BaseModelTrackDateImpl):
+
+    board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE, related_name="board_transitions", null=True, blank=True)
     card = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE,null=True, blank=True,
                                related_name="card_transitions")
-                             
-                             
+                           
+
     from_state = models.ForeignKey(
         'app_organization.ProjectBoardState',
         on_delete=models.SET_NULL,

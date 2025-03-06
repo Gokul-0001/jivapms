@@ -699,7 +699,7 @@ def view_project_tree_board(request, project_id):
     return render(request, template_file, context)
 
 
-def update_project_board_state_transition(card, from_state_id, to_state_id):
+def update_project_board_state_transition(board_id, card, from_state_id, to_state_id):
     if to_state_id == 0:
         # Move to backlog
         to_state_id = None
@@ -708,6 +708,7 @@ def update_project_board_state_transition(card, from_state_id, to_state_id):
         from_state_id = None
      # Log the transition
     created_st_entry = ProjectBoardStateTransition.objects.create(
+        board_id = board_id,
         card=card.backlog,
         from_state_id=from_state_id,
         to_state_id=to_state_id,
@@ -715,6 +716,7 @@ def update_project_board_state_transition(card, from_state_id, to_state_id):
     )
     
     # need to update the completed details / done details
+    print(f">>>>>>>> TOSTATE: {to_state_id} FROMSTATE: {from_state_id}") 
     to_state_details = ProjectBoardState.objects.get(id=to_state_id)
     from_state_details = ProjectBoardState.objects.get(id=from_state_id)
     if to_state_details and to_state_details.name == "Done":
@@ -739,7 +741,7 @@ def column_to_column_update(positions, board_id, card_id, from_column, from_stat
         card_id = pos.get('card_id')
         position = pos.get('position')      
         ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id, board_id=board_id)     
-    update_project_board_state_transition(pbc, from_state_id, to_state_id)
+    update_project_board_state_transition(board_id, pbc, from_state_id, to_state_id)
     return JsonResponse({"success": True})
 
 
@@ -764,7 +766,7 @@ def column_to_backlog_update(positions, board_id, this_card_id, from_column, fro
                 # Update positions of other backlog items
                 Backlog.objects.filter(id=backlog_card_id).update(position=position)
 
-        update_project_board_state_transition(card, from_state_id, to_state_id)
+        update_project_board_state_transition(board_id, card, from_state_id, to_state_id)
         return JsonResponse({"success": True})
 
     except Exception as e:
@@ -798,7 +800,7 @@ def backlog_to_column_update(positions, board_id, this_card_id, from_column, fro
                 ProjectBoardCard.objects.filter(id=card_id).update(position=position, board_id=board_id)      
                 updated_pbc = ProjectBoardCard.objects.get(id=card_id)
                 logger.debug(f">>> === BACKLOG_TO_COLUMN_UPDATED: {updated_pbc} {updated_pbc.board}=== <<<") 
-        update_project_board_state_transition(card, from_state_id, to_state_id)
+        update_project_board_state_transition(board_id, card, from_state_id, to_state_id)
         return JsonResponse({"success": True})
 
     except Exception as e:
@@ -1066,7 +1068,7 @@ def _COMMON_for_kanban(request, project_id):
             state, _ = ProjectBoardState.objects.get_or_create(
                 board=selected_project_board,
                 name=column_name,
-                defaults={'author': user, 'wip_limit': 1, 'apply_wip_limit': True if column_name == 'WIP' else False, 'column_type': COLUMN_TYPE_MAPPING[column_name]}
+                defaults={'author': user, 'wip_limit': 3, 'apply_wip_limit': True if column_name == 'WIP' else False, 'column_type': COLUMN_TYPE_MAPPING[column_name]}
             )
             if column_name == 'Backlog':
                 backlog_state = state

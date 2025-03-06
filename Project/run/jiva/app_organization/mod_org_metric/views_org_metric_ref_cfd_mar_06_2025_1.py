@@ -1001,9 +1001,6 @@ def view_project_metrics_quality_tab(request, project_id):
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_quality_tab.html"
     return render(request, template_file, context)
-import csv
-from datetime import datetime
-import pytz
 
 @login_required
 def view_project_metrics_flow_tab(request, project_id):
@@ -1045,6 +1042,7 @@ def view_project_metrics_flow_tab(request, project_id):
     cumulative_counts = {'dates': [], 'backlog_counts': []}
     for column in active_columns:
         cumulative_counts[column.lower() + '_counts'] = []
+
     
 
     # Snapshot range: by day or by minute
@@ -1054,21 +1052,15 @@ def view_project_metrics_flow_tab(request, project_id):
         total_minutes = release.release_length_in_mins
         snapshot_start = release.release_start_date.astimezone(tz)
 
-        snapshot_points = [
-                (snapshot_start + timedelta(minutes=i)).strftime('%Y-%m-%dT%H:%M:%S')
-                    for i in range(total_minutes + 1)
-                    ]
+        snapshot_points = [snapshot_start + timedelta(minutes=i) for i in range(total_minutes + 1)]
         CFD_BY = "TIME"
     else:
         # Daily snapshots
-        snapshot_start = release.release_start_date.astimezone(tz)
+        snapshot_start = release.release_start_date
         snapshot_end = release.release_end_date
         total_days = (snapshot_end - snapshot_start).days
 
-        snapshot_points = [
-                    (snapshot_start + timedelta(days=i)).strftime('%Y-%m-%dT%H:%M:%S')
-                    for i in range(total_days + 1)
-                ]
+        snapshot_points = [snapshot_start + timedelta(days=i) for i in range(total_days + 1)]
 
     
     # Gather all transitions beforehand
@@ -1081,29 +1073,31 @@ def view_project_metrics_flow_tab(request, project_id):
     for transition in transitions:
         transitions_by_card[transition.card_id].append(transition)
 
-    for snapshot_time in snapshot_points:  # Now snapshot_time is a formatted string
+    for snapshot_time in snapshot_points:
         snapshot_counts = {col.lower(): 0 for col in active_columns}
 
         for card_transitions in transitions_by_card.values():
             latest_state = None
             for trans in card_transitions:
-                trans_time = trans.transition_time.astimezone(tz)  # Convert to IST
-                f_trans_time = trans_time.strftime('%Y-%m-%dT%H:%M:%S')  # Format as string
-
-                print(f">>> === CHECKING THE trans_time, db time  === <<<")
-                print(f">>> === CHECK {f_trans_time} {snapshot_time} === <<<")  # snapshot_time is already formatted
-
-                if f_trans_time <= snapshot_time:  # Compare directly as strings
-                    latest_state = str(trans.to_state).lower()
+                trans_time = trans.transition_time.astimezone(tz)
+                snaps_time = snapshot_time.astimezone(tz)
+                f_trans_time = trans_time.strftime('%Y-%m-%dT%H:%M:%S')
+                f_snaps_time = snaps_time.strftime('%Y-%m-%dT%H:%M:%S')
+                print(f">>> === CHECKING THE trans_tiem, db time  === <<<")
+                print(f">>> === CHECK {f_trans_time} {f_snaps_time} === <<<")
+                if f_trans_time <= f_snaps_time:
+                    latest_state = trans.to_state
+                    latest_state = str(latest_state).lower()
                     print(f">>> === CHECKING THE latest_state === <<<")
                     print(f">>> === CHECK {latest_state} === <<<")
                 else:
-                    break  # Transitions are sorted by time, so break early
+                    break  # transitions are sorted by time, so break early
             
             if latest_state and latest_state in snapshot_counts:
                 snapshot_counts[latest_state] += 1
 
-        cumulative_counts['dates'].append(snapshot_time)
+        cumulative_counts['dates'].append(snapshot_time.strftime('%Y-%m-%dT%H:%M:%S'))
+        cumulative_counts['dates'].append(snapshot_time.strftime('%Y-%m-%dT%H:%M:%S'))
 
         backlog_count = Backlog.objects.filter(
             pro=project,
@@ -1116,51 +1110,6 @@ def view_project_metrics_flow_tab(request, project_id):
         for col_name, count in snapshot_counts.items():
             cumulative_counts[str(col_name).lower() + '_counts'].append(count)
 
-    print(f">>> === SNAPSHOT POINTS {snapshot_points}=== <<<")
-
-    # Prepare the output CSV file
-    csv_filename = "d:/cfd_snapshot_data.csv"
-
-    # Initialize a list to hold all rows (including headers)
-    csv_data = []
-
-    # Add header row (snapshot_time + state columns)
-    state_columns = [col.lower() for col in active_columns]
-    header = ["snapshot_time"] + state_columns
-    csv_data.append(header)
-
-    # Iterate over snapshot points
-    for snapshot_time in snapshot_points:  # Already formatted as '%Y-%m-%dT%H:%M:%S'
-        snapshot_counts = {col.lower(): 0 for col in active_columns}  # Initialize counts
-
-        # Convert snapshot_time string back to a datetime object
-        snapshot_dt = datetime.strptime(snapshot_time, '%Y-%m-%dT%H:%M:%S').replace(tzinfo=tz)
-
-        # Iterate over card transitions
-        for card_transitions in transitions_by_card.values():
-            latest_state = None
-            for trans in card_transitions:
-                trans_time = trans.transition_time.astimezone(tz)  # Convert transition time to IST
-
-                if trans_time <= snapshot_dt:  # Compare as datetime objects
-                    latest_state = str(trans.to_state).lower()
-                else:
-                    break  # Transitions are sorted by time, so break early
-            
-            # Update snapshot counts
-            if latest_state and latest_state in snapshot_counts:
-                snapshot_counts[latest_state] += 1
-
-        # Prepare row with snapshot_time and corresponding state counts
-        row = [snapshot_time] + [snapshot_counts[col] for col in state_columns]
-        csv_data.append(row)
-
-    # Write data to CSV
-    with open(csv_filename, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerows(csv_data)
-
-    print(f"CSV file '{csv_filename}' generated successfully!")
 
     # Prepare context for rendering template
     context = {
@@ -1181,7 +1130,8 @@ def view_project_metrics_flow_tab(request, project_id):
         'column_data': {col.lower(): cumulative_counts[col.lower() + '_counts'] for col in active_columns},  # Send dynamic data
     }
 
-   
+    logger.debug(f">>> === FINAL CFD COUNTS: {cumulative_counts} === <<<")
+
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_flow_tab.html"
     return render(request, template_file, context)
 
