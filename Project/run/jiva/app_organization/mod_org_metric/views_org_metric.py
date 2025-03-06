@@ -1119,7 +1119,7 @@ def view_project_metrics_flow_tab(request, project_id):
     print(f">>> === SNAPSHOT POINTS {snapshot_points}=== <<<")
 
     # Prepare the output CSV file
-    csv_filename = "d:/cfd_snapshot_data.csv"
+    csv_filename = "cfd_snapshot_data.csv"
 
     # Initialize a list to hold all rows (including headers)
     csv_data = []
