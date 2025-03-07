@@ -7,6 +7,7 @@ from app_organization.mod_project_board.models_project_board import *
 from app_organization.mod_project_board_state.models_project_board_state import *
 from app_organization.mod_project_board_swimlane.models_project_board_swimlane import *
 from app_jivapms.mod_app.all_view_imports import *
+from app_common.mod_app.all_view_imports import *
 
 class OrgBoard(BaseModelImpl):
     org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
@@ -24,80 +25,6 @@ class OrgBoard(BaseModelImpl):
             return self.name
         else:
             return str(self.id)
-
-
-# class ProjectBoard(BaseModelTrackDateImpl):
-#     # ref as of 08012025 DEFAULT_BOARD_COLUMNS = ['To Do', 'WIP', 'Done']
-#     org = models.ForeignKey('app_organization.Organization', on_delete=models.CASCADE, 
-#                             related_name="project_org_boards", null=True, blank=True)
-    
-#     project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, 
-#                                 related_name="project_boards", null=True, blank=True)
-    
-#     project_workflow = models.ForeignKey('app_organization.ProjectWorkflow', on_delete=models.CASCADE, 
-#                                 related_name="project_workflow", null=True, blank=True)
-    
-#     org_release = models.ForeignKey('app_organization.OrgRelease', on_delete=models.CASCADE, related_name="org_release_boards", null=True, blank=True)
-#     org_iteration = models.ForeignKey('app_organization.OrgIteration', on_delete=models.CASCADE, related_name="org_iteration_boards", null=True, blank=True)
-    
-
-#     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-#                                related_name="author_project_boards")
-   
-        
-#     def __str__(self):
-#         if self.name:
-#             return self.name
-#         else:
-#             return str(self.id)
-
-
-# class ProjectBoardState(BaseModelTrackDateImpl):
-    
-#     board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE,
-#                                 related_name="board_states", null=True, blank=True)
-    
-#     wip_limit = models.PositiveIntegerField(default=0)
-    
-#     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-#                                related_name="author_board_states")
-   
-        
-#     def __str__(self):
-#         if self.name:
-#             return self.name
-#         else:
-#             return str(self.id)
-
-class ProjectBoardStateTransition(BaseModelTrackDateImpl):
-
-    board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE, related_name="board_transitions", null=True, blank=True)
-    card = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE,null=True, blank=True,
-                               related_name="card_transitions")
-                           
-
-    from_state = models.ForeignKey(
-        'app_organization.ProjectBoardState',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="transitions_from"
-    )
-    to_state = models.ForeignKey(
-        'app_organization.ProjectBoardState',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="transitions_to"
-    )
-    transition_time = models.DateTimeField(auto_now_add=True, null=True,
-        blank=True)
-    
-    triggered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # User who moved the card
-    notes = models.TextField(null=True, blank=True)  # Optional transition notes
-
-    def __str__(self):
-        return f"Transition of Card {self.card.id}: {self.from_state} → {self.to_state} at {self.transition_time}"
 
 
 class ProjectBoardCard(BaseModelTrackDateImpl):
@@ -123,6 +50,99 @@ class ProjectBoardCard(BaseModelTrackDateImpl):
             return str(self.id)
 
 
+
+class ProjectBoardStateTransition(BaseModelTrackDateImpl):
+    date_field = models.DateField(null=True, blank=True)  # Separate date field
+    time_field = models.TimeField(null=True, blank=True)  # Separate time field
+    
+    board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE, related_name="board_transitions", null=True, blank=True)
+    card = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE,null=True, blank=True,
+                               related_name="card_transitions")
+                           
+
+    from_state = models.ForeignKey(
+        'app_organization.ProjectBoardState',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transitions_from"
+    )
+    to_state = models.ForeignKey(
+        'app_organization.ProjectBoardState',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transitions_to"
+    )
+    transition_time = models.DateTimeField(auto_now_add=True, null=True,
+        blank=True)
+    
+    triggered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # User who moved the card
+    notes = models.TextField(null=True, blank=True)  # Optional transition notes
+
+    # def __str__(self):
+    #     return f"Transition of Card {self.card.id}: {self.from_state} → {self.to_state} at {self.transition_time}"
+    def save(self, *args, **kwargs):
+        if self.transition_time:  # Convert date_time to IST
+            ist_date_time = self.transition_time.astimezone(IST)
+            self.date_field = ist_date_time.date()  # Store date in YYYY-MM-DD format
+            # Remove microseconds from the time
+            ist_time = ist_date_time.time()
+            self.time_field = time(ist_time.hour, ist_time.minute)  
+        super().save(*args, **kwargs)
+
+    def formatted_date(self):
+        return self.date_field.strftime('%d-%m-%Y') if self.date_field else None
+
+    def formatted_time(self):
+        return self.time_field.strftime('%H:%M') if self.time_field else None
+
+    def __str__(self):
+        return f"CARD_MOVEMENT: {self.formatted_date()} {self.formatted_time()} - {self.card.id}: {self.from_state} → {self.to_state}"
+
+
+
+
+class Movement(BaseModelTrackDateImpl):
+    date_time = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    date = models.DateField(null=True, blank=True)  # Separate date field
+    time = models.TimeField(null=True, blank=True)  # Separate time field
+    
+    project = models.ForeignKey('app_organization.Project', on_delete=models.CASCADE, related_name="project_movements", null=True, blank=True)
+    board = models.ForeignKey('app_organization.ProjectBoard', on_delete=models.CASCADE, related_name="board_movements", null=True, blank=True)
+    card = models.ForeignKey('app_organization.Backlog', on_delete=models.CASCADE, null=True, blank=True, related_name="card_movements")
+
+    from_column = models.ForeignKey(
+        'app_organization.ProjectBoardState',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="column_froms"
+    )
+    to_column = models.ForeignKey(
+        'app_organization.ProjectBoardState',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="column_tos"
+    )
+    triggered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # User who moved the card
+
+    def save(self, *args, **kwargs):
+        if self.date_time:  # Convert date_time to IST
+            ist_date_time = self.date_time.astimezone(IST)
+            self.date = ist_date_time.date()  # Store date in YYYY-MM-DD format
+            self.time = ist_date_time.time()  # Store time in HH:MM:SS format
+        super().save(*args, **kwargs)
+
+    def formatted_date(self):
+        return self.date.strftime('%d-%m-%Y') if self.date else None
+
+    def formatted_time(self):
+        return self.time.strftime('%H:%M:%S') if self.time else None
+
+    def __str__(self):
+        return f"CARD_MOVEMENT: {self.formatted_date()} {self.formatted_time()} - {self.card.id}: {self.from_column} → {self.to_column}"
 
 
 

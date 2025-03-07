@@ -34,6 +34,7 @@ urlpatterns = [
     path('org_team/', include('app_organization.mod_org_team.urls_org_team')),
     path('org_work_flow/', include('app_organization.mod_org_work_flow.urls_org_work_flow')),
     path('persona/', include('app_organization.mod_persona.urls_persona')),
+    path('productx/', include('app_organization.mod_productx.urls_productx')),
     path('project/', include('app_organization.mod_project.urls_project')),
     path('projectmembership/', include('app_organization.mod_projectmembership.urls_projectmembership')),
     path('project_board/', include('app_organization.mod_project_board.urls_project_board')),

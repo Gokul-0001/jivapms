@@ -709,11 +709,14 @@ Project Iteration Board
             <div class="row">
                 <div class="col col-md-6">
                     <b class="me-2">Project: </b>
-                    {{project}}
-
+                    {{project}} 
+                    <b class="mb-2 me-2">Release: </b>
+                    {{project.project_release}}
+                    <b class="mb-2 me-2">Iteration: </b>
+                    {{current_iteration}}
                 <b class="mb-2 me-2">Project Board: </b>
                     {{project_board}}
-                
+                    
                 </div>
 
                 <div class="col col-md-6 text-end">

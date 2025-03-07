@@ -1,0 +1,186 @@
+from django.core.management.base import BaseCommand
+from django.db.models import Max
+from movement.models import CardMovement, CFDData, Column
+from datetime import timedelta
+
+class Command(BaseCommand):
+    help = "Updates CFD data from Card Movements"
+
+    def handle(self, *args, **kwargs):
+        projects = CardMovement.objects.values_list("project", flat=True).distinct()
+        for project_id in projects:
+            boards = CardMovement.objects.filter(project_id=project_id).values_list("board", flat=True).distinct()
+            
+            for board_id in boards:
+                dates = CardMovement.objects.filter(board_id=board_id).values_list("date", flat=True).distinct()
+                
+                for date in sorted(dates):
+                    columns = ["Backlog", "To Do", "In Progress", "Review", "Done"]
+                    column_counts = {col: 0 for col in columns}
+
+                    # Get the latest movement per card for the given date
+                    latest_movements = (
+                        CardMovement.objects
+                        .filter(board_id=board_id, date__lte=date)
+                        .order_by("card_id", "-date")  # Sort by card, then latest date
+                        .distinct("card_id")  # Keep only the last movement per card
+                    )
+
+                    # Count the number of cards in each column
+                    for movement in latest_movements:
+                        column_name = movement.to_column.name
+                        if column_name in column_counts:
+                            column_counts[column_name] += 1
+
+                    # Save CFD Data
+                    CFDData.objects.update_or_create(
+                        project_id=project_id,
+                        board_id=board_id,
+                        date=date,
+                        defaults={
+                            "backlog": column_counts["Backlog"],
+                            "todo": column_counts["To Do"],
+                            "in_progress": column_counts["In Progress"],
+                            "review": column_counts["Review"],
+                            "done": column_counts["Done"],
+                        },
+                    )
+
+        self.stdout.write(self.style.SUCCESS("CFD Data Updated Successfully"))
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
+
+<script>
+    // Define color palette
+    const colorPalette = [
+        '#1f77b4', '#ff7f0e', '#d62728', '#ffcc00', '#9467bd', '#8c564b', '#e377c2',
+        '#7f7f7f', '#bcbd22', '#17becf', '#aec7e8', '#ffbb78', '#98df8a', '#ff9896',
+        '#c5b0d5', '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5'
+    ];
+
+    // Function to assign colors dynamically
+    function getColor(index) {
+        return colorPalette[index % colorPalette.length];
+    }
+
+    // Fetch data from Django context
+    const dates = {{ dates|safe }};
+    const backlogCounts = {{ backlog_counts|safe }};
+    const columnNames = {{ column_names|safe }};
+    const columnData = {{ column_data|safe }};
+
+    // Ensure None values in columnData are converted to empty arrays
+    Object.keys(columnData).forEach(key => {
+        if (!Array.isArray(columnData[key])) {
+            columnData[key] = [];  // Convert None to empty array
+        }
+    });
+
+    console.log("Dates:", dates);
+    console.log("Backlog Counts:", backlogCounts);
+    console.log("Column Names:", columnNames);
+    console.log("Column Data:", columnData);
+
+    // Get the chart context
+    const ctx = document.getElementById('cfdChart').getContext('2d');
+
+    // Initialize the Chart.js line chart
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,  // X-axis labels (dates)
+            datasets: [
+                {
+                    label: 'Backlog',
+                    data: backlogCounts,
+                    borderColor: getColor(0),
+                    backgroundColor: getColor(0).replace('1)', '0.2)'), // Adjust transparency
+                    fill: 'origin',
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                ...columnNames.map((col, index) => ({
+                    label: col,
+                    data: columnData[col.toLowerCase()] || [],
+                    borderColor: getColor(index + 1),  // Assign colors sequentially
+                    backgroundColor: getColor(index + 1).replace('1)', '0.2)'), // Adjust transparency
+                    fill: 'origin',
+                    borderWidth: 2,
+                    tension: 0.4
+                }))
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 14
+                        },
+                        padding: 20
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Cumulative Flow Diagram',
+                    font: {
+                        size: 18
+                    },
+                    padding: 20
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`;
+                        }
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    borderWidth: 2
+                },
+                point: {
+                    radius: 4,
+                    hoverRadius: 6
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    stacked: true,  // ✅ Prevents overlap of datasets
+                    title: {
+                        display: true,
+                        text: 'Task Count',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+</script>

@@ -714,6 +714,7 @@ def update_project_board_state_transition(board_id, card, from_state_id, to_stat
         to_state_id=to_state_id,
         transition_time=now(),
     )
+    created_st_entry.save()
     
     # need to update the completed details / done details
     print(f">>>>>>>> TOSTATE: {to_state_id} FROMSTATE: {from_state_id}") 
@@ -831,6 +832,16 @@ def update_backlog_text_status(card_id, to_state):
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"error": str(e)})  
+    
+def update_movement(project_id, board_id, card_id, from_state_id, to_state_id, from_column, to_column, positions):
+    project = Project.objects.filter(id=project_id).first()
+    project_board = ProjectBoard.objects.filter(id=board_id).first()
+    card = ProjectBoardCard.objects.filter(id=card_id).first()
+    from_column = ProjectBoardState.objects.filter(id=from_state_id).first()
+    to_column = ProjectBoardState.objects.filter(id=to_state_id).first()
+
+
+
 
 @login_required
 def ajax_update_project_board_card_state(request):
@@ -848,7 +859,10 @@ def ajax_update_project_board_card_state(request):
         dest_column = data.get('dest_column')
         project_id = data.get('project_id')
         board_id = data.get('board_id')
-      
+        # just to set 
+        to_column = dest_column
+
+        #ProjectBoardStateTransition.objects.filter(board_id=board_id).delete()
         
         if from_state_id == 0 and from_state_id == to_state_id and to_state_id == 0:
             #logger.debug(f">>> === Backlog: Within column movement === <<<")
@@ -870,6 +884,9 @@ def ajax_update_project_board_card_state(request):
             #logger.debug(f">>> ===   {from_column} to {dest_column}: Betwee Column Movement (to Backlog)   === <<<")
             column_to_backlog_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
             update_backlog_text_status(card_id, dest_column)
+
+        # Update Movement: project_id, board_id, card_id, from_state_id, to_state_id, from_column, dest_column, positions
+        update_movement(project_id, board_id, card_id, from_state_id, to_state_id, from_column, to_column, positions)
 
         return JsonResponse({"success": True})
 

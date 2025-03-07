@@ -58,8 +58,13 @@ from datetime import date
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime, time
 from django.utils.timezone import now, localtime
-import traceback
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.functions import TruncTime
+from django.db.models.functions import ExtractHour, ExtractMinute, ExtractSecond
+from django.db.models import F
+from django.db.models.functions import Extract
 
+import traceback
 import base64
 import os
 import platform
@@ -70,7 +75,7 @@ from django.apps import apps
 from django.utils.timezone import make_aware
 from datetime import datetime
 import pytz
-
+IST = pytz.timezone('Asia/Kolkata')
 
 SITE_TITLE = getattr(settings, 'SITE_TITLE', 'MY SITE')
 

@@ -1077,27 +1077,38 @@ def view_project_metrics_flow_tab(request, project_id):
     best_cfd_counts = defaultdict(dict)
     for snapshot_time in snapshot_points:
         if CFD_BY == "DATE":
-            print(f">>> === CFD TIME BASED === <<<")
-            s_date, s_time = snapshot_time.split('T')
+            s_date, stime = snapshot_time.split('T')
+            # Initialize counts for the current date with 0 for all active columns
+             # Convert s_date to the desired format (e.g., 07-03-2025)
             s_date_formatted = datetime.strptime(s_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-            best_cfd_counts[str(s_date_formatted)] = {col.lower(): 0 for col in active_columns}      
-            # Find out movements between the dates chosen
+            best_cfd_counts[str(s_date_formatted)] = {col.lower(): 0 for col in active_columns}
+            
+            # find out movements between the dates chosen
+            #ProjectBoardStateTransition.objects.all().delete()
+             # Find out movements between the dates chosen
             movements = ProjectBoardStateTransition.objects.filter(
                 board=project_board,
                 card__pro=project,
-                date_field=s_date,
-                #transition_time__date=s_date,
+                transition_time__date=s_date,
                 active=True,
             ).order_by('card', '-transition_time')
+            
+            #print(f">>> === TOTAL MOVEMENTS: {movements.count()} === <<<")
             
             # Group transitions by card
             card_transitions = defaultdict(list)    
             for mov in movements:
+                #print(f">>> === MOVEMENT: {mov} === <<<")
                 card_transitions[mov.card].append(mov)
-      
+            
+            #print(f">>> === UNIQUE CARDS WITH TRANSITIONS: {len(card_transitions)} === <<<")
             
             # Process each card's transitions
-            for card, transitions in card_transitions.items():          
+            for card, transitions in card_transitions.items():
+                # print(f"Card: {card}")
+                # print(f">>> === TRANSITIONS FOR CARD {card.id}:")
+                # for mov in transitions:
+                #     print(f"  Transition: {mov.transition_time} | From: {mov.from_state} | To: {mov.to_state} | Active: {mov.active}")
                 # Collect the card id, top most transition details, to state and date and time
                 which_transition = transitions[0]
                 date_field = which_transition.formatted_date()
@@ -1105,9 +1116,12 @@ def view_project_metrics_flow_tab(request, project_id):
                 
                 
                 # Update CFD counts for the date and state
-                to_state_lc = str(to_state).lower()                 
+                to_state_lc = str(to_state).lower() 
+                #print(f">>> === checking important: {to_state_lc} {best_cfd_counts[s_date_formatted]} === <<<")               
                 if to_state and to_state_lc in best_cfd_counts[s_date_formatted]:
                     best_cfd_counts[s_date_formatted][to_state_lc] += 1
+                    
+
 
                 best_cfd_data[card.id] = {
                     'card_id': card.id,
@@ -1116,53 +1130,11 @@ def view_project_metrics_flow_tab(request, project_id):
                     'date_field': which_transition.formatted_date(),
                     'time_field': which_transition.formatted_time(),
                 }
-        elif CFD_BY == "TIME":
-            #print(f">>> === CFD TIME BASED === <<<")
-            s_date, s_time = snapshot_time.split('T')
-            shh, smm, sss = s_time.split(':')
-            s_time = f"{shh}:{smm}"
-            best_cfd_counts[str(s_time)] = {col.lower(): 0 for col in active_columns}      
-            # Find out movements between the dates chosen
-            movements = ProjectBoardStateTransition.objects.annotate(
-                hour=Extract('time_field', 'hour'),
-                minute=Extract('time_field', 'minute'),
-            ).filter(
-                board=project_board,
-                card__pro=project,
-                active=True,
-                hour=s_time.split(':')[0],
-                minute=s_time.split(':')[1],
-            ).order_by('card', '-transition_time')
-            movements_count = movements.count()      
-            print(f">>> === TOTAL MOVEMENTS: {movements.count()} === <<<")
-           
-            # Group transitions by card
-            card_transitions = defaultdict(list)    
-            for mov in movements:
-                card_transitions[mov.card].append(mov)      
-            print(f">>> === UNIQUE CARDS WITH TRANSITIONS: {len(card_transitions)} === <<<")
-            # Process each card's transitions
-            for card, transitions in card_transitions.items():          
-                # Collect the card id, top most transition details, to state and date and time
-                which_transition = transitions[0]
-                time_field = which_transition.formatted_time()
-                to_state = which_transition.to_state               
+                #print(f"  Card: {
+                #    card.id} | To State: {which_transition.to_state} | Date: {which_transition.formatted_date()} | Time: {which_transition.formatted_time()}")
                 
-                # Update CFD counts for the date and state
-                to_state_lc = str(to_state).lower()                 
-                if to_state and to_state_lc in best_cfd_counts[s_time]:
-                    best_cfd_counts[s_time][to_state_lc] += 1
-
-                best_cfd_data[card.id] = {
-                    'card_id': card.id,
-                    'from_state': which_transition.from_state,
-                    'to_state': which_transition.to_state,
-                    'date_field': which_transition.formatted_date(),
-                    'time_field': which_transition.formatted_time(),
-                }
-        else:
-            print(f">>> === CFD UNKNOWN === <<<")
-            # exit
+                # for mov in transitions:
+                #     print(f"  Transition: {mov.transition_time} | From: {mov.from_state} | To: {mov.to_state}")
     # Print CFD counts
     print("CFD Counts:")
     for date, state_counts in best_cfd_counts.items():
@@ -1170,14 +1142,22 @@ def view_project_metrics_flow_tab(request, project_id):
             if (count > 0):
                 print(f"Date: {date}  State: {state} | Count: {count}")
     
- 
+    # for cfd in best_cfd_data.values():
+    #     print(f">>> === CFD:{cfd['date_field']}{cfd['time_field']}: {cfd['card_id']} {cfd['from_state']} {cfd['to_state']}  === <<<")
+    # Print CFD data in ascending order of to_state
+    # Print CFD data in ascending order of card ID
     print("CFD Data (Sorted by Card ID):")
     counter = 1
     for card_id in sorted(best_cfd_data.keys()):  # Sort by card ID
         cfd = best_cfd_data[card_id]
         print(f">>> === {counter}: CFD:{cfd['date_field']}{cfd['time_field']}: {cfd['card_id']} {cfd['from_state']} {cfd['to_state']} === <<<")
         counter +=1 
-  
+    # # Gather all transitions beforehand
+    # transitions = ProjectBoardStateTransition.objects.filter(
+    #     board=project_board,
+    #     card__pro=project,
+    #     transition_time__lte=snapshot_points[-1] if snapshot_points else snapshot_start
+    # ).order_by('card', 'transition_time')
     from django.db.models import OuterRef, Subquery
 
     # Get the latest transition per card within the project and board
