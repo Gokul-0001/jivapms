@@ -6,149 +6,98 @@
 {% load markdown_extras %}
 {% load mptt_tags %}
 
-
 {% block title %}Project Metrics: {{ project }}{% endblock title %}
 {% block content %}
-{% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_css.html' %}
-{% include 'app_common/common_files/navbar.html' %}
-{% include 'app_jivapms/mod_web/common_files/css.html' %}
+    {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_css.html' %}
+    {% include 'app_common/common_files/navbar.html' %}
+    {% include 'app_jivapms/mod_web/common_files/css.html' %}
 
-<div class="content-wrapper">   
-    {% include 'app_organization/mod_project/sidebar_menu.html' %}
-    
-    <div class="contentbar mb-5" id="contentbar">
-        <div class="container-fluid">
-           <h3>Project Metrics: {{ project }}</h3>
-           {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_declaration.html' %}
+    <div class="content-wrapper">
+        {% include 'app_organization/mod_project/sidebar_menu.html' %}
+
+        <div class="contentbar mb-5" id="contentbar">
+            <div class="container-fluid">
+                <h3>Project Metrics: {{ project }}</h3>
+                {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_tab_declaration.html' %}
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
-<script>
-    const colorPalette = [
-    '#1f77b4', // Blue
-    '#ff7f0e', // Orange
-    '#d62728', // Red
-    '#ffcc00', // Yellow
-    '#9467bd', // Purple
-    '#8c564b', // Brown
-    '#e377c2', // Pink
-    '#7f7f7f', // Gray
-    '#bcbd22', // Olive
-    '#17becf', // Cyan
-    '#aec7e8', // Light Blue
-    '#ffbb78', // Light Orange
-    '#98df8a', // Light Green
-    '#ff9896', // Light Red
-    '#c5b0d5', // Light Purple
-    '#c49c94', // Light Brown
-    '#f7b6d2', // Light Pink
-    '#c7c7c7', // Light Gray
-    '#dbdb8d', // Light Olive
-    '#9edae5', // Light Cyan
-    '#393b79', // Dark Blue
-    '#637939', // Dark Green
-    '#8c6d31', // Dark Brown
-    '#843c39', // Dark Red
-    '#7b4173', // Dark Purple
-    '#5254a3', // Darker Blue
-    '#8ca252', // Darker Green
-    '#bd9e39', // Darker Yellow
-    '#ad494a', // Darker Red
-    '#a55194', // Darker Purple
-    '#6b6ecf', // Lighter Blue
-    '#b5cf6b', // Lighter Green
-    '#e7ba52', // Lighter Yellow
-    '#d6616b', // Lighter Red
-    '#ce6dbd', // Lighter Purple
-    '#9c9ede', // Pale Blue
-    '#cedb9c', // Pale Green
-    '#e7cb94', // Pale Yellow
-    '#e7969c', // Pale Red
-    '#de9ed6', // Pale Purple
-];
-function getColor(index) {
-    return colorPalette[index % colorPalette.length];
-}
-    // Get data from Django context
-    const dates = {{ dates|safe }};
-    const backlogCounts = {{ backlog_counts|safe }};
-    
-    // Fetch dynamic columns from Django context
-    const columnNames = {{ column_names|safe }};
-    const columnData = {{ column_data|safe }};
-    
-    // Ensure None values in columnData are converted to empty arrays
-    Object.keys(columnData).forEach(key => {
-        if (!Array.isArray(columnData[key])) {
-            columnData[key] = [];  // Convert None to empty array
-        }
-    });
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% include 'app_organization/mod_org_metric/project_metrics/__project_metrics_common_scripts_reference.html' %}
+    <script>
+        const colorPalette = [
+            '#1f77b4', '#ff7f0e', '#d62728', '#ffcc00', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+            '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5', '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5',
+            '#393b79', '#637939', '#8c6d31', '#843c39', '#7b4173', '#5254a3', '#8ca252', '#bd9e39', '#ad494a', '#a55194',
+            '#6b6ecf', '#b5cf6b', '#e7ba52', '#d6616b', '#ce6dbd', '#9c9ede', '#cedb9c', '#e7cb94', '#e7969c', '#de9ed6',
+        ];
 
-    console.log("Dates:", dates);
-    console.log("Backlog Counts:", backlogCounts);
-    console.log("Column Names:", columnNames);
-    console.log("Column Data:", columnData);
+        const data = JSON.parse('{{ data|escapejs }}');  // Parse JSON data from Django
+        const activeColumns = JSON.parse('{{ active_columns|escapejs }}');  // Parse active_columns from Django
+        // Map column names to their respective counts in the data
+        const columnToFieldMap = {
+            'backlog': 'backlog',
+            'Todo': 'todo',
+            'WIP': 'wip',
+            'Review': 'review',
+            'Done': 'done',
+        };
 
-    // Initialize the Chart.js line chart
-    const ctx = document.getElementById('cfdChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dates,  // X-axis labels (dates)
-            datasets: [
-                {
-                    label: 'Backlog',
-                    data: backlogCounts,
-                    borderColor: 'blue',
-                    backgroundColor: 'rgba(0, 0, 255, 0.1)',
-                    fill: 'origin',
-                },
-                ...columnNames.map((col, index) => ({
-                label: col,
-                data: columnData[col.toLowerCase()] || [],
-                borderColor: getColor(index + 1), // Assign colors sequentially
-                backgroundColor: 'rgba(255, 165, 0, 0.3)',
-                fill: 'origin',
-                }))
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Cumulative Flow Diagram'
-                }
+        // Dynamically generate datasets for the chart
+        const datasets = activeColumns.map((column, index) => {
+            const field = columnToFieldMap[column] || column.toLowerCase();
+            return {
+                label: column,
+                data: data.map(row => row[field]),
+                borderColor: colorPalette[index % colorPalette.length],
+                backgroundColor: colorPalette[index % colorPalette.length] + '33', // Add transparency
+                borderWidth: 1,
+                fill: true,
+            };
+        });
+        // Manually add the backlog dataset
+        datasets.unshift({
+            label: 'Backlog',
+            data: data.map(row => row.backlog),
+            borderColor: '#1f77b4', // Blue
+            backgroundColor: '#1f77b433', // Light blue with transparency
+            borderWidth: 1,
+            fill: true,
+        });
+        // Initialize CFD Chart
+        const ctx = document.getElementById('cfdChart').getContext('2d');
+        let cfdChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(row => row.date),
+                datasets: datasets,
             },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Dates'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Count'
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
                     },
-                    beginAtZero: true
-                }
-            }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4,
+                    },
+                },
+            },
+        });
+
+        // Update Data and Chart
+        function updateData(index, field, value) {
+            data[index][field] = parseInt(value) || 0;
+
+            // Update chart datasets
+            datasets.forEach((dataset, i) => {
+                const field = columnToFieldMap[activeColumns[i]] || activeColumns[i].toLowerCase();
+                dataset.data = data.map(row => row[field]);
+            });
+
+            cfdChart.update(); // Refresh chart
         }
-    });
-
-    // Function to generate random colors for datasets
-    function getRandomColor() {
-        return `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
-    }
-</script>
-
-
+    </script>
 {% endblock content %}
