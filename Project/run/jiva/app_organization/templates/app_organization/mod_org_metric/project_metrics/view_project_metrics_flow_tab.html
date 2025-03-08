@@ -32,7 +32,10 @@
             '#393b79', '#637939', '#8c6d31', '#843c39', '#7b4173', '#5254a3', '#8ca252', '#bd9e39', '#ad494a', '#a55194',
             '#6b6ecf', '#b5cf6b', '#e7ba52', '#d6616b', '#ce6dbd', '#9c9ede', '#cedb9c', '#e7cb94', '#e7969c', '#de9ed6',
         ];
-
+        // Function to get a unique color from the palette
+        function getColor(index) {
+            return colorPalette[index % colorPalette.length];
+        }
         const data = JSON.parse('{{ data|escapejs }}');  // Parse JSON data from Django
         const activeColumns = JSON.parse('{{ active_columns|escapejs }}');  // Parse active_columns from Django
         // Map column names to their respective counts in the data
@@ -50,18 +53,19 @@
             return {
                 label: column,
                 data: data.map(row => row[field]),
-                borderColor: colorPalette[index % colorPalette.length],
-                backgroundColor: colorPalette[index % colorPalette.length] + '33', // Add transparency
+                borderColor: getColor(index), // Use getColor to assign unique colors
+                backgroundColor: getColor(index) + '33', // Add transparency
                 borderWidth: 1,
                 fill: true,
             };
         });
+
         // Manually add the backlog dataset
         datasets.unshift({
             label: 'Backlog',
             data: data.map(row => row.backlog),
-            borderColor: '#1f77b4', // Blue
-            backgroundColor: '#1f77b433', // Light blue with transparency
+            borderColor: '#de9ed6', // Fixed color for backlog
+            backgroundColor: '#de9ed633', // Fixed color for backlog with transparency
             borderWidth: 1,
             fill: true,
         });

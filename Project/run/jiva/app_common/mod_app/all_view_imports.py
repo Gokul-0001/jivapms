@@ -447,3 +447,10 @@ GLOBAL_DEFAULT_PROJECT_COLUMNS = ['Funnel', 'Analyzing', 'Project Backlog', 'Val
 GLOBAL_DEFAULT_KANBAN_COS = ['Expedite', 'Fixed Date', 'Standard', 'Intangible']
 GLOBAL_DEFAULT_PROJECT_COS = ['Critical', 'High', 'Medium', 'Low']
 GLOBAL_DEFAULT_SERVICE_COS = ['P1', 'P2', 'P3', 'P4', 'P5']
+
+
+GLOBAL_COLUMN_TYPE_MAPPING = {
+        'ToDo': 'ToDo',
+        'WIP': 'WIP',
+        'Done': 'Done'
+    }

@@ -718,8 +718,8 @@ def update_project_board_state_transition(board_id, card, from_state_id, to_stat
     
     # need to update the completed details / done details
     print(f">>>>>>>> TOSTATE: {to_state_id} FROMSTATE: {from_state_id}") 
-    to_state_details = ProjectBoardState.objects.get(id=to_state_id)
-    from_state_details = ProjectBoardState.objects.get(id=from_state_id)
+    to_state_details = ProjectBoardState.objects.filter(id=to_state_id).first()
+    from_state_details = ProjectBoardState.objects.filter(id=from_state_id).first()
     if to_state_details and to_state_details.name == "Done":
         card.backlog.done = True
         card.backlog.done_at = now()
@@ -737,19 +737,20 @@ def update_project_board_state_transition(board_id, card, from_state_id, to_stat
 
 
 def column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id):    
-    pbc = ProjectBoardCard.objects.get(id=card_id)    
+    pbc = ProjectBoardCard.objects.filter(id=card_id).first()
     for pos in positions:
         card_id = pos.get('card_id')
         position = pos.get('position')      
-        ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id, board_id=board_id)     
-    update_project_board_state_transition(board_id, pbc, from_state_id, to_state_id)
+        ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id, board_id=board_id)  
+    if pbc != None:   
+        update_project_board_state_transition(board_id, pbc, from_state_id, to_state_id)
     return JsonResponse({"success": True})
 
 
 def column_to_backlog_update(positions, board_id, this_card_id, from_column, from_state_id, dest_column, to_state_id):  
     try:
         # Update the card to have no state (move to backlog)
-        card = ProjectBoardCard.objects.get(id=this_card_id)
+        card = ProjectBoardCard.objects.filter(id=this_card_id).first()
         card.state = None
         card.position = 0  # Reset position in column
         card.save()
@@ -794,12 +795,12 @@ def backlog_to_column_update(positions, board_id, this_card_id, from_column, fro
             if card_id == this_card_id:
                 # Update the moved card
                 ProjectBoardCard.objects.filter(backlog_id=this_card_id).update(position=position, state_id=to_state_id, board_id=board_id)
-                updated_pbc = ProjectBoardCard.objects.get(backlog_id=card_id)
+                updated_pbc = ProjectBoardCard.objects.filter(backlog_id=card_id).first()
                 logger.debug(f">>> === BACKLOG_TO_COLUMN_UPDATED: {updated_pbc} {updated_pbc.board}=== <<<")
             else:
                 # Update other cards in the column
                 ProjectBoardCard.objects.filter(id=card_id).update(position=position, board_id=board_id)      
-                updated_pbc = ProjectBoardCard.objects.get(id=card_id)
+                updated_pbc = ProjectBoardCard.objects.filter(id=card_id).first()
                 logger.debug(f">>> === BACKLOG_TO_COLUMN_UPDATED: {updated_pbc} {updated_pbc.board}=== <<<") 
         update_project_board_state_transition(board_id, card, from_state_id, to_state_id)
         return JsonResponse({"success": True})
@@ -873,7 +874,7 @@ def ajax_update_project_board_card_state(request):
         elif from_state_id !=0 and to_state_id != 0 and from_state_id != to_state_id:
             #logger.debug(f">>> === {from_column} to {dest_column}: Between column movement  === <<<")
             column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id)
-            actual_card = ProjectBoardCard.objects.get(id=card_id)
+            actual_card = ProjectBoardCard.objects.filter(id=card_id).first()
             actual_card_id = actual_card.backlog.id
             update_backlog_text_status(actual_card_id, dest_column)
         elif from_state_id == 0 and to_state_id != 0:
@@ -1257,3 +1258,159 @@ def view_project_tree_board_smart_kanban(request, project_id):
 #         {% endfor %}
 #     </td>
 # {% endfor %}
+
+
+from app_organization.mod_backlog.views_project_tree import create_or_update_tree_from_config, get_tree_name_id
+@login_required
+def _UTILS_for_project_backlog(request, project_id):
+    user = request.user
+    project = Project.objects.get(id=project_id, active=True)
+    org_id = project.org.id
+    organization = project.org
+    # Backlog types
+    pbst_name = f"{project.id}_PROJECT_TREE"
+    project_backlog_type, created = BacklogType.objects.get_or_create(pro=project, name=pbst_name)
+    config = PROJECT_WBS_TREE_CONFIG
+    backlog_type_node = create_or_update_tree_from_config(config, model_name="app_organization.BacklogType", parent=project_backlog_type, project=project)
+    bt_tree_name_and_id = get_tree_name_id(backlog_type_node)
+    epic_type_id = bt_tree_name_and_id.get("Epic")
+    epic_type_node = BacklogType.objects.get(id=epic_type_id)
+    epic_type_children = epic_type_node.get_active_children()
+    backlog_types = epic_type_children
+    backlog_types_count = backlog_types.count()
+    
+    bug_type_id = bt_tree_name_and_id.get("Bug")
+    story_type_id = bt_tree_name_and_id.get("User Story")
+    tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+    
+    feature_type_id = bt_tree_name_and_id.get("Feature")
+    component_type_id = bt_tree_name_and_id.get("Component")
+    capability_type_id = bt_tree_name_and_id.get("Capability")
+    
+    include_types = [bug_type_id, story_type_id, tech_task_type_id]
+    efcc_include_types = [epic_type_id, feature_type_id, component_type_id, capability_type_id] # meaning Epic, Feature, Component, Capability
+    efcc_backlog_items = Backlog.objects.filter(pro_id=project.id, type__in=efcc_include_types, active=True)
+    efcc_backlog_items_swimlane = Backlog.objects.filter(pro_id=project.id, active=True)
+    get_swimlane_id = request.GET.get('swimlane_id')  if request.GET.get('swimlane_id') else '-1'
+    swimlane_flag = False
+    project_iteration_flag = False
+    project_release_iteration_board = None
+    efcc_backlog_with_no_epic = None 
+
+    # Step1: Check whether default board is there
+    # Step2: Check whether Project - Release - Iteration board is there
+    # Step3: Check whether other boards are there
+    # Step4: Check which one is the selected board as default board, if no selected default board as default
+    # Step5: Select the Project Board
+    # Step6: Select the Project Board States or columns
+    # Step7: Collect the Backlog items
+    # Step8: Collect the state/column items
+    # Step9: Check the swimlane
+    # Step10: Set the flags
+
+    project_board = None
+    default_project_board = None
+    release_iteration_project_board = None
+    selected_project_board = None
+
+    # Step1: Check whether default board is there
+    DEFAULT_BOARD_NAME = 'Default Board'
+    PROJECT_RELEASE_ITERATION_BOARD_NAME = None
+    default_project_board, created = ProjectBoard.objects.get_or_create(
+        project=project,
+        name=DEFAULT_BOARD_NAME,
+        defaults={'author': user}
+    )
+    # Step2: Check whether Project - Release - Iteration board is there
+    project_iteration = project.project_iteration
+    project_release = project.project_release
+    current_release = None
+    current_iteration = None
+    if project.project_release and project.project_iteration:
+        project_iteration_flag = True
+        details = get_project_release_and_iteration_details(project.id)
+        current_release = details.get('current_release')
+        current_iteration = details.get('current_iteration')
+        next_iteration = details.get('next_iteration')
+        # Check the Project Release_Iteration Board exists, if not create it
+        PROJECT_RELEASE_ITERATION_BOARD_NAME = f"{project.name}__{project_release}__{project_iteration}__PrjRelItrBoard"
+        release_iteration_project_board, created = ProjectBoard.objects.get_or_create(
+            project=project,
+            name=PROJECT_RELEASE_ITERATION_BOARD_NAME,
+            org_release=current_release,
+            org_iteration=current_iteration,
+            defaults={'author': user}
+        )
+    # Step3: Check whether other boards are there
+    all_project_boards = ProjectBoard.objects.filter(
+        project=project, 
+        active=True
+    ).exclude(name=DEFAULT_BOARD_NAME).exclude(name=PROJECT_RELEASE_ITERATION_BOARD_NAME)
+    # Step4: Check which one is the selected board as default board, if no selected default board as default
+    selected_project_board = ProjectBoard.objects.filter(
+        project=project, 
+        default_board=True, 
+        active=True
+    ).first()
+
+    if not selected_project_board:
+        # If no board is marked as default, set the Default Board as the default
+        default_project_board.default_board = True
+        default_project_board.save()
+        selected_project_board = default_project_board  # Assign default board as selected project_board
+    # Step4.1: Add the default columns if there are no columns
+    # Ensure the default columns exist or create them
+    DEFAULT_BOARD_COLUMNS = GLOBAL_DEFAULT_BOARD_COLUMNS
+    # SOMETHING LIKE THIS ['ToDo', 'WIP', 'Done']
+    #ProjectBoardState.objects.all().delete()
+    backlog_state = None  # To store the "Backlog" state reference
+    COLUMN_TYPE_MAPPING = GLOBAL_COLUMN_TYPE_MAPPING
+    existing_column_count = ProjectBoardState.objects.filter(board=selected_project_board).count()
+    if existing_column_count == 0:
+        for position, column_name in enumerate(DEFAULT_BOARD_COLUMNS):
+            
+            state, _ = ProjectBoardState.objects.get_or_create(
+                board=selected_project_board,
+                name=column_name,
+                defaults={'author': user, 'wip_limit': 5, 'apply_wip_limit': True if column_name == 'WIP' else False, 'column_type': COLUMN_TYPE_MAPPING[column_name]}
+            )
+            if column_name == 'Backlog':
+                backlog_state = state
+    # Step5: Select the Project Board
+    if selected_project_board:
+        project_board = selected_project_board
+    else:
+        project_board = default_project_board    
+    # Step6: Select the Project Board States or columns
+    if project_board:
+        project_board_states = ProjectBoardState.objects.filter(board=project_board, active=True)
+    # Step7: Collect the Backlog items
+    actual_project_backlog_items = Backlog.objects.filter(
+            pro_id=project.id,
+            type__in=backlog_types,
+            active=True,
+            iteration=current_iteration,
+            release=current_release,
+        ).exclude(
+            id__in=ProjectBoardCard.objects.filter(
+                board=project_board,
+                state__isnull=False  # Exclude items where state.id is NOT NULL (moved to other states)
+            ).values_list('backlog_id', flat=True)
+        ).order_by('position', '-created_at')   
+    reference_backlog_items =  Backlog.objects.filter(
+            pro_id=project.id,
+            type__in=backlog_types,
+            active=True,
+        ).order_by('position', '-created_at')  
+    
+    return {
+        'organization': organization,
+        'org_id': org_id,
+        'project': project,
+        'pro_id': project.id,
+        'project_board': selected_project_board,
+        'project_board_states': project_board_states,
+        'backlog_items': actual_project_backlog_items,
+        'reference_backlog_items': reference_backlog_items,
+        
+    }

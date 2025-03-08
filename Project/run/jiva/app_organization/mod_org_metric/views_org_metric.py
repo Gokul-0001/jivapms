@@ -1001,10 +1001,7 @@ def view_project_metrics_quality_tab(request, project_id):
     # Render template
     template_file = f"{app_name}/{module_path}/project_metrics/view_project_metrics_quality_tab.html"
     return render(request, template_file, context)
-import csv
-from datetime import datetime
-import pytz
-
+from app_organization.mod_org_board.views_org_board import _UTILS_for_project_backlog
 @login_required
 def view_project_metrics_flow_tab(request, project_id):
     user = request.user
@@ -1082,7 +1079,7 @@ def view_project_metrics_flow_tab(request, project_id):
     # Step5: Get the movements for each snapshot point
     for snapshot_time in snapshot_points:
         if CFD_BY == "DATE":
-            print(f">>> === CFD TIME BASED === <<<")
+            #print(f">>> === CFD DATE BASED === <<<")
             s_date, s_time = snapshot_time.split('T')
             s_date_formatted = datetime.strptime(s_date, '%Y-%m-%d').strftime('%d-%m-%Y')
             best_cfd_counts[str(s_date_formatted)] = {col.lower(): 0 for col in active_columns}      
@@ -1095,32 +1092,46 @@ def view_project_metrics_flow_tab(request, project_id):
                 active=True,
             ).order_by('card', '-transition_time')
             
-            # Group transitions by card
-            card_transitions = defaultdict(list)    
+            # Group transitions by current_iteration and card
+            card_transitions = defaultdict(lambda: defaultdict(list))
             for mov in movements:
-                card_transitions[mov.card].append(mov)
+                card_transitions[current_iteration][mov.card].append(mov)
       
             
             # Process each card's transitions
-            for card, transitions in card_transitions.items():          
+            for card, transitions in card_transitions[current_iteration].items():          
                 # Collect the card id, top most transition details, to state and date and time
                 which_transition = transitions[0]
                 date_field = which_transition.formatted_date()
+                time_field = which_transition.formatted_time()
                 to_state = which_transition.to_state
-                
-                
-                # Update CFD counts for the date and state
-                to_state_lc = str(to_state).lower()                 
-                if to_state and to_state_lc in best_cfd_counts[s_date_formatted]:
-                    best_cfd_counts[s_date_formatted][to_state_lc] += 1
+                if current_iteration != None:  
+                    date_format = "%d-%m-%Y"  # Match the expected format
+                    ist_cisd = current_iteration.iteration_start_date.astimezone(ist_tz).strftime('%d-%m-%YT%H:%M')
+                    ist_cis_date, ist_cis_time = ist_cisd.split('T')
+                    ist_cied = current_iteration.iteration_end_date.astimezone(ist_tz).strftime('%d-%m-%YT%H:%M')
+                    ist_cie_date, ist_cie_time = ist_cied.split('T')
+                    # Convert string dates to datetime objects
+                    date_field_dt = datetime.strptime(date_field, date_format)
+                    ist_cis_date_dt = datetime.strptime(ist_cis_date, date_format)
+                    ist_cie_date_dt = datetime.strptime(ist_cie_date, date_format)      
+                   
+                    #print(f">>> === CURENT iteration {date_field} >= {ist_cis_date}  {date_field}  {ist_cie_date}=== <<<")
+                    #print(f">>> === CHECK DATES iteration {ist_cis_date} {ist_cis_time} {ist_cie_date} {ist_cie_time} === <<<")
+                    if (date_field_dt >= ist_cis_date_dt and date_field_dt <= ist_cie_date_dt):
+                        #print(f">>> === CFD DATE VALID ITERATION === <<<")                
+                        # Update CFD counts for the date and state
+                        to_state_lc = str(to_state).lower()                 
+                        if to_state and to_state_lc in best_cfd_counts[s_date_formatted]:
+                            best_cfd_counts[s_date_formatted][to_state_lc] += 1
 
-                best_cfd_data[card.id] = {
-                    'card_id': card.id,
-                    'from_state': which_transition.from_state,
-                    'to_state': which_transition.to_state,
-                    'date_field': which_transition.formatted_date(),
-                    'time_field': which_transition.formatted_time(),
-                }
+                        best_cfd_data[card.id] = {
+                            'card_id': card.id,
+                            'from_state': which_transition.from_state,
+                            'to_state': which_transition.to_state,
+                            'date_field': which_transition.formatted_date(),
+                            'time_field': which_transition.formatted_time(),
+                        }
         elif CFD_BY == "TIME":
             #print(f">>> === CFD TIME BASED === <<<")
             s_date, s_time = snapshot_time.split('T')
@@ -1141,30 +1152,41 @@ def view_project_metrics_flow_tab(request, project_id):
             movements_count = movements.count()      
             #print(f">>> === TOTAL MOVEMENTS: {movements.count()} === <<<")
            
-            # Group transitions by card
-            card_transitions = defaultdict(list)    
+            # Group transitions by current_iteration and card
+            card_transitions = defaultdict(lambda: defaultdict(list))
             for mov in movements:
-                card_transitions[mov.card].append(mov)      
+                card_transitions[current_iteration][mov.card].append(mov)      
             #print(f">>> === UNIQUE CARDS WITH TRANSITIONS: {len(card_transitions)} === <<<")
             # Process each card's transitions
-            for card, transitions in card_transitions.items():          
+            for card, transitions in card_transitions[current_iteration].items():          
                 # Collect the card id, top most transition details, to state and date and time
                 which_transition = transitions[0]
+                date_field = which_transition.formatted_date()
                 time_field = which_transition.formatted_time()
-                to_state = which_transition.to_state               
-                
-                # Update CFD counts for the date and state
-                to_state_lc = str(to_state).lower()                 
-                if to_state and to_state_lc in best_cfd_counts[s_time]:
-                    best_cfd_counts[s_time][to_state_lc] += 1
+                to_state = which_transition.to_state     
+                if current_iteration != None:        
+                    ist_cisd = current_iteration.iteration_start_date.astimezone(ist_tz).strftime('%d-%m-%YT%H:%M')
+                    ist_cis_date, ist_cis_time = ist_cisd.split('T')
+                    ist_cied = current_iteration.iteration_end_date.astimezone(ist_tz).strftime('%d-%m-%YT%H:%M')
+                    ist_cie_date, ist_cie_time = ist_cied.split('T')
+                    #print(f">>> === CURENT iteration {ist_cisd} - {date_field}  {ist_cied} - {time_field}=== <<<")
+                    #print(f">>> === CHECK DATES iteration {ist_cis_date} {ist_cis_time} {ist_cie_date} {ist_cie_time} === <<<")
+                    if (date_field == ist_cis_date and time_field >= ist_cis_time) and (date_field == ist_cie_date and time_field <= ist_cie_time):
+                        print(f">>> === CFD TIME VALID ITERATION === <<<")
+                        
+                        # Update CFD counts for the date and state
+                        to_state_lc = str(to_state).lower()                 
+                        if to_state and to_state_lc in best_cfd_counts[s_time]:
+                            best_cfd_counts[s_time][to_state_lc] += 1
 
-                best_cfd_data[card.id] = {
-                    'card_id': card.id,
-                    'from_state': which_transition.from_state,
-                    'to_state': which_transition.to_state,
-                    'date_field': which_transition.formatted_date(),
-                    'time_field': which_transition.formatted_time(),
-                }
+                        best_cfd_data[card.id] = {
+                            'card_id': card.id,
+                            'from_state': which_transition.from_state,
+                            'to_state': which_transition.to_state,
+                            'date_field': which_transition.formatted_date(),
+                            'time_field': which_transition.formatted_time(),
+
+                        }
         else:
             print(f">>> === CFD UNKNOWN === <<<")
             # exit
@@ -1173,18 +1195,16 @@ def view_project_metrics_flow_tab(request, project_id):
     
     # DEBUG 
     print(f">>> === DEBUG STATEMENTS === <<<")
+    get_project_details = _UTILS_for_project_backlog(request, project_id)
+    actual_backlog_items = get_project_details['backlog_items']
+    print(f">>> === actual_backlog_items {actual_backlog_items} === <<<")
     # Print CFD counts
     cumulative_counts = {col.lower(): 0 for col in active_columns}
     print(">>> ===  CFD Counts: === <<<")
     # Iterate through the best_cfd_counts
     for date, state_counts in best_cfd_counts.items():
         # Get backlog count for the current date
-        backlog_count = Backlog.objects.filter(
-            pro=project,
-            release=current_release,
-            iteration=current_iteration,
-            active=True
-        ).count()
+        backlog_count = 0
 
         # Create a data entry for the current date with placeholders for all columns
         data_entry = {'date': date, 'backlog': backlog_count}
@@ -1204,7 +1224,10 @@ def view_project_metrics_flow_tab(request, project_id):
 
                 # Add the cumulative count to the data entry
                 data_entry[state_lower] = cumulative_counts[state_lower]
-
+        # Calculate the backlog count for the current date
+        sum_todo_wip_done = sum(cumulative_counts.get(state, 0) for state in ['todo', 'wip', 'done'])
+        backlog_count = sum_todo_wip_done
+        data_entry['backlog'] = backlog_count
         # Append the data entry to the list
         data.append(data_entry)
     # Print the final data for debugging
