@@ -764,8 +764,10 @@ Project Iteration Board
          
             <div id="kanban-board" data-board-id="{{ project_board.id }}" class="kanban-board mb-5">
                  <!-- Backlog Column -->
+                
                  <div class="kanban-column" data-id="0" id="backlog">
-                    <h4>Backlog <span style="color: red;">∞</span></h4>
+                    <h4>Backlog</h4>
+                    <b> <span style="color: red;">∞</span></b>
                     
                         {% for item in backlog_items %}
                             
@@ -794,17 +796,17 @@ Project Iteration Board
                         data-apply-wip-limit="{{ state.apply_wip_limit|yesno:"true,false" }}">
 
                         <!-- Column Header with Dynamic Card Count -->
-                        <h4>
+                        <h4>{{ state.name }}</h4>
                         {% if state.apply_wip_limit %}
-                            {{ state.name }}
+                            
                             <span id="card-count-{{ state.id }}" 
                                 style="color: green;">
                                 0
                             </span>
                             {% else %}
-                            {{ state.name }} <span style="color: red;">∞</span>  {# Show Infinity if WIP Limit is not applied #}
+                            <span style="color: red;">∞</span>  {# Show Infinity if WIP Limit is not applied #}
                             {% endif %}
-                        </h4>
+                        
                         <!-- Split column if buffer_column=True -->
                         {% if state.buffer_column %}
                         <div class="kanban-buffer">

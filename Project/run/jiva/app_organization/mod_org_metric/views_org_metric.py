@@ -1195,9 +1195,7 @@ def view_project_metrics_flow_tab(request, project_id):
     
     # DEBUG 
     print(f">>> === DEBUG STATEMENTS === <<<")
-    get_project_details = _UTILS_for_project_backlog(request, project_id)
-    actual_backlog_items = get_project_details['backlog_items']
-    print(f">>> === actual_backlog_items {actual_backlog_items} === <<<")
+    
     # Print CFD counts
     cumulative_counts = {col.lower(): 0 for col in active_columns}
     print(">>> ===  CFD Counts: === <<<")
@@ -1228,8 +1226,17 @@ def view_project_metrics_flow_tab(request, project_id):
         sum_todo_wip_done = sum(cumulative_counts.get(state, 0) for state in ['todo', 'wip', 'done'])
         backlog_count = sum_todo_wip_done
         data_entry['backlog'] = backlog_count
+       
         # Append the data entry to the list
         data.append(data_entry)
+
+    # Finally add the additional backlog items that is not in the board
+    get_project_details = _UTILS_for_project_backlog(request, project_id)
+    actual_backlog_items = get_project_details['backlog_items']
+    actual_backlog_items_count = actual_backlog_items.count()
+    #print(f">>> === actual_backlog_items {actual_backlog_items} count: {actual_backlog_items_count}=== <<<")
+
+    data_entry['backlog'] = backlog_count + actual_backlog_items_count
     # Print the final data for debugging
     print(">>> === Final Data: === <<<")
     for entry in data:

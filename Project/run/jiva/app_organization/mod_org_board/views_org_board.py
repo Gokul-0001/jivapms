@@ -700,50 +700,67 @@ def view_project_tree_board(request, project_id):
 
 
 def update_project_board_state_transition(board_id, card, from_state_id, to_state_id):
-    if to_state_id == 0:
-        # Move to backlog
-        to_state_id = None
-    if from_state_id == 0:
-        # Move from backlog
-        from_state_id = None
-     # Log the transition
-    created_st_entry = ProjectBoardStateTransition.objects.create(
-        board_id = board_id,
-        card=card.backlog,
-        from_state_id=from_state_id,
-        to_state_id=to_state_id,
-        transition_time=now(),
-    )
-    created_st_entry.save()
-    
-    # need to update the completed details / done details
-    print(f">>>>>>>> TOSTATE: {to_state_id} FROMSTATE: {from_state_id}") 
-    to_state_details = ProjectBoardState.objects.filter(id=to_state_id).first()
-    from_state_details = ProjectBoardState.objects.filter(id=from_state_id).first()
-    if to_state_details and to_state_details.name == "Done":
-        card.backlog.done = True
-        card.backlog.done_at = now()
-        card.backlog.save()
-        logger.debug(f">>> === DONE FOR CARD {card.backlog} {card.backlog.done} {card.backlog.done_at} === <<<")
-    if from_state_details and from_state_details.name == "Done":
-        card.backlog.done = False
-        card.backlog.done_at = None
-        card.backlog.save()
-        logger.debug(f">>> === UNDONE FOR CARD {card.backlog} {card.backlog.done} {card.backlog.done_at} === <<<")
-    
-    print(f">>> === Created State Transition: {created_st_entry} === <<<")
+    with transaction.atomic():
+        if to_state_id == 0:
+            # Move to backlog
+            to_state_id = None
+        if from_state_id == 0:
+            # Move from backlog
+            from_state_id = None
+        # Log the transition
+        created_st_entry = ProjectBoardStateTransition.objects.create(
+            board_id = board_id,
+            card=card.backlog,
+            from_state_id=from_state_id,
+            to_state_id=to_state_id,
+            transition_time=now(),
+        )
+        created_st_entry.save()
+        
+        # need to update the completed details / done details
+        print(f">>>>>>>> TOSTATE: {to_state_id} FROMSTATE: {from_state_id}") 
+        to_state_details = ProjectBoardState.objects.filter(id=to_state_id).first()
+        from_state_details = ProjectBoardState.objects.filter(id=from_state_id).first()
+        if to_state_details and to_state_details.name == "Done":
+            card.backlog.done = True
+            card.backlog.done_at = now()
+            card.backlog.save()
+            logger.debug(f">>> === DONE FOR CARD {card.backlog} {card.backlog.done} {card.backlog.done_at} === <<<")
+        if from_state_details and from_state_details.name == "Done":
+            card.backlog.done = False
+            card.backlog.done_at = None
+            card.backlog.save()
+            logger.debug(f">>> === UNDONE FOR CARD {card.backlog} {card.backlog.done} {card.backlog.done_at} === <<<")
+        
+        print(f">>> === Created State Transition: {created_st_entry} === <<<")
     return created_st_entry
                 
 
 
+# def column_to_column_updatex1(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id):    
+#     pbc = ProjectBoardCard.objects.filter(id=card_id).first()
+#     for pos in positions:
+#         card_id = pos.get('card_id')
+#         position = pos.get('position')      
+#         ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id, board_id=board_id)  
+#     if pbc != None:   
+#         update_project_board_state_transition(board_id, pbc, from_state_id, to_state_id)
+#     return JsonResponse({"success": True})
+
 def column_to_column_update(positions, board_id, card_id, from_column, from_state_id, dest_column, to_state_id):    
     pbc = ProjectBoardCard.objects.filter(id=card_id).first()
-    for pos in positions:
+    
+    # Sort positions before updating (ensure correct order)
+    sorted_positions = sorted(positions, key=lambda x: x.get('position'))
+
+    for pos in sorted_positions:
         card_id = pos.get('card_id')
         position = pos.get('position')      
         ProjectBoardCard.objects.filter(id=card_id).update(position=position, state_id=to_state_id, board_id=board_id)  
-    if pbc != None:   
+
+    if pbc is not None:   
         update_project_board_state_transition(board_id, pbc, from_state_id, to_state_id)
+
     return JsonResponse({"success": True})
 
 
