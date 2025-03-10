@@ -1275,6 +1275,51 @@ def view_project_tree_board_smart_kanban(request, project_id):
 #         {% endfor %}
 #     </td>
 # {% endfor %}
+@login_required
+def _GET_backlog_details(request, project_id):
+    user = request.user
+    project = Project.objects.get(id=project_id, active=True)
+    org_id = project.org.id
+    organization = project.org
+    # Backlog types
+    pbst_name = f"{project.id}_PROJECT_TREE"
+    project_backlog_type, created = BacklogType.objects.get_or_create(pro=project, name=pbst_name)
+    config = PROJECT_WBS_TREE_CONFIG
+    backlog_type_node = create_or_update_tree_from_config(config, model_name="app_organization.BacklogType", parent=project_backlog_type, project=project)
+    bt_tree_name_and_id = get_tree_name_id(backlog_type_node)
+    epic_type_id = bt_tree_name_and_id.get("Epic")
+    epic_type_node = BacklogType.objects.get(id=epic_type_id)
+    epic_type_children = epic_type_node.get_active_children()
+    backlog_types = epic_type_children
+    backlog_types_count = backlog_types.count()
+    
+    bug_type_id = bt_tree_name_and_id.get("Bug")
+    story_type_id = bt_tree_name_and_id.get("User Story")
+    tech_task_type_id = bt_tree_name_and_id.get("Technical Task")
+    
+    feature_type_id = bt_tree_name_and_id.get("Feature")
+    component_type_id = bt_tree_name_and_id.get("Component")
+    capability_type_id = bt_tree_name_and_id.get("Capability")
+    
+    include_types = [bug_type_id, story_type_id, tech_task_type_id]
+    efcc_include_types = [epic_type_id, feature_type_id, component_type_id, capability_type_id] # meaning Epic, Feature, Component, Capability
+    
+    return {
+        'bt_tree_name_and_id': bt_tree_name_and_id,
+        'epic_type_id': epic_type_id,
+        'epic_type_node': epic_type_node,
+        'epic_type_children': epic_type_children,
+        'backlog_types': backlog_types,
+        'backlog_types_count': backlog_types_count,
+        'bug_type_id': bug_type_id,
+        'story_type_id': story_type_id,
+        'tech_task_type_id': tech_task_type_id,
+        'feature_type_id': feature_type_id,
+        'component_type_id': component_type_id,
+        'capability_type_id': capability_type_id,
+        'include_types': include_types,
+        'efcc_include_types': efcc_include_types,
+    }
 
 
 from app_organization.mod_backlog.views_project_tree import create_or_update_tree_from_config, get_tree_name_id
