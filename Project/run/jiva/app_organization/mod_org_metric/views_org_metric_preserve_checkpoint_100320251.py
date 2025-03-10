@@ -1156,15 +1156,15 @@ def view_project_metrics_flow_tab(request, project_id):
             ).order_by('card', '-transition_time')
 
             movements_count = movements.count()
-            #print(f">>> === TOTAL MOVEMENTS: {movements.count()} === <<<")
+            print(f">>> === TOTAL MOVEMENTS: {movements.count()} === <<<")
 
             # Group transitions by card
             card_transitions = defaultdict(list)
             for mov in movements:
-                #print(f">>> === MOVEMENTS: {mov} === <<<")
+                print(f">>> === MOVEMENTS: {mov} === <<<")
                 card_transitions[mov.card].append(mov)
 
-            #print(f">>> === UNIQUE CARDS WITH TRANSITIONS: {len(card_transitions)} === <<<")
+            print(f">>> === UNIQUE CARDS WITH TRANSITIONS: {len(card_transitions)} === <<<")
 
             # Process each card's transitions
             for card, transitions in card_transitions.items():
@@ -1194,23 +1194,20 @@ def view_project_metrics_flow_tab(request, project_id):
                 if not best_cfd_counts[s_time][col_lc]:
                     best_cfd_counts[s_time][col_lc] = defaultdict(int, {0: 0})  # Add placeholder 0
 
-            # ✅ Build the data list with cumulative counts
+            # ✅ Build the data list
             data = []
-            previous_counts = {col.lower(): 0 for col in active_columns}  # Initialize previous counts
-
             for entry_time, column_counts in best_cfd_counts.items():
                 entry_data = {"date": entry_time}  # Initialize entry data with the time
                 for col in active_columns:
                     col_lc = col.lower()
-                    current_count = sum(column_counts[col_lc].values())  # Current count for the column
-                    cumulative_count = previous_counts[col_lc] + current_count  # Add previous count
-                    entry_data[col_lc] = cumulative_count  # Add cumulative count to the entry data
-                    previous_counts[col_lc] = cumulative_count  # Update previous counts for the next iteration
+                    card_count = sum(column_counts[col_lc].values())  # Sum card counts for the column
+                    entry_data[col_lc] = card_count  # Add column count to the entry data
                 data.append(entry_data)  # Add entry data to the data list
 
             # ✅ Print the data list
-            print("\n>>> === DATA LIST WITH CUMULATIVE COUNTS === <<<")
-            #print(data)
+            print("\n>>> === DATA LIST === <<<")
+            print(data)
+                        
         else:
             print(f">>> === CFD UNKNOWN === <<<")
             # exit
