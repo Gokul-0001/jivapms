@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impact Mapping UI</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f4f4f4;
+      overflow-x: auto;
+    }
+
+    /* Impact Map Layout */
+    .impact-map {
+      display: flex;
+      align-items: flex-start;
+      gap: 120px;
+      position: relative;
+      width: 100%;
+    }
+
+    /* Each Level */
+    .level {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 50px;
+      position: relative;
+      padding: 20px;
+      min-width: 200px;
+    }
+
+    /* Section Titles */
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #7D5600;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    /* Nodes */
+    .node {
+      background: white;
+      border-radius: 8px;
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      white-space: nowrap;
+      position: relative;
+      z-index: 2;
+      border: 2px solid black;
+      min-width: 150px;
+    }
+
+    /* Different Colors for Each Level */
+    .goal { background: #FFA500; color: white; }
+    .actor { background: #B5D800; }
+    .impact { background: #5C82C0; color: white; }
+    .deliverable { background: #D85151; color: white; }
+    .story { background: #8E44AD; color: white; }
+
+    /* SVG Container */
+    .svg-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* SVG Line Styling */
+    .connector {
+      stroke: black;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .impact-map {
+        flex-direction: column;
+        align-items: center;
+        gap: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="impact-map">
+    <!-- Goals Section -->
+    <div class="level" id="goals">
+      <div class="section-title">GOAL</div>
+      <div class="node goal" id="goal-1">GROW MOBILE ADVERTISING</div>
+    </div>
+
+    <!-- Actors Section -->
+    <div class="level" id="actors">
+      <div class="section-title">ACTOR</div>
+      <div class="node actor" id="actor-1">SUPER-FANS WITH MOBILE DEVICES</div>
+      <div class="node actor" id="actor-2">CONCERT ORGANISERS</div>
+    </div>
+
+    <!-- Impacts Section -->
+    <div class="level" id="impacts">
+      <div class="section-title">IMPACT</div>
+      <div class="node impact" id="impact-1">COME BACK MORE FREQUENTLY</div>
+      <div class="node impact" id="impact-2">STAY LONGER</div>
+    </div>
+
+    <!-- Deliverables Section -->
+    <div class="level" id="deliverables">
+      <div class="section-title">DELIVERABLE</div>
+      <div class="node deliverable" id="deliverable-1">PUSH UPDATES</div>
+      <div class="node deliverable" id="deliverable-2">SPECIAL OFFERS</div>
+    </div>
+
+    <!-- Stories Section -->
+    <div class="level" id="stories">
+      <div class="section-title">STORIES / TASKS</div>
+      <div class="node story" id="story-1">Story 1</div>
+      <div class="node story" id="story-2">Story 2</div>
+      <div class="node story" id="story-3">Story 3</div>
+    </div>
+  </div>
+
+  <!-- SVG for Dynamic Connectors -->
+  <svg class="svg-container">
+    <defs>
+      <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L6,3 L0,6" fill="black"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const svgContainer = document.querySelector(".svg-container");
+
+      const connections = [
+        { from: "goal-1", to: "actor-1" },
+        { from: "goal-1", to: "actor-2" },
+        { from: "actor-1", to: "impact-1" },
+        { from: "actor-1", to: "impact-2" },
+        { from: "impact-1", to: "deliverable-1" },
+        { from: "impact-2", to: "deliverable-2" },
+        { from: "deliverable-1", to: "story-1" },
+        { from: "deliverable-1", to: "story-2" },
+        { from: "deliverable-2", to: "story-3" }
+      ];
+
+      function connectElements(startId, endId) {
+        const start = document.getElementById(startId);
+        const end = document.getElementById(endId);
+        if (!start || !end) return;
+
+        const startRect = start.getBoundingClientRect();
+        const endRect = end.getBoundingClientRect();
+        const offsetX = window.scrollX;
+        const offsetY = window.scrollY;
+
+        const x1 = startRect.right + offsetX;
+        const y1 = startRect.top + startRect.height / 2 + offsetY;
+        const x2 = endRect.left + offsetX;
+        const y2 = endRect.top + endRect.height / 2 + offsetY;
+
+        // Leave horizontal space for clear node separation
+        const midX = x1 + ((x2 - x1) / 2) - 40;
+        const path = `M${x1},${y1} H${midX} V${y2} H${x2}`;
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        line.setAttribute("d", path);
+        line.setAttribute("class", "connector");
+        line.setAttribute("stroke", "black");
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("fill", "none");
+        line.setAttribute("marker-end", "url(#arrow)");
+        svgContainer.appendChild(line);
+      }
+
+      // Generate Connections
+      connections.forEach(({ from, to }) => connectElements(from, to));
+
+      // Adjust SVG dynamically
+      function resizeSVG() {
+        const mapRect = document.querySelector(".impact-map").getBoundingClientRect();
+        svgContainer.setAttribute("width", mapRect.width);
+        svgContainer.setAttribute("height", mapRect.height);
+      }
+
+      resizeSVG();
+      window.addEventListener("resize", resizeSVG);
+    });
+  </script>
+
+</body>
+</html>

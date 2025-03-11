@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Left-to-Right Tree with Perfect Connectors</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    /* Tree Container */
+    .tree {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .tree,
+    .tree * {
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Tree Nodes */
+    .tree li {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      padding-left: 40px; /* Space for connectors */
+      margin-top: 20px;
+    }
+
+    /* Horizontal Connector */
+    .tree li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 20px; /* Length of the horizontal connector */
+      height: 2px; /* Thickness of the connector */
+      background-color: #ccc; /* Color of the connector */
+    }
+
+    /* Vertical Connector */
+    .tree li::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2px; /* Thickness of the connector */
+      height: 100%; /* Full height of the vertical connector */
+      background-color: #ccc; /* Color of the connector */
+    }
+
+    /* Remove vertical connector for the last child */
+    .tree li:last-child::after {
+      height: 50%; /* Only cover half the height for the last child */
+    }
+
+    /* Remove connectors for the root node */
+    .tree > li::before,
+    .tree > li::after {
+      display: none;
+    }
+
+    /* Node Styling */
+    .tree span {
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      padding: 10px 20px;
+      background-color: #fff;
+      text-align: center;
+      white-space: nowrap;
+      position: relative;
+      z-index: 1; /* Ensure nodes are above connectors */
+    }
+
+    /* Spacing for nested lists */
+    .tree ul {
+      padding-left: 40px; /* Space for nested connectors */
+    }
+  </style>
+</head>
+<body>
+  <ul class="tree">
+    <li>
+      <span>Goal</span>
+      <ul>
+        <li>
+          <span>Impact 1</span>
+          <ul>
+            <li><span>Deliverable 1.1</span></li>
+            <li><span>Deliverable 1.2</span></li>
+          </ul>
+        </li>
+        <li>
+          <span>Impact 2</span>
+          <ul>
+            <li><span>Deliverable 2.1</span></li>
+            <li><span>Deliverable 2.2</span></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</body>
+</html>

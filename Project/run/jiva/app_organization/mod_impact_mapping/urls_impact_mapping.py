@@ -19,4 +19,9 @@ urlpatterns = [
     path('view_tree_table_mapping/<int:organization_id>/<int:impact_mapping_id>/', views_impact_mapping.view_tree_table_mapping, name='view_tree_table_mapping'),
     
     path('ajax_save_impact_mappings/', views_impact_mapping.ajax_save_impact_mappings, name='ajax_save_impact_mappings'),
+
+    path('editor_horizontal_impact_mapping/<int:organization_id>/<int:impact_mapping_id>/', views_impact_mapping.editor_horizontal_impact_mapping, name='editor_horizontal_impact_mapping'),
+
+    path('ajax_impact_mapping_add_node/', views_impact_mapping.ajax_impact_mapping_add_node, name='ajax_impact_mapping_add_node'),
+    path('ajax_impact_mapping_delete_node/', views_impact_mapping.ajax_impact_mapping_delete_node, name='ajax_impact_mapping_delete_node'),
 ]

@@ -482,3 +482,6 @@ def ajax_update_app_model_field_value(request):
             return JsonResponse({'success': True, 'updated_field': field_name, 'new_value': new_value})
 
     return JsonResponse({'success': False})
+
+
+

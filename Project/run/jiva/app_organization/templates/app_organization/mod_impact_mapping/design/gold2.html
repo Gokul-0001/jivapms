@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Mapping Tree</title>
+    <style>
+      *, *:before, *:after {
+	      box-sizing: border-box;
+      }
+      * {
+	      margin: 0;
+	      padding: 0;
+      }
+      body {
+	      background: #dcdfe0;
+          display: flex;
+          justify-content: center;
+          padding: 40px;
+      }
+      header {
+	      text-align: center;
+	      padding: 1em;
+	      background: #0d3530;
+	      color: white;
+	      width: 100%;
+	      position: fixed;
+	      top: 0;
+	      left: 0;
+      }
+      .tree-container {
+          margin-top: 80px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+      }
+      .tree {
+	      display: flex;
+	      align-items: center;
+	      gap: 100px;
+	      position: relative;
+      }
+
+      /* Section Labels */
+      .section-labels {
+          display: flex;
+          justify-content: space-around;
+          width: 100%;
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 20px;
+          color: #7D5600;
+      }
+
+      .tree ul {
+	      position: relative;
+	      padding-left: 40px;
+      }
+
+      .tree ul:before {
+	      content: "";
+	      position: absolute;
+	      left: -20px;
+	      top: 50%;
+	      width: 20px;
+	      border-bottom: 2px solid #216260;
+      }
+
+      .tree li {
+	      display: flex;
+	      align-items: center;
+	      position: relative;
+	      padding-left: 40px;
+      }
+
+      .tree li:before {
+	      content: "";
+	      position: absolute;
+	      left: -20px;
+	      top: 0;
+	      bottom: 0;
+	      width: 2px;
+	      background: #216260;
+      }
+
+      .tree li:first-child:before {
+	      top: 50%;
+      }
+
+      .tree li:last-child:before {
+	      bottom: 50%;
+      }
+
+      .tree li:only-child:before {
+	      display: none;
+      }
+
+      .node {
+	      margin: 1em;
+	      padding: 10px 20px;
+	      background: white;
+	      color: #216260;
+	      text-decoration: none;
+	      border: 2px solid #216260;
+	      border-radius: 5px;
+	      position: relative;
+	      cursor: pointer;
+	      box-shadow: 0 0 4px rgba(158, 191, 192, 1);
+	      text-align: center;
+          min-width: 160px;
+          font-weight: bold;
+      }
+
+      /* Different Colors for Each Level */
+      .goal { background: #FFA500; color: white; }
+      .actor { background: #B5D800; }
+      .impact { background: #5C82C0; color: white; }
+      .deliverable { background: #D85151; color: white; }
+      .story { background: #8E44AD; color: white; }
+
+      /* Connectors */
+      .connector {
+	      position: absolute;
+	      height: 2px;
+	      background: #216260;
+	      left: -20px;
+	      top: 50%;
+	      width: 40px;
+      }
+
+      .node:before {
+	      content: "";
+	      position: absolute;
+	      left: -20px;
+	      width: 20px;
+	      height: 2px;
+	      background: #216260;
+	      top: 50%;
+      }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Impact Mapping Tree</h1>
+        <span>Click on a node to add a child</span>
+    </header>
+
+    <div class="tree-container">
+        <div class="section-labels">
+            <div>GOAL</div>
+            <div>ACTOR</div>
+            <div>IMPACT</div>
+            <div>DELIVERABLE</div>
+        </div>
+
+        <main class="tree">
+            <a id="parent" class="node goal" href="#">GROW MOBILE ADVERTISING</a>
+        </main>
+    </div>
+
+    <script>
+        const addChild = e => {
+            e.preventDefault();
+            const node = e.target;
+            const child = newNode();
+
+            if (node.nextElementSibling) {
+                const ul = node.nextElementSibling;
+                ul.append(child);
+            } else {
+                const parent = node.parentElement;
+                const ul = document.createElement('ul');
+                ul.append(child);
+                parent.append(ul);
+            }
+        };
+
+        const newNode = () => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.setAttribute('href', '#');
+            a.classList.add('node');
+            a.textContent = "Child Node";
+            a.addEventListener('click', addChild);
+            li.append(a);
+
+            // Create connector
+            const connector = document.createElement('div');
+            connector.classList.add('connector');
+            li.appendChild(connector);
+
+            return li;
+        };
+
+        document.querySelector('#parent').addEventListener('click', addChild);
+    </script>
+
+</body>
+</html>

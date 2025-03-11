@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Mapping Tree</title>
+    <style>
+        /* General Styling */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f4f4f4;
+            padding: 40px;
+        }
+         /* Grid-based Section Titles */
+         .section-titles-desc {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 90%;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            color: #1a0fbd;
+   
+            
+      
+        }
+        /* Grid-based Section Titles */
+        .section-titles {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 90%;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #7D5600;
+   
+            padding: 10px;
+      
+        }
+        .goal_title {
+            
+        }
+        .actor_title {
+            margin-left: 100px;
+        }
+        .impact_title {
+            margin-left: 200px;
+        }
+        .deliverable_title {
+            margin-left: 130px;
+        }
+        .story_title {
+            margin-left: 50px;
+        }
+        
+        /* Wrapper for both Titles and Tree */
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        /* Tree Structure */
+        .tree {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+        }
+
+        .tree, .tree * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .tree li {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            position: relative;
+            padding: 0.5vh 0 0.5vh 2vw;
+        }
+
+        .tree li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            border-top: 2px solid #444;
+            width: 2vw;
+        }
+
+        .tree li::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            border-left: 2px solid #444;
+        }
+        /* Fix: Remove vertical line when child has no siblings */
+        .tree li:only-child::after {
+            display: none;
+        }
+        .tree li:last-of-type::after {
+            height: 50%;
+            top: 0;
+        }
+
+        .tree li:first-of-type::after {
+            height: 50%;
+            bottom: 0;
+        }
+
+        .tree li:not(:first-of-type):not(:last-of-type)::after {
+            height: 100%;
+        }
+
+        .tree ul {
+            padding-left: 2vw;
+            position: relative;
+        }
+
+        .tree ul::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            border-top: 2px solid #444;
+            width: 2vw;
+        }
+
+        /* Node Styling */
+        .tree span {
+            border: 2px solid #444;
+            text-align: center;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            font-weight: bold;
+            min-width: 150px;
+        }
+
+        /* Color-coding for each level */
+        .goal { background: #FFA500; color: white; }
+        .actor { background: #B5D800; }
+        .impact { background: #5C82C0; color: white; }
+        .deliverable { background: #D85151; color: white; }
+        .story { background: #8E44AD; color: white; }
+
+        /* Root Node */
+        .tree > li {
+            padding-left: 0;
+        }
+        .tree > li::before, .tree > li::after {
+            display: none;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .section-titles {
+                width: 90%;
+                font-size: 16px;
+            }
+        }
+         /* Context Menu */
+         .context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+        }
+
+        .context-menu ul {
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+        }
+
+        .context-menu ul li {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .context-menu ul li:hover {
+            background: #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="tree-container">
+        <div class="section-titles-desc">
+            <div class="goal_title">WHY</div>
+            <div class="actor_title">WHO</div>
+            <div class="impact_title">WHAT</div>
+            <div class="deliverable_title">HOW</div>
+            <div class="story_title">Details</div>
+        </div>
+    
+    <!-- Section Titles -->
+    <div class="section-titles">
+        <div class="goal_title">GOAL</div>
+        <div class="actor_title">ACTOR</div>
+        <div class="impact_title">IMPACT</div>
+        <div class="deliverable_title">DELIVERABLE</div>
+        <div class="story_title">STORY / TASKS</div>
+    </div>
+
+    <!-- Tree Structure -->
+    <ul class="tree">
+        {% if tree_structure %}
+            {{ tree_structure|json_script:"tree-data" }}
+        {% endif %}
+    </ul>
+    </div>
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <ul>
+            <li id="add-child">Add Child</li>
+            <li id="edit-node">Edit</li>
+            <li id="delete-node">Delete</li>
+            <li id="view-node">View</li>
+        </ul>
+    </div><script>
+        let selectedNode = null;
+        let treeData = JSON.parse(document.getElementById("tree-data").textContent);
+
+        function createTreeNode(node) {
+            let li = document.createElement("li");
+            let span = document.createElement("span");
+            span.classList.add(node.node_type);
+            span.dataset.type = node.node_type;
+            span.textContent = node.name;
+            li.appendChild(span);
+
+            attachContextMenu(span); // Attach right-click event
+
+            if (node.children && node.children.length > 0) {
+                let ul = document.createElement("ul");
+                node.children.forEach(child => ul.appendChild(createTreeNode(child)));
+                li.appendChild(ul);
+            }
+            return li;
+        }
+
+        function attachContextMenu(node) {
+            node.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                selectedNode = this;
+
+                let menu = document.getElementById("context-menu");
+                let addChildOption = document.getElementById("add-child");
+
+                if (selectedNode.dataset.type === "task") {
+                    addChildOption.style.display = "none";
+                } else {
+                    addChildOption.style.display = "block";
+                }
+
+                menu.style.top = e.pageY + "px";
+                menu.style.left = e.pageX + "px";
+                menu.style.display = "block";
+            }, { once: true }); // Ensure the event listener is only attached once
+        }
+
+        let treeContainer = document.querySelector(".tree");
+        if (treeData) {
+            treeContainer.appendChild(createTreeNode(treeData));
+        }
+
+        document.addEventListener('click', function() {
+            document.getElementById("context-menu").style.display = "none";
+        });
+
+        document.getElementById("add-child").addEventListener("click", function() {
+            if (!selectedNode) return;
+
+            const childTypes = {
+                "goal": "actor",
+                "actor": "impact",
+                "impact": "deliverable",
+                "deliverable": "task"
+            };
+
+            let nodeType = selectedNode.dataset.type;
+            let newChildType = childTypes[nodeType];
+
+            if (!newChildType) {
+                alert("No child nodes can be added to this type.");
+                return;
+            }
+
+            let parentLi = selectedNode.parentElement;
+            let parentUl = parentLi.querySelector("ul");
+
+            if (!parentUl) {
+                parentUl = document.createElement("ul");
+                parentLi.appendChild(parentUl);
+            }
+
+            let childLi = document.createElement("li");
+            let childSpan = document.createElement("span");
+            childSpan.classList.add(newChildType);
+            childSpan.dataset.type = newChildType;
+            childSpan.textContent = newChildType.toUpperCase() + " (New)";
+            childLi.appendChild(childSpan);
+
+            attachContextMenu(childSpan); // Ensure right-click is attached only once
+
+            parentUl.appendChild(childLi);
+        });
+
+        document.getElementById("edit-node").addEventListener("click", function() {
+            if (!selectedNode) return;
+            let newText = prompt("Enter new text:", selectedNode.textContent);
+            if (newText) selectedNode.textContent = newText;
+        });
+
+        document.getElementById("delete-node").addEventListener("click", function() {
+            if (!selectedNode) return;
+            selectedNode.parentElement.remove();
+        });
+    </script>
+</body>
+</html>
+

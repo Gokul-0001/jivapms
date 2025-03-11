@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impact Mapping UI</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+      overflow-x: auto;
+    }
+
+    /* Impact Map Layout */
+    .impact-map {
+      display: flex;
+      align-items: center;
+      gap: 100px; /* Adjust spacing between columns */
+      position: relative;
+    }
+
+    /* Each Level */
+    .level {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 50px;
+      position: relative;
+    }
+
+    /* Nodes */
+    .node {
+      background: white;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      white-space: nowrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* SVG Container */
+    .svg-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* SVG Line Styling */
+    .connector {
+      stroke: #3498db;
+      stroke-width: 2;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="impact-map">
+    <!-- Goals -->
+    <div class="level" id="goals">
+      <div class="node" id="goal-1">Goal</div>
+    </div>
+
+    <!-- Impacts -->
+    <div class="level" id="impacts">
+      <div class="node">Impact 1</div>
+      <div class="node">Impact 2</div>
+    </div>
+
+    <!-- Deliverables -->
+    <div class="level" id="deliverables">
+      <div class="node">Deliverable 1.1</div>
+      <div class="node">Deliverable 1.2</div>
+      <div class="node">Deliverable 2.1</div>
+      <div class="node">Deliverable 2.2</div>
+    </div>
+  </div>
+
+  <!-- SVG for Dynamic Connectors -->
+  <svg class="svg-container">
+    <defs>
+      <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L6,3 L0,6" fill="#3498db"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const svgContainer = document.querySelector(".svg-container");
+      const goals = document.querySelectorAll("#goals .node");
+      const impacts = document.querySelectorAll("#impacts .node");
+      const deliverables = document.querySelectorAll("#deliverables .node");
+
+      function connectElements(start, end) {
+        const startRect = start.getBoundingClientRect();
+        const endRect = end.getBoundingClientRect();
+        const offsetX = window.scrollX;
+        const offsetY = window.scrollY;
+
+        const x1 = startRect.right + offsetX;
+        const y1 = startRect.top + startRect.height / 2 + offsetY;
+        const x2 = endRect.left + offsetX;
+        const y2 = endRect.top + endRect.height / 2 + offsetY;
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("class", "connector");
+        line.setAttribute("marker-end", "url(#arrow)");
+        svgContainer.appendChild(line);
+      }
+
+      // Connect Goal to Impacts
+      goals.forEach(goal => {
+        impacts.forEach(impact => connectElements(goal, impact));
+      });
+
+      // Connect Impacts to Deliverables
+      deliverables.forEach((deliverable, index) => {
+        if (index < 2) {
+          connectElements(impacts[0], deliverable);
+        } else {
+          connectElements(impacts[1], deliverable);
+        }
+      });
+
+      // Resize SVG to fit all elements
+      function resizeSVG() {
+        const mapRect = document.querySelector(".impact-map").getBoundingClientRect();
+        svgContainer.setAttribute("width", mapRect.width);
+        svgContainer.setAttribute("height", mapRect.height);
+      }
+
+      resizeSVG();
+      window.addEventListener("resize", resizeSVG);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Mapping Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .impact-mapping {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            text-align: center;
+            align-items: center;
+            width: 80%;
+            margin: auto;
+        }
+        .box {
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+        }
+        .goal { background: red; }
+        .actor { background: orange; }
+        .impact { background: gold; color: black; }
+        .deliverable { background: darkorange; }
+        
+        .connector {
+            text-align: center;
+            font-size: 18px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align:center;">Impact Mapping</h2>
+
+    <div class="impact-mapping">
+        <!-- Column 1: Goals -->
+        <div class="box goal" rowspan="3">Boost user retention by 20%</div>
+
+        <!-- Column 2: Actors -->
+        <div class="box actor">Active Users</div>
+        <div class="box actor">Future Users</div>
+        <div class="box actor">Customer Support</div>
+
+        <!-- Column 3: Impact -->
+        <div class="box impact">Boost DAU and MAU</div>
+        <div class="box impact">Boost onboarding completion rate</div>
+        <div class="box impact">Improve user assistance</div>
+
+        <!-- Column 4: Deliverables -->
+        <div class="box deliverable">In-app Messaging</div>
+        <div class="box deliverable">Gamification</div>
+        <div class="box deliverable">Progress Bars</div>
+        <div class="box deliverable">One-click Social Signup</div>
+        <div class="box deliverable">Live Chat</div>
+    </div>
+
+</body>
+</html>

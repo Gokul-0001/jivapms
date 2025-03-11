@@ -1163,7 +1163,8 @@ def view_project_metrics_flow_tab(request, project_id):
                         entry_data[col_lc] = cumulative_count  # Add cumulative count to the entry data
                         previous_counts[col_lc] = cumulative_count  # Update previous counts for the next iteration
                     data.append(entry_data)  # Add entry data to the data list
-        
+                print(f">>> === DATA LIST WITH CUMULATIVE COUNTS === <<<")
+                print(data)
 
         elif CFD_BY == "TIME":
             # Extract and format the time

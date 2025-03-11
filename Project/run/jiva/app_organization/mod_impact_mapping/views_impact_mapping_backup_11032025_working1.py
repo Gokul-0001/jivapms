@@ -710,3 +710,74 @@ def ajax_impact_mapping_delete_node(request):
             return JsonResponse({"success": False, "error": str(e)})
 
     return JsonResponse({"success": False, "error": "Invalid request"})
+
+# import json
+# import logging
+# from django.http import JsonResponse
+# from django.contrib.auth.decorators import login_required
+
+# logger = logging.getLogger(__name__)  # Setup logger
+
+# @login_required
+# def ajax_impact_mapping_add_node(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             logger.info(f"Received data: {data}")  # ✅ Log request payload
+
+#             parent_id = data.get("parent_id")
+#             node_type = data.get("node_type")
+#             name = data.get("name")
+
+#             if not node_type or not name:
+#                 return JsonResponse({"success": False, "error": "Missing required fields"})
+
+#             parent_node = ImpactMap.objects.get(id=parent_id) if parent_id else None
+#             logger.info(f">>> === PARENT NODE: {parent_node} === <<<")
+#             new_node = ImpactMap.objects.create(parent=parent_node, node_type=node_type, name=name)
+
+#             logger.info(f"New node created: {new_node.id}, {new_node.name}, {new_node.node_type}")  # ✅ Log new node
+
+#             return JsonResponse({"success": True, "id": new_node.id, "name": new_node.name, "node_type": new_node.node_type})
+#         except ImpactMap.DoesNotExist:
+#             logger.error(f"Parent node not found: {parent_id}")  # ✅ Log error if parent not found
+#             return JsonResponse({"success": False, "error": "Parent node not found"})
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON received")  # ✅ Log invalid JSON error
+#             return JsonResponse({"success": False, "error": "Invalid JSON"})
+#         except Exception as e:
+#             logger.error(f"Unexpected error: {str(e)}")  # ✅ Log unexpected errors
+#             return JsonResponse({"success": False, "error": str(e)})
+
+#     logger.warning("Invalid request method")
+#     return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+# @login_required
+# def ajax_impact_mapping_delete_node(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             node_id = data.get("node_id")
+
+#             logger.info(f"Delete request received for node_id: {node_id}")  # ✅ Log incoming data
+
+#             node = ImpactMap.objects.get(id=node_id)
+#             node.active = False  # Soft delete
+#             node.save()
+
+#             logger.info(f"Node soft deleted: {node.id}, {node.name}")  # ✅ Log successful deletion
+
+#             return JsonResponse({"success": True})
+#         except ImpactMap.DoesNotExist:
+#             logger.error(f"Delete failed - Node not found: {node_id}")  # ✅ Log error if node not found
+#             return JsonResponse({"success": False, "error": "Node not found"})
+#         except json.JSONDecodeError:
+#             logger.error("Delete failed - Invalid JSON received")  # ✅ Log invalid JSON error
+#             return JsonResponse({"success": False, "error": "Invalid JSON"})
+#         except Exception as e:
+#             logger.error(f"Unexpected error in delete: {str(e)}")  # ✅ Log unexpected errors
+#             return JsonResponse({"success": False, "error": str(e)})
+
+#     logger.warning("Invalid request method for delete operation")  # ✅ Log invalid method use
+#     return JsonResponse({"success": False, "error": "Invalid request"})

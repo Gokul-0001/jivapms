@@ -1,0 +1,152 @@
+<style>
+       body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .left-pane {
+        width: 25%;
+        background: #f4f4f9;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        font-size: 10px;
+    }
+    .right-pane {
+        width: 75%;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+    /* Section Titles */
+    .section-titles {
+        display: flex;
+        justify-content: space-between;
+        width: 90%;
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #7D5600;
+
+    }
+    .goal_title {
+        
+    }
+    .actor_title {
+        margin-left: 100px;
+    }
+    .impact_title {
+        margin-left: 200px;
+    }
+    .deliverable_title {
+        margin-left: 130px;
+    }
+    .story_title {
+        margin-left: 50px;
+    }
+
+    /* Tree Structure */
+    .tree {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
+    }
+
+    .tree, .tree * {
+        margin: 0;
+        padding: 0;
+    }
+
+    .tree li {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        position: relative;
+        padding: 0.5vh 0 0.5vh 2vw;
+    }
+
+    .tree li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        border-top: 2px solid #444;
+        width: 2vw;
+    }
+
+    .tree li::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        border-left: 2px solid #444;
+    }
+    /* Fix: Remove vertical line when child has no siblings */
+    .tree li:only-child::after {
+        display: none;
+    }
+    .tree li:last-of-type::after {
+        height: 50%;
+        top: 0;
+    }
+
+    .tree li:first-of-type::after {
+        height: 50%;
+        bottom: 0;
+    }
+
+    .tree li:not(:first-of-type):not(:last-of-type)::after {
+        height: 100%;
+    }
+
+    .tree ul {
+        padding-left: 2vw;
+        position: relative;
+    }
+
+    .tree ul::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        border-top: 2px solid #444;
+        width: 2vw;
+    }
+
+    /* Node Styling */
+    .tree span {
+        border: 2px solid #444;
+        text-align: center;
+        padding: 0.5em 1em;
+        border-radius: 5px;
+        font-weight: bold;
+        min-width: 150px;
+    }
+
+    /* Color-coding for each level */
+    .goal { background: #FFA500; color: white; }
+    .actor { background: #B5D800; }
+    .impact { background: #5C82C0; color: white; }
+    .deliverable { background: #D85151; color: white; }
+    .story { background: #8E44AD; color: white; }
+
+    /* Root Node */
+    .tree > li {
+        padding-left: 0;
+    }
+    .tree > li::before, .tree > li::after {
+        display: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+        .section-titles {
+            width: 90%;
+            font-size: 16px;
+        }
+    }
+</style>

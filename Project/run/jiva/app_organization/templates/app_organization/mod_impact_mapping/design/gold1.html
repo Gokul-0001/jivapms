@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      *, *:before, *:after {
+	 box-sizing: border-box;
+}
+ * {
+	 margin: 0;
+	 padding: 0;
+}
+ body {
+	 background: #dcdfe0;
+}
+ header {
+	 padding: 1em;
+	 background: #0d3530;
+	 color: white;
+}
+ header h1 {
+	 margin: 0;
+}
+ .tree {
+	 display: flex;
+	 align-items: center;
+}
+ .tree ul {
+	 position: relative;
+}
+ .tree ul:before {
+	 content: "";
+	 position: absolute;
+	 left: - 1em;
+	 top: 0;
+	 bottom: 50%;
+	 width: 1em;
+	 border-bottom: 2px solid #216260;
+}
+ .tree li {
+	 display: flex;
+	 align-items: center;
+	 position: relative;
+}
+ .tree li:before {
+	 content: "";
+	 position: absolute;
+	 left: 0;
+	 top: 0;
+	 bottom: 0;
+	 width: 1em;
+	 border-left: 2px solid #216260;
+}
+ .tree li:first-child:before {
+	 top: 50%;
+}
+ .tree li:last-child:before {
+	 bottom: 50%;
+}
+ .tree li:only-child:before {
+	 display: none;
+}
+ .node {
+	 margin: 1em;
+	 padding: 1em 2em;
+	 background: white;
+	 color: #216260;
+	 text-decoration: none;
+	 border: 2px solid #216260;
+	 border-radius: 0.5em;
+	 position: relative;
+	 cursor: pointer;
+	 animation: 0.2s tada cubic-bezier(0.25, 0.1, 0.3, 1.5);
+	 box-shadow: 0 0 4px rgba(158, 191, 192, 1);
+}
+ .node:before {
+	 content: "";
+	 position: absolute;
+	 top: 0;
+	 left: - 0.875em;
+	 bottom: 50%;
+	 width: 1em;
+	 border-bottom: 2px solid #216260;
+}
+ #parent:before {
+	 display: none;
+}
+ @keyframes tada {
+	 from {
+		 transform: scale(0);
+	}
+	 to {
+		 transform: scale(1);
+	}
+}
+ 
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Horizontal CSS Tree</h1>
+        <span>Click on a node to add a child</span>
+      </header>
+      <main class="tree">
+        <a id="parent" class="node" href="#">Parent</a>
+      </main>
+
+      <script>
+        // Horizontal CSS Tree with the power of flexbox!
+const addChild = e => {
+  e.preventDefault();
+  const node = e.target;
+  const child = newNode();
+  // Append node
+  if (node.nextElementSibling) {
+    const ul = node.nextElementSibling;
+    ul.append(child)
+  } else {
+    const parent = node.parentElement;
+    const ul = document.createElement('ul');
+    ul.append(child);
+    parent.append(ul);
+  }
+}
+// Create node
+const newNode = () => {
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  a.setAttribute('href', '#');
+  a.classList.add('node');
+  a.textContent = "Child";
+  a.addEventListener('click', addChild);
+  li.append(a);
+  return li;
+}
+// Init parent
+document.querySelector('#parent').addEventListener('click', addChild);
+
+      </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Mapping Tree</title>
+    <style>
+        /* General Styling */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f4f4f4;
+            padding: 40px;
+        }
+
+        /* Section Titles */
+        .section-titles {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #7D5600;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Tree Structure */
+        .tree {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+        }
+
+        .tree, .tree * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .tree li {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            position: relative;
+            padding: 0.5vh 0 0.5vh 2vw;
+        }
+
+        .tree li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            border-top: 2px solid #444;
+            width: 2vw;
+        }
+
+        .tree li::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            border-left: 2px solid #444;
+        }
+        /* Fix: Remove vertical line when child has no siblings */
+        .tree li:only-child::after {
+            display: none;
+        }
+        .tree li:last-of-type::after {
+            height: 50%;
+            top: 0;
+        }
+
+        .tree li:first-of-type::after {
+            height: 50%;
+            bottom: 0;
+        }
+
+        .tree li:not(:first-of-type):not(:last-of-type)::after {
+            height: 100%;
+        }
+
+        .tree ul {
+            padding-left: 2vw;
+            position: relative;
+        }
+
+        .tree ul::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            border-top: 2px solid #444;
+            width: 2vw;
+        }
+
+        /* Node Styling */
+        .tree span {
+            border: 2px solid #444;
+            text-align: center;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            font-weight: bold;
+            min-width: 150px;
+        }
+
+        /* Color-coding for each level */
+        .goal { background: #FFA500; color: white; }
+        .actor { background: #B5D800; }
+        .impact { background: #5C82C0; color: white; }
+        .deliverable { background: #D85151; color: white; }
+        .story { background: #8E44AD; color: white; }
+
+        /* Root Node */
+        .tree > li {
+            padding-left: 0;
+        }
+        .tree > li::before, .tree > li::after {
+            display: none;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .section-titles {
+                width: 90%;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Section Titles -->
+    <div class="section-titles">
+        <div>GOAL</div>
+        <div>ACTOR</div>
+        <div>IMPACT</div>
+        <div>DELIVERABLE</div>
+        <div>STORY / TASKS</div>
+    </div>
+
+    <!-- Tree Structure -->
+    <ul class="tree">
+        <li>
+            <span class="goal">GROW MOBILE ADVERTISING</span>
+            <ul>
+                <li>
+                    <span class="actor">SUPER-FANS WITH MOBILE DEVICES</span>
+                    <ul>
+                        <li>
+                            <span class="impact">COME BACK MORE FREQUENTLY</span>
+                            <ul>
+                                <li>
+                                    <span class="deliverable">PUSH UPDATES</span>
+                                    <ul>
+                                        <li><span class="story">Story 4</span></li>
+                                        <li><span class="story">Story 2</span></li>
+                                    </ul>
+                                </li>
+                                <li><span class="deliverable">SPECIAL OFFERS</span></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <span class="impact">STAY LONGER</span>
+                            <ul>
+                                <li><span class="deliverable">FORUMS</span></li>
+                                <li><span class="deliverable">CHATS</span></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="actor">CONCERT ORGANISERS</span>
+                    <ul>
+                        <li>
+                            <span class="impact">VIEW MORE ADS</span>
+                            <ul>
+                                <li><span class="deliverable">BETTER PAGINATION</span></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="actor">ARTIST AGENTS AND PROMOTERS</span>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+</body>
+</html>
+

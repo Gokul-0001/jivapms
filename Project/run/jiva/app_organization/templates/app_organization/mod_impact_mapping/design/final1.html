@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .tree {
+	 list-style: none;
+}
+ .tree, .tree * {
+	 margin: 0;
+	 padding: 0;
+}
+ .tree li {
+	 display: flex;
+	 flex-direction: row;
+	 align-items: center;
+	 padding-top: 0.5vh;
+	 padding-bottom: 0.5vh;
+	 position: relative;
+	 padding-left: 2vw;
+}
+ .tree li::before {
+	 content: '';
+	 position: absolute;
+	 left: 0;
+	 top: 50%;
+	 border-top: 1px solid;
+	 width: 2vw;
+}
+ .tree li::after {
+	 content: '';
+	 position: absolute;
+	 left: 0;
+	 border-left: 1px solid;
+}
+ .tree li:last-of-type::after {
+	 height: 50%;
+	 top: 0;
+}
+ .tree li:first-of-type::after {
+	 height: 50%;
+	 bottom: 0;
+}
+ .tree li:not(:first-of-type):not(:last-of-type)::after {
+	 height: 100%;
+}
+ .tree ul, .tree ol {
+	 padding-left: 2vw;
+	 position: relative;
+}
+ .tree ul::before, .tree ol::before {
+	 content: '';
+	 position: absolute;
+	 left: 0;
+	 top: 50%;
+	 border-top: 1px solid;
+	 width: 2vw;
+}
+ .tree span {
+	 border: 1px solid;
+	 text-align: center;
+	 padding: 0.33em 0.66em;
+}
+ .tree > li {
+	 padding-left: 0;
+}
+ .tree > li::before, .tree > li::after {
+	 display: none;
+}
+ ol, ul {
+	 counter-reset: section;
+}
+ li span::before {
+	 counter-increment: section;
+	 content: counters(section, ".") " ";
+	 font-family: monospace;
+}
+ body {
+	 display: flex;
+	 justify-content: center;
+	 align-items: center;
+	 height: 175px;
+}
+ 
+    </style>
+</head>
+<body>
+    <ul class="tree">
+        <li>
+          <span></span>
+          <ul>
+            <li>
+              <span></span>
+            </li>
+            
+            <li>
+              <span></span>
+              <ul>
+                <li>
+                  <span></span>
+                </li>
+                <li>
+                  <span></span>
+                </li>
+                <li>
+                  <span></span>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+</body>
+</html>

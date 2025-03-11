@@ -84,7 +84,7 @@
                                         <th width="2%">#</th>
                                         <th>Impact Mapping</th>
                                         <th width="20%">Description</th>
-                                        <th width="10%">Configure</th>
+                                        <th width="10%">Edit Maps</th>
                                         <th width="50%">                                    
                                             Actions
                                             &nbsp;&nbsp;
@@ -128,7 +128,8 @@
                                         onblur="save_element_text(this, '{{ tobject.id }}',  'app_organization', 'ImpactMapping', 'description')"
                                         >{% if tobject.description != None %}{{tobject.description}}{% endif %}</td>
                                         <td width="20%">
-                                        
+                                            <a href="{% url 'editor_horizontal_impact_mapping' organization_id  tobject.id %}"
+                                            class="btn btn-sm btn-warning">View Impact Mapping</a>
                                         </td>
                                         <td width="50%">
                                             <a href="{% url 'view_impact_mapping' organization_id  tobject.id  %}"
@@ -147,6 +148,9 @@
                                             &nbsp;&nbsp;
                                             <a href="{% url 'view_tree_table_mapping' organization_id  tobject.id %}"
                                             class="btn btn-sm btn-warning"><i class="bi bi-triangle"></i></a>
+                                            &nbsp;&nbsp;
+                                            <a href="{% url 'editor_horizontal_impact_mapping' organization_id  tobject.id %}"
+                                            class="btn btn-sm btn-warning"><i class="bi bi-circle"></i></a>
                                         </td>
                                     </tr>
                                     {% endfor %}
