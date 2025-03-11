@@ -611,26 +611,96 @@ def view_tree_table_mapping(request, organization_id, impact_mapping_id):
     return render(request, template_file, context)
 
 
+# @login_required
+# def editor_horizontal_impact_mapping(request, organization_id, impact_mapping_id):
+#     user = request.user
+
+#     # Validate Organization
+#     organization = Organization.objects.get(id=organization_id, active=True, **first_viewable_dict)
+#     project = None
+#     project_id = None
+#     if 'project_id' in request.GET:
+#         project_id = request.GET.get('project_id')
+#         project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
+#     # Validate ImpactMapping
+#     impact_mapping = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True, **viewable_dict)
+
+#     # Fetch root nodes (nodes with no parent)
+#     root_nodes = ImpactMap.objects.filter(parent__isnull=True, impact_map=impact_mapping).order_by('position')
+    
+#     impact_map = impact_mapping.impact_map  # Get the related ImpactMap instance
+
+#     # Function to recursively fetch tree structure, but skip the parent node
+#     def build_tree(node):
+#         return {
+#             "id": node.id,
+#             "parent_id": node.parent.id if node.parent else None,
+#             "name": node.name,
+#             "node_type": node.node_type.lower(),
+#             "uc_node_type": node.node_type.upper(),
+#             "children": [build_tree(child) for child in node.get_children()]
+#         }
+
+#     # Skip the parent node (only display its children)
+#     tree_structure = []
+#     if impact_map:
+#         tree_structure = [build_tree(child) for child in impact_map.get_children()]
+#     else:
+#         impact_map = ImpactMap.objects.create(
+#             node_type="Goal",  # Default goal node
+#             name="New Goal",
+#             parent=None, 
+#         )
+#         impact_mapping.impact_map = impact_map
+#         impact_mapping.save()
+#         # ✅ Update tree_structure with the newly created goal
+#         tree_structure = [build_tree(impact_map)]
+
+#     print(f">>> === tree_structure: {tree_structure} impact_mapping.impact_map = impact_map {impact_mapping.impact_map} === <<<")
+#     # print(f">>> === tree_structure: {tree_structure} === <<<")
+
+#     context = {
+#         'parent_page': '___PARENTPAGE___',
+#         'page': 'editor_horizontal_impact_mapping',
+#         'organization': organization,
+#         'organization_id': organization_id,
+#         'org_id': organization_id,
+  
+#         'module_path': module_path,
+#         'object': impact_mapping,
+#         'page_title': f'Editor Horizontal Impact Mapping',
+        
+#         'project': project,
+#         'project_id': project_id,
+#         'pro_id': project_id,
+#         "impact_mapping": impact_mapping,
+#         "impact_map": impact_map,
+#         "tree_structure": tree_structure,
+#     }
+
+#     template_file = f"{app_name}/{module_path}/editor_horizontal_impact_mapping.html"
+#     return render(request, template_file, context)
 @login_required
 def editor_horizontal_impact_mapping(request, organization_id, impact_mapping_id):
     user = request.user
 
     # Validate Organization
-    organization = Organization.objects.get(id=organization_id, active=True, **first_viewable_dict)
+    organization = get_object_or_404(Organization, id=organization_id, active=True, **first_viewable_dict)
+    
     project = None
-    project_id = None
-    if 'project_id' in request.GET:
-        project_id = request.GET.get('project_id')
+    project_id = request.GET.get('project_id')
+    if project_id:
         project = get_object_or_404(Project, pk=project_id, active=True, **viewable_dict)
+
     # Validate ImpactMapping
     impact_mapping = get_object_or_404(ImpactMapping, pk=impact_mapping_id, active=True, **viewable_dict)
 
-    # Fetch root nodes (nodes with no parent)
-    root_nodes = ImpactMap.objects.filter(parent__isnull=True, impact_map=impact_mapping).order_by('position')
-    
-    impact_map = impact_mapping.impact_map  # Get the related ImpactMap instance
+    # Get the related ImpactMap instance
+    impact_map = impact_mapping.impact_map
 
-    # Function to recursively fetch tree structure, but skip the parent node
+    #print(f">>> Before: impact_mapping.impact_map = {impact_map}")
+
+    # Function to recursively fetch tree structure
     def build_tree(node):
         return {
             "id": node.id,
@@ -641,30 +711,43 @@ def editor_horizontal_impact_mapping(request, organization_id, impact_mapping_id
             "children": [build_tree(child) for child in node.get_children()]
         }
 
-    # Skip the parent node (only display its children)
-    tree_structure = []
-    if impact_map:
-        tree_structure = [build_tree(child) for child in impact_map.get_children()]
+    # Ensure ImpactMap exists
+    if not impact_map:
+        impact_map = ImpactMap.objects.create(
+            node_type="Goal",
+            name="New Goal",
+            parent=None
+        )
 
+        # ✅ Assign the new ImpactMap to ImpactMapping
+        impact_mapping.impact_map = impact_map
+        impact_mapping.save()
 
-    # print(f">>> === tree_structure: {tree_structure} === <<<")
+        #print(f">>> After: impact_mapping.impact_map = {impact_mapping.impact_map}")
+
+    # Fetch children of ImpactMap
+    root_nodes = impact_map.get_children()
+
+    # If no children exist, include the root ImpactMap itself
+    if not root_nodes.exists():
+        #print(f">>> ImpactMap {impact_map.id} has NO children, adding root node to tree_structure")
+        tree_structure = [build_tree(impact_map)]  # ✅ Add the root node itself
+    else:
+        #print(f">>> ImpactMap {impact_map.id} has {root_nodes.count()} children")
+        tree_structure = [build_tree(impact_map)]  # ✅ Include root and children
+
+    #print(f">>> Final tree_structure: {tree_structure}")
 
     context = {
         'parent_page': '___PARENTPAGE___',
         'page': 'editor_horizontal_impact_mapping',
         'organization': organization,
         'organization_id': organization_id,
-        'org_id': organization_id,
-  
-        'module_path': module_path,
-        'object': impact_mapping,
-        'page_title': f'Editor Horizontal Impact Mapping',
-        
         'project': project,
         'project_id': project_id,
-        'pro_id': project_id,
-         "impact_mapping": impact_mapping,
-        "tree_structure": tree_structure,
+        'impact_mapping': impact_mapping,
+        'impact_map': impact_map,
+        'tree_structure': tree_structure,
     }
 
     template_file = f"{app_name}/{module_path}/editor_horizontal_impact_mapping.html"
@@ -683,7 +766,7 @@ def ajax_impact_mapping_add_node(request):
 
             parent_node = ImpactMap.objects.get(id=parent_id) if parent_id else None
             new_node = ImpactMap.objects.create(parent=parent_node, node_type=node_type, name=name)
-
+            print(f">>> === parent_id: {parent_id}, parent_node: {parent_node}, new_node: {new_node} === <<<")
             return JsonResponse({"success": True, "id": new_node.id, "name": new_node.name, "node_type": new_node.node_type})
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)})
