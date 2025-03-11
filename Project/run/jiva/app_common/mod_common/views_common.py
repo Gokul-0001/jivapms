@@ -98,7 +98,7 @@ def ajax_save_element_text(request):
 
             # Save the updated object
             obj.save()
-
+            print(f">>> === AJAX SAVE ELEMENT TEXT {obj} === <<<")
             return JsonResponse({'status': 'success', 'message': 'Field updated successfully'})
         except LookupError:
             return JsonResponse({'status': 'error', 'message': 'Model not found.'})

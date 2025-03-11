@@ -525,6 +525,11 @@
                 childLi.appendChild(childSpan);
 
                 attachContextMenu(childSpan);
+                childSpan.ondblclick = function() { makeEditable(this); }; // ✅ Enable double-click editing
+                childSpan.onblur = function() { 
+                    save_element_text(this, data.id, "app_organization", "ImpactMap", "name"); 
+                    this.contentEditable = false;  // ✅ Disable editing after saving
+                };
 
                 let parentUl = selectedNode.parentElement.querySelector("ul") || document.createElement("ul");
                 selectedNode.parentElement.appendChild(parentUl);
