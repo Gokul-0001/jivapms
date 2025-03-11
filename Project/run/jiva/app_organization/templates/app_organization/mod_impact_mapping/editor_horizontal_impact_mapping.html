@@ -400,7 +400,7 @@
             span.dataset.parent_id = node.parent_id;
             // Enable inline editing
             span.ondblclick = function() { makeEditable(this); };
-            span.onblur = function() { save_element_text(this, node.id, 'app_organization', 'ImpactMap', 'name'); };
+            span.onblur = function() { save_element_text(this, node.node_id, 'app_organization', 'ImpactMap', 'name'); };
 
             span.textContent = node.name;
             li.appendChild(span);
