@@ -326,24 +326,56 @@
 
     
 <script>
-     function openContextMenu(e) {
-        e.preventDefault();
-        selectedNode = this;
+        // function openContextMenu(e) {
+        //     e.preventDefault();
+        //     selectedNode = this;
 
-        let menu = document.getElementById("context-menu");
-        let addChildOption = document.getElementById("add-child");
+        //     let menu = document.getElementById("context-menu");
+        //     let addChildOption = document.getElementById("add-child");
 
-        // Hide "Add Child" option for last-level nodes (Tasks)
-        if (selectedNode.dataset.type === "task") {
-            addChildOption.style.display = "none";
-        } else {
-            addChildOption.style.display = "block";
-        }
+        //     // Hide "Add Child" option for last-level nodes (Tasks)
+        //     if (selectedNode.dataset.type === "task") {
+        //         addChildOption.style.display = "none";
+        //     } else {
+        //         addChildOption.style.display = "block";
+        //     }
+
+        //         menu.style.top = e.pageY + "px";
+        //         menu.style.left = e.pageX + "px";
+        //         menu.style.display = "block";
+        // }
+
+        function openContextMenu(e) {
+            e.preventDefault();
+            selectedNode = this;
+
+            let menu = document.getElementById("context-menu");
+            let addChildOption = document.getElementById("add-child");
+
+            // Define possible child types
+            let childTypes = {
+                "goal": "actor",
+                "actor": "impact",
+                "impact": "deliverable",
+                "deliverable": "story",
+                "story": "task"
+            };
+
+            let nodeType = selectedNode.dataset.type;
+            let newChildType = childTypes[nodeType];
+
+            if (newChildType) {
+                addChildOption.textContent = "Add " + newChildType.charAt(0).toUpperCase() + newChildType.slice(1); // Capitalize first letter
+                addChildOption.style.display = "block";
+            } else {
+                addChildOption.style.display = "none"; // Hide for last-level nodes
+            }
 
             menu.style.top = e.pageY + "px";
             menu.style.left = e.pageX + "px";
             menu.style.display = "block";
         }
+
         function attachContextMenu(node) {
             node.addEventListener("contextmenu", openContextMenu);
         }
