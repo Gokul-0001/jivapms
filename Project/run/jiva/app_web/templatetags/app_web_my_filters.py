@@ -174,3 +174,9 @@ def get_attr(obj, attr_name):
     """Fetch an attribute from an object dynamically."""
     return getattr(obj, attr_name, None)
 
+
+
+@register.filter(name='lowercase')
+def lowercase(value):
+    """Converts a string to lowercase"""
+    return value.lower() if isinstance(value, str) else value
