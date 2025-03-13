@@ -547,23 +547,15 @@
       items: ".card",
       start: function (event, ui) {
         let startColumn = ui.item.closest(".column, .sub-column");
-        let mainColumnElement = ui.item.closest(".column_with_buffer");
-        let startMainColumn = mainColumnElement.length ? mainColumnElement.find("h2").first().text().trim() : startColumn.find("h2").text().trim();
         ui.item.data('startColumn', startColumn.find("h2").text());
         ui.item.data('fromStateId', startColumn.data("state-id")); 
-        ui.item.data('startMainColumn', startMainColumn);  // Main column name
       },
       stop: function (event, ui) {
         let card = ui.item;
         let startColumn = card.data('startColumn');
         let endColumnElement = card.closest(".column, .sub-column")
         let endColumn = card.closest(".column, .sub-column").find("h2").text();
-
-        // Identify if it's inside a column_with_buffer (main column)
-        let startMainColumn = card.data('startMainColumn');  // Main column name
-        let mainColumnElement = card.closest(".column_with_buffer");
-        let endMainColumn = mainColumnElement.length ? mainColumnElement.find("h2").first().text().trim() : endColumnElement.find("h2").text().trim();
-       
+        
         let cardText = card.text().split(" ").slice(0, 4).join(" ");
         let cardId = card.attr("id");
         var subState = endColumnElement.attr("data-substate");
@@ -576,18 +568,12 @@
                 var id = $(this).attr("id");
                 destPositions.push({ card_id: id, position: index + 1 });
             });
-
-        console.log(`Moving Card: ${cardId}`);
-        console.log(`From Sub-column: ${startColumn}`);
-        console.log(`From Main Column: ${startMainColumn}`);
-        console.log(`To Main Column: ${endMainColumn}`);
-        
         //console.log(`Card ${cardId} moved from ${fromStateId} to ${toStateId}`);
         if (startColumn !== endColumn) {
-          showNotification(`Card: ${cardId} "${cardText}" moved from "${startMainColumn}" to "${endMainColumn}"`);
+          showNotification(`Card: ${cardId} "${cardText}" moved from "${startColumn}" to "${endColumn}"`);
         }
         if (startColumn == endColumn) {
-          showNotification(`Card: ${cardId} "${cardText}" Priority "${startMainColumn}" to "${endMainColumn}"`);
+          showNotification(`Card: ${cardId} "${cardText}" Priority "${startColumn}" to "${endColumn}"`);
         }
         updateCardSubstate(cardId, toStateId, subState);
         updateCardState(cardId, fromStateId, toStateId, destPositions, endColumn, {{ project.id }}, {{project_board.id}}, startColumn);
