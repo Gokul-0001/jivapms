@@ -355,6 +355,25 @@
     }
 
   </style>
+  
+<style>
+  /* Add new color classes */
+  .kanban-card.blue { background-color: #bbdefb; color: #0d47a1; }
+  .kanban-card.green { background-color: #81c784; color: #1b5e20; }
+  .kanban-card.yellow { background-color: #fff59d; color: #f57f17; }
+  .kanban-card.red { background-color: #ffab91; color: #bf360c; }
+  .kanban-card.teal { background-color: #80deea; color: #006064; }
+  
+  .color-palette {
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+  }
+  .color-btn {
+      cursor: grab;
+      margin-right: 5px;
+  }
+</style>
 </head>
 <body>
   <div class="kanban-container horizontal-line-view">
@@ -380,6 +399,15 @@
     </div>
 
     <!-- Columns and Cards -->
+    <div class="color-palette mb-3">
+      <div class="btn-group">
+          <button class="btn btn-primary color-btn" data-color="blue">Blue</button>
+          <button class="btn btn-success color-btn" data-color="green">Green</button>
+          <button class="btn btn-warning color-btn" data-color="yellow">Yellow</button>
+          <button class="btn btn-danger color-btn" data-color="red">Red</button>
+          <button class="btn btn-info color-btn" data-color="teal">Teal</button>
+      </div>
+   </div>
 
     <!-- Backlog -->
     <div class="column " data-id="0"  id="backlog" data-wip-limit="100" data-column-name="backlog" data-state-id="0">
